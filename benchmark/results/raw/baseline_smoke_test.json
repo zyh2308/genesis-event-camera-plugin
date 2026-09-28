@@ -1,0 +1,167 @@
+{
+  "status": "smoke_only_not_formal",
+  "formal_benchmark_run": false,
+  "frozen_commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "ours_v3_1": {
+    "artifact": {
+      "path": "/home/科研/Eventbased_WAM/validation/simulator-quality/real_v2/results/aer_events_real_v2.h5",
+      "exists": true,
+      "valid": true,
+      "shape": [
+        42187462,
+        4
+      ],
+      "dtype": "uint32",
+      "root_attrs": {
+        "event_count": "42187462",
+        "off_count": "21666737",
+        "on_count": "20520725"
+      },
+      "dataset_attrs": {
+        "columns": "timestamp_us,x,y,polarity",
+        "noise_model": "EVK4 real_v2 measured map + shared AR(1) activity",
+        "polarity_encoding": "0=OFF, 1=ON",
+        "source_rgb": "/home/科研/Eventbased_WAM/validation/simulator-quality/demos/20260913_real_demo_v1/rgb_frames.h5"
+      },
+      "first_event": [
+        1,
+        577,
+        702,
+        0
+      ],
+      "last_event": [
+        4190000,
+        683,
+        454,
+        0
+      ],
+      "timestamps_monotonic_sampled": true
+    },
+    "config_name": "real_v2",
+    "parameter_tuning": "frozen project calibration; no smoke-test tuning"
+  },
+  "real_evt3_loader": {
+    "artifact": {
+      "path": "/home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5",
+      "exists": true,
+      "valid": true,
+      "shape": [
+        23675387
+      ],
+      "fields": [
+        "x",
+        "y",
+        "p",
+        "t"
+      ],
+      "root_attrs": {
+        "camera_integrator_name": "Prophesee",
+        "date": "2026-09-12 23:03:19",
+        "format": "EVT3;height=720;width=1280",
+        "generation": "4.2",
+        "geometry": "1280x720",
+        "integrator_name": "Prophesee",
+        "plugin_integrator_name": "Prophesee",
+        "sensor_generation": "4.2",
+        "sensor_name": "IMX636",
+        "serial_number": "00050900",
+        "system_ID": "49",
+        "version": "1.0"
+      }
+    },
+    "conversion_smoke": {
+      "status": "blocked",
+      "error": "OSError: Can't synchronously read data (can't open directory (/usr/local/lib/plugin). Please verify its existence)"
+    }
+  },
+  "v2e": {
+    "artifact": {
+      "path": "/home/科研/Eventbased_WAM/validation/simulator-quality/current_data_precheck/external_baselines/v2e_paper_defaults/aer_events.h5",
+      "exists": true,
+      "valid": true,
+      "shape": [
+        37946993,
+        4
+      ],
+      "dtype": "uint32",
+      "root_attrs": {
+        "event_count": "37946993",
+        "off_count": "18975308",
+        "on_count": "18971685"
+      },
+      "dataset_attrs": {
+        "parameter_source": "code/v2e_source/v2ecore/v2e_args.py paper defaults",
+        "polarity_encoding": "0=OFF, 1=ON",
+        "schema": "t_us,x,y,p",
+        "simulator": "V2E official EventEmulator core",
+        "source_rgb": "/home/科研/Eventbased_WAM/validation/simulator-quality/demos/20260913_real_demo_v1/rgb_frames.h5"
+      },
+      "first_event": [
+        222,
+        1044,
+        419,
+        0
+      ],
+      "last_event": [
+        4190000,
+        379,
+        576,
+        0
+      ],
+      "timestamps_monotonic_sampled": true
+    },
+    "run_metadata": {
+      "status": "complete",
+      "simulator": "V2E official EventEmulator core",
+      "source_repository": "code/v2e_source",
+      "source_rgb": "/home/科研/Eventbased_WAM/validation/simulator-quality/demos/20260913_real_demo_v1/rgb_frames.h5",
+      "resolution": [
+        1280,
+        720
+      ],
+      "frames": 420,
+      "frame_step_s": 0.01,
+      "device": "cuda",
+      "parameters": {
+        "pos_thres": 0.2,
+        "neg_thres": 0.2,
+        "sigma_thres": 0.03,
+        "cutoff_hz": 300.0,
+        "leak_rate_hz": 0.01,
+        "shot_noise_rate_hz": 0.001,
+        "refractory_period_s": 0.0005,
+        "leak_jitter_fraction": 0.1,
+        "noise_rate_cov_decades": 0.1,
+        "seed": 42
+      },
+      "events": {
+        "total": 37946993,
+        "on": 18971685,
+        "off": 18975308,
+        "on_fraction": 0.49995226235712537,
+        "duration_s": 4.19
+      },
+      "note": "Direct V2E core replay on the independent RGB scene; no project-specific retuning."
+    },
+    "source_path": "/home/科研/Eventbased_WAM/code/v2e_source",
+    "source_version": "1.5.1 (setup.py; source snapshot has no git metadata)",
+    "executable_smoke": false,
+    "note": "existing official-core artifact checked; no new formal replay launched"
+  },
+  "esim": {
+    "source_exists": true,
+    "source_commit": "4cf0b8952e9f58f674c3098f1b027a4b6db53427",
+    "build_or_devel_exists": false,
+    "executable_smoke": false,
+    "reason": "ROS/catkin build and executable are not available in this environment"
+  },
+  "icns_iebcs": {
+    "local_checkout_exists": false,
+    "executable_smoke": false,
+    "reason": "official source is not present locally; do not label a substitute as ICNS/IEBCS"
+  },
+  "pecs": {
+    "executable_smoke": false,
+    "reason": "reference-only for protocol/metrics; not required for Phase 1-4"
+  }
+}

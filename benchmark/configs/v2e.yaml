@@ -1,0 +1,30 @@
+method_id: v2e_official_core
+label: V2E-official-core
+implementation:
+  repository: https://github.com/SensorsINI/v2e
+  local_source: /home/科研/Eventbased_WAM/code/v2e_source
+  version: 1.5.1
+  commit: unavailable_local_source_snapshot
+parameter_source:
+  class: official_default
+  status: frozen_for_smoke_and_future_formal_rerun
+  calibration_sequence: none
+  tuning_after_benchmark_freeze: false
+  tuning_budget: zero
+parameters:
+  pos_thres: 0.2
+  neg_thres: 0.2
+  sigma_thres: 0.03
+  cutoff_hz: 300.0
+  leak_rate_hz: 0.01
+  shot_noise_rate_hz: 0.001
+  refractory_period_s: 0.0005
+  leak_jitter_fraction: 0.1
+  noise_rate_cov_decades: 0.1
+  seed: 42
+input_contract: official EventEmulator image sequence input
+resolution: [1280, 720]
+crop_xywh: [0, 0, 1280, 720]
+config_hash_scope: exact_bytes_of_this_file
+config_hash: recorded_in_CONFIG_HASHES.json
+

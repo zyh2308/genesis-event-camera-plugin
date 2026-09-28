@@ -1,0 +1,33 @@
+method_id: ours_v3_1_direct_real_v2
+label: Ours-v3.1-direct-real_v2
+implementation:
+  repository: zyh2308/genesis-event-camera-plugin
+  frozen_commit: e79e656ac00f7847b98db9e12bf43b093f3afff1
+  path: /home/科研/Eventbased_WAM/repositories/genesis-event-camera-plugin
+parameter_source:
+  class: measured_fitted
+  status: preexisting_and_frozen
+  calibration_sequence: evk4_static_noise_reference_20260912
+  source_fit: /home/科研/Eventbased_WAM/validation/simulator-quality/real_v2/calibration/evk4_real_noise_fit_v2.json
+  noise_map: /home/科研/Eventbased_WAM/validation/simulator-quality/real_v2/calibration/evk4_real_noise_map_v2.npz
+  tuning_after_benchmark_freeze: false
+  tuning_budget: none
+parameters:
+  preset: real_v2
+  pos_thres: 0.205
+  neg_thres: 0.195
+  sigma_thres: 0.04
+  cutoff_hz: 50.0
+  leak_rate_hz: 0.0
+  shot_noise_rate_hz: 0.0
+  correlated_noise_alpha: 0.701838977169265
+  correlated_noise_scale: 0.016
+  seed: 42
+input_contract:
+  formal: Genesis radiance/physical state when available
+  archived_current_replay: display_rgb; not claimed as calibrated radiance
+resolution: [1280, 720]
+crop_xywh: [0, 0, 1280, 720]
+config_hash_scope: exact_bytes_of_this_file
+config_hash: recorded_in_CONFIG_HASHES.json
+

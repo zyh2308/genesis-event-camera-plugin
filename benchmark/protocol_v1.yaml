@@ -1,0 +1,277 @@
+protocol_id: quality_benchmark_v1
+protocol_version: v1-frozen
+status: frozen_before_formal_execution
+formal_run_allowed: false
+protocol_hash:
+  algorithm: sha256
+  value: recorded_in_benchmark/PROTOCOL_CHANGELOG.md
+  scope: exact_bytes_of_this_file
+frozen_repository:
+  repository: zyh2308/genesis-event-camera-plugin
+  commit: e79e656ac00f7847b98db9e12bf43b093f3afff1
+  commit_subject: "Fix v3 correspondence and visibility semantics"
+  core_modification_during_benchmark: forbidden
+
+scientific_question: >-
+  Evaluate whether the frozen v3.1 simulator generates event streams that are
+  consistent with real EVK4 recordings and whether it is competitive on
+  pre-defined, physically interpretable metrics. This is not a claim of full
+  EVK4 circuit or PECS-rig reproduction.
+
+data_policy:
+  existing_assets_first: true
+  fabricate_data: false
+  test_specific_tuning: false
+  composite_score: false
+  simulator_ranking: false
+  raw_data_outside_repository: true
+  external_asset_root: /home/科研/Eventbased_WAM
+
+split_policy:
+  status: fixed_configuration_descriptive_comparison
+  development_calibration:
+    sequences:
+      - evk4_static_noise_reference_20260912
+    allowed_use: >-
+      Establishment of the already frozen real_v2 noise map only. No dynamic
+      sequence may be inspected to change Ours parameters after this freeze.
+  held_out_evaluation:
+    sequences:
+      - evk4_checkerboard_translation_full_20260912
+      - evk4_checkerboard_translation_one_round_20260914
+    independent: false
+    reason: >-
+      The available dynamic files are correlated acquisition/replay assets and
+      do not have an auditable shared real-sim time/trajectory reference.
+    interpretation: >-
+      Results are descriptive fixed-configuration comparisons, not a learned
+      calibration/test generalization claim.
+  no_parameter_search_on_evaluation: true
+
+sequence_policy:
+  include:
+    - valid_1280x720_event_stream_with_declared_schema
+    - full_dynamic_checkerboard_for_descriptive_rate_and_spatial_statistics
+    - retained_LR_RL_round_as_directional_descriptive_statistics
+  exclude:
+    - historical_clean_moderate_noisy_presets_from_formal_method_table
+    - historical_real_parameter_replay
+    - incomplete_raw_fragments
+    - any_sequence_without_resolvable_event_schema
+    - any_sequence_used_for_post_freeze_parameter_tuning
+  missing_data: >-
+    Keep the sequence in the audit ledger, mark the affected metric NA with a
+    machine-readable reason, and never impute a value or silently drop it.
+
+datasets:
+  calibration:
+    - id: evk4_static_noise_reference_20260912
+      role: fixed_real_v2_reference_only
+      inputs:
+        dark:
+          - /root/eventcamera_lab_staging/decoded/20260912_r2_dark/dark_01
+          - /root/eventcamera_lab_staging/decoded/20260912_r2_dark/dark_02
+          - /root/eventcamera_lab_staging/decoded/20260912_r2_dark/dark_03
+        white_wall:
+          - /root/eventcamera_lab_staging/decoded/20260912_r2_white_wall/white_01
+          - /root/eventcamera_lab_staging/decoded/20260912_r2_white_wall/white_02
+          - /root/eventcamera_lab_staging/decoded/20260912_r2_white_wall/white_03
+      resolution: [1280, 720]
+      use_for_dynamic_test: false
+      note: >-
+        These six recordings already determined real_v2. They are not to be
+        refit after viewing dynamic test results.
+
+  test:
+    - id: evk4_checkerboard_translation_full_20260912
+      role: current_dynamic_real_reference
+      event_source: /root/eventcamera_lab_staging/decoded/20260912_translation_2cm
+      resolution: [1280, 720]
+      duration_s: 21.655999
+      board:
+        inner_corners: [9, 6]
+        square_m: 0.02
+        camera_distance_m: 0.76
+      strict_real_sim_pair: false
+      formal_use: descriptive_fixed_configuration_only
+      reason: >-
+        No encoder trace, hardware trigger, measured illumination, or archived
+        matched Genesis radiance/depth/segmentation/pose sequence.
+
+    - id: evk4_checkerboard_translation_one_round_20260914
+      role: current_dynamic_real_reference_subset
+      event_sources:
+        - /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5
+        - /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_02_RL.hdf5
+      resolution: [1280, 720]
+      duration_s: [1.756258, 1.775800]
+      strict_real_sim_pair: false
+      held_out: false
+      reason: >-
+        It is a subset of the same acquisition family, not an independent
+        dynamic held-out sequence; no paired simulator timestamps exist.
+
+    - id: genesis_rgb_replay_20260913
+      role: approximate_simulator_input
+      rgb_source: /home/科研/Eventbased_WAM/validation/simulator-quality/demos/20260913_real_demo_v1/rgb_frames.h5
+      simulator_event_source: /home/科研/Eventbased_WAM/validation/simulator-quality/real_v2/results/aer_events_real_v2.h5
+      resolution: [1280, 720]
+      frames: 420
+      frame_step_s: 0.01
+      duration_s: 4.19
+      input_space: display_rgb
+      hdr: absent_from_archived_run
+      depth: absent_from_archived_run
+      segmentation: absent_from_archived_run
+      pose: absent_from_archived_run
+      strict_real_sim_pair: false
+      formal_use: smoke_only
+      reason: >-
+        The replay used an explicit triangle-wave motion assumption and a
+        separate RGB sequence; it is not timestamp-paired to the EVK4 flow.
+
+    - id: v2e_official_core_replay_20260913
+      role: baseline_smoke_artifact
+      event_source: /home/科研/Eventbased_WAM/validation/simulator-quality/current_data_precheck/external_baselines/v2e_paper_defaults/aer_events.h5
+      input_rgb: /home/科研/Eventbased_WAM/validation/simulator-quality/demos/20260913_real_demo_v1/rgb_frames.h5
+      resolution: [1280, 720]
+      frames: 420
+      frame_step_s: 0.01
+      duration_s: 4.189779
+      strict_real_sim_pair: false
+      formal_use: smoke_only
+      reason: >-
+        Existing direct-core result is retained for implementation audit. V2E
+        warned that 100-Hz input with its 300-Hz cutoff is numerically suspect;
+        it must be rerun with a protocol-approved input cadence before a paper
+        comparison.
+
+  future_required_matched_rig:
+    required_for_formal_cd_gd: true
+    minimum_requirements:
+      - same scene geometry and camera intrinsics
+      - same spatial crop and resolution
+      - common hardware or recorded time reference
+      - measured motion trajectory or encoder trace
+      - same evaluation interval and timestamp origin
+      - archived Genesis radiance/HDR, depth, segmentation, and pose when used
+      - independent held_out_dynamic_sequence
+
+methods:
+  ours_v3_1:
+    label: Ours-v3.1-direct-real_v2
+    implementation: frozen Genesis plugin at e79e656
+    path: /home/科研/Eventbased_WAM/repositories/genesis-event-camera-plugin
+    input_contract: Genesis radiance/physical state when available; no silent RGB-as-radiance claim
+    preset: real_v2
+    preset_source: /home/科研/Eventbased_WAM/validation/simulator-quality/real_v2/calibration/evk4_real_noise_fit_v2.json
+    noise_map: /home/科研/Eventbased_WAM/validation/simulator-quality/real_v2/calibration/evk4_real_noise_map_v2.npz
+    config: benchmark/configs/ours.yaml
+    seed: 42
+    parameter_freeze: true
+
+  v2e:
+    label: V2E-official-core
+    source: https://github.com/SensorsINI/v2e
+    local_source: /home/科研/Eventbased_WAM/code/v2e_source
+    version: 1.5.1
+    input_contract: image sequence supported by official EventEmulator
+    parameters: official_defaults_recorded_in_BASELINE_VERSIONS.md
+    config: benchmark/configs/v2e.yaml
+    parameter_freeze: true
+
+  esim:
+    label: ESIM
+    source: https://github.com/uzh-rpg/rpg_esim
+    status: supported_but_not_reproducibly_built
+    parameter_freeze: official_configuration_pending_executable_build
+    config: benchmark/configs/esim.yaml
+
+  icns_iebcs:
+    label: ICNS/IEBCS
+    source: https://github.com/neuromorphicsystems/IEBCS
+    status: not_checked_out_locally
+    parameter_freeze: not_available
+
+  pecs:
+    label: PECS-reference-only
+    source: https://github.com/lanpokn/PECS_trail_version
+    status: reference_only
+    role: metric/protocol reference, not an executed baseline
+
+alignment:
+  resolution_xy: [1280, 720]
+  crop_xywh: [0, 0, 1280, 720]
+  real_event_schema: "EVT3 HDF5 CD/events {x,y,p,t}; t in microseconds"
+  simulator_event_schema: "events {timestamp_us,x,y,polarity}; p 0=OFF, 1=ON"
+  canonical_evaluation_schema: "[t_s,x,y,p_01]"
+  required_timestamp_relation: same_time_origin_or_documented_offset
+  current_status: unavailable_for_strict_pair
+  registration: forbidden_until_protocol_addendum
+  global_translation_search: not_allowed_for_formal_v1
+
+windows:
+  formal_mode: normalized_time_fractions_for_spatial_and_rate_summaries
+  fractions: [0.25, 0.50, 0.75]
+  accumulation_window_s: 0.005
+  spatial_grid: [8, 8]
+  temporal_rate_bin_s: 0.005
+  selection: deterministic_even_windows_no_manual_selection
+  current_mode: full_duration_descriptive_only
+  short_sequence_fallback: use_full_sequence_once_and_record_window_id=full
+  temporal_alignment: none; do_not_compare_corresponding_time_bins
+
+metrics:
+  primary:
+    - event_rate_relative_error
+    - polarity_ratio_error
+    - active_pixel_ratio_error
+    - spatial_distribution_l1_8x8
+  secondary:
+    - mean_event_rate_hz_descriptive
+    - event_rate_std_hz_descriptive
+    - event_rate_distribution_descriptive
+  disabled:
+    - name: temporal_rate_error_per_5ms_bin
+      reason: no auditable common temporal origin or motion onset
+    - name: chamfer_distance_cd
+      reason: no auditable spatial-temporal correspondence
+    - name: gaussian_distance_gd
+      reason: no auditable spatial-temporal correspondence
+  definitions:
+    event_rate_relative_error: "abs(rate_sim-rate_real)/max(rate_real, eps)"
+    polarity_ratio_error: "abs(ON_ratio_sim-ON_ratio_real)"
+    active_pixel_ratio_error: "abs(APR_sim-APR_real)"
+    spatial_distribution_l1_8x8: "sum_i abs(p_sim_i-p_real_i), p_i=N_i/sum_j N_j"
+  normalization: use_rate_not_raw_count_when_durations_differ
+  uncertainty: descriptive_mean_std_only_until_independent_sequences_exist
+  composite_score: forbidden
+
+statistics:
+  per_window: required
+  per_sequence: required
+  aggregate: required
+  bootstrap_ci: only_if_independent_sequence_count_is_sufficient
+  significance_claims: forbidden_for_current_n1_dynamic_pair
+
+seed: 42
+outputs:
+  raw: benchmark/results/raw
+  per_window: benchmark/results/per_window
+  per_sequence: benchmark/results/per_sequence
+  aggregate: benchmark/results/aggregate
+  tables: benchmark/results/tables
+  visualizations: benchmark/results/visualizations
+  preserve_json_csv: true
+
+phase_boundary:
+  completed_before_formal_run:
+    - asset_audit
+    - protocol_frozen
+    - metric_smoke_test
+    - baseline_smoke_test
+  confirmation_required_before:
+    - full_formal_benchmark
+    - baseline_parameter_search
+    - any_ours_parameter_change
+  formal_execution_statement: "Formal benchmark has NOT been executed."
