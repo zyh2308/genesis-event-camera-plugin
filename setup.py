@@ -6,9 +6,9 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text(encoding="utf-8")
 
 setup(
-    name="genesis-event-plugin-v2-physics",
-    version="0.1.0a1",
-    description="Genesis Event Camera Plugin — radiance and physics-warp prototype",
+    name="genesis-event-plugin-v3-physics",
+    version="0.2.0a1",
+    description="Genesis Event Camera Plugin — radiance and physics-warp v3 mainline",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Event-based WAM Team",

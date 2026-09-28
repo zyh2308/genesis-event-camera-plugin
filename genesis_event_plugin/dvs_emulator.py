@@ -28,6 +28,8 @@ from .utils.dvs_core import (
     compute_photoreceptor_noise_voltage,
 )
 from .noise_model import DvsNoiseConfig, get_preset
+from .radiometry import load_calibrated_transfer
+from .readout import build_readout_model
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,13 @@ class DvsEmulator:
             self.cfg = get_preset(preset)
         self.cfg.validate()
         self.rng = torch.Generator(device=self.device).manual_seed(int(self.cfg.seed))
+        self.readout_model = build_readout_model(self.cfg.readout_model)
+        self.transfer_input = None
+        self.transfer_log_response = None
+        if self.cfg.response_mode == "calibrated_transfer":
+            x, y = load_calibrated_transfer(self.cfg.calibrated_transfer_path)
+            self.transfer_input = torch.as_tensor(x, dtype=torch.float64, device=self.device)
+            self.transfer_log_response = torch.as_tensor(y, dtype=torch.float64, device=self.device)
 
         # ── 内部状态 ──
         self.base_log_frame = None       # 参考对数强度
@@ -228,6 +237,30 @@ class DvsEmulator:
         """Map the selected input domain into the sensor log-response domain."""
         if self.cfg.log_input:
             return pixel_values
+        if self.cfg.response_mode == "physical_log":
+            response = (
+                float(self.cfg.radiometric_gain) * pixel_values
+                + float(self.cfg.radiometric_offset)
+            )
+            return torch.log(torch.clamp(response, min=float(self.cfg.radiometric_floor)))
+        if self.cfg.response_mode == "calibrated_transfer":
+            if self.transfer_input is None or self.transfer_log_response is None:
+                raise RuntimeError("calibrated transfer table was not loaded")
+            if bool((pixel_values < self.transfer_input[0]).any()) or bool(
+                (pixel_values > self.transfer_input[-1]).any()
+            ):
+                raise RuntimeError(
+                    "input is outside calibrated transfer range; refusing to clip"
+                )
+            idx = torch.searchsorted(self.transfer_input, pixel_values, right=True).clamp(
+                1, self.transfer_input.numel() - 1
+            )
+            x0 = self.transfer_input[idx - 1]
+            x1 = self.transfer_input[idx]
+            y0 = self.transfer_log_response[idx - 1]
+            y1 = self.transfer_log_response[idx]
+            weight = (pixel_values - x0) / torch.clamp(x1 - x0, min=1e-12)
+            return y0 + weight * (y1 - y0)
         if self.cfg.radiance_input:
             return lin_log(
                 pixel_values,
@@ -642,6 +675,7 @@ class DvsEmulator:
             events = events[events[:, 0].argsort()]
         else:
             events = np.empty((0, 4), dtype=np.float64)
+        events = self.readout_model.process(events, self.t_previous, t)
 
         # ── Step 9: 更新参考值 ──
         # Advance the comparator reference only by events that survived the
@@ -682,3 +716,192 @@ class DvsEmulator:
             'rate_hz': self.num_events_total / total_time if total_time > 0 else 0,
             'frames_processed': self.frame_counter,
         }
+
+
+class DvsBatchEmulator:
+    """Experimental tensor-native ideal DVS state for ``[B,H,W]`` batches.
+
+    This class is deliberately narrower than :class:`DvsEmulator`: it keeps
+    the event quantizer and radiometric transfer on-device, but refuses
+    features that still require a per-environment stochastic/readout kernel
+    (photoreceptor noise, shot/background maps, leakage, refractory timing and
+    non-ideal readout).  It returns packed ``[batch,t,x,y,p]`` events plus a
+    device-resident ``B+1`` offset vector, which is suitable for downstream
+    training without a CPU round-trip.  The reference single-environment
+    emulator remains the source of truth for full sensor ablations.
+    """
+
+    def __init__(
+        self,
+        res: tuple,
+        config: DvsNoiseConfig = None,
+        preset: str = "clean",
+        device: str = None,
+        max_events_per_pixel: int = 64,
+    ):
+        self.device = torch.device(
+            device or ("cuda:0" if torch.cuda.is_available() else "cpu")
+        )
+        self.height, self.width = int(res[0]), int(res[1])
+        self.cfg = replace(config) if config is not None else get_preset(preset)
+        self.cfg.validate()
+        unsupported = {
+            "cutoff_hz": self.cfg.cutoff_hz,
+            "leak_rate_hz": self.cfg.leak_rate_hz,
+            "shot_noise_rate_hz": self.cfg.shot_noise_rate_hz,
+            "refractory_period_s": self.cfg.refractory_period_s,
+            "pixel_noise_map_path": self.cfg.pixel_noise_map_path,
+            "photoreceptor_noise": self.cfg.photoreceptor_noise,
+            "readout_model": self.cfg.readout_model,
+        }
+        if any(value not in (0, 0.0, False, None, "ideal_readout", "none")
+               for value in unsupported.values()):
+            raise NotImplementedError(
+                "DvsBatchEmulator currently supports the noiseless, no-IIR, "
+                "no-refractory ideal-readout subset; use DvsEmulator for full noise"
+            )
+        if max_events_per_pixel < 1:
+            raise ValueError("max_events_per_pixel must be positive")
+        self.max_events_per_pixel = int(max_events_per_pixel)
+        self.rng = torch.Generator(device=self.device).manual_seed(int(self.cfg.seed))
+        self.base_log_frame = None
+        self.t_previous = None
+        self.pos_thres = None
+        self.neg_thres = None
+        self.batch_size = None
+        self.transfer_input = None
+        self.transfer_log_response = None
+        if self.cfg.response_mode == "calibrated_transfer":
+            x, y = load_calibrated_transfer(self.cfg.calibrated_transfer_path)
+            self.transfer_input = torch.as_tensor(x, dtype=torch.float64, device=self.device)
+            self.transfer_log_response = torch.as_tensor(y, dtype=torch.float64, device=self.device)
+
+    def _prepare(self, frames: torch.Tensor) -> torch.Tensor:
+        if not torch.is_tensor(frames):
+            raise TypeError("frames must be a torch.Tensor")
+        if frames.ndim != 3 or tuple(frames.shape[1:]) != (self.height, self.width):
+            raise ValueError(f"frames must have shape [B,{self.height},{self.width}]")
+        input_was_float = frames.dtype.is_floating_point
+        values = frames.to(device=self.device, dtype=torch.float64)
+        if not torch.isfinite(values).all() or bool((values < 0).any()):
+            raise ValueError("batch intensity must be finite and non-negative")
+        if not self.cfg.radiance_input and self.cfg.response_mode == "video_linlog":
+            if input_was_float and bool(values.max() <= 1.0 + 1e-6):
+                values = values * 255.0
+            if bool(values.max() > 255.0 + 1e-6):
+                raise ValueError("video_linlog batch input must be in [0,255]")
+        if self.cfg.radiance_input:
+            values = values * float(self.cfg.radiance_scale)
+        return values
+
+    def _to_log(self, values: torch.Tensor) -> torch.Tensor:
+        if self.cfg.log_input:
+            return values
+        if self.cfg.response_mode == "physical_log":
+            response = float(self.cfg.radiometric_gain) * values + float(self.cfg.radiometric_offset)
+            return torch.log(torch.clamp(response, min=float(self.cfg.radiometric_floor)))
+        if self.cfg.response_mode == "calibrated_transfer":
+            if bool((values < self.transfer_input[0]).any()) or bool((values > self.transfer_input[-1]).any()):
+                raise RuntimeError("batch input is outside calibrated transfer range")
+            idx = torch.searchsorted(self.transfer_input, values, right=True).clamp(
+                1, self.transfer_input.numel() - 1
+            )
+            x0, x1 = self.transfer_input[idx - 1], self.transfer_input[idx]
+            y0, y1 = self.transfer_log_response[idx - 1], self.transfer_log_response[idx]
+            weight = (values - x0) / torch.clamp(x1 - x0, min=1e-12)
+            return y0 + weight * (y1 - y0)
+        return lin_log(values, threshold=float(self.cfg.radiance_log_threshold))
+
+    def initialize_batch(self, frames: torch.Tensor, t: float = 0.0):
+        values = self._prepare(frames)
+        self.batch_size = values.shape[0]
+        self.base_log_frame = self._to_log(values)
+        shape = self.base_log_frame.shape
+        if self.cfg.sigma_thres > 0:
+            self.pos_thres = torch.normal(
+                self.cfg.pos_thres, self.cfg.sigma_thres, size=shape,
+                generator=self.rng, device=self.device, dtype=torch.float64,
+            ).clamp_min(0.01)
+            self.neg_thres = torch.normal(
+                self.cfg.neg_thres, self.cfg.sigma_thres, size=shape,
+                generator=self.rng, device=self.device, dtype=torch.float64,
+            ).clamp_min(0.01)
+        else:
+            self.pos_thres = torch.full(shape, self.cfg.pos_thres, dtype=torch.float64, device=self.device)
+            self.neg_thres = torch.full(shape, self.cfg.neg_thres, dtype=torch.float64, device=self.device)
+        self.t_previous = torch.full((self.batch_size,), float(t), dtype=torch.float64, device=self.device)
+
+    def generate_events_batch(self, frames: torch.Tensor, t) -> tuple:
+        """Advance all environments and return ``(packed_events, offsets)``.
+
+        ``t`` is a scalar or a ``[B]`` tensor in seconds.  Both returned
+        tensors stay on ``self.device``.  ``offsets[b]:offsets[b+1]`` indexes
+        events for environment ``b``; packed columns are ``batch,t,x,y,p``.
+        """
+        if self.base_log_frame is None:
+            raise RuntimeError("call initialize_batch() first")
+        values = self._prepare(frames)
+        if values.shape[0] != self.batch_size:
+            raise ValueError("batch size cannot change after initialization")
+        times = torch.as_tensor(t, dtype=torch.float64, device=self.device)
+        if times.ndim == 0:
+            times = times.expand(self.batch_size)
+        if times.shape != (self.batch_size,):
+            raise ValueError("t must be scalar or shape [B]")
+        delta = times - self.t_previous
+        if bool((delta <= 0).any()):
+            raise ValueError("all batch timestamps must increase strictly")
+        log_frame = self._to_log(values)
+        diff = log_frame - self.base_log_frame
+        pos_count = torch.floor(torch.relu(diff) / self.pos_thres).to(torch.int64)
+        neg_count = torch.floor(torch.relu(-diff) / self.neg_thres).to(torch.int64)
+        if bool(torch.maximum(pos_count, neg_count).max() > self.max_events_per_pixel):
+            raise RuntimeError(
+                "max_events_per_pixel exceeded; increase the explicit bound or "
+                "reduce the interval instead of silently truncating events"
+            )
+        relative = diff
+        safe_relative = torch.where(relative.abs() > 1e-12, relative, torch.ones_like(relative))
+        chunks = []
+        batch_grid = torch.arange(self.batch_size, device=self.device, dtype=torch.float64)[:, None, None]
+        batch_grid = batch_grid.expand(self.batch_size, self.height, self.width)
+        yy, xx = torch.meshgrid(
+            torch.arange(self.height, device=self.device, dtype=torch.float64),
+            torch.arange(self.width, device=self.device, dtype=torch.float64), indexing="ij"
+        )
+        xx = xx.expand(self.batch_size, -1, -1)
+        yy = yy.expand(self.batch_size, -1, -1)
+        for i in range(self.max_events_per_pixel):
+            pos_mask = pos_count >= (i + 1)
+            neg_mask = neg_count >= (i + 1)
+            pos_alpha = torch.clamp(((i + 1) * self.pos_thres) / safe_relative, 0.0, 1.0)
+            neg_alpha = torch.clamp((-(i + 1) * self.neg_thres) / safe_relative, 0.0, 1.0)
+            pos_alpha = torch.where(relative.abs() > 1e-12, pos_alpha, torch.full_like(pos_alpha, (i + 1) / self.max_events_per_pixel))
+            neg_alpha = torch.where(relative.abs() > 1e-12, neg_alpha, torch.full_like(neg_alpha, (i + 1) / self.max_events_per_pixel))
+            if bool(pos_mask.any()):
+                idx = pos_mask.nonzero(as_tuple=False)
+                chunks.append(torch.stack((
+                    batch_grid[pos_mask], self.t_previous[idx[:, 0]] + delta[idx[:, 0]] * pos_alpha[pos_mask],
+                    xx[pos_mask], yy[pos_mask], torch.ones(idx.shape[0], dtype=torch.float64, device=self.device)
+                ), dim=1))
+            if bool(neg_mask.any()):
+                idx = neg_mask.nonzero(as_tuple=False)
+                chunks.append(torch.stack((
+                    batch_grid[neg_mask], self.t_previous[idx[:, 0]] + delta[idx[:, 0]] * neg_alpha[neg_mask],
+                    xx[neg_mask], yy[neg_mask], -torch.ones(idx.shape[0], dtype=torch.float64, device=self.device)
+                ), dim=1))
+        if chunks:
+            events = torch.cat(chunks, dim=0)
+            # Group by environment first so offsets remain a valid packed
+            # representation, then sort timestamps within each environment.
+            order = torch.argsort(events[:, 0] * (times.max() + 1.0) + events[:, 1])
+            events = events[order]
+            counts = torch.bincount(events[:, 0].to(torch.int64), minlength=self.batch_size)
+        else:
+            events = torch.empty((0, 5), dtype=torch.float64, device=self.device)
+            counts = torch.zeros((self.batch_size,), dtype=torch.int64, device=self.device)
+        offsets = torch.cat((torch.zeros((1,), dtype=torch.int64, device=self.device), torch.cumsum(counts, dim=0)))
+        self.base_log_frame = self.base_log_frame + pos_count.to(torch.float64) * self.pos_thres
+        self.base_log_frame = self.base_log_frame - neg_count.to(torch.float64) * self.neg_thres
+        self.t_previous = times
+        return events, offsets

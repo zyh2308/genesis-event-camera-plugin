@@ -2,14 +2,16 @@
 
 ## Included
 
-This repository contains the independent `physics/radiance v2` event-camera
+This repository contains the independent `physics/radiance v3` event-camera
 plugin for Genesis:
 
-- explicit linear-radiance and sRGB-fallback paths;
+- explicit `video_linlog`, `physical_log`, and measured-transfer paths;
 - Genesis camera/link pose adapters;
-- SE(3)-based depth-aware bidirectional warp;
-- adaptive temporal sampling;
-- NumPy and Torch/CUDA reference implementations;
+- continuous endpoint SE(3) projection with intermediate `z_alpha` z-buffer;
+- adaptive temporal sampling with motion/radiance/visibility/sensor guards;
+- NumPy reference plus Torch/CUDA projected batch kernels;
+- explicit render requests for disocclusion/uncertainty and an ideal-readout hook;
+- versioned `calibration/<camera_id>/v3/` schema;
 - DVS pixel model, noise presets, recording utilities and tests;
 - an optional Genesis 1.2.2 renderer overlay for scene-linear HDR output.
 

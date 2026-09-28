@@ -4,7 +4,7 @@
 预设身份:
   clean                 — 理想/调试基线
   moderate/noisy        — 通用工程/V2E-compatible 基线，未绑定真机
-  real_v2               — 当前默认：由 EVK4 dark/white-wall 实测数据拟合
+  real_v2               — legacy project noise-map profile; not a complete EVK4 calibration
   evk4_nominal_1klux    — IMX636 公开 1-klux 名义点，仍非单机标定
   low_light/high_speed/overexposure — legacy stress profiles，仅供消融
 """
@@ -96,6 +96,20 @@ class DvsNoiseConfig:
     radiance_scale: float = 1.0
     radiance_white_level: float = 1.0
     radiance_log_threshold: float = 20.0
+    # Explicit radiometric transfer.  ``video_linlog`` preserves the legacy
+    # V2E-compatible DN=20 knee; physics/radiance v3 uses ``physical_log``.
+    response_mode: str = "video_linlog"
+    radiometric_gain: float = 1.0
+    radiometric_offset: float = 0.0
+    radiometric_floor: float = 1e-6
+    radiometric_calibration_status: str = "uncalibrated"
+    radiometric_calibration_id: str = ""
+    calibrated_transfer_path: Optional[str] = None
+    # Numerical IIR convergence target; this is not an EVK4 parameter.
+    sensor_eps_target: float = 0.05
+    # A pluggable readout hook.  ``ideal_readout`` is intentionally the only
+    # default until measured latency/refractory/dead-time data exists.
+    readout_model: str = "ideal_readout"
     seed: int = 42                   # 固定传感器实例/噪声流，保证可复现
 
     def validate(self) -> None:
@@ -127,6 +141,23 @@ class DvsNoiseConfig:
             raise ValueError("radiance scale and white level must be positive")
         if self.radiance_log_threshold <= 0:
             raise ValueError("radiance_log_threshold must be positive")
+        if self.response_mode not in {"video_linlog", "physical_log", "calibrated_transfer"}:
+            raise ValueError("unknown response_mode")
+        if self.radiometric_gain <= 0 or self.radiometric_floor <= 0:
+            raise ValueError("radiometric_gain and radiometric_floor must be positive")
+        if self.radiometric_calibration_status not in {"uncalibrated", "effective", "calibrated"}:
+            raise ValueError("invalid radiometric_calibration_status")
+        if self.response_mode == "calibrated_transfer":
+            if not self.calibrated_transfer_path:
+                raise ValueError("calibrated_transfer requires calibrated_transfer_path")
+            if self.radiometric_calibration_status == "uncalibrated":
+                raise ValueError("calibrated_transfer cannot be marked uncalibrated")
+        if self.sensor_eps_target <= 0:
+            raise ValueError("sensor_eps_target must be positive")
+        if self.readout_model not in {"ideal_readout", "none"}:
+            raise ValueError(
+                "only ideal_readout/none is available before measured readout calibration"
+            )
         if self.pixel_noise_map_path is not None and not isinstance(
             self.pixel_noise_map_path, str
         ):
@@ -138,9 +169,10 @@ class DvsNoiseConfig:
 # ═══════════════════════════════════════════════════════════════
 
 PRESETS: Dict[str, DvsNoiseConfig] = {
-    # ── 当前默认：EVK4 实测 real_v2 ──
-    # 参数来自六段 EVK4 dark/white-wall 录制及静态 AR(1) 扫描；不要将其
-    # 与 moderate/noisy 互换，后两者只用于历史消融或通用基线。
+    # ── legacy project noise-map profile ──
+    # The external map may originate from a lab recording, but this preset
+    # does not calibrate absolute radiometry, pixel response or readout and
+    # must not be reported as a complete EVK4 model.
     'real_v2': DvsNoiseConfig(
         pos_thres=0.205,
         neg_thres=0.195,

@@ -68,7 +68,12 @@ class Rasterizer(RBC):
             self._viewer.close_offscreen(self._camera_targets[camera.uid])
         del self._camera_targets[camera.uid]
 
-    def render_camera(self, camera, rgb=True, depth=False, segmentation=False, normal=False, radiance=False):
+    def render_camera(self, camera, rgb=True, depth=False, segmentation=False, normal=False, radiance=False, motion_vectors=False):
+        if motion_vectors:
+            gs.raise_exception(
+                "motion_vectors=True is not implemented by this Genesis 1.2.2 "
+                "overlay; no previous clip-space attachment is available."
+            )
         if radiance and not self._offscreen:
             gs.raise_exception("radiance=True requires Genesis headless/offscreen rasterization.")
         if radiance and not (rgb or depth):

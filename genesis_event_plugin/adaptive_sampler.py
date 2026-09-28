@@ -7,7 +7,7 @@ diagnostics so experiments can report *why* an interval was oversampled.
 
 from dataclasses import dataclass
 import math
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -25,6 +25,10 @@ class AdaptiveSamplingConfig:
     max_relative_depth_change: float = 0.1
     max_camera_motion_px: float = 1.0
     max_articulation_motion_px: float = 1.0
+    radiance_residual_threshold: float = 0.1
+    sensor_eps_target: float = 0.05
+    sensor_time_constant_s: Optional[float] = None
+    max_disocclusion_fraction: float = 0.0
     use_visibility_guard: bool = True
     strict: bool = True
 
@@ -45,6 +49,14 @@ class AdaptiveSamplingConfig:
             raise ValueError("max_camera_motion_px must be positive")
         if self.max_articulation_motion_px <= 0:
             raise ValueError("max_articulation_motion_px must be positive")
+        if self.radiance_residual_threshold <= 0:
+            raise ValueError("radiance_residual_threshold must be positive")
+        if self.sensor_eps_target <= 0:
+            raise ValueError("sensor_eps_target must be positive")
+        if self.sensor_time_constant_s is not None and self.sensor_time_constant_s <= 0:
+            raise ValueError("sensor_time_constant_s must be positive when provided")
+        if not 0 <= self.max_disocclusion_fraction <= 1:
+            raise ValueError("max_disocclusion_fraction must be in [0, 1]")
 
 
 @dataclass(frozen=True)
@@ -62,6 +74,14 @@ class AdaptiveSamplingResult:
     max_articulation_flow_px: float
     uncapped_samples: int
     capped: bool
+    radiance_samples: int = 1
+    sensor_samples: int = 1
+    max_radiance_residual: float = 0.0
+    p99_radiance_residual: float = 0.0
+    max_sensor_eps: float = 0.0
+    disocclusion_fraction: float = 0.0
+    used_correspondence_depth: bool = False
+    recommend_render: bool = False
 
 
 def _seg_boundary(seg: np.ndarray) -> np.ndarray:
@@ -79,7 +99,7 @@ def _motion_samples(
     max_motion_px: float,
     min_samples: int,
     percentile: float,
-) -> tuple[int, float]:
+) -> Tuple[int, float]:
     """Convert a pixel displacement field into a conservative sample bound.
 
     The bound is deliberately based on image displacement rather than RGB
@@ -120,6 +140,10 @@ class PhysicsAdaptiveSampler:
         seg1: np.ndarray = None,
         camera_flow: np.ndarray = None,
         articulation_flow: np.ndarray = None,
+        endpoint_radiance_residual: np.ndarray = None,
+        disocclusion_mask: np.ndarray = None,
+        correspondence_depth0: np.ndarray = None,
+        correspondence_depth1: np.ndarray = None,
     ) -> AdaptiveSamplingResult:
         """Compute ``U`` from a per-interval pixel displacement field.
 
@@ -154,8 +178,12 @@ class PhysicsAdaptiveSampler:
 
         visibility_samples = self.config.min_samples
         max_boundary_flow = 0.0
-        if self.config.use_visibility_guard and seg0 is not None:
-            boundary = _seg_boundary(np.asarray(seg0))
+        if self.config.use_visibility_guard and (seg0 is not None or seg1 is not None):
+            boundary = np.zeros(lum.shape, dtype=bool)
+            if seg0 is not None:
+                boundary |= _seg_boundary(np.asarray(seg0))
+            if seg1 is not None:
+                boundary |= _seg_boundary(np.asarray(seg1))
             flow_mag = np.linalg.norm(flow, axis=0)
             if np.any(boundary):
                 max_boundary_flow = float(np.nanmax(flow_mag[boundary]))
@@ -166,13 +194,12 @@ class PhysicsAdaptiveSampler:
 
         depth_samples = self.config.min_samples
         max_rel_depth = 0.0
-        if (
-            self.config.use_visibility_guard
-            and depth0 is not None
-            and depth1 is not None
-        ):
-            d0 = np.asarray(depth0, dtype=np.float32)
-            d1 = np.asarray(depth1, dtype=np.float32)
+        d0 = correspondence_depth0 if correspondence_depth0 is not None else depth0
+        d1 = correspondence_depth1 if correspondence_depth1 is not None else depth1
+        used_correspondence_depth = correspondence_depth0 is not None and correspondence_depth1 is not None
+        if self.config.use_visibility_guard and d0 is not None and d1 is not None:
+            d0 = np.asarray(d0, dtype=np.float32)
+            d1 = np.asarray(d1, dtype=np.float32)
             mask = np.isfinite(d0) & np.isfinite(d1) & (d0 > 1e-6) & (d1 > 1e-6)
             if np.any(mask):
                 rel = np.abs(d1[mask] - d0[mask]) / np.maximum(d0[mask], 1e-6)
@@ -182,9 +209,40 @@ class PhysicsAdaptiveSampler:
                     int(math.ceil(max_rel_depth / self.config.max_relative_depth_change)),
                 )
 
-        # Keep the four physical causes separate in the diagnostics.  The
-        # final U is their maximum, so a fast camera or articulated link can
-        # never be hidden by a low-contrast background.
+        radiance_samples = self.config.min_samples
+        max_residual = 0.0
+        p99_residual = 0.0
+        if endpoint_radiance_residual is not None:
+            residual = np.asarray(endpoint_radiance_residual, dtype=np.float32)
+            values = residual[np.isfinite(residual)]
+            if values.size:
+                max_residual = float(np.max(values))
+                p99_residual = float(np.percentile(values, 99.0))
+                radiance_samples = max(
+                    self.config.min_samples,
+                    int(math.ceil(p99_residual / self.config.radiance_residual_threshold)),
+                )
+
+        sensor_samples = self.config.min_samples
+        max_sensor_eps = 0.0
+        if self.config.sensor_time_constant_s is not None:
+            max_sensor_eps = float(dt / self.config.sensor_time_constant_s)
+            sensor_samples = max(
+                self.config.min_samples,
+                int(math.ceil(max_sensor_eps / self.config.sensor_eps_target)),
+            )
+
+        disocclusion_fraction = 0.0
+        if disocclusion_mask is not None:
+            invalid = np.asarray(disocclusion_mask, dtype=bool)
+            disocclusion_fraction = float(invalid.mean())
+            if disocclusion_fraction > self.config.max_disocclusion_fraction:
+                visibility_samples = max(visibility_samples, self.config.min_samples + 1)
+
+        # Keep the independent physical causes separate. The final U is their
+        # maximum, but disocclusion and unexplained radiance also produce an
+        # explicit render recommendation rather than pretending more samples
+        # alone can create missing content.
         camera_samples, max_camera_flow = _motion_samples(
             camera_flow,
             self.config.max_camera_motion_px,
@@ -197,15 +255,15 @@ class PhysicsAdaptiveSampler:
             self.config.min_samples,
             self.config.flow_percentile,
         )
-        # Visibility is the stricter of boundary crossing and depth change.
-        visibility_samples = max(visibility_samples, depth_samples)
-
         uncapped_samples = max(
             self.config.min_samples,
             contrast_samples,
             visibility_samples,
+            depth_samples,
             camera_samples,
             articulation_samples,
+            radiance_samples,
+            sensor_samples,
         )
         samples = min(self.config.max_samples, uncapped_samples)
         result = AdaptiveSamplingResult(
@@ -222,6 +280,18 @@ class PhysicsAdaptiveSampler:
             max_articulation_flow_px=max_articulation_flow,
             uncapped_samples=uncapped_samples,
             capped=uncapped_samples > self.config.max_samples,
+            radiance_samples=radiance_samples,
+            sensor_samples=sensor_samples,
+            max_radiance_residual=max_residual,
+            p99_radiance_residual=p99_residual,
+            max_sensor_eps=max_sensor_eps,
+            disocclusion_fraction=disocclusion_fraction,
+            used_correspondence_depth=used_correspondence_depth,
+            recommend_render=(
+                disocclusion_fraction > self.config.max_disocclusion_fraction
+                or max_residual > self.config.radiance_residual_threshold
+                or uncapped_samples > self.config.max_samples
+            ),
         )
         self.last_result = result
         return result

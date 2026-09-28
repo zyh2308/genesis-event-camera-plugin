@@ -45,7 +45,13 @@ def _pose(value, name):
 
 
 class GenesisPhysicsEventPlugin:
-    """Radiance + physical-warp event plugin (v2 experimental mainline)."""
+    """Radiance + physical-warp event plugin (v3 experimental mainline).
+
+    The v3 defaults are explicit about the radiometric transfer and never
+    imply that a display RGB buffer is an absolute EVK4 radiance measurement.
+    ``strict_fidelity=True`` turns uncertain disocclusions/residuals into
+    :class:`RenderRequiredError` requests instead of silently holding pixels.
+    """
 
     def __init__(
         self,
@@ -58,11 +64,21 @@ class GenesisPhysicsEventPlugin:
         radiance_scale: float = 1.0,
         radiance_white_level: float = 1.0,
         radiance_log_threshold: float = 20.0,
+        response_mode: str = "physical_log",
+        radiometric_gain: float = 1.0,
+        radiometric_offset: float = 0.0,
+        radiometric_floor: float = 1e-6,
+        radiometric_calibration_status: str = "uncalibrated",
+        radiometric_calibration_id: str = "",
+        calibrated_transfer_path: Optional[str] = None,
+        sensor_eps_target: float = 0.05,
+        readout_model: str = "ideal_readout",
         disocclusion_policy: str = "hold",
         warp_composite: str = "next_primary",
         warp_backend: str = "auto",
         camera_margin: CameraMargin = None,
         device: str = None,
+        strict_fidelity: bool = False,
         radiance_provider: Optional[Callable] = None,
         motion_state_provider: Optional[Callable] = None,
         frame_provider: Optional[Callable] = None,
@@ -85,12 +101,24 @@ class GenesisPhysicsEventPlugin:
         self.noise_config.radiance_scale = float(radiance_scale)
         self.noise_config.radiance_white_level = float(radiance_white_level)
         self.noise_config.radiance_log_threshold = float(radiance_log_threshold)
+        self.noise_config.response_mode = str(response_mode)
+        self.noise_config.radiometric_gain = float(radiometric_gain)
+        self.noise_config.radiometric_offset = float(radiometric_offset)
+        self.noise_config.radiometric_floor = float(radiometric_floor)
+        self.noise_config.radiometric_calibration_status = str(
+            radiometric_calibration_status
+        )
+        self.noise_config.radiometric_calibration_id = str(radiometric_calibration_id)
+        self.noise_config.calibrated_transfer_path = calibrated_transfer_path
+        self.noise_config.sensor_eps_target = float(sensor_eps_target)
+        self.noise_config.readout_model = str(readout_model)
         self.noise_config.validate()
         self.device = device
         self.sampler_config = sampler_config
         self.disocclusion_policy = disocclusion_policy
         self.warp_composite = warp_composite
         self.warp_backend = warp_backend
+        self.strict_fidelity = bool(strict_fidelity)
         if camera_margin is not None and not isinstance(camera_margin, CameraMargin):
             raise TypeError("camera_margin must be a CameraMargin instance")
         self.camera_margin = camera_margin
@@ -106,6 +134,11 @@ class GenesisPhysicsEventPlugin:
         self.total_steps = 0
         self.total_events = 0
 
+    @property
+    def uncertainty(self):
+        """Diagnostics for the most recent physics interval."""
+        return {} if self.interpolator is None else dict(self.interpolator.last_uncertainty)
+
     def _sensor_crop(self, value):
         if value is None or self.camera_margin is None:
             return value
@@ -114,17 +147,29 @@ class GenesisPhysicsEventPlugin:
     def attach(self, scene, cam):
         if self.motion_state_provider is None:
             raise ValueError(
-                "v2 requires motion_state_provider(scene, cam); provide complete "
+                "v3 requires motion_state_provider(scene, cam); provide complete "
                 "camera_to_world and object_to_world poses explicitly"
             )
         self.scene, self.cam = scene, cam
+        configured_sampler = self.sampler_config or AdaptiveSamplingConfig()
+        # The IIR time constant is a numerical sensor-model guard, not an
+        # EVK4 calibration value.  Derive it only when the caller did not set
+        # an explicit sampler value.
+        if configured_sampler.sensor_time_constant_s is None and self.noise_config.cutoff_hz > 0:
+            tau = 1.0 / (2.0 * np.pi * float(self.noise_config.cutoff_hz))
+            configured_sampler = replace(
+                configured_sampler,
+                sensor_time_constant_s=tau,
+                sensor_eps_target=self.noise_config.sensor_eps_target,
+            )
         self.interpolator = PhysicsInterpolator(
             np.asarray(cam.intrinsics, dtype=np.float64),
-            sampler_config=self.sampler_config,
+            sampler_config=configured_sampler,
             disocclusion_policy=self.disocclusion_policy,
             composite=self.warp_composite,
             device=self.device,
             warp_backend=self.warp_backend,
+            strict_fidelity=self.strict_fidelity,
         )
         render_resolution_wh = (int(cam.res[0]), int(cam.res[1]))
         if self.camera_margin is not None:
@@ -163,6 +208,15 @@ class GenesisPhysicsEventPlugin:
                     "input_space": self.input_space,
                     "radiance_scale": self.noise_config.radiance_scale,
                     "radiance_white_level": self.noise_config.radiance_white_level,
+                    "radiometric_response": {
+                        "mode": self.noise_config.response_mode,
+                        "gain": self.noise_config.radiometric_gain,
+                        "offset": self.noise_config.radiometric_offset,
+                        "floor": self.noise_config.radiometric_floor,
+                        "calibration_status": self.noise_config.radiometric_calibration_status,
+                        "calibration_id": self.noise_config.radiometric_calibration_id,
+                    },
+                    "strict_fidelity": self.strict_fidelity,
                 },
             )
         return self
@@ -267,7 +321,12 @@ class GenesisPhysicsEventPlugin:
             radiance, depth, seg,
             self._prev["motion"]["camera_to_world"], motion["camera_to_world"],
             object_delta, self._prev["t"], t_current, input_space="linear",
+            object_world0=self._prev["motion"]["object_to_world"],
+            object_world1=motion["object_to_world"],
         )
+        self.interpolator.last_uncertainty[
+            "radiometric_calibration_status"
+        ] = self.noise_config.radiometric_calibration_status
         sensor_frames = [self._sensor_crop(frame) for frame in frames]
         chunks = [
             self.dvs_emulator.generate_events(frame, ts)

@@ -6,7 +6,10 @@ never tone-mapped or clipped here; the sensor gain/white level is configured
 downstream in :class:`DvsNoiseConfig`.
 """
 
-from typing import Sequence
+from dataclasses import dataclass, asdict
+import json
+from pathlib import Path
+from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -14,6 +17,90 @@ import numpy as np
 DEFAULT_LUMINANCE_WEIGHTS = np.asarray(
     (0.2126, 0.7152, 0.0722), dtype=np.float32
 )
+
+RESPONSE_MODES = {"video_linlog", "physical_log", "calibrated_transfer"}
+CALIBRATION_STATUSES = {"uncalibrated", "effective", "calibrated"}
+
+
+@dataclass(frozen=True)
+class RadiometricResponse:
+    """Explicit transfer definition between linear input and log response.
+
+    ``video_linlog`` is the historical V2E-compatible transfer and retains its
+    8-bit DN transition. ``physical_log`` is deliberately different: it
+    applies a configurable affine sensor response and a numerical floor, never
+    importing the DN=20 video convention. ``calibrated_transfer`` loads a
+    monotone lookup table from JSON and is intended for measured camera data.
+
+    The fields are calibration metadata, not claims that the values describe a
+    particular EVK4 unit. A calibrated status must be supplied explicitly.
+    """
+
+    mode: str = "physical_log"
+    gain: float = 1.0
+    offset: float = 0.0
+    floor: float = 1e-6
+    calibration_status: str = "uncalibrated"
+    calibration_id: str = ""
+    transfer_path: Optional[str] = None
+
+    def validate(self) -> None:
+        if self.mode not in RESPONSE_MODES:
+            raise ValueError(f"unknown radiometric response mode: {self.mode}")
+        if self.gain <= 0 or self.floor <= 0:
+            raise ValueError("radiometric gain and floor must be positive")
+        if self.calibration_status not in CALIBRATION_STATUSES:
+            raise ValueError(
+                "calibration_status must be uncalibrated, effective, or calibrated"
+            )
+        if self.mode == "calibrated_transfer" and not self.transfer_path:
+            raise ValueError("calibrated_transfer requires transfer_path")
+        if self.mode == "calibrated_transfer" and self.calibration_status == "uncalibrated":
+            raise ValueError("a calibrated transfer table cannot be marked uncalibrated")
+
+    def metadata(self) -> dict:
+        return {"radiometric_response": asdict(self)}
+
+
+def load_calibrated_transfer(path: Union[str, Path]) -> Tuple[np.ndarray, np.ndarray]:
+    """Load a measured piecewise-linear input→log-response table.
+
+    JSON schema::
+
+        {"input": [..], "log_response": [..]}
+
+    The table is intentionally explicit and finite. Values outside its range
+    must be rejected by the DVS emulator rather than silently clipped.
+    """
+    with Path(path).open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    x = np.asarray(payload.get("input"), dtype=np.float64)
+    y = np.asarray(payload.get("log_response"), dtype=np.float64)
+    if x.ndim != 1 or y.ndim != 1 or x.size < 2 or x.shape != y.shape:
+        raise ValueError("calibrated transfer needs equal 1-D input/log_response arrays")
+    if not np.isfinite(x).all() or not np.isfinite(y).all() or np.any(np.diff(x) <= 0):
+        raise ValueError("calibrated transfer input must be finite and strictly increasing")
+    return x, y
+
+
+def physical_log_response(
+    luminance: np.ndarray,
+    gain: float = 1.0,
+    offset: float = 0.0,
+    floor: float = 1e-6,
+) -> np.ndarray:
+    """Apply the explicit physical-log response without a video DN knee."""
+    lum = np.asarray(luminance, dtype=np.float32)
+    if not np.isfinite(lum).all() or (lum < 0).any():
+        raise ValueError("luminance must be finite and non-negative")
+    if gain <= 0 or floor <= 0:
+        raise ValueError("gain and floor must be positive")
+    return np.log(np.maximum(float(gain) * lum + float(offset), float(floor))).astype(np.float32)
+
+
+def radiometric_response_metadata(response: RadiometricResponse) -> dict:
+    response.validate()
+    return response.metadata()
 
 
 def _as_float_array(image: np.ndarray) -> np.ndarray:

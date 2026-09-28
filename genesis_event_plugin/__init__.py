@@ -29,16 +29,26 @@ Presets:
 
 from .plugin import GenesisEventPlugin
 from .noise_model import DvsNoiseConfig, get_preset, custom_config, PRESETS
-from .dvs_emulator import DvsEmulator
+from .dvs_emulator import DvsEmulator, DvsBatchEmulator
 from .interpolator import GenesisInterpolator
 from .adaptive_sampler import AdaptiveSamplingConfig, AdaptiveSamplingResult, PhysicsAdaptiveSampler
-from .physics_interpolator import PhysicsInterpolator
+from .physics_interpolator import PhysicsInterpolator, RenderRequest, RenderRequiredError
 from .physics_plugin import GenesisPhysicsEventPlugin
-from .radiometry import prepare_linear_radiance, log_radiance, srgb_to_linear
+from .radiometry import (
+    prepare_linear_radiance,
+    log_radiance,
+    srgb_to_linear,
+    RadiometricResponse,
+    physical_log_response,
+    load_calibrated_transfer,
+)
+from .readout import ReadoutModel, IdealReadout, build_readout_model
+from .calibration import CalibrationBundle
 from .torch_physics import (
     prepare_linear_radiance_torch,
     compute_se3_flow_torch,
     depth_aware_bidirectional_warp_torch,
+    depth_aware_bidirectional_warp_projected_batch_torch,
 )
 from .genesis_adapter import (
     camera_to_world_cv,
@@ -62,18 +72,29 @@ __all__ = [
     'custom_config',
     'PRESETS',
     'DvsEmulator',
+    'DvsBatchEmulator',
     'GenesisInterpolator',
     'AdaptiveSamplingConfig',
     'AdaptiveSamplingResult',
     'PhysicsAdaptiveSampler',
     'PhysicsInterpolator',
+    'RenderRequest',
+    'RenderRequiredError',
     'GenesisPhysicsEventPlugin',
     'prepare_linear_radiance',
     'log_radiance',
     'srgb_to_linear',
+    'RadiometricResponse',
+    'physical_log_response',
+    'load_calibrated_transfer',
+    'ReadoutModel',
+    'IdealReadout',
+    'build_readout_model',
+    'CalibrationBundle',
     'prepare_linear_radiance_torch',
     'compute_se3_flow_torch',
     'depth_aware_bidirectional_warp_torch',
+    'depth_aware_bidirectional_warp_projected_batch_torch',
     'camera_to_world_cv',
     'link_to_world_cv',
     'make_motion_state_provider',
@@ -89,4 +110,4 @@ __all__ = [
     'crop_margin',
 ]
 
-__version__ = '0.1.0a1'
+__version__ = '0.2.0a1'

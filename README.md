@@ -1,7 +1,7 @@
-# Genesis Event Camera Plugin — Physics/Radiance v2 Prototype
+# Genesis Event Camera Plugin — Physics/Radiance v3 Mainline
 
 > This directory is an independent experimental copy. The original plugin is
-> left unchanged. The v2 path adds linear HDR/radiance input, full SE(3)
+> left unchanged. The v3 path adds explicit radiometric response modes, full SE(3)
 > pose-driven depth-aware warping, visibility guards, and an explicit
 > adaptive temporal sampler. It is not yet a calibrated EVK4 renderer: the
 > Genesis public camera API currently exposes RGB/depth/segmentation/normal,
@@ -29,10 +29,11 @@ available to the physical warp so disoccluded pixels are not fabricated by a
 display-space resize.
 
 This directory is the independent research implementation intended for Git
-distribution. It contains the physics/radiance v2 plugin, Torch/CUDA reference
-paths, Genesis adapters, tests, and an optional Genesis 1.2.2 HDR renderer
-overlay. The original direct plugin, training jobs, and generated datasets are
-deliberately excluded.
+distribution. It contains the physics/radiance v3 mainline, a NumPy reference,
+Torch/CUDA projected batch kernels, an experimental ideal-readout batch DVS,
+Genesis adapters, calibration schema, tests, and an optional Genesis 1.2.2
+HDR renderer overlay. The original direct plugin, training jobs, and generated
+datasets are deliberately excluded.
 
 从 [Genesis](https://github.com/Genesis-Embodied-AI/Genesis) 物理仿真生成 DVS（Dynamic Vision Sensor）事件数据的研究型插件。
 
@@ -40,7 +41,7 @@ deliberately excluded.
 
 ---
 
-> **研究状态（2026-09-28）**：physics/radiance v2 原型可运行；独立 Genesis renderer overlay 已通过 HDR smoke；Torch/CUDA flow+warp 参考路径可用。目标真机的曝光、辐射、像素电路和读出参数尚未完成 EVK4 标定。`analytic`/`fixed` 仅作 legacy/消融，不代表 ground truth 或真实相机。完整设计和证据边界见工作区中的《Genesis 事件相机插件学术综述与研究设计总纲（2026-09-28）》。
+> **研究状态（2026-09-28）**：physics/radiance v3 mainline 已加入显式 `video_linlog` / `physical_log` / `calibrated_transfer`、连续端点 SE(3) 投影、z_alpha 深度缓冲、失真/遮挡 render request、综合自适应采样和 Torch 批量 warp。目标真机的曝光、辐射、像素电路和读出参数尚未完成 EVK4 单机标定。`analytic`/`fixed` 仅作 legacy/消融，不代表 ground truth 或真实相机。实现证据边界见 `docs/v3_implementation_report_2026-09-28.md`。
 
 **重要状态边界**：本仓库不宣称已经完整复现 EVK4，也不把普通 display RGB 转换称为真实 radiance。原生 HDR 需要使用 `integrations/genesis_renderer_hdr_v2_overlay/` 对 Genesis 1.2.2 源码应用补丁后，显式调用 `camera.render(radiance=True)`。
 
@@ -52,6 +53,9 @@ deliberately excluded.
   - `analytic`：实验性简化流，仅含部分实体平移，缺相机 ego-motion/轴向运动/角速度/遮挡
   - `fixed`：帧交叉淡化的历史基线，可能制造非物理事件
 - **DVS 像素模型**：移植 V2E 的 `lin-log -> IIR 低通 -> 差分量化 -> 泄漏电流 -> 散粒噪声` 管线，并补充 ESIM 风格的带宽/阈值建模
+- **v3 radiometry**：`physical_log` 不再偷偷使用视频 DN=20 knee；`calibrated_transfer` 对越界输入 fail-closed。所有输出 metadata 都标明校准状态。
+- **v3 physics**：中间帧按端点相机/物体 SE(3) 路径逐 alpha 投影，z-buffer 使用 `z_alpha`；不可见区域可 `hold`/`nan`/`raise`/`request_render`，严格模式不会伪造 Genesis 子帧。
+- **v3 GPU batch（实验性）**：projected SE(3)+warp 支持 `[B,T,H,W]` / `[B,T,H,W,C]`；`DvsBatchEmulator` 提供无噪声、理想读出的 packed `[batch,t,x,y,p]` 状态路径，完整噪声仍以单环境参考实现为准。旧 `capture()` 为兼容现有 recorder 仍回传 NumPy；训练侧可用 `return_torch=True` 保持 tensor。
 - **传感器基线/历史 stress profile**：`clean / moderate / noisy / evk4_nominal_1klux / low_light / high_speed / overexposure`；EVK4 预设只采用公开名义值，仍需目标真机重新标定
 - **双格式输出**：
   - `aer_events.h5`：原始事件流 `[t_us, x, y, p]`
@@ -122,6 +126,9 @@ plugin.close()
 ```
 
 `capture()` 返回 `(N, 4)` 的事件数组，列顺序为 `[t(s), x, y, p]`。
+v3 严格模式下若物理 warp 发现不可见/未知区域，会抛出
+`RenderRequiredError` 并携带 `RenderRequest`；上层必须真正补渲染或显式
+选择 legacy hold/nan 策略。
 
 ### Prophesee EVK4-HD 名义光学配置
 
@@ -160,7 +167,10 @@ genesis_event_plugin/
 ├── genesis_event_plugin/
 │   ├── plugin.py             # 顶层 API（GenesisEventPlugin）
 │   ├── interpolator.py       # direct / 实验 analytic / legacy fixed
-│   ├── dvs_emulator.py       # DVS 像素模型主循环
+│   ├── dvs_emulator.py       # DVS 参考主循环 + 实验性 batch 状态
+│   ├── physics_warp.py       # 连续 SE(3) 投影与 z_alpha warp
+│   ├── torch_physics.py      # GPU projected batch kernel
+│   ├── calibration.py        # calibration/<camera_id>/v3 loader
 │   ├── recorder.py           # HDF5 双格式记录
 │   ├── noise_model.py        # 噪声预设系统
 │   ├── utils/
@@ -178,7 +188,9 @@ genesis_event_plugin/
 │   ├── test_core_correctness.py # 核心物理/格式回归测试
 │   └── bench_quality.py      # 历史 benchmark（科研结论禁用）
 ├── docs/
-│   └── debugging.md          # 调试指南
+│   ├── debugging.md          # 调试指南
+│   └── v3_implementation_report_2026-09-28.md
+├── calibration/              # schema only; no fabricated EVK4 unit data
 ├── setup.py
 └── requirements.txt
 ```

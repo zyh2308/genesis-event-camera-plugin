@@ -386,6 +386,7 @@ class Camera(RBC):
         antialiasing=False,
         force_render=False,
         radiance=False,
+        motion_vectors=False,
     ):
         """
         Render the camera view.
@@ -422,6 +423,11 @@ class Camera(RBC):
             If True, return scene-linear float32 radiance from the independent
             HDR rasterizer copy.  This requires ``rgb=True`` and the headless
             rasterizer; the legacy batch/ray-tracing APIs remain unchanged.
+        motion_vectors : bool, optional
+            Reserved for a future renderer-native current/previous clip-space
+            attachment.  The 1.2.2 overlay does not expose enough previous
+            camera/object state to produce a valid vector, so requesting it
+            fails explicitly rather than returning a reconstructed fake.
 
         Returns
         -------
@@ -437,6 +443,12 @@ class Camera(RBC):
         # Enforce RGB rendering if recording is enabled and the current frame is missing
         if radiance and not rgb:
             gs.raise_exception("radiance=True requires rgb=True.")
+        if motion_vectors:
+            gs.raise_exception(
+                "motion_vectors=True is not implemented by this Genesis 1.2.2 "
+                "overlay; provide current/previous clip-space state before "
+                "using a renderer-native motion-vector attachment."
+            )
         is_recording = self._in_recording and self._recorded_t_prev != self._visualizer.scene._t
         rgb_ = rgb or is_recording
 
