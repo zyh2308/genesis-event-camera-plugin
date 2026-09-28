@@ -44,6 +44,11 @@ from .radiometry import (
 )
 from .readout import ReadoutModel, IdealReadout, build_readout_model
 from .calibration import CalibrationBundle
+from .physics_warp import (
+    projected_target_visibility,
+    depth_aware_bidirectional_warp_projected_diagnostics,
+    endpoint_radiance_residual,
+)
 from .torch_physics import (
     prepare_linear_radiance_torch,
     compute_se3_flow_torch,
@@ -91,6 +96,9 @@ __all__ = [
     'IdealReadout',
     'build_readout_model',
     'CalibrationBundle',
+    'projected_target_visibility',
+    'depth_aware_bidirectional_warp_projected_diagnostics',
+    'endpoint_radiance_residual',
     'prepare_linear_radiance_torch',
     'compute_se3_flow_torch',
     'depth_aware_bidirectional_warp_torch',

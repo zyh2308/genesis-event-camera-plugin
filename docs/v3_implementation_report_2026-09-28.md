@@ -54,6 +54,54 @@ correspondence depth and `z_alpha` depth change, endpoint radiance residual
 max/P99, disocclusion fraction, and an IIR convergence guard. The sensor guard
 is a numerical target (`sensor_eps_target`), not a hard-coded EVK4 constant.
 
+## Correctness patch / v3.1
+
+### Target-space visibility and disocclusion
+
+The previous implementation used `valid01 & valid10`. Although the arrays had
+the same shape, `valid01` was indexed on the t0 source grid and `valid10` on
+the t1 source grid; equal indices therefore did not identify the same surface
+point. That expression was not a geometrically meaningful disocclusion mask.
+
+The projected splat now exposes separate diagnostics:
+
+- `source_valid`: validity on the source image grid;
+- `occupancy`: any source sample that lands in a target pixel;
+- `visibility`: samples that survive the target-domain `z_alpha` z-buffer;
+- `intermediate_visibility`: the merged endpoint support at an interpolated
+  target image;
+- `unknown_region`: target pixels not covered by reliable projected support;
+- `disocclusion`: target pixels that are valid in the real endpoint but are not
+  covered by the opposite endpoint projection.
+
+For t0→t1, the canonical mask is computed in t1 coordinates as
+`target_valid1 & ~visibility_0_to_1`; the reverse direction is computed in t0
+coordinates independently. The sampler's `disocclusion_fraction` uses the
+target-domain unsupported mask (`~visibility`, including invalid target depth),
+and strict `RenderRequest` decisions consume that result. The code and
+diagnostics explicitly state that disocclusion is defined in the projected
+target image domain.
+
+### Radiance residual support
+
+`endpoint_radiance_residual()` warps `log(I0)` into the t1 target domain and
+computes residual only where the projected splat has target visibility and the
+target frame is finite/non-negative. It returns NaN elsewhere (or an explicit
+support mask with `return_support=True`). It no longer intersects a target
+mask with `valid0` from the t0 source grid. A perfect geometrically warped
+target therefore produces approximately zero residual only on the projected
+correspondence support.
+
+### Depth correspondence
+
+The old pair `endpoint0[1]`/`endpoint1[1]` was not a correspondence: the two
+arrays were generated from opposite source grids and different target poses.
+The v3.1 sampler instead accepts a per-source-material-point quantity
+`|z_target - z_source| / z_source`. For the t0→t1 direction, each t0 source
+point's original depth is compared with its own projected `z_alpha` at t1.
+`used_correspondence_depth=True` now reports method
+`source_material_point`, and axial-motion tests check the analytic value.
+
 ## GPU/batch path
 
 `depth_aware_bidirectional_warp_projected_batch_torch` accepts endpoint frames
@@ -74,6 +122,10 @@ converts each final frame back to NumPy for the existing `DvsEmulator`; callers
 that use `return_torch=True` retain the `[B,T,H,W]` tensor. The Genesis-facing
 single-environment wrapper is not yet wired to the experimental batch DVS, so
 the final plugin capture path still has this explicit compatibility boundary.
+
+The Torch projected batch API can also return occupancy, visibility, z-buffer,
+and intermediate-unknown diagnostics. These were compared against the NumPy
+reference with explicit array/mask tolerances in the v3.1 tests.
 
 ## Genesis renderer overlay
 
@@ -100,21 +152,31 @@ calibration values.
 - Existing dependency-light physics tests (`tests/test_physics_core.py`):
   passed when invoked directly in the current environment.
 - New v3 checks (`tests/test_v3_mainline.py`): passed directly, including
-  physical-log distinction, axial `z_alpha`, B=2/T=3 projected Torch warp,
-  packed batch DVS, combined sampler guards, strict render request, and
-  calibration schema validation.
+  physical-log distinction, pure rotation, axial `z_alpha`, articulated-link
+  separation, two-object z-buffer occlusion, target-space disocclusion,
+  target-domain residual support, source-material-point depth correspondence,
+  B=2/T=3 projected Torch warp, packed batch DVS, combined sampler guards,
+  strict render request, and calibration schema validation.
+- CUDA is available in the current environment. CUDA projection, warp
+  diagnostics, and end-to-end `PhysicsInterpolator` parity against NumPy were
+  run successfully (projection/mask tolerance at `3e-5`; mask equality exact).
 - Full `tests/test_core_correctness.py` remains dependency-gated here because
   the environment lacks SciPy; no dependency was installed as part of this
   branch. Run it after installing the declared requirements.
 
 ## What remains before a scientific claim
 
-1. Add a Torch-native SE(3) projection kernel and benchmark against the NumPy
-   reference on the target GPU.
-2. Implement measured readout/dead-time only after a timestamped camera
+1. Implement measured readout/dead-time only after a timestamped camera
    calibration is available.
-3. Connect real Genesis HDR/depth/segmentation/link-ID/timestamp providers and
+2. Connect real Genesis HDR/depth/segmentation/link-ID/timestamp providers and
    validate the overlay on the exact Genesis commit/backend used in experiments.
-4. Run matched PECS/V2E/EVIS and real-EVK4 protocols; report event rate,
+3. Run matched PECS/V2E/EVIS and real-EVK4 protocols; report event rate,
    polarity, timing, spatial CD/GD, and uncertainty rather than relying on
    downstream robot reward alone.
+
+The remaining Genesis adapter is intentionally single-environment: its
+batched pose compatibility code selects environment 0. The B>1 Torch kernels
+are therefore not an end-to-end Genesis batch claim. The endpoint interpolation
+is also still an endpoint constant-twist approximation, not a recovered hidden
+physics trajectory; unsupported content still requires a real intermediate
+Genesis render.

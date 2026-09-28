@@ -82,6 +82,7 @@ class AdaptiveSamplingResult:
     disocclusion_fraction: float = 0.0
     used_correspondence_depth: bool = False
     recommend_render: bool = False
+    depth_correspondence_method: str = "legacy_same_grid"
 
 
 def _seg_boundary(seg: np.ndarray) -> np.ndarray:
@@ -144,12 +145,17 @@ class PhysicsAdaptiveSampler:
         disocclusion_mask: np.ndarray = None,
         correspondence_depth0: np.ndarray = None,
         correspondence_depth1: np.ndarray = None,
+        correspondence_relative_depth: np.ndarray = None,
     ) -> AdaptiveSamplingResult:
         """Compute ``U`` from a per-interval pixel displacement field.
 
         ``flow_displacement`` has units of pixels over the whole interval.
         If a caller has velocity in px/s it must multiply by ``dt`` first;
         this explicit contract avoids the legacy implementation's ambiguity.
+        When provided, ``correspondence_relative_depth`` is already evaluated
+        per source material point as ``|z_target-z_source|/z_source``. It is
+        preferred over comparing two same-shaped depth images, which are not
+        guaranteed to share a physical correspondence.
         """
         if dt <= 0:
             raise ValueError("dt must be positive")
@@ -196,8 +202,18 @@ class PhysicsAdaptiveSampler:
         max_rel_depth = 0.0
         d0 = correspondence_depth0 if correspondence_depth0 is not None else depth0
         d1 = correspondence_depth1 if correspondence_depth1 is not None else depth1
-        used_correspondence_depth = correspondence_depth0 is not None and correspondence_depth1 is not None
-        if self.config.use_visibility_guard and d0 is not None and d1 is not None:
+        used_correspondence_depth = correspondence_relative_depth is not None
+        depth_correspondence_method = "source_material_point" if used_correspondence_depth else "legacy_same_grid"
+        if self.config.use_visibility_guard and correspondence_relative_depth is not None:
+            relative = np.asarray(correspondence_relative_depth, dtype=np.float32)
+            relative = relative[np.isfinite(relative) & (relative >= 0.0)]
+            if relative.size:
+                max_rel_depth = float(np.nanmax(relative))
+                depth_samples = max(
+                    self.config.min_samples,
+                    int(math.ceil(max_rel_depth / self.config.max_relative_depth_change)),
+                )
+        elif self.config.use_visibility_guard and d0 is not None and d1 is not None:
             d0 = np.asarray(d0, dtype=np.float32)
             d1 = np.asarray(d1, dtype=np.float32)
             mask = np.isfinite(d0) & np.isfinite(d1) & (d0 > 1e-6) & (d1 > 1e-6)
@@ -287,6 +303,7 @@ class PhysicsAdaptiveSampler:
             max_sensor_eps=max_sensor_eps,
             disocclusion_fraction=disocclusion_fraction,
             used_correspondence_depth=used_correspondence_depth,
+            depth_correspondence_method=depth_correspondence_method,
             recommend_render=(
                 disocclusion_fraction > self.config.max_disocclusion_fraction
                 or max_residual > self.config.radiance_residual_threshold

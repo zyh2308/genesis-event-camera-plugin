@@ -1,6 +1,6 @@
 """Depth-aware image warping driven by Genesis rigid-body poses."""
 
-from typing import Dict, Mapping, Optional, Tuple
+from typing import Dict, Mapping, Optional, Tuple, Union
 
 import numpy as np
 
@@ -263,6 +263,28 @@ def _splat_projected(
     source_valid: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Forward splat using explicit intermediate projected coordinates/depth."""
+    output, diagnostics = _splat_projected_diagnostics(
+        image, source_depth, target_uv, target_z, source_valid
+    )
+    return output, diagnostics["visibility"]
+
+
+def _splat_projected_diagnostics(
+    image: np.ndarray,
+    source_depth: np.ndarray,
+    target_uv: np.ndarray,
+    target_z: np.ndarray,
+    source_valid: Optional[np.ndarray] = None,
+) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
+    """Forward splat and return masks in the *projected target image domain*.
+
+    ``source_valid`` is evaluated on the source grid. ``occupancy`` and
+    ``visibility`` are target-grid masks: occupancy means at least one source
+    sample landed in the target pixel, while visibility means the sample
+    survived the target ``z``-buffer and contributed to the output. Keeping
+    these domains explicit prevents same-shape arrays from being mistaken for
+    the same physical correspondence.
+    """
     image = np.asarray(image, dtype=np.float32)
     source_depth = np.asarray(source_depth, dtype=np.float32)
     target_uv = np.asarray(target_uv, dtype=np.float32)
@@ -273,6 +295,7 @@ def _splat_projected(
     C = src.shape[-1]
     out = np.zeros((H, W, C), dtype=np.float32)
     weight = np.zeros((H, W), dtype=np.float32)
+    occupancy = np.zeros((H, W), dtype=bool)
     zbuf = np.full((H, W), np.inf, dtype=np.float32)
     yy, xx = np.meshgrid(np.arange(H), np.arange(W), indexing="ij")
     valid = np.isfinite(src).all(axis=-1) & np.isfinite(source_depth) & (source_depth > 1e-6)
@@ -290,6 +313,8 @@ def _splat_projected(
         if np.any(inside):
             candidates.append((x[inside], y[inside], w[inside], target_z[inside], src[inside]))
     for x, y, w, z, values in candidates:
+        np.logical_or.at(occupancy, (y, x), True)
+    for x, y, w, z, values in candidates:
         np.minimum.at(zbuf, (y, x), z)
     for x, y, w, z, values in candidates:
         keep = z <= zbuf[y, x] + 1e-5
@@ -301,7 +326,34 @@ def _splat_projected(
             np.add.at(out[..., c], (y, x), w * values[:, c])
     nonzero = weight > 1e-8
     out[nonzero] /= weight[nonzero, None]
-    return (out[..., 0] if scalar else out), nonzero
+    return (out[..., 0] if scalar else out), {
+        "occupancy": occupancy,
+        "visibility": nonzero,
+        "z_buffer": zbuf,
+    }
+
+
+def projected_target_visibility(
+    source_depth: np.ndarray,
+    target_uv: np.ndarray,
+    target_z: np.ndarray,
+    source_valid: Optional[np.ndarray] = None,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return target-domain occupancy, visibility, and projected z-buffer.
+
+    The returned masks all use the target image coordinate system. This is the
+    canonical diagnostic API for endpoint correspondence and disocclusion.
+    """
+    depth = np.asarray(source_depth, dtype=np.float32)
+    dummy = np.ones_like(depth, dtype=np.float32)
+    _, diagnostics = _splat_projected_diagnostics(
+        dummy, depth, target_uv, target_z, source_valid
+    )
+    return (
+        diagnostics["occupancy"],
+        diagnostics["visibility"],
+        diagnostics["z_buffer"],
+    )
 
 
 def depth_aware_bidirectional_warp_projected(
@@ -317,9 +369,14 @@ def depth_aware_bidirectional_warp_projected(
     valid1: np.ndarray,
     composite: str = "next_primary",
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Warp endpoints using their true intermediate 3-D projections."""
-    a0, v0 = _splat_projected(frame0, depth0, uv0, z0, valid0)
-    a1, v1 = _splat_projected(frame1, depth1, uv1, z1, valid1)
+    """Warp endpoints using true projections in one target image domain.
+
+    The second return value is the intermediate target-domain visibility mask,
+    not either endpoint's source-valid mask.
+    """
+    a0, d0 = _splat_projected_diagnostics(frame0, depth0, uv0, z0, valid0)
+    a1, d1 = _splat_projected_diagnostics(frame1, depth1, uv1, z1, valid1)
+    v0, v1 = d0["visibility"], d1["visibility"]
     if composite == "next_primary":
         valid = v0 | v1
         out = np.full_like(a0, np.nan, dtype=np.float32)
@@ -340,6 +397,58 @@ def depth_aware_bidirectional_warp_projected(
     return out, good
 
 
+def depth_aware_bidirectional_warp_projected_diagnostics(
+    frame0: np.ndarray,
+    depth0: np.ndarray,
+    uv0: np.ndarray,
+    z0: np.ndarray,
+    valid0: np.ndarray,
+    frame1: np.ndarray,
+    depth1: np.ndarray,
+    uv1: np.ndarray,
+    z1: np.ndarray,
+    valid1: np.ndarray,
+    composite: str = "next_primary",
+) -> Tuple[np.ndarray, np.ndarray, Dict[str, np.ndarray]]:
+    """Warp and expose source/target visibility diagnostics.
+
+    ``disocclusion`` is defined in the projected target image domain as the
+    complement of the merged endpoint visibility. There is no claim that this
+    mask identifies hidden content beyond the support of both endpoint
+    projections; such content requires a real Genesis intermediate render.
+    """
+    a0, d0 = _splat_projected_diagnostics(frame0, depth0, uv0, z0, valid0)
+    a1, d1 = _splat_projected_diagnostics(frame1, depth1, uv1, z1, valid1)
+    v0, v1 = d0["visibility"], d1["visibility"]
+    if composite == "next_primary":
+        visible = v0 | v1
+        out = np.full_like(a0, np.nan, dtype=np.float32)
+        out[v1] = a1[v1]
+        out[~v1 & v0] = a0[~v1 & v0]
+    elif composite == "weighted":
+        w0, w1 = v0.astype(np.float32), v1.astype(np.float32)
+        denom = w0 + w1
+        visible = denom > 1e-8
+        out = np.full_like(a0, np.nan, dtype=np.float32)
+        if frame0.ndim == 2:
+            out[visible] = (a0[visible] * w0[visible] + a1[visible] * w1[visible]) / denom[visible]
+        else:
+            out[visible] = (a0[visible] * w0[visible, None] + a1[visible] * w1[visible, None]) / denom[visible, None]
+    else:
+        raise ValueError("composite must be 'weighted' or 'next_primary'")
+    diagnostics = {
+        "occupancy0": d0["occupancy"],
+        "occupancy1": d1["occupancy"],
+        "visibility0": v0,
+        "visibility1": v1,
+        "z_buffer0": d0["z_buffer"],
+        "z_buffer1": d1["z_buffer"],
+        "intermediate_visibility": visible,
+        "disocclusion": ~visible,
+    }
+    return out, visible, diagnostics
+
+
 def endpoint_radiance_residual(
     frame0: np.ndarray,
     frame1: np.ndarray,
@@ -348,14 +457,32 @@ def endpoint_radiance_residual(
     target_z0: np.ndarray,
     valid0: np.ndarray,
     eps: float = 1e-6,
-) -> np.ndarray:
-    """Measure log-radiance not explained by endpoint geometry."""
+    return_support: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    """Measure target-domain log-radiance residual.
+
+    The warped source is in the target image domain. Support is therefore the
+    projected target visibility from the splat and the target frame's own
+    finite-pixel mask; ``valid0`` is never compared elementwise with a target
+    mask. Set ``return_support=True`` to inspect the support used for the
+    residual.
+    """
     log0 = np.log(np.maximum(np.asarray(frame0, dtype=np.float32), eps))
     log1 = np.log(np.maximum(np.asarray(frame1, dtype=np.float32), eps))
-    warped, valid = _splat_projected(log0, depth0, target_uv0, target_z0, valid0)
-    valid &= np.asarray(valid0, dtype=bool)
+    warped, diagnostics = _splat_projected_diagnostics(
+        log0, depth0, target_uv0, target_z0, valid0
+    )
+    target_frame = np.asarray(frame1, dtype=np.float32)
+    target_support = (
+        diagnostics["visibility"]
+        & np.isfinite(log1)
+        & np.isfinite(target_frame)
+        & (target_frame >= 0.0)
+    )
     residual = np.full_like(log1, np.nan, dtype=np.float32)
-    residual[valid] = np.abs(log1[valid] - warped[valid])
+    residual[target_support] = np.abs(log1[target_support] - warped[target_support])
+    if return_support:
+        return residual, target_support
     return residual
 
 

@@ -15,11 +15,11 @@ import numpy as np
 from .adaptive_sampler import AdaptiveSamplingConfig, PhysicsAdaptiveSampler
 from .physics_warp import (
     compute_se3_flow,
-    depth_aware_bidirectional_warp,
-    depth_aware_bidirectional_warp_projected,
+    depth_aware_bidirectional_warp_projected_diagnostics,
     endpoint_radiance_residual,
     interpolate_se3,
     project_endpoint_to_alpha,
+    projected_target_visibility,
 )
 from .radiometry import prepare_linear_radiance, log_radiance
 
@@ -59,6 +59,9 @@ class PhysicsInterpolator:
     ``interpolate_se3`` is a constant-twist endpoint approximation: translation
     is linear and rotation follows the SO(3) log/exp path. It is not the
     actual physics trajectory and is marked as such in ``last_uncertainty``.
+    Endpoint occupancy, visibility, and unknown/disoccluded regions are kept
+    in ``last_visibility``; disocclusion is defined in the projected target
+    image domain, never by intersecting same-shape source masks.
     """
 
     def __init__(
@@ -101,6 +104,7 @@ class PhysicsInterpolator:
         self.last_uncertainty = {}
         self.last_render_requests: List[RenderRequest] = []
         self.last_intermediate_z = []
+        self.last_visibility = {}
         self.last_frames_torch = None
 
     @staticmethod
@@ -162,12 +166,12 @@ class PhysicsInterpolator:
             "constant_twist_endpoint_assumption": True,
             "recommend_render": bool(sampling.recommend_render or np.any(invalid)),
             "radiometric_calibration_status": "provided_by_caller",
+            "disocclusion_domain": "projected_target_image",
+            "depth_correspondence_method": sampling.depth_correspondence_method,
         }
 
     def _handle_invalid(self, warped, valid, alpha, t0, t1, sampling, gradient):
         invalid = ~np.asarray(valid, dtype=bool)
-        if self._endpoint_invalid_mask is not None:
-            invalid = invalid | self._endpoint_invalid_mask
         residual_diag = {
             "invalid_fraction": float(invalid.mean()),
             "radiance_residual_p99": float(sampling.p99_radiance_residual),
@@ -216,6 +220,7 @@ class PhysicsInterpolator:
         self.last_invalid_mask = None
         self._endpoint_invalid_mask = None
         self.last_render_requests = []
+        self.last_visibility = {}
         self.last_frames_torch = None
         I0 = self._luminance(frame0, input_space)
         I1 = self._luminance(frame1, input_space)
@@ -226,11 +231,11 @@ class PhysicsInterpolator:
                 @ np.linalg.inv(np.asarray(object_world0[key], dtype=np.float64))
                 for key in object_world0.keys() & object_world1.keys()
             }
-        camera_flow01, valid_camera = compute_se3_flow(
+        camera_flow01, _ = compute_se3_flow(
             depth0, seg0, self.K, camera_to_world0, camera_to_world1,
             object_world_deltas=None,
         )
-        flow01, valid01 = compute_se3_flow(
+        flow01, _ = compute_se3_flow(
             depth0, seg0, self.K, camera_to_world0, camera_to_world1,
             object_world_deltas=object_world_delta,
         )
@@ -238,7 +243,7 @@ class PhysicsInterpolator:
             int(key): np.linalg.inv(np.asarray(value, dtype=np.float64))
             for key, value in (object_world_delta or {}).items()
         }
-        flow10, valid10 = compute_se3_flow(
+        flow10, _ = compute_se3_flow(
             depth1, seg1, self.K, camera_to_world1, camera_to_world0,
             object_world_deltas=inverse_deltas,
         )
@@ -251,9 +256,49 @@ class PhysicsInterpolator:
             depth1, seg1, self.K, camera_to_world1, camera_to_world0, 0.0, 1,
             object_world0, object_world1, object_world_delta,
         )
-        residual = endpoint_radiance_residual(
-            I0, I1, depth0, endpoint0[0], endpoint0[1], endpoint0[2], eps=1e-6
+        occupancy01, visibility01, zbuf01 = projected_target_visibility(
+            depth0, endpoint0[0], endpoint0[1], endpoint0[2]
         )
+        occupancy10, visibility10, zbuf10 = projected_target_visibility(
+            depth1, endpoint1[0], endpoint1[1], endpoint1[2]
+        )
+        target_valid0 = np.isfinite(depth0) & (np.asarray(depth0) > 1e-6)
+        target_valid1 = np.isfinite(depth1) & (np.asarray(depth1) > 1e-6)
+        # Each mask is compared only in its own projected target domain:
+        # t0->t1 is evaluated against endpoint-1 validity, and t1->t0 against
+        # endpoint-0 validity. They are not intersected pixelwise.
+        disocclusion01 = target_valid1 & ~visibility01
+        disocclusion10 = target_valid0 & ~visibility10
+        unknown01 = (~visibility01) | (~target_valid1)
+        unknown10 = (~visibility10) | (~target_valid0)
+        residual, residual_support = endpoint_radiance_residual(
+            I0, I1, depth0, endpoint0[0], endpoint0[1], endpoint0[2],
+            eps=1e-6, return_support=True,
+        )
+        source_depth = np.asarray(depth0, dtype=np.float32)
+        correspondence_relative_depth = np.full_like(source_depth, np.nan, dtype=np.float32)
+        depth_support = endpoint0[2] & np.isfinite(source_depth) & (source_depth > 1e-6)
+        correspondence_relative_depth[depth_support] = (
+            np.abs(endpoint0[1][depth_support] - source_depth[depth_support])
+            / np.maximum(source_depth[depth_support], 1e-6)
+        )
+        self.last_visibility = {
+            "source_valid0": np.asarray(endpoint0[2], dtype=bool),
+            "source_valid1": np.asarray(endpoint1[2], dtype=bool),
+            "occupancy_0_to_1": occupancy01,
+            "visibility_0_to_1": visibility01,
+            "target_valid1": target_valid1,
+            "disocclusion_0_to_1": disocclusion01,
+            "unknown_region_0_to_1": unknown01,
+            "occupancy_1_to_0": occupancy10,
+            "visibility_1_to_0": visibility10,
+            "target_valid0": target_valid0,
+            "disocclusion_1_to_0": disocclusion10,
+            "unknown_region_1_to_0": unknown10,
+            "z_buffer_0_to_1": zbuf01,
+            "z_buffer_1_to_0": zbuf10,
+            "residual_support_target1": residual_support,
+        }
         sampler_config = self.sampler.config
         sampling = self.sampler.compute(
             I0, flow01, dt,
@@ -264,9 +309,12 @@ class PhysicsInterpolator:
             camera_flow=camera_flow01,
             articulation_flow=articulation_flow01,
             endpoint_radiance_residual=residual,
-            disocclusion_mask=~(valid01 & valid10),
-            correspondence_depth0=endpoint0[1],
-            correspondence_depth1=endpoint1[1],
+            # This is a target-domain unsupported mask. It includes both
+            # newly exposed valid pixels and target pixels with no reliable
+            # depth, so strict fidelity cannot mistake missing geometry for
+            # a valid black/background correspondence.
+            disocclusion_mask=unknown01,
+            correspondence_relative_depth=correspondence_relative_depth,
         )
         self.last_flow01 = flow01
         self.last_flow10 = flow10
@@ -277,7 +325,7 @@ class PhysicsInterpolator:
 
         H, W = I0.shape
         gradient = np.hypot(*np.gradient(log_radiance(I0)))
-        self._endpoint_invalid_mask = ~(valid01 & valid10)
+        self._endpoint_invalid_mask = unknown01.copy()
         self._record_uncertainty(sampling, self._endpoint_invalid_mask, residual, gradient)
         if (
             sampling.recommend_render
@@ -351,12 +399,17 @@ class PhysicsInterpolator:
                 frame1_t.unsqueeze(0), d1_t.unsqueeze(0),
                 uv1.unsqueeze(0), z1.unsqueeze(0), vv1.unsqueeze(0),
                 composite=self.composite,
+                return_diagnostics=True,
             )
-            warped_t, valid_t = batch
+            warped_t, valid_t, torch_visibility = batch
             # ``warped_t`` is [B,T,H,W] for luminance and [B,T,H,W,C] for
             # colour.  Keep the batch/temporal axes explicit; callers that
             # need NumPy frames can opt into the documented conversion below.
             self.last_frames_torch = warped_t.contiguous()
+            for key in ("occupancy0", "occupancy1", "visibility0", "visibility1", "z_buffer0", "z_buffer1"):
+                self.last_visibility[key + "_intermediate"] = torch_visibility[key][0].detach().cpu().numpy()
+            self.last_visibility["intermediate_visibility"] = valid_t[0].detach().cpu().numpy().astype(bool)
+            self.last_visibility["intermediate_unknown"] = ~self.last_visibility["intermediate_visibility"]
             if return_torch and self.disocclusion_policy == "raise" and bool((~valid_t).any()):
                 raise RenderRequiredError(
                     "Torch projected warp has invalid pixels; a real Genesis subframe is required",
@@ -384,16 +437,20 @@ class PhysicsInterpolator:
         )
         self.last_intermediate_z = [projections[1], projections[4]]
         frames: List[np.ndarray] = []
+        intermediate_visibility = []
         for index, alpha in enumerate(alphas):
-            warped, valid = depth_aware_bidirectional_warp_projected(
+            warped, valid, diagnostics = depth_aware_bidirectional_warp_projected_diagnostics(
                 I0, depth0, projections[0][index], projections[1][index], projections[2][index],
                 I1, depth1, projections[3][index], projections[4][index], projections[5][index],
                 composite=self.composite,
             )
+            intermediate_visibility.append(diagnostics["intermediate_visibility"])
             warped, invalid = self._handle_invalid(
                 warped, valid, float(alpha), t0, t1, sampling, gradient
             )
             if self.disocclusion_policy == "nan":
                 warped[invalid] = np.nan
             frames.append(warped)
+        self.last_visibility["intermediate_visibility"] = np.stack(intermediate_visibility)
+        self.last_visibility["intermediate_unknown"] = ~self.last_visibility["intermediate_visibility"]
         return frames, timestamps

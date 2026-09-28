@@ -1,9 +1,11 @@
-"""Small adapter for the Genesis 1.2.x camera/link API used on the server.
+"""Small single-environment adapter for the Genesis 1.2.x camera/link API.
 
 The default Genesis 1.2.x camera API exposes display RGB/depth/segmentation.
 The independent ``genesis_renderer_hdr_v2`` copy adds an opt-in
 ``Camera.render(radiance=True)`` path; this adapter can consume it without
-changing the legacy direct runner.
+changing the legacy direct runner. The Torch kernels support batch tensors,
+but this Genesis adapter still selects the first environment from batched
+poses and is not an end-to-end Genesis B>1 integration.
 """
 
 from typing import Callable, Mapping, Optional
@@ -23,7 +25,8 @@ def camera_to_world_cv(camera) -> np.ndarray:
     Genesis stores camera transforms in its OpenGL convention.  The public
     ``extrinsics`` property applies the same y/z sign conversion but is a
     cached property, so we derive the current matrix directly from
-    ``camera.transform`` on every call.
+    ``camera.transform`` on every call. If Genesis returns a batched pose,
+    this compatibility adapter intentionally selects environment 0.
     """
     T = _array(camera.transform).astype(np.float64, copy=True)
     if T.ndim == 3:
@@ -35,7 +38,11 @@ def camera_to_world_cv(camera) -> np.ndarray:
 
 
 def link_to_world_cv(link, envs_idx=None) -> np.ndarray:
-    """Build a world pose from a Genesis RigidLink position/quaternion."""
+    """Build one world pose from a Genesis RigidLink position/quaternion.
+
+    Batched position/quaternion outputs are currently reduced to environment
+    0. This is not a complete B>1 adapter.
+    """
     try:
         pos = link.get_pos(envs_idx=envs_idx, relative=False)
         quat = link.get_quat(envs_idx=envs_idx, relative=False)
@@ -60,10 +67,11 @@ def link_to_world_cv(link, envs_idx=None) -> np.ndarray:
 
 
 def make_motion_state_provider(camera, links_by_seg_id: Mapping[int, object]):
-    """Create a provider returning current camera/link poses for v2.
+    """Create a single-environment provider returning camera/link poses.
 
     ``links_by_seg_id`` must use the exact integer IDs emitted by Genesis
-    segmentation at ``VisOptions.segmentation_level='link'``.
+    segmentation at ``VisOptions.segmentation_level='link'``. This provider
+    does not return a batch of environments.
     """
     def provider(scene=None, cam=None):
         active_camera = cam if cam is not None else camera
@@ -82,7 +90,7 @@ def make_frame_provider(
     radiance_hook: Optional[Callable] = None,
     native_radiance: bool = False,
 ):
-    """Adapt Genesis 1.2.2 ``Camera.render`` to the v2 frame-provider API.
+    """Adapt Genesis 1.2.2 ``Camera.render`` to the v3 frame-provider API.
 
     ``radiance_hook`` is deliberately optional.  Without either hook the
     returned mapping contains RGB/depth/segmentation only and the v2 plugin
@@ -90,7 +98,8 @@ def make_frame_provider(
     requests the independent renderer's float32 linear output in the same
     render call, avoiding a second RGB render.  It is intentionally explicit
     so an unpatched Genesis installation fails rather than silently claiming
-    HDR.
+    HDR. Batched Genesis render outputs are not converted into an end-to-end
+    B>1 provider here.
     """
     if native_radiance and radiance_hook is not None:
         raise ValueError("native_radiance and radiance_hook are mutually exclusive")

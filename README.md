@@ -55,6 +55,7 @@ datasets are deliberately excluded.
 - **DVS 像素模型**：移植 V2E 的 `lin-log -> IIR 低通 -> 差分量化 -> 泄漏电流 -> 散粒噪声` 管线，并补充 ESIM 风格的带宽/阈值建模
 - **v3 radiometry**：`physical_log` 不再偷偷使用视频 DN=20 knee；`calibrated_transfer` 对越界输入 fail-closed。所有输出 metadata 都标明校准状态。
 - **v3 physics**：中间帧按端点相机/物体 SE(3) 路径逐 alpha 投影，z-buffer 使用 `z_alpha`；不可见区域可 `hold`/`nan`/`raise`/`request_render`，严格模式不会伪造 Genesis 子帧。
+- **correspondence diagnostics**：source-valid、target occupancy、target visibility、unknown/disocclusion、residual support 和 source-material-point depth change 使用明确坐标域；不再用同 shape mask 冒充 correspondence。
 - **v3 GPU batch（实验性）**：projected SE(3)+warp 支持 `[B,T,H,W]` / `[B,T,H,W,C]`；`DvsBatchEmulator` 提供无噪声、理想读出的 packed `[batch,t,x,y,p]` 状态路径，完整噪声仍以单环境参考实现为准。旧 `capture()` 为兼容现有 recorder 仍回传 NumPy；训练侧可用 `return_torch=True` 保持 tensor。
 - **传感器基线/历史 stress profile**：`clean / moderate / noisy / evk4_nominal_1klux / low_light / high_speed / overexposure`；EVK4 预设只采用公开名义值，仍需目标真机重新标定
 - **双格式输出**：
@@ -129,6 +130,9 @@ plugin.close()
 v3 严格模式下若物理 warp 发现不可见/未知区域，会抛出
 `RenderRequiredError` 并携带 `RenderRequest`；上层必须真正补渲染或显式
 选择 legacy hold/nan 策略。
+
+Genesis adapter 目前是 single-environment compatibility path；Torch 的 B>1
+kernel 不等于完整 Genesis B>1 接线。
 
 ### Prophesee EVK4-HD 名义光学配置
 

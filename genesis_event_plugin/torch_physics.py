@@ -286,6 +286,7 @@ def _splat_projected_batch_torch(
     target_uv: torch.Tensor,
     target_z: torch.Tensor,
     source_valid: Optional[torch.Tensor] = None,
+    return_diagnostics: bool = False,
 ):
     """Forward-splat ``B*T`` projected frames without CPU round-trips.
 
@@ -342,6 +343,7 @@ def _splat_projected_batch_torch(
     batch_offset = (torch.arange(M, device=device, dtype=torch.long) * (H * W))[:, None, None]
     total = M * H * W
     zbuf = torch.full((total,), float("inf"), device=device, dtype=dtype)
+    occupancy = torch.zeros((total,), dtype=torch.bool, device=device)
     candidates = []
     for ox, oy, weight in offsets:
         x, y = x0 + ox, y0 + oy
@@ -352,6 +354,7 @@ def _splat_projected_batch_torch(
             z = target_z[valid]
             values = src[valid]
             candidates.append((idx, w, z, values))
+            occupancy.scatter_(0, idx, True)
             zbuf.scatter_reduce_(0, idx, z, reduce="amin", include_self=True)
 
     out = torch.zeros((total, C), device=device, dtype=dtype)
@@ -368,7 +371,14 @@ def _splat_projected_batch_torch(
     valid = norm[:, 0] > 1e-8
     out = out.reshape(M, H, W, C)
     valid = valid.reshape(M, H, W)
-    return (out[..., 0] if scalar else out), valid
+    output = (out[..., 0] if scalar else out)
+    if return_diagnostics:
+        return output, valid, {
+            "occupancy": occupancy.reshape(M, H, W),
+            "visibility": valid,
+            "z_buffer": zbuf.reshape(M, H, W),
+        }
+    return output, valid
 
 
 def depth_aware_bidirectional_warp_projected_batch_torch(
@@ -383,13 +393,16 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
     z1: torch.Tensor,
     valid1: torch.Tensor,
     composite: str = "next_primary",
+    return_diagnostics: bool = False,
 ):
     """Warp ``B`` endpoint frames at ``T`` projected intermediate poses.
 
     Endpoint images are ``[B,H,W]`` or ``[B,H,W,C]``.  Projection tensors are
     ``[B,T,2,H,W]`` and ``[B,T,H,W]``.  Returned scalar frames are
     ``[B,T,H,W]``; RGB frames are ``[B,T,H,W,C]``.  All splatting, z-buffering,
-    compositing and validity masks stay on the input device.
+    compositing and validity masks stay on the input device. With
+    ``return_diagnostics=True`` a third dictionary contains target-domain
+    occupancy, visibility, z-buffer and intermediate-unknown masks.
     """
     if composite not in {"weighted", "next_primary"}:
         raise ValueError("composite must be 'weighted' or 'next_primary'")
@@ -421,10 +434,19 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
         uv_m = uv.reshape(M, 2, H, W)
         z_m = z.reshape(M, H, W)
         valid_m = valid.reshape(M, H, W)
-        return _splat_projected_batch_torch(frame_m, depth_m, uv_m, z_m, valid_m)
+        return _splat_projected_batch_torch(
+            frame_m, depth_m, uv_m, z_m, valid_m,
+            return_diagnostics=return_diagnostics,
+        )
 
-    warped0, visible0 = flatten_endpoint(frame0, depth0, uv0, z0, valid0)
-    warped1, visible1 = flatten_endpoint(frame1, depth1, uv1, z1, valid1)
+    result0 = flatten_endpoint(frame0, depth0, uv0, z0, valid0)
+    result1 = flatten_endpoint(frame1, depth1, uv1, z1, valid1)
+    if return_diagnostics:
+        warped0, visible0, diagnostics0 = result0
+        warped1, visible1, diagnostics1 = result1
+    else:
+        warped0, visible0 = result0
+        warped1, visible1 = result1
     if composite == "next_primary":
         visible = visible0 | visible1
         if warped0.ndim == 3:
@@ -447,4 +469,17 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
         output = output.reshape(B, T, H, W)
     else:
         output = output.reshape(B, T, H, W, output.shape[-1])
-    return output, visible.reshape(B, T, H, W)
+    visible = visible.reshape(B, T, H, W)
+    if return_diagnostics:
+        diagnostics = {
+            "occupancy0": diagnostics0["occupancy"].reshape(B, T, H, W),
+            "occupancy1": diagnostics1["occupancy"].reshape(B, T, H, W),
+            "visibility0": diagnostics0["visibility"].reshape(B, T, H, W),
+            "visibility1": diagnostics1["visibility"].reshape(B, T, H, W),
+            "z_buffer0": diagnostics0["z_buffer"].reshape(B, T, H, W),
+            "z_buffer1": diagnostics1["z_buffer"].reshape(B, T, H, W),
+            "intermediate_visibility": visible,
+            "disocclusion": ~visible,
+        }
+        return output, visible, diagnostics
+    return output, visible
