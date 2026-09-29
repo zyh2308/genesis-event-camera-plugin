@@ -56,6 +56,18 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _headless_desktop_shim(output: Path) -> Path:
+    """Provide only v2e's optional GUI opener without changing its pipeline."""
+
+    root = output / "_v2e_runtime_compat"
+    package = root / "v2ecore"
+    package.mkdir(parents=True, exist_ok=True)
+    (package / "desktop.py").write_text(
+        "def open(path):\n    return None\n", encoding="utf-8"
+    )
+    return root
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--frames", type=Path, required=True)
@@ -114,6 +126,7 @@ def main() -> int:
 
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    compat_root = _headless_desktop_shim(output)
     event_file = output / "events.h5"
     log_file = output / "official_v2e.log"
     cmd = [
@@ -141,8 +154,13 @@ def main() -> int:
         "--overwrite",
     ]
     command_record = [str(item) for item in cmd]
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = os.pathsep.join(
+        item for item in (str(compat_root), str(source), environment.get("PYTHONPATH", "")) if item
+    )
     completed = subprocess.run(
-        cmd, cwd=source, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        cmd, cwd=source, env=environment, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
     )
     log_file.write_text(completed.stdout, encoding="utf-8")
     (output / "v2e_cli.json").write_text(json.dumps({
@@ -155,6 +173,7 @@ def main() -> int:
         "checkpoint_sha256": _sha256(model),
         "frozen_parameters": cli_values,
         "argv": command_record,
+        "headless_desktop_shim": str(compat_root / "v2ecore/desktop.py"),
     }, indent=2), encoding="utf-8")
     if completed.returncode != 0:
         return _stop("official V2E pipeline exited non-zero", returncode=completed.returncode, log=str(log_file))
