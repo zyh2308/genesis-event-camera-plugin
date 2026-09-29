@@ -240,8 +240,11 @@ def main() -> int:
             declared_replay_interval_s=expected_duration,
             log=str(log_file),
         )
+    # ``disable_slomo: False`` and per-frame ``no signal events`` warnings are
+    # normal for the declared stationary hold.  Only cadence/timestamp
+    # bypasses and explicit cutoff/undersampling warnings are forbidden.
     forbidden = re.compile(
-        r"(undersampl|cutoff.*warning|warning.*300|disable_slomo|rescal.*timestamp)",
+        r"(undersampl|cutoff.*warning|warning.*300|disable_slomo\s*[:=]\s*(true|1|yes)|rescal.*timestamp)",
         re.I,
     )
     forbidden_lines = [line for line in completed.stdout.splitlines() if forbidden.search(line)]
