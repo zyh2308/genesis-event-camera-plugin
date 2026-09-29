@@ -1,5 +1,5 @@
 phase: Phase_4_7_Formal_Execution_Readiness
-status: blocked_by_required_smoke_gates
+status: runtime_gates_pass_pending_phase5_approval
 formal_benchmark_executed: false
 formal_metrics_executed: false
 human_phase5_approval: pending
@@ -9,8 +9,12 @@ frozen_core: e79e656ac00f7847b98db9e12bf43b093f3afff1
 notes:
   - This record is not a benchmark result.
   - Any failed required smoke is a stop condition.
-  - Genesis native-HDR/Ours runtime probe passed through the documented remote
-    renderer overlay at 64x48 for 0.02 s.
-  - Exact real LR/RL complete HDF5 decoding is blocked by the missing vendor
-    ECF filter and the remote host lacks the exact declared segments.
-  - Official V2E full-pipeline smoke is blocked by a missing SuperSloMo39.ckpt.
+  - Current runtime readiness commit is 5bb3d079b64118de4d76570ef98ca37841c5acab.
+  - Genesis/Ours active smoke passed at exactly 0.30 s with the declared
+    0-0.15 s stationary hold and 70/70 checkerboard entity resolution.
+  - Background segmentation IDs are excluded from the motion map.
+  - Complete real LR/RL HDF5 decoding passed with the discovered official ECF
+    filter; first-event alignment remains disabled.
+  - Official V2E SuperSloMo pipeline passed with 0.30 s processed duration,
+    bounded timestamps, non-empty output, and recorded desktop shim provenance.
+  - Formal metrics remain disabled and Phase 5 approval is pending.
