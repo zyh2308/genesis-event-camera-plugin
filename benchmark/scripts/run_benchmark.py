@@ -160,10 +160,13 @@ def preflight(repo: Path, protocol_path: Path, pair_path: Path, smoke_root: Path
     from benchmark.io.real_stream import discover_ecf_plugin
     ecf_plugin_path = discover_ecf_plugin()
     real = run_smoke(repo, ["benchmark/scripts/real_timestamp_origin_smoke.py"], smoke_root / "real_timestamp_origin.log")
-    genesis = run_smoke(repo, ["benchmark/scripts/genesis_replay_smoke.py", "--direction", "LR", "--duration", "0.02", "--resolution", "64x48", "--output-dir", str(smoke_root / "genesis_LR")], smoke_root / "genesis_hdr_ours.log")
+    genesis = run_smoke(repo, ["benchmark/scripts/genesis_replay_smoke.py", "--direction", "LR", "--duration", "0.30", "--resolution", "64x48", "--output-dir", str(smoke_root / "genesis_LR")], smoke_root / "genesis_hdr_ours.log")
     v2e = run_smoke(repo, ["benchmark/scripts/v2e_official_pipeline_smoke.py", "--frames", str(smoke_root / "genesis_LR/frames"), "--output-dir", str(smoke_root / "v2e_LR")], smoke_root / "v2e_official_pipeline.log")
     require(real.get("status") == "PASS", "real LR/RL loader smoke did not pass")
     require(genesis.get("status") == "PASS" and genesis.get("native_radiance") is True, "Genesis HDR/Ours smoke did not pass")
+    require(genesis.get("duration_s") == 0.30, "active readiness smoke duration is not the frozen 0.30 s")
+    require(genesis.get("segmentation_expected_entity_resolution_coverage") == 1.0, "not all checkerboard entities resolved by segmentation_idx_dict")
+    require(not genesis.get("segmentation_motion_map_background_overlap"), "background entered the motion map")
     require(v2e.get("status") == "PASS" and v2e.get("official_pipeline") is True, "official V2E pipeline smoke did not pass")
     return {
         "status": "preflight_pass",

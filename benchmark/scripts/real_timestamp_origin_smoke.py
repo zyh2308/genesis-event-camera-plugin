@@ -44,6 +44,13 @@ def main() -> int:
                 "event_span_s": sequence.duration_s_event_span,
                 "declared_duration_s": sequence.duration_s_declared,
                 "duration_error_s": sequence.duration_s_event_span - sequence.duration_s_declared,
+                "leading_silence_s": float(events[0, 0]) / 1e6,
+                "trailing_silence_s": sequence.duration_s_declared - float(events[-1, 0]) / 1e6,
+                "event_timestamps_inside_declared_interval": bool(
+                    int(events[0, 0]) >= 0
+                    and int(events[-1, 0]) <= int(round(sequence.duration_s_declared * 1e6))
+                ),
+                "event_span_equality_required": False,
                 "first_event_was_not_used_as_origin": True,
             }
     except Exception as exc:

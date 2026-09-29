@@ -175,21 +175,47 @@ def _descriptor_entity_idx(value):
     raise TypeError(f"cannot extract Genesis entity index from {value!r}")
 
 
-def _resolve_segmentation_motion(scene, segmentation, squares):
+def _resolve_segmentation_motion(scene, segmentation, squares, background_plane):
     """Map the actual rendered segmentation IDs to moving square entities."""
 
     index_dict = getattr(scene, "segmentation_idx_dict", None)
     if not index_dict:
         raise RuntimeError("Genesis did not expose segmentation_idx_dict")
     square_by_entity_idx = {int(square.idx): square for square in squares}
+    expected_entity_indices = set(square_by_entity_idx)
+    background_entity_idx = int(background_plane.idx)
     seg_to_square = {}
+    entity_to_seg_ids = {}
+    background_seg_ids = set()
     for raw_seg_id, descriptor in index_dict.items():
         try:
             entity_idx = _descriptor_entity_idx(descriptor)
         except (TypeError, ValueError, AttributeError):
             continue
+        if entity_idx == background_entity_idx:
+            background_seg_ids.add(int(raw_seg_id))
         if entity_idx in square_by_entity_idx:
             seg_to_square[int(raw_seg_id)] = square_by_entity_idx[entity_idx]
+            entity_to_seg_ids.setdefault(entity_idx, set()).add(int(raw_seg_id))
+
+    resolved_entity_indices = set(entity_to_seg_ids)
+    unresolved_expected_entities = sorted(expected_entity_indices - resolved_entity_indices)
+    if unresolved_expected_entities:
+        raise RuntimeError(
+            "Genesis segmentation_idx_dict did not resolve every expected "
+            f"checkerboard square entity; unresolved={unresolved_expected_entities}"
+        )
+    expected_entity_resolution_coverage = (
+        len(resolved_entity_indices) / len(expected_entity_indices)
+        if expected_entity_indices else 0.0
+    )
+    if expected_entity_resolution_coverage != 1.0:
+        raise RuntimeError(
+            "checkerboard entity-resolution coverage is not 100%; "
+            f"resolved={len(resolved_entity_indices)}/{len(expected_entity_indices)}"
+        )
+    if set(seg_to_square).intersection(background_seg_ids):
+        raise RuntimeError("background segmentation ID entered the checkerboard motion map")
 
     visible = {int(value) for value in np.unique(segmentation) if int(value) > 0}
     visible_board_ids = sorted(visible.intersection(seg_to_square))
@@ -198,15 +224,25 @@ def _resolve_segmentation_motion(scene, segmentation, squares):
             "no visible checkerboard segmentation ID mapped to a square entity; "
             f"segmentation values={sorted(visible)[:20]}, index_dict={index_dict}"
         )
+    visible_unknown_ids = sorted(visible.difference(set(index_dict)))
+    visible_background_ids = sorted(visible.intersection(background_seg_ids))
     board_pixels = int(np.isin(segmentation, visible_board_ids).sum())
     mapped_pixels = int(np.isin(segmentation, list(seg_to_square)).sum())
-    coverage = mapped_pixels / board_pixels if board_pixels else 0.0
-    if coverage != 1.0:
-        raise RuntimeError(f"segmentation-motion coverage is {coverage:.9f}, not 100%")
+    if visible_background_ids and set(visible_background_ids).intersection(seg_to_square):
+        raise RuntimeError("visible background segmentation ID overlaps the motion map")
     return {
         "seg_to_square": seg_to_square,
         "visible_board_ids": visible_board_ids,
-        "coverage": coverage,
+        "expected_entity_count": len(expected_entity_indices),
+        "resolved_entity_count": len(resolved_entity_indices),
+        "unresolved_expected_entities": unresolved_expected_entities,
+        "expected_entity_resolution_coverage": expected_entity_resolution_coverage,
+        "all_resolved_segmentation_ids": sorted(seg_to_square),
+        "background_entity_idx": background_entity_idx,
+        "background_segmentation_ids": sorted(background_seg_ids),
+        "motion_map_background_overlap": sorted(set(seg_to_square).intersection(background_seg_ids)),
+        "visible_unknown_segmentation_ids": visible_unknown_ids,
+        "visible_background_segmentation_ids": visible_background_ids,
         "visible_board_pixels": board_pixels,
         "mapped_board_pixels": mapped_pixels,
         "all_visible_segmentation_ids": sorted(visible),
@@ -230,7 +266,7 @@ def _build_scene(gs, spec):
         vis_options=gs.options.VisOptions(ambient_light=(0.2, 0.2, 0.2)),
         show_viewer=False,
     )
-    scene.add_entity(
+    background_plane = scene.add_entity(
         gs.morphs.Plane(),
         surface=gs.surfaces.Default(color=(0.04, 0.04, 0.04, 1.0)),
         name="background_plane",
@@ -261,13 +297,13 @@ def _build_scene(gs, spec):
     )
     scene.build()
     _set_scene_light(camera)
-    return scene, camera, squares
+    return scene, camera, squares, background_plane
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--direction", choices=("LR", "RL"), default="LR")
-    parser.add_argument("--duration", type=float, default=0.10, help="short smoke duration, seconds")
+    parser.add_argument("--duration", type=float, default=0.30, help="fixed active-readiness smoke duration, seconds")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--resolution", default=None, help="readiness-only WxH override; formal replay stays 1280x720")
     args = parser.parse_args()
@@ -282,9 +318,11 @@ def main() -> int:
             raise SystemExit("--resolution must be positive")
         replay["camera"]["resolution_xy"] = [width, height]
     direction_spec = replay["motion"][args.direction]
-    duration = min(float(args.duration), float(direction_spec["duration_s"]))
-    if duration <= 0:
-        raise SystemExit("duration must be positive")
+    duration = float(args.duration)
+    if abs(duration - 0.30) > 1e-12:
+        raise SystemExit("active readiness smoke duration is frozen at exactly 0.30 s")
+    if duration > float(direction_spec["duration_s"]):
+        raise SystemExit("duration exceeds the declared direction replay interval")
 
     try:
         import genesis as gs
@@ -301,10 +339,10 @@ def main() -> int:
     backend = getattr(gs, backend_name)
     gs.init(backend=backend, logging_level="warning")
     try:
-        scene, camera, squares = _build_scene(gs, replay)
+        scene, camera, squares, background_plane = _build_scene(gs, replay)
         initial_payload = _render_two_domains(camera)
         segmentation_contract = _resolve_segmentation_motion(
-            scene, initial_payload["seg"], squares
+            scene, initial_payload["seg"], squares, background_plane
         )
         trajectory_contract = _trajectory_parity(direction_spec)
         seg_to_square = segmentation_contract["seg_to_square"]
@@ -398,14 +436,24 @@ def main() -> int:
             "ours_input_domain": "scene_linear_radiance",
             "v2e_input_domain": "display_rgb",
             "required_outputs": required_shapes,
-            "segmentation_motion_coverage": segmentation_contract["coverage"],
+            "segmentation_expected_entity_count": segmentation_contract["expected_entity_count"],
+            "segmentation_resolved_entity_count": segmentation_contract["resolved_entity_count"],
+            "segmentation_unresolved_expected_entities": segmentation_contract["unresolved_expected_entities"],
+            "segmentation_expected_entity_resolution_coverage": segmentation_contract["expected_entity_resolution_coverage"],
             "segmentation_ids": segmentation_contract["visible_board_ids"],
+            "segmentation_all_resolved_ids": segmentation_contract["all_resolved_segmentation_ids"],
+            "segmentation_background_entity_idx": segmentation_contract["background_entity_idx"],
+            "segmentation_background_ids": segmentation_contract["background_segmentation_ids"],
+            "segmentation_motion_map_background_overlap": segmentation_contract["motion_map_background_overlap"],
+            "segmentation_visible_unknown_ids": segmentation_contract["visible_unknown_segmentation_ids"],
+            "segmentation_visible_background_ids": segmentation_contract["visible_background_segmentation_ids"],
             "segmentation_motion_mapping_entity_indices": {
                 str(seg_id): int(square.idx)
                 for seg_id, square in segmentation_contract["seg_to_square"].items()
             },
             "segmentation_visible_board_pixels": segmentation_contract["visible_board_pixels"],
             "segmentation_mapped_board_pixels": segmentation_contract["mapped_board_pixels"],
+            "duration_policy": "fixed_active_readiness_smoke_0.30s_no_event_count_adaptation",
             "trajectory_parity": trajectory_contract,
             "motion_magnitude_provenance": {
                 "travel_m": abs(float(direction_spec["x_end_m"]) - float(direction_spec["x_start_m"])),

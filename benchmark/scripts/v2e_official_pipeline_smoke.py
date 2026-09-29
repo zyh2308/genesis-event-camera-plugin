@@ -70,6 +70,37 @@ def _headless_desktop_shim(output: Path) -> Path:
     return root
 
 
+def _probe_desktop_module(python_exe: str, source: Path, environment: dict[str, str], expected: Path) -> str:
+    """Resolve v2ecore.desktop under the exact environment used by V2E."""
+
+    probe = subprocess.run(
+        [python_exe, "-c", "import v2ecore.desktop; print(v2ecore.desktop.__file__)"],
+        cwd=source,
+        env=environment,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    if probe.returncode != 0:
+        raise RuntimeError(f"v2ecore.desktop import probe failed: {probe.stdout.strip()}")
+    module_file = probe.stdout.strip().splitlines()[-1] if probe.stdout.strip() else ""
+    if Path(module_file).resolve() != expected.resolve():
+        raise RuntimeError(
+            "v2ecore.desktop.__file__ did not resolve to the declared headless shim: "
+            f"observed={module_file!r}, expected={str(expected)!r}"
+        )
+    return str(Path(module_file).resolve())
+
+
+def _processed_source_duration(log_text: str) -> float:
+    """Read the official emulator's processed source duration from its log."""
+
+    matches = re.findall(r"total\s+time\s*=\s*([0-9]+(?:\.[0-9]+)?)\s*s", log_text, re.I)
+    if not matches:
+        raise RuntimeError("official V2E log did not report processed source duration")
+    return float(matches[-1])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--frames", type=Path, required=True)
@@ -160,6 +191,9 @@ def main() -> int:
     environment["PYTHONPATH"] = os.pathsep.join(
         item for item in (str(compat_root), str(source), environment.get("PYTHONPATH", "")) if item
     )
+    desktop_module_path = _probe_desktop_module(
+        args.python_exe, source, environment, compat_root / "v2ecore/desktop.py"
+    )
     completed = subprocess.run(
         cmd, cwd=source, env=environment, text=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -176,6 +210,8 @@ def main() -> int:
         "frozen_parameters": cli_values,
         "argv": command_record,
         "headless_desktop_shim": str(compat_root / "v2ecore/desktop.py"),
+        "v2ecore_desktop_module_file": desktop_module_path,
+        "v2ecore_desktop_module_probe_environment": "identical PYTHONPATH/cwd/interpreter as official V2E subprocess",
     }, indent=2), encoding="utf-8")
     if completed.returncode != 0:
         return _stop("official V2E pipeline exited non-zero", returncode=completed.returncode, log=str(log_file))
@@ -190,9 +226,20 @@ def main() -> int:
         return _stop("official V2E pipeline produced an empty event stream", log=str(log_file))
 
     timestamps = np.asarray(sample[:, 0], dtype=np.float64) / 1e6
-    duration = float(timestamps.max() - timestamps.min())
+    event_span = float(timestamps.max() - timestamps.min())
     expected_duration = (len(frames) - 1) / source_frame_rate
-    duration_error = duration - expected_duration
+    processed_source_duration = _processed_source_duration(completed.stdout)
+    processed_duration_error = processed_source_duration - expected_duration
+    timestamp_lower_bound_violation = float(timestamps.min()) < -1e-12
+    timestamp_upper_bound_violation = float(timestamps.max()) > expected_duration + 1e-12
+    if timestamp_lower_bound_violation or timestamp_upper_bound_violation:
+        return _stop(
+            "official V2E event timestamp lies outside the declared replay interval",
+            first_event_timestamp_s=float(timestamps.min()),
+            last_event_timestamp_s=float(timestamps.max()),
+            declared_replay_interval_s=expected_duration,
+            log=str(log_file),
+        )
     forbidden = re.compile(
         r"(undersampl|cutoff.*warning|warning.*300|disable_slomo|rescal.*timestamp)",
         re.I,
@@ -213,11 +260,13 @@ def main() -> int:
             "official V2E slowdown factor differs from frozen cadence contract",
             observed=slowdown_factor, expected=expected_slowdown, log=str(log_file),
         )
-    if abs(duration_error) > max(0.002, 0.02 * expected_duration):
+    if abs(processed_duration_error) > max(0.002, 0.02 * expected_duration):
         return _stop(
-            "official V2E output duration differs from same replay duration",
-            output_duration_s=duration, expected_duration_s=expected_duration,
-            duration_error_s=duration_error, log=str(log_file),
+            "official V2E processed source duration differs from declared replay duration",
+            processed_source_duration_s=processed_source_duration,
+            declared_replay_interval_s=expected_duration,
+            processed_source_duration_error_s=processed_duration_error,
+            log=str(log_file),
         )
     result = {
         "status": "PASS",
@@ -232,9 +281,16 @@ def main() -> int:
         "dataset": dataset,
         "event_shape": list(shape),
         "dtype": str(dtype),
-        "output_duration_s": duration,
-        "expected_duration_s": expected_duration,
-        "duration_error_s": duration_error,
+        "processed_source_duration_s": processed_source_duration,
+        "declared_replay_interval_s": expected_duration,
+        "processed_source_duration_error_s": processed_duration_error,
+        "first_event_timestamp_s": float(timestamps.min()),
+        "last_event_timestamp_s": float(timestamps.max()),
+        "event_span_s": event_span,
+        "leading_event_silence_s": float(timestamps.min()),
+        "trailing_event_silence_s": expected_duration - float(timestamps.max()),
+        "event_timestamps_inside_declared_interval": True,
+        "event_span_equality_required": False,
         "checkpoint_path": str(model),
         "checkpoint_size_bytes": model.stat().st_size,
         "checkpoint_sha256": _sha256(model),
@@ -243,6 +299,7 @@ def main() -> int:
         "seed": seed,
         "dvs_emulator_seed": seed,
         "argv_record": str(output / "v2e_cli.json"),
+        "v2ecore_desktop_module_file": desktop_module_path,
     }
     (output / "v2e_pipeline_smoke.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))

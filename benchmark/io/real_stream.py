@@ -144,18 +144,30 @@ def load_real_hdf5(
     if np.any((x < 0) | (x >= width) | (y < 0) | (y >= height)):
         raise RuntimeError(f"{path}: event coordinates exceed declared geometry")
     events = np.column_stack((t, x, y, p))
+    declared_duration_s = float(duration_s_declared)
     event_span_s = float(t[-1] - t[0]) / 1e6
-    duration_error_s = event_span_s - float(duration_s_declared)
-    if abs(duration_error_s) > max(float(duration_tolerance_s), 0.01 * float(duration_s_declared)):
+    duration_error_s = event_span_s - declared_duration_s
+    # A real segment may contain leading/trailing silence.  The event span is
+    # therefore diagnostic only; it is not required to equal the declared
+    # replay interval and is never repaired by shifting the first event.
+    if int(t.max()) > int(round(declared_duration_s * 1e6)):
         raise RuntimeError(
-            f"{path}: event span {event_span_s:.9f}s differs from declared "
-            f"duration {float(duration_s_declared):.9f}s by {duration_error_s:+.9f}s; "
-            "do not repair this by shifting the first event"
+            f"{path}: event timestamp {int(t.max())}us lies outside the "
+            f"declared sequence interval [0,{int(round(declared_duration_s * 1e6))}us]"
+        )
+    leading_silence_s = float(t[0]) / 1e6
+    trailing_silence_s = declared_duration_s - float(t[-1]) / 1e6
+    if trailing_silence_s < -float(duration_tolerance_s):
+        raise RuntimeError(
+            f"{path}: negative trailing silence {trailing_silence_s:.9f}s; "
+            "event timestamps exceed the declared sequence interval"
         )
     attrs = dict(attrs)
     attrs["ecf_plugin_path"] = ecf_plugin_path or ""
     attrs["event_span_s"] = event_span_s
     attrs["duration_error_s"] = duration_error_s
+    attrs["leading_silence_s"] = leading_silence_s
+    attrs["trailing_silence_s"] = trailing_silence_s
     return RealSequence(
         direction=str(direction),
         path=path,
