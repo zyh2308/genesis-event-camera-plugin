@@ -305,6 +305,12 @@ def main() -> int:
 
     file_manifest_path = run_root / "file_manifest.json"
     file_manifest_path.write_text(json.dumps(file_manifest(run_root), indent=2), encoding="utf-8")
+    genesis_versions = {}
+    for direction in ("LR", "RL"):
+        replay_metadata = run_root / direction / "formal_genesis_replay.json"
+        if replay_metadata.is_file():
+            payload = json.loads(replay_metadata.read_text(encoding="utf-8"))
+            genesis_versions[direction] = payload.get("software", {}).get("genesis_version", "unknown")
     manifest = {
         "run_id": args.run_id,
         "utc_timestamp": datetime.now(timezone.utc).isoformat(),
@@ -325,7 +331,7 @@ def main() -> int:
         "platform": platform.platform(),
         "numpy": np.__version__,
         "h5py": h5py.__version__,
-        "genesis_version": "recorded by formal Genesis replay process",
+        "genesis_version": genesis_versions,
         "v2e_version": "1.5.1",
         "source_cadence_hz": 100.0,
         "source_dt_s": SOURCE_DT_S,

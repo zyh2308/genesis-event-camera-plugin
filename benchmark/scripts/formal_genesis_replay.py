@@ -13,6 +13,7 @@ import argparse
 import json
 import math
 import os
+import platform
 from pathlib import Path
 import sys
 
@@ -248,6 +249,14 @@ def main() -> int:
             "source_interval_count": interval_count,
             "source_frame_count": len(timestamps),
             "resolution_xy": list(FORMAL_RESOLUTION),
+            "software": {
+                "genesis_version": getattr(gs, "__version__", "unknown"),
+                "genesis_file": str(getattr(gs, "__file__", "unknown")),
+                "python": sys.version,
+                "platform": platform.platform(),
+                "backend": backend_name,
+                "event_device": os.environ.get("GENESIS_EVENT_DEVICE", "cpu"),
+            },
             "replay_archive": str(replay_dir / "state_archive.h5"),
             "display_rgb_archive": str(display_dir),
             "ours_events": str(ours_dir / "aer_events.h5"),
