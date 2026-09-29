@@ -1,0 +1,54 @@
+replay_id: genesis_checkerboard_translation_v2
+status: definition_only_pending_formal_scene_generation
+purpose: shared_Genesis_replay_for_Ours_v3_1_and_V2E
+scene_family: checkerboard_translation
+scene_builder_reference:
+  existing_scaffold: genesis_event_plugin.evaluation.plan_a_runner
+  warning: >-
+    The existing Plan A scaffold is not itself a formal replay: its board
+    texture and actuator are placeholders. A formal run must use a real
+    checkerboard texture and commanded deterministic motion, then archive the
+    state arrays listed below.
+board:
+  inner_corners: [9, 6]
+  square_m: 0.02
+  pattern_type: chessboard
+camera:
+  resolution_xy: [1280, 720]
+  crop_xywh: [0, 0, 1280, 720]
+  profile: evk4_nominal_geometry_only
+  intrinsics_source: frozen_camera_profile_not_unit_specific_calibration
+  distortion_source: frozen_camera_profile_or_explicit_zero_only_if_recorded
+motion:
+  type: planar_translation
+  directions:
+    LR:
+      nominal_image_direction: left_to_right
+      duration_s: 1.756258
+    RL:
+      nominal_image_direction: right_to_left
+      duration_s: 1.775800
+  trajectory_definition: deterministic_commanded_replay
+  exact_real_evK4_trajectory_claim: false
+  real_to_sim_alignment: not_claimed
+lighting:
+  mode: fixed_scene_lighting
+  radiometry: scene_linear_HDR_required
+  absolute_EVk4_illumination_calibration: unavailable
+  same_lighting_for_Ours_and_V2E: true
+required_archives_per_direction:
+  - radiance_or_HDR
+  - depth
+  - segmentation
+  - camera_pose
+  - object_link_pose
+  - timestamps_s
+  - Ours_v3_1_events
+  - V2E_input_frames_at_protocol_cadence
+  - V2E_events
+formal_replay_gate:
+  require_hdr_overlay: true
+  require_native_radiance: true
+  display_rgb_substitution_allowed: false
+  require_same_scene_and_motion_for_methods: true
+  require_fixed_duration_before_metrics: true

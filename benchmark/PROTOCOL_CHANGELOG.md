@@ -30,3 +30,41 @@ This file is the protocol history. The frozen protocol must not be edited during
 formal execution; any actual protocol bug requires `v2` or later plus a new
 hash and an explicit changelog entry.
 
+## v2-frozen — Phase 4.6
+
+- **Date:** 2026-09-29
+- **State:** created before any formal benchmark result
+- **Protocol file:** `benchmark/protocol_v2.yaml`
+- **Protocol SHA-256:** `c6382e3cd94ce02c2f92d8d12a8d5604affb8a4fd9a17b0694c7609120ab28df`
+- **Pair manifest:** `benchmark/evaluation_pairs_v2.yaml`
+- **Pair manifest SHA-256:** `e62e7cc0fb18730c53213277ceea20f7598b7f22cca102b0695201d857b2c9b9`
+- **Formal benchmark executed:** no
+- **Approval record:** `benchmark/FORMAL_RUN_APPROVAL.yaml`
+- **Frozen core:** `e79e656ac00f7847b98db9e12bf43b093f3afff1`
+- **Phase 4.5 harness commit:** `46ce49b941d36d2c145bd9e369dc8ef53362b8cc`
+
+### Why v2 was created
+
+`protocol_v1.yaml` was not edited and its SHA-256 remains unchanged. The v2
+file was created before any Ours or V2E formal metric existed. It resolves
+execution ambiguities rather than changing the scientific question:
+
+1. the runner now permits benchmark commits after the frozen core while checking
+   that `genesis_event_plugin/` has an empty diff against `e79e656`;
+2. human approval is recorded independently, without modifying v1;
+3. formal real/simulation pairs are frozen as LR and RL one-round pairs;
+4. all methods use the same fixed 5 ms windows at normalized fractions 0.25,
+   0.50, and 0.75;
+5. V2E uses one fixed 10 kHz effective cadence (`timestamp_resolution=0.0001 s`)
+   with its unchanged 300 Hz cutoff. This follows the official source guard
+   `maxeps=0.3`: `eps=0.1885` at 10 kHz, while the previous 100 Hz input gives
+   `eps=18.8496` and triggers the documented warning;
+6. the formal Ours input contract requires native scene-linear HDR/radiance,
+   depth, segmentation, poses, and timestamps. Display-RGB substitution is
+   explicitly prohibited.
+
+The current replay definition remains `definition_only_pending_formal_scene_generation`.
+The Phase 4.6 smoke gate may validate the HDR adapter when Genesis is available,
+but it must stop if the HDR overlay cannot actually run. No full evaluation
+metric, baseline parameter search, or Ours parameter change is permitted in
+this phase.

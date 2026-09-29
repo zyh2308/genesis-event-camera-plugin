@@ -1,0 +1,81 @@
+manifest_id: evaluation_pairs_v2
+status: frozen_before_formal_execution
+protocol: benchmark/protocol_v2.yaml
+protocol_hash_file: benchmark/protocol_v2.sha256
+manifest_hash:
+  algorithm: sha256
+  value: benchmark/evaluation_pairs_v2.sha256
+resolution_xy: [1280, 720]
+crop_xywh: [0, 0, 1280, 720]
+shared_replay: benchmark/replays/checkerboard_translation_v2.yaml
+shared_method_inputs:
+  ours: scene_linear_HDR_depth_segmentation_pose_timestamps
+  v2e: same_replay_image_sequence_at_10000Hz_effective_cadence
+evaluation_window:
+  duration_s: 0.005
+  normalized_fractions: [0.25, 0.50, 0.75]
+  same_for_real_ours_v2e: true
+  method_specific_selection: false
+pairs:
+  - pair_id: checkerboard_translation_20260914_LR
+    real_reference:
+      dataset_id: evk4_checkerboard_translation_one_round_20260914
+      file: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5
+      direction: LR
+      duration_s: 1.756258
+      schema: EVT3_CD_events_xypt_us
+    genesis_replay:
+      replay_id: genesis_checkerboard_translation_v2_LR
+      definition: benchmark/replays/checkerboard_translation_v2.yaml
+      duration_s: 1.756258
+      nominal_direction: LR
+      trajectory_status: exact_real_x_of_t_unknown
+    ours_output:
+      method_id: ours_v3_1_direct_real_v2
+      expected_path: external_formal_results/checkerboard_translation_20260914_LR/ours_v3_1/aer_events.h5
+    v2e_output:
+      method_id: v2e_official_core
+      expected_path: external_formal_results/checkerboard_translation_20260914_LR/v2e/aer_events.h5
+      input_cadence_hz: 10000.0
+    known_mismatch:
+      - no common hardware trigger
+      - no measured EVK4 encoder trajectory
+      - no exact real-to-sim timestamp origin
+      - nominal direction and duration are shared, but pixelwise correspondence is not claimed
+    interpretation: fixed_configuration_coarse_distributional_comparison_only
+  - pair_id: checkerboard_translation_20260914_RL
+    real_reference:
+      dataset_id: evk4_checkerboard_translation_one_round_20260914
+      file: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_02_RL.hdf5
+      direction: RL
+      duration_s: 1.775800
+      schema: EVT3_CD_events_xypt_us
+    genesis_replay:
+      replay_id: genesis_checkerboard_translation_v2_RL
+      definition: benchmark/replays/checkerboard_translation_v2.yaml
+      duration_s: 1.775800
+      nominal_direction: RL
+      trajectory_status: exact_real_x_of_t_unknown
+    ours_output:
+      method_id: ours_v3_1_direct_real_v2
+      expected_path: external_formal_results/checkerboard_translation_20260914_RL/ours_v3_1/aer_events.h5
+    v2e_output:
+      method_id: v2e_official_core
+      expected_path: external_formal_results/checkerboard_translation_20260914_RL/v2e/aer_events.h5
+      input_cadence_hz: 10000.0
+    known_mismatch:
+      - no common hardware trigger
+      - no measured EVK4 encoder trajectory
+      - no exact real-to-sim timestamp origin
+      - nominal direction and duration are shared, but pixelwise correspondence is not claimed
+    interpretation: fixed_configuration_coarse_distributional_comparison_only
+excluded_before_formal_metrics:
+  - id: evk4_checkerboard_translation_full_20260912
+    reason: >-
+      The 21.655999 s recording cannot be mapped to a pre-defined Genesis replay
+      with a common trajectory and time origin; it is retained only in the audit
+      ledger and is not split opportunistically.
+  - id: genesis_real_v2_replay_20260913
+    reason: >-
+      Archived display-RGB replay lacks native HDR/radiance, depth, segmentation,
+      pose, and a paired EVK4 trajectory; it is smoke-only.

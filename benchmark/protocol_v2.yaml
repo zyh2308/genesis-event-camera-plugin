@@ -1,0 +1,250 @@
+protocol_id: quality_benchmark_v2
+protocol_version: v2-frozen
+status: frozen_before_formal_execution
+formal_run_allowed: false
+protocol_hash:
+  algorithm: sha256
+  value: recorded_in_benchmark/protocol_v2.sha256
+  scope: exact_bytes_of_this_file
+supersedes:
+  file: benchmark/protocol_v1.yaml
+  sha256: b1b4519446bbc821220b3502a0eb3811bf8c0baf8bd457eca022a0d082ebdd97
+
+frozen_repository:
+  repository: zyh2308/genesis-event-camera-plugin
+  frozen_core_commit: e79e656ac00f7847b98db9e12bf43b093f3afff1
+  frozen_core_subject: "Fix v3 correspondence and visibility semantics"
+  benchmark_head_policy: >-
+    The benchmark harness and protocol may be committed after the frozen core
+    commit. The genesis_event_plugin/ tree must remain byte-for-byte equivalent
+    to the frozen core reference; an exact core diff is a stop condition.
+  core_modification_during_benchmark: forbidden
+  core_integrity_check: "git diff --exit-code e79e656 -- genesis_event_plugin/"
+
+scientific_question: >-
+  Evaluate whether the frozen v3.1 simulator generates event streams that are
+  consistent with real EVK4 recordings and whether it is competitive on
+  pre-defined, physically interpretable distributional metrics. This is a
+  fixed-configuration system-level simulator comparison, not a claim of exact
+  EVK4 circuit reproduction, PECS-rig reproduction, or isolated pixel-model
+  superiority.
+
+pre_result_change_record:
+  created_before_formal_result: true
+  reason_for_v2:
+    - The v1 formal execution gate was intentionally never enabled.
+    - The benchmark HEAD must be allowed to advance after the frozen core.
+    - V2E formal input cadence was not defined in v1.
+    - Formal real/simulation pair definitions were not explicit in v1.
+    - Equal-duration evaluation windows were not strict in v1.
+  result_independent: true
+  forbidden_basis: >-
+    No Ours or V2E formal metric, ranking, or visual result was inspected or
+    used to create this protocol version.
+
+execution_gate:
+  approval_file: benchmark/FORMAL_RUN_APPROVAL.yaml
+  approval_required: true
+  approval_scope: preparation_only_until_final_confirmation
+  required_clean_worktree: true
+  required_protocol_hash: benchmark/protocol_v2.sha256
+  required_pair_manifest_hash: benchmark/evaluation_pairs_v2.sha256
+  runner_cli_overrides_forbidden:
+    - metrics
+    - windows
+    - params
+    - methods
+    - seed
+    - cadence
+  formal_result_creation: disabled_until_separate_final_confirmation
+
+data_policy:
+  existing_assets_first: true
+  fabricate_data: false
+  test_specific_tuning: false
+  composite_score: false
+  simulator_ranking: false
+  raw_data_outside_repository: true
+  external_asset_root: /home/科研/Eventbased_WAM
+  parameter_search_after_freeze: forbidden
+
+real_data:
+  calibration:
+    id: evk4_static_noise_reference_20260912
+    role: fixed_real_v2_reference_only
+    source_root: /root/eventcamera_lab_staging/decoded
+    recordings:
+      - 20260912_r2_dark/dark_01
+      - 20260912_r2_dark/dark_02
+      - 20260912_r2_dark/dark_03
+      - 20260912_r2_white_wall/white_01
+      - 20260912_r2_white_wall/white_02
+      - 20260912_r2_white_wall/white_03
+    resolution: [1280, 720]
+    use_for_dynamic_parameter_tuning: false
+  dynamic:
+    - id: evk4_checkerboard_translation_one_round_20260914
+      role: directional_real_reference
+      sources:
+        LR: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5
+        RL: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_02_RL.hdf5
+      resolution: [1280, 720]
+      duration_s:
+        LR: 1.756258
+        RL: 1.775800
+      event_schema: "EVT3 HDF5 CD/events {x,y,p,t}; t in microseconds"
+      trajectory_status: exact_x_of_t_unavailable
+      synchronization_status: no_hardware_trigger
+  excluded_before_formal_metrics:
+    - id: evk4_checkerboard_translation_full_20260912
+      source: /root/eventcamera_lab_staging/decoded/20260912_translation_2cm
+      reason: >-
+        Full 21.655999 s acquisition has no auditable paired Genesis replay,
+        measured encoder trace, or common time origin; it cannot be forced into
+        the short LR/RL formal pair definition.
+    - id: genesis_real_v2_replay_20260913
+      reason: >-
+        Archived display-RGB replay lacks native HDR/radiance, depth,
+        segmentation, pose, and a matched real trajectory; retained for smoke
+        audit only.
+
+methods:
+  ours_v3_1:
+    label: Ours-v3.1-direct-real_v2
+    implementation: frozen Genesis plugin at e79e656ac00f7847b98db9e12bf43b093f3afff1
+    config: benchmark/configs/ours.yaml
+    config_hash_source: benchmark/configs/CONFIG_HASHES.json
+    preset: real_v2
+    parameter_freeze: true
+    formal_input_contract:
+      radiance: scene-linear HDR/radiance
+      depth: required
+      segmentation: required
+      camera_pose: required
+      object_link_pose: required
+      timestamps: required
+    display_rgb_fallback: forbidden_for_formal_result
+  v2e:
+    label: V2E-official-core
+    source: https://github.com/SensorsINI/v2e
+    local_source: /home/科研/Eventbased_WAM/code/v2e_source
+    version: 1.5.1
+    config: benchmark/configs/v2e.yaml
+    config_hash_source: benchmark/configs/CONFIG_HASHES.json
+    parameter_freeze: true
+    input_contract: official EventEmulator image-sequence input
+    formal_input_cadence:
+      source_frame_rate_hz: 100.0
+      timestamp_resolution_s: 0.0001
+      effective_cadence_hz: 10000.0
+      auto_timestamp_resolution: false
+      cutoff_hz: 300.0
+      selection_reason: >-
+        The official v2e_utils.check_lowpass() uses maxeps=0.3 for the IIR
+        update. With tau=1/(2*pi*300 Hz), dt=0.0001 s gives eps=dt/tau
+        approximately 0.1885, below the official warning threshold. The
+        previous 100 Hz effective input gave eps approximately 18.8496 and
+        triggered the documented numerical warning. This cadence is fixed
+        before any formal output and is not a V2E parameter search.
+      official_source_reference:
+        file: /home/科研/Eventbased_WAM/code/v2e_source/v2ecore/v2e_utils.py
+        function: check_lowpass
+        maxeps: 0.3
+      smoke_required_before_formal: true
+  esim:
+    label: ESIM
+    source: https://github.com/uzh-rpg/rpg_esim
+    status: supported_but_not_reproducibly_built
+    formal_status: excluded_until_official_executable_smoke_passes
+  icns_iebcs:
+    label: ICNS/IEBCS
+    source: https://github.com/neuromorphicsystems/IEBCS
+    status: not_checked_out_locally
+    formal_status: excluded
+
+system_level_pairing:
+  claim_boundary: >-
+    Ours and V2E receive the same Genesis replay, camera resolution, crop,
+    duration, and nominal motion definition. This is a system-level simulator
+    comparison, not an isolated pixel-model comparison.
+  shared:
+    scene: benchmark/replays/checkerboard_translation_v2.yaml
+    camera_resolution: [1280, 720]
+    crop_xywh: [0, 0, 1280, 720]
+    direction_pairs: [LR, RL]
+    real_sim_time_origin: not_shared
+    exact_trajectory: unavailable_for_real_evk4
+  ours_input: HDR/radiance + depth + segmentation + physical state + timestamps
+  v2e_input: image sequence rendered from the same Genesis replay
+  v2e_input_must_not_be: a different motion trajectory or a different crop
+
+evaluation_windows:
+  mode: fixed_equal_duration
+  duration_s: 0.005
+  selection: deterministic_normalized_fractions
+  normalized_fractions: [0.25, 0.50, 0.75]
+  same_window_for_all_methods: true
+  method_specific_window_selection: false
+  time_offset_search: false
+  reason: >-
+    5 ms is the pre-registered accumulation interval retained from v1. It is
+    short relative to each one-round motion duration and long enough to avoid
+    defining a zero-event window by a single timestamp sample. The value is
+    fixed without inspecting formal outputs.
+  short_sequence_fallback: >-
+    If a sequence is shorter than three non-overlapping windows, use the three
+    deterministic normalized centers with the same 5 ms duration and record
+    their exact timestamps; never change duration or optimize offsets.
+  temporal_alignment: none
+  temporal_per_bin_metric: disabled
+
+metrics:
+  primary:
+    - event_rate_relative_error
+    - polarity_ratio_error
+    - active_pixel_ratio_error
+    - spatial_distribution_l1_8x8
+  definitions:
+    event_rate_relative_error: abs(rate_sim-rate_real)/max(rate_real, eps)
+    polarity_ratio_error: abs(ON_ratio_sim-ON_ratio_real)
+    active_pixel_ratio_error: abs(APR_sim-APR_real)
+    spatial_distribution_l1_8x8: sum_i abs(p_sim_i-p_real_i), p_i=N_i/sum_j N_j
+  normalization: rate_not_raw_count_when_duration_differs
+  disabled:
+    temporal_rate_error_per_5ms_bin: no auditable common temporal origin
+    chamfer_distance_cd: no auditable spatial-temporal correspondence
+    gaussian_distance_gd: no auditable spatial-temporal correspondence
+    composite_score: forbidden
+    ranking_score: forbidden
+  uncertainty: descriptive_mean_std_only
+  significance_claims: forbidden_for_current_n1_acquisition_family
+
+reproducibility:
+  seed: 42
+  config_hashes: benchmark/configs/CONFIG_HASHES.json
+  pair_manifest: benchmark/evaluation_pairs_v2.yaml
+  output_root: benchmark/results
+  preserve_json_csv: true
+  missing_data: >-
+    Mark affected values NA with a machine-readable reason; never impute or
+    silently drop a sequence.
+
+phase_boundary:
+  formal_benchmark_executed: false
+  allowed_in_phase_4_6:
+    - protocol_and_manifest_validation
+    - frozen_core_integrity_check
+    - HDR_replay_and_Ours_short_smoke
+    - V2E_cadence_numerical_smoke
+    - event_schema_smoke
+    - equal_duration_window_extractor_smoke
+  prohibited_in_phase_4_6:
+    - complete_evaluation_set_metrics
+    - baseline_parameter_search
+    - Ours_parameter_change
+    - formal_ranking
+    - using_display_rgb_as_HDR_formal_input
+  final_confirmation_required_for:
+    - formal benchmark execution
+    - any baseline parameter change
+    - any Ours parameter change

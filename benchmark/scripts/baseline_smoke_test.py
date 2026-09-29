@@ -33,6 +33,16 @@ def git_head(path: Path) -> str | None:
         return None
 
 
+def core_diff_is_empty(repo: Path, frozen_commit: str) -> bool:
+    result = subprocess.run(
+        ["git", "-C", str(repo), "diff", "--exit-code", frozen_commit, "--", "genesis_event_plugin/"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    return result.returncode == 0
+
+
 def inspect_standard_h5(path: Path) -> dict[str, Any]:
     record: dict[str, Any] = {"path": str(path), "exists": path.exists()}
     if not path.exists():
@@ -103,7 +113,9 @@ def main() -> int:
     result = {
         "status": "smoke_only_not_formal",
         "formal_benchmark_run": False,
-        "frozen_commit": git_head(REPO),
+        "benchmark_head": git_head(REPO),
+        "frozen_core_commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+        "frozen_core_diff": "empty" if core_diff_is_empty(REPO, "e79e656ac00f7847b98db9e12bf43b093f3afff1") else "nonempty",
         "ours_v3_1": {
             "artifact": inspect_standard_h5(real_v2),
             "config_name": "real_v2",
@@ -140,8 +152,8 @@ def main() -> int:
     }
     # Keep this explicit assertion close to the output: a failed frozen-version
     # check is a stop condition, not a reason to silently benchmark another tree.
-    if result["frozen_commit"] != "e79e656ac00f7847b98db9e12bf43b093f3afff1":
-        result["status"] = "blocked_wrong_frozen_commit"
+    if result["frozen_core_diff"] != "empty":
+        result["status"] = "blocked_modified_frozen_core"
     out = REPO / "benchmark/results/raw/baseline_smoke_test.json"
     out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2, ensure_ascii=False))
