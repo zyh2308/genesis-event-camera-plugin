@@ -44,8 +44,10 @@ def _find_h5_events(path: Path):
         dataset = handle["events"]
         if dataset.ndim != 2 or dataset.shape[1] != 4:
             raise RuntimeError(f"unexpected official V2E events shape: {dataset.shape}")
+        shape = tuple(dataset.shape)
+        dtype = dataset.dtype
         sample = dataset[:]
-    return "events", dataset.shape, dataset.dtype, sample
+    return "events", shape, dtype, sample
 
 
 def _sha256(path: Path) -> str:
