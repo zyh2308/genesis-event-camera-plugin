@@ -35,12 +35,15 @@ def main() -> int:
             output["streams"][direction] = {
                 "status": "PASS",
                 "path": str(sequence.path),
+                "source": "vendor_hdf5_ecf",
+                "ecf_plugin_path": sequence.ecf_plugin_path,
                 "complete_event_count": int(len(events)),
                 "sequence_start_us": sequence.sequence_start_us,
                 "first_t_rel_us": int(events[0, 0]),
                 "last_t_rel_us": int(events[-1, 0]),
                 "event_span_s": sequence.duration_s_event_span,
                 "declared_duration_s": sequence.duration_s_declared,
+                "duration_error_s": sequence.duration_s_event_span - sequence.duration_s_declared,
                 "first_event_was_not_used_as_origin": True,
             }
     except Exception as exc:

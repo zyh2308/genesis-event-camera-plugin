@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Build and execute the v3 checkerboard replay in Genesis.
 
-The command is a readiness smoke, not a benchmark runner.  It deliberately
-archives the native HDR/depth/segmentation/pose/timestamp contract and runs
-the frozen Ours v3.1 plugin, but never evaluates a real stream or computes a
-formal metric.
+This is a readiness smoke, not a benchmark runner. It archives the native
+HDR/depth/segmentation/pose/timestamp contract and runs the frozen Ours v3.1
+plugin, but never evaluates a real stream or computes a formal metric.
 """
 
 from __future__ import annotations
@@ -30,11 +29,69 @@ def _matrix_from_x(x: float, z: float = 0.10) -> np.ndarray:
     return matrix
 
 
-def _smoothstep(start: float, end: float, t: float, duration: float) -> float:
-    # The endpoint holds in the short acceleration/deceleration segments.
-    u = min(max(float(t) / float(duration), 0.0), 1.0)
-    u = u * u * (3.0 - 2.0 * u)
-    return start + (end - start) * u
+def evaluate_keyframed_trajectory(t: float, keyframes, easing: str) -> float:
+    """Evaluate the explicit keyframes from the replay YAML."""
+
+    points = [(float(point[0]), float(point[1])) for point in keyframes]
+    if len(points) < 2 or any(points[i][0] >= points[i + 1][0] for i in range(len(points) - 1)):
+        raise ValueError("trajectory keyframes must have strictly increasing times")
+    time = float(t)
+    if time <= points[0][0]:
+        return points[0][1]
+    if time >= points[-1][0]:
+        return points[-1][1]
+    for (t0, x0), (t1, x1) in zip(points, points[1:]):
+        if time <= t1:
+            if x0 == x1:
+                return x0
+            u = (time - t0) / (t1 - t0)
+            if easing in {"smoothstep", "smoothstep_with_explicit_keyframes"}:
+                u = u * u * (3.0 - 2.0 * u)
+            elif easing != "linear":
+                raise ValueError(f"unsupported trajectory easing: {easing}")
+            return x0 + (x1 - x0) * u
+    return points[-1][1]
+
+
+def _trajectory_parity(direction_spec):
+    """Check representative times against the explicit YAML keyframes."""
+
+    keyframes = direction_spec["keyframes"]
+    easing = direction_spec["easing"]
+    motion_end_t = float(keyframes[-2][0])
+    final_t = float(keyframes[-1][0])
+    midpoint_t = 0.5 * (float(keyframes[1][0]) + motion_end_t)
+    samples = {
+        "t_0": float(keyframes[0][0]),
+        "t_0_10": 0.10,
+        "t_0_15": float(keyframes[1][0]),
+        "midpoint": midpoint_t,
+        "motion_end": motion_end_t,
+        "final_time": final_t,
+    }
+    values = {
+        name: evaluate_keyframed_trajectory(time, keyframes, easing)
+        for name, time in samples.items()
+    }
+    expected = {
+        "t_0": float(keyframes[0][1]),
+        "t_0_10": float(keyframes[0][1]),
+        "t_0_15": float(keyframes[1][1]),
+        "midpoint": values["midpoint"],
+        "motion_end": float(keyframes[-2][1]),
+        "final_time": float(keyframes[-1][1]),
+    }
+    errors = {name: abs(values[name] - expected[name]) for name in samples}
+    if max(errors.values()) > 1e-12:
+        raise RuntimeError(f"YAML/runtime trajectory parity failed: {errors}")
+    return {
+        "status": "PASS",
+        "easing": easing,
+        "samples_s": samples,
+        "runtime_x_m": values,
+        "yaml_expected_x_m": expected,
+        "max_abs_error_m": max(errors.values()),
+    }
 
 
 def _set_scene_light(camera, values=(10.0, 10.0, 10.0)):
@@ -44,10 +101,54 @@ def _set_scene_light(camera, values=(10.0, 10.0, 10.0)):
     context.jit.set_light(context._scene, context._scene.light_nodes, context.ambient_light)
 
 
+def _display_rgb_uint8(rgb: np.ndarray) -> np.ndarray:
+    """Convert an already-rendered display-domain frame for PNG/V2E only."""
+
+    array = np.asarray(rgb)
+    if array.dtype == np.uint8:
+        return array.copy()
+    values = array.astype(np.float32, copy=False)
+    if float(values.max()) <= 1.0001:
+        values = values * 255.0
+    return np.clip(values, 0.0, 255.0).round().astype(np.uint8)
+
+
+def _render_two_domains(camera):
+    """Render native radiance and normal display RGB separately, no scene step."""
+
+    radiance, depth, seg, _ = camera.render(
+        rgb=True, depth=True, segmentation=True, radiance=True
+    )
+    display_rgb, _, _, _ = camera.render(
+        rgb=True, depth=False, segmentation=False
+    )
+    radiance = np.asarray(radiance).copy()
+    display_rgb = np.asarray(display_rgb).copy()
+    depth = np.asarray(depth).copy()
+    seg = np.asarray(seg).copy()
+    if radiance.dtype != np.float32 or not np.isfinite(radiance).all():
+        raise RuntimeError("native radiance is not finite float32")
+    if np.shares_memory(radiance, display_rgb):
+        raise RuntimeError("radiance and display RGB share storage")
+    display_uint8 = _display_rgb_uint8(display_rgb)
+    if np.array_equal(display_uint8, _display_rgb_uint8(radiance)):
+        raise RuntimeError("display RGB appears to be a clip/convert of radiance")
+    return {
+        "rgb": display_rgb,
+        "radiance": radiance,
+        "depth": depth,
+        "seg": seg,
+        "display_rgb_uint8": display_uint8,
+        "same_scene_state": True,
+        "ours_input_domain": "scene_linear_radiance",
+        "v2e_input_domain": "display_rgb",
+    }
+
+
 def _write_png(path: Path, rgb: np.ndarray) -> None:
     rgb = np.asarray(rgb)
     if rgb.dtype != np.uint8:
-        rgb = np.clip(rgb, 0, 255).astype(np.uint8)
+        rgb = _display_rgb_uint8(rgb)
     try:
         from PIL import Image
         Image.fromarray(rgb).save(path)
@@ -56,18 +157,83 @@ def _write_png(path: Path, rgb: np.ndarray) -> None:
         iio.imwrite(path, rgb)
 
 
+def _descriptor_entity_idx(value):
+    """Extract an entity index from Genesis' segmentation descriptor."""
+
+    if hasattr(value, "idx"):
+        return int(value.idx)
+    if hasattr(value, "entity"):
+        return _descriptor_entity_idx(value.entity)
+    if isinstance(value, (tuple, list)):
+        for item in value:
+            try:
+                return _descriptor_entity_idx(item)
+            except (TypeError, ValueError, AttributeError):
+                continue
+    if isinstance(value, (int, np.integer)):
+        return int(value)
+    raise TypeError(f"cannot extract Genesis entity index from {value!r}")
+
+
+def _resolve_segmentation_motion(scene, segmentation, squares):
+    """Map the actual rendered segmentation IDs to moving square entities."""
+
+    index_dict = getattr(scene, "segmentation_idx_dict", None)
+    if not index_dict:
+        raise RuntimeError("Genesis did not expose segmentation_idx_dict")
+    square_by_entity_idx = {int(square.idx): square for square in squares}
+    seg_to_square = {}
+    for raw_seg_id, descriptor in index_dict.items():
+        try:
+            entity_idx = _descriptor_entity_idx(descriptor)
+        except (TypeError, ValueError, AttributeError):
+            continue
+        if entity_idx in square_by_entity_idx:
+            seg_to_square[int(raw_seg_id)] = square_by_entity_idx[entity_idx]
+
+    visible = {int(value) for value in np.unique(segmentation) if int(value) > 0}
+    visible_board_ids = sorted(visible.intersection(seg_to_square))
+    if not visible_board_ids:
+        raise RuntimeError(
+            "no visible checkerboard segmentation ID mapped to a square entity; "
+            f"segmentation values={sorted(visible)[:20]}, index_dict={index_dict}"
+        )
+    board_pixels = int(np.isin(segmentation, visible_board_ids).sum())
+    mapped_pixels = int(np.isin(segmentation, list(seg_to_square)).sum())
+    coverage = mapped_pixels / board_pixels if board_pixels else 0.0
+    if coverage != 1.0:
+        raise RuntimeError(f"segmentation-motion coverage is {coverage:.9f}, not 100%")
+    return {
+        "seg_to_square": seg_to_square,
+        "visible_board_ids": visible_board_ids,
+        "coverage": coverage,
+        "visible_board_pixels": board_pixels,
+        "mapped_board_pixels": mapped_pixels,
+        "all_visible_segmentation_ids": sorted(visible),
+    }
+
+
+def _entity_pose(entity) -> np.ndarray:
+    pos = np.asarray(entity.get_pos(relative=False), dtype=np.float64)
+    if pos.ndim > 1:
+        pos = pos[0]
+    if pos.shape != (3,):
+        raise RuntimeError(f"unexpected checkerboard entity position shape: {pos.shape}")
+    pose = np.eye(4, dtype=np.float64)
+    pose[:3, 3] = pos
+    return pose
+
+
 def _build_scene(gs, spec):
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=0.01, gravity=(0, 0, 0)),
-        # Genesis validates display-oriented VisOptions in [0, 1].  The
-        # scene-linear HDR stress value is applied inside _set_scene_light()
-        # after build, exactly as in the renderer contract smoke.
         vis_options=gs.options.VisOptions(ambient_light=(0.2, 0.2, 0.2)),
         show_viewer=False,
     )
     scene.add_entity(
         gs.morphs.Plane(),
         surface=gs.surfaces.Default(color=(0.04, 0.04, 0.04, 1.0)),
+        name="background_plane",
     )
     square = float(spec["board"]["square_m"])
     cols, rows = (int(x) for x in spec["board"]["squares_xy"])
@@ -81,6 +247,7 @@ def _build_scene(gs, spec):
             squares.append(scene.add_entity(
                 gs.morphs.Box(pos=(x - 0.10, y, z), size=(square, square, 0.004)),
                 surface=gs.surfaces.Default(color=color),
+                name=f"checkerboard_square_{row:02d}_{col:02d}",
             ))
     camera_spec = spec["camera"]
     camera = scene.add_camera(
@@ -122,7 +289,7 @@ def main() -> int:
     try:
         import genesis as gs
         from genesis_event_plugin import GenesisPhysicsEventPlugin
-        from genesis_event_plugin.genesis_adapter import make_frame_provider, camera_to_world_cv
+        from genesis_event_plugin.genesis_adapter import camera_to_world_cv
     except Exception as exc:
         print(json.dumps({"status": "STOP", "stage": "Genesis import", "error": f"{type(exc).__name__}: {exc}"}))
         return 2
@@ -135,14 +302,22 @@ def main() -> int:
     gs.init(backend=backend, logging_level="warning")
     try:
         scene, camera, squares = _build_scene(gs, replay)
-        frame_provider = make_frame_provider(camera, native_radiance=True)
+        initial_payload = _render_two_domains(camera)
+        segmentation_contract = _resolve_segmentation_motion(
+            scene, initial_payload["seg"], squares
+        )
+        trajectory_contract = _trajectory_parity(direction_spec)
+        seg_to_square = segmentation_contract["seg_to_square"]
+
+        def frame_provider(scene_obj, cam_obj):
+            return _render_two_domains(cam_obj)
+
         current_x = float(direction_spec["x_start_m"])
 
         def move_board(x):
             nonlocal current_x
             delta = float(x) - current_x
             for entity in squares:
-                # Entity.set_pos is the public Genesis kinematic pose API.
                 pos = np.asarray(entity.get_pos(), dtype=np.float64)
                 if pos.ndim > 1:
                     pos = pos[0]
@@ -152,14 +327,17 @@ def main() -> int:
         def motion_provider(scene_obj, cam_obj):
             return {
                 "camera_to_world": camera_to_world_cv(cam_obj),
-                "object_to_world": {1: _matrix_from_x(current_x)},
+                "object_to_world": {
+                    int(seg_id): _entity_pose(square)
+                    for seg_id, square in seg_to_square.items()
+                },
             }
 
         plugin = GenesisPhysicsEventPlugin(
             preset="real_v2",
             input_space="linear",
-            frame_provider=frame_provider,
             motion_state_provider=motion_provider,
+            frame_provider=frame_provider,
             device=os.environ.get("GENESIS_EVENT_DEVICE", "cpu"),
         )
         plugin.attach(scene, camera)
@@ -171,9 +349,8 @@ def main() -> int:
         hdr_max = -np.inf
         required_shapes = {}
         for index, t in enumerate(timestamps):
-            x = _smoothstep(
-                float(direction_spec["x_start_m"]), float(direction_spec["x_end_m"]),
-                float(t), duration,
+            x = evaluate_keyframed_trajectory(
+                float(t), direction_spec["keyframes"], direction_spec["easing"]
             )
             move_board(x)
             if index:
@@ -182,18 +359,17 @@ def main() -> int:
             radiance = np.asarray(payload["radiance"])
             depth = np.asarray(payload["depth"])
             seg = np.asarray(payload["seg"])
-            if radiance.dtype != np.float32 or not np.isfinite(radiance).all():
-                raise RuntimeError("native radiance is not finite float32")
             hdr_max = max(hdr_max, float(radiance.max()))
             required_shapes = {
                 "radiance": list(radiance.shape),
                 "depth": list(depth.shape),
                 "segmentation": list(seg.shape),
             }
-            _write_png(frames_dir / f"frame_{index:06d}.png", payload["rgb"])
+            _write_png(frames_dir / f"frame_{index:06d}.png", payload["display_rgb_uint8"])
             np.savez_compressed(
                 output / f"state_{index:06d}.npz",
                 radiance=radiance.astype(np.float32),
+                display_rgb=payload["rgb"],
                 depth=depth.astype(np.float32),
                 segmentation=seg,
                 camera_to_world=camera_to_world_cv(camera),
@@ -204,6 +380,8 @@ def main() -> int:
             total_events += int(len(events))
         plugin.end_episode()
         plugin.close()
+        if hdr_max <= 1.0:
+            raise RuntimeError("native radiance did not exceed display range in HDR smoke")
         metadata = {
             "status": "PASS",
             "formal_metrics_executed": False,
@@ -213,7 +391,27 @@ def main() -> int:
             "frame_count": count,
             "native_radiance": True,
             "native_radiance_max": hdr_max,
+            "display_rgb_archived_separately": True,
+            "display_rgb_dtype": str(np.asarray(initial_payload["rgb"]).dtype),
+            "display_rgb_was_clipped_from_radiance": False,
+            "same_scene_state": True,
+            "ours_input_domain": "scene_linear_radiance",
+            "v2e_input_domain": "display_rgb",
             "required_outputs": required_shapes,
+            "segmentation_motion_coverage": segmentation_contract["coverage"],
+            "segmentation_ids": segmentation_contract["visible_board_ids"],
+            "segmentation_motion_mapping_entity_indices": {
+                str(seg_id): int(square.idx)
+                for seg_id, square in segmentation_contract["seg_to_square"].items()
+            },
+            "segmentation_visible_board_pixels": segmentation_contract["visible_board_pixels"],
+            "segmentation_mapped_board_pixels": segmentation_contract["mapped_board_pixels"],
+            "trajectory_parity": trajectory_contract,
+            "motion_magnitude_provenance": {
+                "travel_m": abs(float(direction_spec["x_end_m"]) - float(direction_spec["x_start_m"])),
+                "status": "nominal commanded replay travel, not measured real trajectory",
+                "selection_rule": "preserved pre-frozen YAML value; never fit from event rate",
+            },
             "ours_core_commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
             "ours_event_count_smoke_only": total_events,
             "v2e_not_run_by_this_script": True,

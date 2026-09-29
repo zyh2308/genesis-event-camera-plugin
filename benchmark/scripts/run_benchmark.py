@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -153,6 +154,11 @@ def preflight(repo: Path, protocol_path: Path, pair_path: Path, smoke_root: Path
     pairs = check_pair_and_replay(repo, pair_path)
     smoke_root.mkdir(parents=True, exist_ok=True)
 
+    # Discover the installed official ECF filter before the smoke imports h5py.
+    # This keeps the gate portable across Metavision package layouts without
+    # changing the declared source or activating a decoded fallback.
+    from benchmark.io.real_stream import discover_ecf_plugin
+    ecf_plugin_path = discover_ecf_plugin()
     real = run_smoke(repo, ["benchmark/scripts/real_timestamp_origin_smoke.py"], smoke_root / "real_timestamp_origin.log")
     genesis = run_smoke(repo, ["benchmark/scripts/genesis_replay_smoke.py", "--direction", "LR", "--duration", "0.02", "--resolution", "64x48", "--output-dir", str(smoke_root / "genesis_LR")], smoke_root / "genesis_hdr_ours.log")
     v2e = run_smoke(repo, ["benchmark/scripts/v2e_official_pipeline_smoke.py", "--frames", str(smoke_root / "genesis_LR/frames"), "--output-dir", str(smoke_root / "v2e_LR")], smoke_root / "v2e_official_pipeline.log")
@@ -169,6 +175,7 @@ def preflight(repo: Path, protocol_path: Path, pair_path: Path, smoke_root: Path
         "configs": configs,
         "pairs": pairs,
         "real_LR_RL_read_smoke": real,
+        "ecf_plugin_path": ecf_plugin_path,
         "Genesis_HDR_smoke": genesis,
         "Ours_v3_1_smoke": genesis,
         "V2E_official_full_pipeline_smoke": v2e,
