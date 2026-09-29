@@ -260,7 +260,7 @@ def _entity_pose(entity) -> np.ndarray:
     return pose
 
 
-def _build_scene(gs, spec):
+def _build_scene(gs, spec, initial_x=None):
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=0.01, gravity=(0, 0, 0)),
         vis_options=gs.options.VisOptions(ambient_light=(0.2, 0.2, 0.2)),
@@ -274,6 +274,10 @@ def _build_scene(gs, spec):
     square = float(spec["board"]["square_m"])
     cols, rows = (int(x) for x in spec["board"]["squares_xy"])
     z = float(spec["board_pose"]["initial_position_m"][2])
+    board_center_x = (
+        float(spec["board_pose"]["initial_position_m"][0])
+        if initial_x is None else float(initial_x)
+    )
     squares = []
     for row in range(rows):
         for col in range(cols):
@@ -281,7 +285,7 @@ def _build_scene(gs, spec):
             y = (row - (rows - 1) / 2.0) * square
             color = (0.98, 0.98, 0.98, 1.0) if (row + col) % 2 == 0 else (0.02, 0.02, 0.02, 1.0)
             squares.append(scene.add_entity(
-                gs.morphs.Box(pos=(x - 0.10, y, z), size=(square, square, 0.004)),
+                gs.morphs.Box(pos=(x + board_center_x, y, z), size=(square, square, 0.004)),
                 surface=gs.surfaces.Default(color=color),
                 name=f"checkerboard_square_{row:02d}_{col:02d}",
             ))
