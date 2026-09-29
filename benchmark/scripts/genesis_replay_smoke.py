@@ -59,7 +59,10 @@ def _write_png(path: Path, rgb: np.ndarray) -> None:
 def _build_scene(gs, spec):
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=0.01, gravity=(0, 0, 0)),
-        vis_options=gs.options.VisOptions(ambient_light=(2.0, 2.0, 2.0)),
+        # Genesis validates display-oriented VisOptions in [0, 1].  The
+        # scene-linear HDR stress value is applied inside _set_scene_light()
+        # after build, exactly as in the renderer contract smoke.
+        vis_options=gs.options.VisOptions(ambient_light=(0.2, 0.2, 0.2)),
         show_viewer=False,
     )
     scene.add_entity(
