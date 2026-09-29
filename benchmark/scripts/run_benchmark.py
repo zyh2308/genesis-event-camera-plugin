@@ -154,7 +154,7 @@ def preflight(repo: Path, protocol_path: Path, pair_path: Path, smoke_root: Path
     smoke_root.mkdir(parents=True, exist_ok=True)
 
     real = run_smoke(repo, ["benchmark/scripts/real_timestamp_origin_smoke.py"], smoke_root / "real_timestamp_origin.log")
-    genesis = run_smoke(repo, ["benchmark/scripts/genesis_replay_smoke.py", "--direction", "LR", "--duration", "0.10", "--output-dir", str(smoke_root / "genesis_LR")], smoke_root / "genesis_hdr_ours.log")
+    genesis = run_smoke(repo, ["benchmark/scripts/genesis_replay_smoke.py", "--direction", "LR", "--duration", "0.02", "--resolution", "64x48", "--output-dir", str(smoke_root / "genesis_LR")], smoke_root / "genesis_hdr_ours.log")
     v2e = run_smoke(repo, ["benchmark/scripts/v2e_official_pipeline_smoke.py", "--frames", str(smoke_root / "genesis_LR/frames"), "--output-dir", str(smoke_root / "v2e_LR")], smoke_root / "v2e_official_pipeline.log")
     require(real.get("status") == "PASS", "real LR/RL loader smoke did not pass")
     require(genesis.get("status") == "PASS" and genesis.get("native_radiance") is True, "Genesis HDR/Ours smoke did not pass")

@@ -102,9 +102,18 @@ def main() -> int:
     parser.add_argument("--direction", choices=("LR", "RL"), default="LR")
     parser.add_argument("--duration", type=float, default=0.10, help="short smoke duration, seconds")
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--resolution", default=None, help="readiness-only WxH override; formal replay stays 1280x720")
     args = parser.parse_args()
 
     replay = yaml.safe_load((ROOT / "benchmark/replays/checkerboard_translation_v3.yaml").read_text())
+    if args.resolution:
+        try:
+            width, height = (int(value) for value in args.resolution.lower().split("x", 1))
+        except Exception as exc:
+            raise SystemExit("--resolution must be formatted WxH") from exc
+        if width <= 0 or height <= 0:
+            raise SystemExit("--resolution must be positive")
+        replay["camera"]["resolution_xy"] = [width, height]
     direction_spec = replay["motion"][args.direction]
     duration = min(float(args.duration), float(direction_spec["duration_s"]))
     if duration <= 0:
