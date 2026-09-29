@@ -1,0 +1,79 @@
+replay_id: genesis_checkerboard_translation_v3
+status: executable_scene_definition
+purpose: shared_short_smoke_and_future_full_direction_replay
+builder: benchmark/scripts/genesis_replay_smoke.py
+builder_contract: >-
+  The builder constructs the scene from this file, renders every requested
+  state in Genesis, and writes native HDR/radiance, depth, segmentation,
+  camera pose, checkerboard pose, timestamps, RGB frames, and Ours events.
+scene_class: checkerboard_translation
+board:
+  inner_corners: [9, 6]
+  squares_xy: [10, 7]
+  square_m: 0.02
+  board_size_m: [0.20, 0.14]
+  thickness_m: 0.004
+  plane: XY
+  texture: explicit_black_white_square_entities
+  segmentation_object: checkerboard_board
+camera:
+  resolution_xy: [1280, 720]
+  crop_xywh: [0, 0, 1280, 720]
+  pose_world:
+    position_m: [0.0, -0.78, 0.56]
+    look_at_m: [0.0, 0.0, 0.10]
+    convention: Genesis_camera_to_OpenCV_adapter
+  intrinsics_source: deterministic_Genesis_camera_profile_for_smoke
+  distortion: zero_in_renderer; real_EVК4_distortion_is_not_claimed
+board_pose:
+  initial_position_m: [-0.10, 0.0, 0.10]
+  orientation_xyzw: [0.0, 0.0, 0.0, 1.0]
+  motion_plane: world_XY
+motion:
+  type: commanded_planar_translation
+  exact_real_x_of_t_known: false
+  trajectory_claim: same_nominal_direction_same_total_duration_same_scene_class
+  LR:
+    duration_s: 1.756258
+    x_start_m: -0.10
+    x_end_m: 0.10
+    easing: smoothstep_with_explicit_keyframes
+    keyframes:
+      - [0.0, -0.10]
+      - [0.15, -0.10]
+      - [1.606258, 0.10]
+      - [1.756258, 0.10]
+  RL:
+    duration_s: 1.775800
+    x_start_m: 0.10
+    x_end_m: -0.10
+    easing: smoothstep_with_explicit_keyframes
+    keyframes:
+      - [0.0, 0.10]
+      - [0.15, 0.10]
+      - [1.625800, -0.10]
+      - [1.775800, -0.10]
+render:
+  lighting:
+    ambient_rgb: [2.0, 2.0, 2.0]
+    directional:
+      direction: [-0.2, -0.4, -1.0]
+      color_rgb: [4.0, 4.0, 4.0]
+  native_radiance_required: true
+  display_rgb_fallback: forbidden
+  source_frame_rate_hz: 100.0
+  keyframe_policy: evaluate_every_source_frame_and_archive_state
+  render_cadence: fixed_100Hz_source_for_both_methods
+outputs:
+  required:
+    - native_hdr_or_radiance
+    - depth
+    - segmentation
+    - camera_pose
+    - checkerboard_pose
+    - timestamps_s
+    - ours_v3_1_events
+    - display_rgb_frames_for_v2e
+  timestamp_origin: sequence_local_zero
+  event_schema: "timestamp_us,x,y,polarity_01"
+  formal_run: disabled_until_phase5_approval

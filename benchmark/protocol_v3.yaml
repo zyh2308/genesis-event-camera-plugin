@@ -1,0 +1,202 @@
+protocol_id: quality_benchmark_v3
+protocol_version: v3-frozen-preformal-readiness
+status: execution_readiness_only
+formal_run_allowed: false
+
+# This file was created before any formal benchmark result existed.  It records
+# design corrections found by the Phase 4.7 execution-readiness review.
+pre_result_change_record:
+  created_before_formal_result: true
+  reason:
+    - no common hardware trigger exists between EVK4 and Genesis
+    - exact real x(t) and a synchronized real trajectory are unavailable
+    - the previous local 5 ms windows were not defensible as formal units
+    - real HDF5 readability, native Genesis HDR, and official V2E execution
+      must be proven before any aggregate result is allowed
+  forbidden_basis: no formal metric, ranking, or inspected formal result
+
+historical_protocols:
+  protocol_v1:
+    file: benchmark/protocol_v1.yaml
+    sha256: b1b4519446bbc821220b3502a0eb3811bf8c0baf8bd457eca022a0d082ebdd97
+  protocol_v2:
+    file: benchmark/protocol_v2.yaml
+    sha256: recorded_in_benchmark/protocol_v2.sha256
+    immutable: true
+
+frozen_repository:
+  repository: zyh2308/genesis-event-camera-plugin
+  frozen_core_commit: e79e656ac00f7847b98db9e12bf43b093f3afff1
+  core_path: genesis_event_plugin/
+  core_modification_during_benchmark: forbidden
+  core_integrity_check: "git diff --exit-code e79e656 -- genesis_event_plugin/"
+  benchmark_harness_may_advance: true
+
+execution_gate:
+  phase: Phase_4_7_Formal_Execution_Readiness
+  required_clean_worktree: true
+  formal_result_creation: disabled
+  formal_metrics_must_run: false
+  human_phase5_approval_required: true
+  runner_must_fail_closed: true
+  required_checks:
+    - protocol_v3_hash
+    - pair_v3_hash
+    - clean_git
+    - frozen_core_diff_empty
+    - real_LR_complete_CD_and_events_read
+    - real_RL_complete_CD_and_events_read
+    - real_timestamp_origin_smoke
+    - Genesis_importable
+    - Genesis_native_HDR_smoke
+    - Ours_v3_1_actual_smoke
+    - formal_replay_is_executable_and_non_placeholder
+    - V2E_official_full_pipeline_smoke
+    - full_direction_duration_match
+    - CD_disabled
+    - GD_disabled
+    - temporal_offset_search_disabled
+    - primary_metric_definitions_unchanged
+
+time_origin:
+  canonical_formula: "t_rel = t - declared_sequence_start"
+  units: microseconds_for_event_streams_seconds_for_simulator_timestamps
+  declared_sequence_start_priority:
+    - acquisition_metadata
+    - segment_metadata
+    - format-defined local segment origin
+  real_sequence_origin:
+    source: segment_file_origin
+    declared_start_us: 0
+    evidence:
+      - source/one_round/segment_01_LR.raw.tmp_index
+      - source/one_round/segment_02_RL.raw.tmp_index
+      - derived/one_round_h5/CD/indexes
+    limitation: >-
+      The vendor recording does not expose a hardware-trigger timestamp shared
+      with Genesis. Events before/after the first decoded event are retained;
+      the first event is never used as an alignment offset.
+  method_alignment:
+    per_method_offset_search: false
+    first_event_alignment: false
+    common_trigger_required_for_pixelwise_claim: true
+  smoke_test: benchmark/scripts/real_timestamp_origin_smoke.py
+
+data_policy:
+  existing_assets_first: true
+  fabricate_data: false
+  post_result_source_switch: forbidden
+  external_asset_root: /home/科研/Eventbased_WAM
+  real_dynamic_source:
+    LR: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5
+    RL: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_02_RL.hdf5
+  real_loader:
+    required_complete_datasets:
+      - CD/events
+    required_metadata:
+      - format
+      - geometry
+      - serial_number
+      - sequence_origin
+    primary_source: official_vendor_HDF5_ECF
+    fallback_policy:
+      allowed: true
+      activation: only_if_declared_before_formal_execution
+      required_manifest_fields:
+        - exact_decoded_path
+        - source_RAW_path
+        - conversion_command_or_script
+        - converter_version
+        - event_count_and_time_span_check
+      current_status: not_activated
+
+real_sequences:
+  resolution_xy: [1280, 720]
+  event_schema: "EVT3 HDF5 CD/events {x,y,p,t}; t in microseconds"
+  trajectory_status: exact_real_x_of_t_unknown
+  synchronization_status: no_common_hardware_trigger
+  LR:
+    file: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5
+    duration_s: 1.756258
+    declared_direction: LR
+  RL:
+    file: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_02_RL.hdf5
+    duration_s: 1.775800
+    declared_direction: RL
+
+primary_evaluation:
+  unit: full_direction_sequence
+  directions: [LR, RL]
+  same_duration_per_direction: true
+  real_vs_ours_and_v2e: true
+  interpretation: coarse_distributional_comparison_only
+  exact_pixelwise_fidelity_claim: false
+  metrics:
+    - event_rate_relative_error
+    - polarity_ratio_error
+    - active_pixel_ratio_error
+    - spatial_distribution_l1_8x8
+  definitions:
+    event_rate_relative_error: abs(rate_sim-rate_real)/max(rate_real, eps)
+    polarity_ratio_error: abs(ON_ratio_sim-ON_ratio_real)
+    active_pixel_ratio_error: abs(APR_sim-APR_real)
+    spatial_distribution_l1_8x8: sum_i abs(p_sim_i-p_real_i)
+  disabled:
+    CD: no_common_trigger_and_exact_trajectory
+    GD: no_common_trigger_and_exact_trajectory
+    temporal_rate_error_per_5ms_bin: not_a_primary_unit_in_v3
+    composite_score: forbidden
+    ranking_score: forbidden
+  qualitative_only:
+    window_duration_s: 0.005
+    normalized_fractions: [0.25, 0.50, 0.75]
+    purpose: deterministic_qualitative_visualization_only
+    allowed_in_formal_aggregate: false
+
+methods:
+  ours_v3_1:
+    label: Ours-v3.1-direct-real_v2
+    implementation_commit: e79e656ac00f7847b98db9e12bf43b093f3afff1
+    config: benchmark/configs/ours.yaml
+    input_contract: HDR_radiance_depth_segmentation_camera_pose_object_pose_timestamps
+    display_rgb_fallback: forbidden
+    actual_smoke: benchmark/scripts/genesis_replay_smoke.py
+  v2e:
+    label: V2E-official-core
+    source: https://github.com/SensorsINI/v2e
+    local_source: /home/科研/Eventbased_WAM/code/v2e_source
+    version: 1.5.1
+    config: benchmark/configs/v2e.yaml
+    seed: 42
+    pipeline_smoke: benchmark/scripts/v2e_official_pipeline_smoke.py
+    input_contract: same_Genesis_replay_display_image_stream
+    pipeline:
+      source_frame_rate_hz: 100.0
+      official_super_slomo_or_timestamp_resolution_path: required
+      timestamp_resolution_s: 0.0001
+      effective_cadence_hz: 10000.0
+      direct_EventEmulator_only: forbidden
+      artificial_timestamp_rescaling: forbidden
+      cutoff_hz: 300.0
+
+shared_replay:
+  definition: benchmark/replays/checkerboard_translation_v3.yaml
+  same_scene_for_ours_and_v2e: true
+  same_nominal_direction: true
+  same_total_duration: true
+  same_scene_class: true
+  exact_real_trajectory_match: not_claimed
+  real_x_of_t: unknown
+
+reproducibility:
+  seed: 42
+  config_hashes: benchmark/configs/CONFIG_HASHES.json
+  pair_manifest: benchmark/evaluation_pairs_v3.yaml
+  output_root: benchmark/results/phase4_7_smokes
+  formal_result_root: external_formal_results
+  preserve_smoke_logs: true
+
+phase_boundary:
+  formal_benchmark_executed: false
+  stop_if_any_required_smoke_fails: true
+  after_readiness: wait_for_human_approval_for_phase5

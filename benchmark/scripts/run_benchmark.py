@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Fail-closed entry point and preflight gate for benchmark protocol v2.
+"""Fail-closed Phase 4.7 readiness gate.
 
-Phase 4.6 uses ``--preflight`` only.  The gate validates provenance and the
-frozen execution contract but never computes the formal metrics.  No CLI flag
-can override methods, metrics, windows, parameters, cadence, or seed.
+``--preflight`` runs only loader and implementation smokes.  It never invokes
+the formal metric code, never searches a time offset, and never writes a formal
+result.  A failed live smoke is a STOP condition, not a partial benchmark.
 """
 
 from __future__ import annotations
@@ -14,177 +14,193 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-import re
 
 
 EXPECTED_CORE = "e79e656ac00f7847b98db9e12bf43b093f3afff1"
-EXPECTED_PHASE45 = "46ce49b941d36d2c145bd9e369dc8ef53362b8cc"
-EXPECTED_PROTOCOL_VERSION = "v2-frozen"
-EXPECTED_DISABLED_METRICS = {
-    "temporal_rate_error_per_5ms_bin",
-    "chamfer_distance_cd",
-    "gaussian_distance_gd",
-    "composite_score",
-    "ranking_score",
+EXPECTED_PROTOCOL = "v3-frozen-preformal-readiness"
+PRIMARY_METRICS = {
+    "event_rate_relative_error",
+    "polarity_ratio_error",
+    "active_pixel_ratio_error",
+    "spatial_distribution_l1_8x8",
 }
 
 
 def load_yaml(path: Path) -> dict:
-    try:
-        import yaml
-    except ModuleNotFoundError as exc:
-        raise SystemExit("PyYAML is required to parse the frozen benchmark protocol") from exc
+    import yaml
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
-        raise SystemExit("protocol root must be a mapping")
+        raise RuntimeError(f"{path}: YAML root must be a mapping")
     return data
-
-
-def current_commit(repo: Path) -> str:
-    return subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
-
-
-def git_status(repo: Path) -> str:
-    return subprocess.check_output(
-        ["git", "-C", str(repo), "status", "--porcelain"], text=True
-    )
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def git(repo: Path, *args: str) -> str:
+    return subprocess.check_output(["git", "-C", str(repo), *args], text=True).strip()
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
-        raise SystemExit(f"STOP: {message}")
+        raise RuntimeError(message)
 
 
-def check_core_integrity(repo: Path) -> dict[str, object]:
-    current = current_commit(repo)
-    diff = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--exit-code", EXPECTED_CORE, "--", "genesis_event_plugin/"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    require(diff.returncode == 0, "genesis_event_plugin/ differs from frozen core e79e656")
-    return {"head": current, "frozen_core": EXPECTED_CORE, "core_diff": "empty"}
+def load_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def check_approval(repo: Path, protocol: dict) -> dict[str, object]:
-    path = repo / "benchmark/FORMAL_RUN_APPROVAL.yaml"
-    approval = load_yaml(path)
-    require(bool(approval.get("approved")), "formal approval file does not approve Phase 4.6")
-    require(approval.get("approved_protocol") == "benchmark/protocol_v2.yaml", "approval targets another protocol")
-    require(approval.get("frozen_core_commit") == EXPECTED_CORE, "approval frozen-core commit mismatch")
-    require(approval.get("phase4_5_commit") == EXPECTED_PHASE45, "approval Phase 4.5 commit mismatch")
-    require(protocol.get("formal_run_allowed") is False, "protocol must remain closed before final confirmation")
-    return approval
-
-
-def check_config_hashes(repo: Path) -> dict[str, str]:
-    ledger_path = repo / "benchmark/configs/CONFIG_HASHES.json"
-    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
-    require(ledger.get("algorithm") == "sha256", "config hash ledger algorithm mismatch")
-    actual: dict[str, str] = {}
-    for name, recorded in ledger.get("files", {}).items():
-        path = repo / "benchmark/configs" / name
-        expected = str(recorded).removeprefix("sha256:")
-        actual[name] = sha256(path)
-        require(actual[name] == expected, f"config hash mismatch: {name}")
-    require(set(actual) == {"ours.yaml", "v2e.yaml", "esim.yaml"}, "unexpected config set")
-    return actual
-
-
-def check_pair_manifest(repo: Path, protocol: dict) -> dict[str, object]:
-    manifest_path = repo / "benchmark/evaluation_pairs_v2.yaml"
-    manifest = load_yaml(manifest_path)
-    require(manifest.get("status") == "frozen_before_formal_execution", "pair manifest is not frozen")
-    require(manifest.get("protocol") == "benchmark/protocol_v2.yaml", "pair manifest protocol mismatch")
-    window = manifest.get("evaluation_window", {})
-    expected_window = protocol["evaluation_windows"]
-    require(float(window.get("duration_s")) == float(expected_window["duration_s"]), "window duration mismatch")
-    require(list(window.get("normalized_fractions", [])) == list(expected_window["normalized_fractions"]), "window fractions mismatch")
-    require(window.get("same_for_real_ours_v2e") is True, "pair windows are not shared")
-    pairs = manifest.get("pairs", [])
-    require([p.get("real_reference", {}).get("direction") for p in pairs] == ["LR", "RL"], "formal pair directions changed")
-    for pair in pairs:
-        require(pair.get("genesis_replay", {}).get("definition") == "benchmark/replays/checkerboard_translation_v2.yaml", "replay definition mismatch")
-        require(pair.get("ours_output", {}).get("method_id") == "ours_v3_1_direct_real_v2", "Ours pair method mismatch")
-        require(pair.get("v2e_output", {}).get("method_id") == "v2e_official_core", "V2E pair method mismatch")
-        require(float(pair["real_reference"]["duration_s"]) == float(pair["genesis_replay"]["duration_s"]), f"duration mismatch in {pair.get('pair_id')}")
-    return {"sha256": sha256(manifest_path), "pair_ids": [p["pair_id"] for p in pairs]}
-
-
-def check_v2e_contract(repo: Path, protocol: dict) -> dict[str, object]:
-    spec = protocol["methods"]["v2e"]["formal_input_cadence"]
-    config = load_yaml(repo / "benchmark/configs/v2e.yaml")
-    require(config["implementation"]["version"] == protocol["methods"]["v2e"]["version"], "V2E version mismatch")
-    require(float(config["parameters"]["cutoff_hz"]) == float(spec["cutoff_hz"]), "V2E cutoff changed")
-    source = Path("/home/科研/Eventbased_WAM/code/v2e_source/setup.py")
-    require(source.exists(), "V2E official source setup.py is missing")
-    text = source.read_text(encoding="utf-8")
-    require(re.search(r'version\s*=\s*["\']1\.5\.1["\']', text) is not None, "V2E source version is not 1.5.1")
+def check_protocol_history(repo: Path, protocol_path: Path) -> dict:
+    v1 = repo / "benchmark/protocol_v1.yaml"
+    v2 = repo / "benchmark/protocol_v2.yaml"
+    v1_expected = "b1b4519446bbc821220b3502a0eb3811bf8c0baf8bd457eca022a0d082ebdd97"
+    v2_sidecar = repo / "benchmark/protocol_v2.sha256"
+    require(sha256(v1) == v1_expected, "protocol_v1 bytes changed")
+    require(v2_sidecar.read_text(encoding="utf-8").split()[0] == sha256(v2), "protocol_v2 bytes/hash changed")
+    current_hash = sha256(protocol_path)
+    sidecar = repo / "benchmark/protocol_v3.sha256"
+    require(sidecar.is_file(), "protocol_v3.sha256 is missing")
+    require(sidecar.read_text(encoding="utf-8").split()[0] == current_hash, "protocol_v3 sidecar hash mismatch")
     return {
-        "version": config["implementation"]["version"],
-        "effective_cadence_hz": float(spec["effective_cadence_hz"]),
-        "timestamp_resolution_s": float(spec["timestamp_resolution_s"]),
-        "official_source": str(source),
+        "protocol_v1_sha256": sha256(v1),
+        "protocol_v2_sha256": sha256(v2),
+        "protocol_v3_sha256": current_hash,
     }
 
 
-def preflight(repo: Path, protocol_path: Path, protocol: dict) -> dict[str, object]:
-    require(protocol.get("protocol_version") == EXPECTED_PROTOCOL_VERSION, "protocol is not v2-frozen")
+def check_git_and_core(repo: Path) -> dict:
+    status = git(repo, "status", "--porcelain")
+    require(not status, "worktree is not clean; commit the readiness files before preflight")
+    diff = subprocess.run(
+        ["git", "-C", str(repo), "diff", "--exit-code", EXPECTED_CORE, "--", "genesis_event_plugin/"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    require(diff.returncode == 0, "genesis_event_plugin/ differs from frozen core e79e656")
+    return {"head": git(repo, "rev-parse", "HEAD"), "frozen_core": EXPECTED_CORE, "core_diff": "empty"}
+
+
+def check_configs(repo: Path) -> dict:
+    ledger = load_json(repo / "benchmark/configs/CONFIG_HASHES.json")
+    require(ledger.get("algorithm") == "sha256", "config hash ledger algorithm mismatch")
+    result = {}
+    for name, recorded in ledger.get("files", {}).items():
+        actual = sha256(repo / "benchmark/configs" / name)
+        require(actual == str(recorded).removeprefix("sha256:"), f"config hash mismatch: {name}")
+        result[name] = actual
+    require(set(result) == {"ours.yaml", "v2e.yaml", "esim.yaml"}, "unexpected config set")
+    return result
+
+
+def check_pair_and_replay(repo: Path, pair_path: Path) -> dict:
+    pair = load_yaml(pair_path)
+    replay_path = repo / "benchmark/replays/checkerboard_translation_v3.yaml"
+    replay = load_yaml(replay_path)
+    require(pair.get("status") == "preformal_readiness_only", "pair manifest is not v3 preformal")
+    require(pair.get("protocol") == "benchmark/protocol_v3.yaml", "pair manifest protocol mismatch")
+    require(pair.get("shared_replay") == "benchmark/replays/checkerboard_translation_v3.yaml", "pair replay mismatch")
+    require(set(pair.get("primary_metrics", [])) == PRIMARY_METRICS, "primary metric set changed")
+    require(pair["qualitative_windows"]["aggregate_metric_eligible"] is False, "5 ms windows entered aggregate metrics")
+    pairs = pair.get("pairs", [])
+    require([p.get("direction") for p in pairs] == ["LR", "RL"], "v3 must contain exactly LR and RL pairs")
+    for item in pairs:
+        require(item["genesis_replay"]["definition"] == "benchmark/replays/checkerboard_translation_v3.yaml", "wrong replay definition")
+        require(float(item["real_reference"]["duration_s"]) == float(item["genesis_replay"]["duration_s"]), f"full duration mismatch: {item['pair_id']}")
+    text = replay_path.read_text(encoding="utf-8").lower()
+    for forbidden in ("placeholder", "definition_only_pending", "tbd"):
+        require(forbidden not in text, f"replay still contains forbidden placeholder marker: {forbidden}")
+    require(replay.get("status") == "executable_scene_definition", "replay is not executable")
+    for key in ("board", "camera", "board_pose", "motion", "render", "outputs"):
+        require(key in replay, f"replay missing executable field: {key}")
+    require(replay["render"]["native_radiance_required"] is True, "replay does not require native radiance")
+    require(replay["render"]["display_rgb_fallback"] == "forbidden", "display RGB fallback is not closed")
+    sidecar = repo / "benchmark/evaluation_pairs_v3.sha256"
+    require(sidecar.read_text(encoding="utf-8").split()[0] == sha256(pair_path), "pair v3 sidecar hash mismatch")
+    return {"sha256": sha256(pair_path), "pair_ids": [p["pair_id"] for p in pairs], "replay_sha256": sha256(replay_path)}
+
+
+def check_metric_and_time_contract(protocol: dict) -> dict:
+    require(protocol.get("protocol_version") == EXPECTED_PROTOCOL, "protocol is not v3 readiness protocol")
     require(protocol.get("formal_run_allowed") is False, "formal gate must remain disabled")
-    require(not git_status(repo), "worktree is not clean; commit protocol changes before preflight")
-    core = check_core_integrity(repo)
-    approval = check_approval(repo, protocol)
-    configs = check_config_hashes(repo)
-    pairs = check_pair_manifest(repo, protocol)
-    v2e = check_v2e_contract(repo, protocol)
-    disabled = set(protocol["metrics"]["disabled"])
-    require(disabled == EXPECTED_DISABLED_METRICS, "disabled metric set changed")
-    replay = load_yaml(repo / "benchmark/replays/checkerboard_translation_v2.yaml")
-    require(replay.get("formal_replay_gate", {}).get("require_hdr_overlay") is True, "HDR replay gate missing")
-    require(replay.get("formal_replay_gate", {}).get("display_rgb_substitution_allowed") is False, "display RGB fallback is not closed")
-    protocol_hash = sha256(protocol_path)
-    protocol_sidecar = repo / "benchmark/protocol_v2.sha256"
-    require(protocol_sidecar.read_text(encoding="utf-8").split()[0] == protocol_hash, "protocol v2 sidecar hash mismatch")
-    pair_sidecar = repo / "benchmark/evaluation_pairs_v2.sha256"
-    require(pair_sidecar.read_text(encoding="utf-8").split()[0] == pairs["sha256"], "pair manifest sidecar hash mismatch")
+    metrics = set(protocol["primary_evaluation"]["metrics"])
+    require(metrics == PRIMARY_METRICS, "primary metric definitions changed")
+    disabled = protocol["primary_evaluation"]["disabled"]
+    require(all(key in disabled for key in ("CD", "GD", "temporal_rate_error_per_5ms_bin")), "CD/GD/temporal metric is enabled")
+    qualitative = protocol["primary_evaluation"]["qualitative_only"]
+    require(qualitative["allowed_in_formal_aggregate"] is False, "5 ms windows are not qualitative-only")
+    require(protocol["time_origin"]["method_alignment"]["per_method_offset_search"] is False, "temporal offset search enabled")
+    require(protocol["time_origin"]["method_alignment"]["first_event_alignment"] is False, "first-event alignment enabled")
+    return {"primary_metrics": sorted(metrics), "CD": "disabled", "GD": "disabled", "temporal_offset_search": "disabled"}
+
+
+def run_smoke(repo: Path, args: list[str], log_path: Path) -> dict:
+    completed = subprocess.run([sys.executable, *args], cwd=repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text(completed.stdout, encoding="utf-8")
+    require(completed.returncode == 0, f"smoke failed: {' '.join(args)}; see {log_path}")
+    try:
+        return json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"smoke did not emit JSON: {log_path}") from exc
+
+
+def preflight(repo: Path, protocol_path: Path, pair_path: Path, smoke_root: Path) -> dict:
+    protocol = load_yaml(protocol_path)
+    history = check_protocol_history(repo, protocol_path)
+    core = check_git_and_core(repo)
+    contracts = check_metric_and_time_contract(protocol)
+    configs = check_configs(repo)
+    pairs = check_pair_and_replay(repo, pair_path)
+    smoke_root.mkdir(parents=True, exist_ok=True)
+
+    real = run_smoke(repo, ["benchmark/scripts/real_timestamp_origin_smoke.py"], smoke_root / "real_timestamp_origin.log")
+    genesis = run_smoke(repo, ["benchmark/scripts/genesis_replay_smoke.py", "--direction", "LR", "--duration", "0.10", "--output-dir", str(smoke_root / "genesis_LR")], smoke_root / "genesis_hdr_ours.log")
+    v2e = run_smoke(repo, ["benchmark/scripts/v2e_official_pipeline_smoke.py", "--frames", str(smoke_root / "genesis_LR/frames"), "--output-dir", str(smoke_root / "v2e_LR")], smoke_root / "v2e_official_pipeline.log")
+    require(real.get("status") == "PASS", "real LR/RL loader smoke did not pass")
+    require(genesis.get("status") == "PASS" and genesis.get("native_radiance") is True, "Genesis HDR/Ours smoke did not pass")
+    require(v2e.get("status") == "PASS" and v2e.get("official_pipeline") is True, "official V2E pipeline smoke did not pass")
     return {
         "status": "preflight_pass",
-        "formal_benchmark_run": False,
-        "protocol": {"path": str(protocol_path), "sha256": protocol_hash},
-        "approval": {"approved": approval["approved"], "scope": approval["approval_scope"]},
+        "formal_benchmark_executed": False,
+        "formal_metrics_executed": False,
+        "history": history,
         "core": core,
+        "contracts": contracts,
         "configs": configs,
         "pairs": pairs,
-        "v2e": v2e,
-        "disabled_metrics": sorted(disabled),
-        "hdr_formal_replay": "required_but_not_executed_in_phase_4_6",
-        "formal_metrics": "not_run",
+        "real_LR_RL_read_smoke": real,
+        "Genesis_HDR_smoke": genesis,
+        "Ours_v3_1_smoke": genesis,
+        "V2E_official_full_pipeline_smoke": v2e,
+        "smoke_root": str(smoke_root),
+        "next_action": "wait for human approval of Phase 5",
     }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Preflight or run only the protocol-approved benchmark.")
-    parser.add_argument("--protocol", type=Path, required=True)
-    parser.add_argument("--preflight", action="store_true", help="validate v2 provenance without running metrics")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--protocol", type=Path, default=Path("benchmark/protocol_v3.yaml"))
+    parser.add_argument("--pair-manifest", type=Path, default=Path("benchmark/evaluation_pairs_v3.yaml"))
+    parser.add_argument("--preflight", action="store_true")
+    parser.add_argument("--smoke-root", type=Path, default=Path("/tmp/genesis_event_benchmark_phase4_7"))
     args = parser.parse_args()
     protocol = args.protocol.resolve()
     repo = protocol.parents[1]
-    data = load_yaml(protocol)
-    if args.preflight:
-        report = preflight(repo, protocol, data)
-        print(json.dumps(report, indent=2, ensure_ascii=False))
+    try:
+        if not args.preflight:
+            raise RuntimeError("formal benchmark is disabled; use --preflight for readiness smokes")
+        result = preflight(repo, protocol, args.pair_manifest.resolve(), args.smoke_root.resolve())
+        print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
-    protocol_sha = sha256(protocol)
-    print("Formal benchmark is disabled by protocol confirmation gate.")
-    print(f"protocol={protocol}")
-    print(f"protocol_sha256={protocol_sha}")
-    print("No formal result files were created.")
-    return 2
+    except Exception as exc:
+        result = {
+            "status": "STOP",
+            "formal_benchmark_executed": False,
+            "formal_metrics_executed": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 2
 
 
 if __name__ == "__main__":

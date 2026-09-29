@@ -68,3 +68,26 @@ The Phase 4.6 smoke gate may validate the HDR adapter when Genesis is available,
 but it must stop if the HDR overlay cannot actually run. No full evaluation
 metric, baseline parameter search, or Ours parameter change is permitted in
 this phase.
+## Phase 4.7 — Formal execution readiness
+
+This revision was created before any formal benchmark result. It preserves
+`protocol_v1.yaml` and `protocol_v2.yaml` byte-for-byte and addresses execution
+risks found during readiness review:
+
+1. Primary units are complete LR and RL directions with equal declared
+   duration per direction. The old 5 ms windows remain deterministic
+   qualitative visualization only.
+2. All streams use `t_rel = t - declared_sequence_start`; first-event and
+   method-specific offset alignment are forbidden.
+3. The real EVK4 loader must read all of `CD/events` for both HDF5 segments.
+   The official vendor ECF filter is required unless a decoded fallback is
+   declared and checked before any formal result.
+4. Genesis must produce native scene-linear HDR/radiance, depth,
+   segmentation, camera/object poses, and timestamps for the same replay used
+   by both Ours and V2E.
+5. V2E must execute its official image-folder pipeline with SuperSloMo and
+   the frozen 100 Hz → 0.1 ms cadence. A direct EventEmulator call is not a
+   passing smoke.
+
+The v3 runner is fail-closed and reports `formal_benchmark_executed: false`.
+It stops at the first missing runtime dependency or failed smoke.

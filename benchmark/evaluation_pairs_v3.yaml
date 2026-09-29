@@ -1,0 +1,82 @@
+manifest_id: evaluation_pairs_v3
+status: preformal_readiness_only
+protocol: benchmark/protocol_v3.yaml
+protocol_hash_file: benchmark/protocol_v3.sha256
+manifest_hash:
+  algorithm: sha256
+  value: benchmark/evaluation_pairs_v3.sha256
+resolution_xy: [1280, 720]
+crop_xywh: [0, 0, 1280, 720]
+shared_replay: benchmark/replays/checkerboard_translation_v3.yaml
+comparison_unit: full_direction
+time_origin:
+  formula: "t_rel = t - declared_sequence_start"
+  declared_sequence_start_us: 0
+  per_method_offset_search: false
+  first_event_alignment: false
+  exact_real_trajectory_unknown: true
+  no_synchronized_pixelwise_fidelity_claim: true
+  interpretation: coarse_distributional_comparison_only
+primary_metrics:
+  - event_rate_relative_error
+  - polarity_ratio_error
+  - active_pixel_ratio_error
+  - spatial_distribution_l1_8x8
+qualitative_windows:
+  duration_s: 0.005
+  normalized_fractions: [0.25, 0.50, 0.75]
+  aggregate_metric_eligible: false
+methods:
+  ours: ours_v3_1_direct_real_v2
+  v2e: v2e_official_core
+pairs:
+  - pair_id: checkerboard_translation_20260914_LR_full
+    direction: LR
+    real_reference:
+      file: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_01_LR.hdf5
+      schema: EVT3_CD_events_xypt_us
+      duration_s: 1.756258
+      declared_sequence_start_us: 0
+    genesis_replay:
+      definition: benchmark/replays/checkerboard_translation_v3.yaml
+      duration_s: 1.756258
+      nominal_direction: LR
+      exact_real_x_of_t_unknown: true
+    ours_output:
+      expected_path: external_formal_results/checkerboard_translation_20260914_LR_full/ours_v3_1/aer_events.h5
+    v2e_output:
+      expected_path: external_formal_results/checkerboard_translation_20260914_LR_full/v2e/aer_events.h5
+    claims:
+      - same_nominal_direction
+      - same_total_duration
+      - same_scene_class
+      - coarse_distributional_comparison_only
+    forbidden_claims:
+      - exact_trajectory_match
+      - pixelwise_temporal_fidelity
+      - optimized_time_offset
+  - pair_id: checkerboard_translation_20260914_RL_full
+    direction: RL
+    real_reference:
+      file: /home/科研/Eventbased_WAM/data/real/evk4_checkerboard_translation_20260914/derived/one_round_h5/segment_02_RL.hdf5
+      schema: EVT3_CD_events_xypt_us
+      duration_s: 1.775800
+      declared_sequence_start_us: 0
+    genesis_replay:
+      definition: benchmark/replays/checkerboard_translation_v3.yaml
+      duration_s: 1.775800
+      nominal_direction: RL
+      exact_real_x_of_t_unknown: true
+    ours_output:
+      expected_path: external_formal_results/checkerboard_translation_20260914_RL_full/ours_v3_1/aer_events.h5
+    v2e_output:
+      expected_path: external_formal_results/checkerboard_translation_20260914_RL_full/v2e/aer_events.h5
+    claims:
+      - same_nominal_direction
+      - same_total_duration
+      - same_scene_class
+      - coarse_distributional_comparison_only
+    forbidden_claims:
+      - exact_trajectory_match
+      - pixelwise_temporal_fidelity
+      - optimized_time_offset
