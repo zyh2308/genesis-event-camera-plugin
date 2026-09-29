@@ -242,7 +242,8 @@ def main() -> int:
     all_results = {}
     all_visuals = {}
     plugin_path = discover_ecf_plugin()
-    require(plugin_path == "/usr/lib/x86_64-linux-gnu/hdf5/serial/plugins", f"unexpected ECF plugin path: {plugin_path}")
+    require(plugin_path is not None, "official ECF plugin was not discovered")
+    require((Path(plugin_path) / "libH5Zecf.so").is_file(), f"ECF plugin directory lacks libH5Zecf.so: {plugin_path}")
     for direction in ("LR", "RL"):
         duration_s = durations[direction]
         real_sequence = load_real_hdf5(paths[direction]["real"], direction=direction, sequence_start_us=0, duration_s_declared=duration_s)
