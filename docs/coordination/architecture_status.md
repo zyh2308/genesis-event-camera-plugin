@@ -92,3 +92,23 @@ migration.
    frozen tag.
 4. If a future audit finds a mixed or ambiguous file, preserve it in place and
    mark it `MIGRATION_PENDING` rather than splitting it automatically.
+
+## Experiment infrastructure finalization (2026-10-13)
+
+The branch now contains a non-output-affecting experiment-infrastructure layer
+under `eventgenesis_experiment/` and the frozen default contract at
+`configs/eventgenesis_default.yaml`.  `ExperimentRunner` is the one shared
+capture entry point for `QualityAdapter`, `Sim2RealAdapter`, and
+`RobotAdapter`; the runner always instantiates the existing
+`GenesisPhysicsEventPlugin` v3 path.  `DatasetExporter` writes the established
+`events/aer_events.h5` plus `metadata/metadata.json`, synchronized
+`metadata/state.jsonl`, optional `labels/`, and a SHA-256 `manifest.json`.
+
+This stage did **not** modify `genesis_event_plugin/`, physics/radiance,
+interpolation, visibility, DVS, recorder behavior, or the frozen tag.  It is
+therefore not eligible to replace the formal core and does not change formal
+quality outputs by itself.  The default config rejects unknown keys and pins
+the formal core hash; adapters are responsible only for experiment-specific
+state, labels, and action snapshots.  See
+`docs/coordination/experiment_infrastructure_finalization_report_2026-10-13.md`
+for the complete contract and validation checklist.

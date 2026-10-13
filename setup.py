@@ -20,6 +20,7 @@ setup(
         "torch>=2.0",
         "h5py>=3.0",
         "scipy>=1.7",
+        "pyyaml>=6.0",
         "genesis-world>=1.2.2",
     ],
     extras_require={
