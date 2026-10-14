@@ -1,0 +1,70 @@
+schema_id: genesis_event_quality_v4_artifact_sidecar
+schema_version: "1.0"
+status: contract_only_not_a_frozen_protocol
+purpose: >-
+  Required provenance sidecar for every event artifact entering a v4
+  QualityAdapter. Values describe the raw artifact before canonical conversion.
+
+timestamp_field_units: >-
+  declared_start, declared_end, observed_first_timestamp, and
+  observed_last_timestamp use the raw artifact timestamp_unit. The declared
+  interval is sequence-local in that raw unit; an absolute acquisition origin
+  is adapter-specific metadata (for example sequence_start_us) and is never
+  used as a per-method alignment offset. The adapter output events always use
+  sequence-local seconds as specified by event_schema.yaml.
+
+required_fields:
+  sequence_id:
+    type: string
+    description: Stable identifier for the physical or replay sequence.
+  generator_name:
+    type: string
+    description: real_evk4, eventgenesis, or v2e_official_core.
+  resolution_xy:
+    type: [integer, integer]
+    description: "[width, height] in pixels."
+  event_layout:
+    type: string
+    description: Raw artifact column/field layout before adapter conversion.
+  polarity_encoding:
+    type: string
+    description: Raw polarity encoding, for example 0=OFF,1=ON.
+  timestamp_unit:
+    type: string
+    allowed: [s, ms, us, ns]
+  declared_start:
+    type: number
+  declared_end:
+    type: number
+  observed_first_timestamp:
+    type: number_or_null
+    description: Null is permitted only when event_count is zero.
+  observed_last_timestamp:
+    type: number_or_null
+    description: Null is permitted only when event_count is zero.
+  event_count:
+    type: integer
+    minimum: 0
+  config_sha256:
+    type: string
+    description: Exact config hash or an explicitly documented non-applicable value.
+  protocol_sha256:
+    type: string
+    description: Protocol hash used to declare the artifact.
+
+adapter_output_additions:
+  canonical_schema_version: "1.0"
+  canonical_event_layout: [x, y, p, t]
+  canonical_timestamp_unit: s
+  canonical_polarity_encoding: -1=OFF,1=ON
+  adapter_name: string
+  artifact_path: string
+
+validation:
+  declared_end_must_be_ge_declared_start: true
+  observed_first_must_be_ge_declared_start: true
+  observed_last_must_be_le_declared_end: true
+  event_count_must_equal_canonical_row_count: true
+  sidecar_observations_must_match_artifact: true
+  first_event_alignment: forbidden
+  per_method_offset_search: forbidden

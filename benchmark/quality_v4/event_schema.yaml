@@ -1,0 +1,68 @@
+schema_id: genesis_event_quality_v4_canonical
+schema_version: "1.0"
+status: interface_design_only_not_a_frozen_protocol
+purpose: >-
+  Define the single representation handed from QualityAdapter instances to
+  future event metrics. Raw artifact layouts may differ; metric code must not
+  consume raw artifacts directly.
+
+canonical_event:
+  shape: [N, 4]
+  dtype: float64
+  column_order: [x, y, p, t]
+  timestamp_unit: seconds
+  timestamp_origin: declared_sequence_start
+  timestamp_semantics: sequence_local_time
+  polarity_encoding:
+    values: [-1, 1]
+    meaning:
+      -1: OFF
+      1: ON
+  coordinate_convention:
+    x_axis: right
+    y_axis: down
+    origin: top_left_pixel
+    indexing: zero_based_integer_pixel_coordinates
+    pixel_center_convention: integer_pixel_index
+  ordering:
+    timestamp: nondecreasing
+  allowed_empty_stream: true
+
+adapter_boundary:
+  input: raw_event_artifact_plus_artifact_metadata
+  output:
+    events: canonical_event
+    metadata: artifact_schema_v4
+  metric_access: adapters_only
+  alignment: forbidden_in_adapter
+  normalization: forbidden_in_adapter
+  parameter_fitting: forbidden_in_adapter
+
+raw_input_formats:
+  real_evk4:
+    artifact: Metavision EVT3 HDF5
+    dataset: CD/events
+    raw_fields: [x, y, p, t]
+    raw_timestamp_unit: microseconds
+    raw_polarity_values: [0, 1]
+    existing_loader: benchmark.io.real_stream.load_real_hdf5
+  eventgenesis:
+    artifact: Genesis recorder HDF5
+    dataset: events
+    raw_column_order: [t, x, y, p]
+    raw_timestamp_unit: microseconds
+    raw_polarity_values: [0, 1]
+    existing_loader: genesis_event_plugin.evaluation.event_reader.read_genesis_hdf5
+  v2e:
+    artifact: official V2E HDF5
+    dataset: events
+    raw_column_order: [t, x, y, p]
+    raw_timestamp_unit: microseconds
+    raw_polarity_values: [0, 1]
+    existing_loader: benchmark.metrics.event_statistics.load_aer_events
+
+non_goals:
+  - formal_benchmark_execution
+  - PECS_CD_or_GD_execution
+  - temporal_or_spatial_alignment
+  - simulator_or_event_generation_changes

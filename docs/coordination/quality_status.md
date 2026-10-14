@@ -95,6 +95,49 @@ FORMAL_BENCHMARK_EXECUTED_THIS_MIGRATION: false
 SIMULATOR_MODIFIED_THIS_MIGRATION: false
 ```
 
+## Stage 5 Q2 — QualityAdapter interface audit
+
+Q2 establishes only the engineering boundary for a future v4 evaluation. It
+does not create or freeze `protocol_v4`, run alignment, fit normalization,
+execute CD/GD, rank methods, add a baseline, or modify the frozen simulator.
+
+```text
+Q2_INTERFACE_IMPLEMENTED: true
+FORMAL_BENCHMARK_EXECUTED_Q2: false
+FORMAL_METRICS_EXECUTED_Q2: false
+SIMULATOR_MODIFIED_Q2: false
+```
+
+Added under `benchmark/quality_v4/`:
+
+- `event_schema.yaml`: canonical `(N,4)` float64 `[x,y,p,t_s]` schema;
+- `artifact_schema.yaml`: required provenance sidecar contract;
+- `adapters/base.py`, `real_ev_k4.py`, `genesis.py`, `v2e.py`: raw artifact
+  adapters and strict metadata validation;
+- `tests/pecs_metric_selftest.py`: non-formal legacy metric sanity tests;
+- `README.md` and `stage5_q2_quality_adapter_report.md`.
+
+The adapter boundary is:
+
+```text
+raw artifact + sidecar -> QualityAdapter -> canonical events + metadata -> future metric
+```
+
+Real EVK4, EventGenesis, and official V2E adapters reuse existing loaders and
+perform only explicit layout/unit/polarity conversion. First-event alignment,
+per-method temporal offset search, normalization fitting, and parameter fitting
+are forbidden at this layer. Sidecar event count and observed first/last
+timestamps are checked against the loaded artifact rather than silently
+overwritten.
+
+The self-test passed identity, empty-input, timestamp-unit, polarity, and
+determinism checks. This is not a formal result. Historical `protocol_v1`,
+`protocol_v2`, and `protocol_v3` remain unchanged; any formal CD/GD design
+must be a separately reviewed `protocol_v4`.
+
 ## 下一步
 
-等待人工审阅本分支和备份后，才可以进入“设计 `protocol_v4`”阶段。`protocol_v4` 应独立定义配对事件流、CD/GD、轨迹/时间同步、数据来源和 V2E 公平执行条件；不得改写旧 v3，也不得把本次迁移或历史 readiness smoke 当成 formal benchmark。
+等待人工审阅本分支和 Q2 报告后，才可以进入“设计 `protocol_v4`”阶段。
+`protocol_v4` 应独立定义配对事件流、CD/GD、轨迹/时间同步、数据来源和
+V2E 公平执行条件；不得改写旧 v3，也不得把本次 Q2 接口审计、迁移或历史
+readiness smoke 当成 formal benchmark。
