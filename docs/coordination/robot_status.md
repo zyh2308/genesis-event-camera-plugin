@@ -142,10 +142,11 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 ## 尚未完成 / 风险
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
-- Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。新低机位已确认实际抓取姿态下目标清晰可见，HDR 输出有效；遮挡百分比对照姿态不合法，仍待实现有效定量对照。
+- Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。低机位图像与 HDR 输出有效，但保存的 RGB 可见夹爪对目标有遮挡；旧 0% 遮挡来自非法 Panda qpos，不能采用。已把 preflight 改为同相机 target-only 参考，并新增发射到拦截区的 9 个静态视野采样；新实现待服务器实测，完整动态机械臂遮挡仍未测量。
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
 - 统一 speed-conditioned lead 三档开发复验均 20/20，但每档 Wilson 95% CI 下界为 83.9%；10 mm 横向位置偏差敏感性显著，额外 20 ms 延迟未影响该小样本。新 seed 的大样本独立成功率尚未完成，暂不把 20/20 解释成可推广的 >95% 成功率。
 - 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
+- 新种子 100 集/速度的 oracle holdout 已在服务器 tmux `r0_oracle_holdout100x3_20261016` 运行，PID `1594166`；实际代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、seed `2026102800`。逐集 CSV、退出状态与运行日志尚待回收。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项

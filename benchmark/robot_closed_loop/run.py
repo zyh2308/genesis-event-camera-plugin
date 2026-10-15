@@ -780,17 +780,78 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
     Image.fromarray(rgb).save(out / "camera_preflight_rgb.png")
     np.savez_compressed(out / "camera_preflight_hdr_depth_seg.npz", hdr=hdr, depth=depth, segmentation=seg)
 
-    # Neutral-arm state is the same scene/camera/target with the Panda at its
-    # model neutral pose. It supplies a rendered target silhouette reference.
+    # Render a target-only reference with the exact same camera and target
+    # geometry. Do not use Panda's all-zero model qpos: it is outside joint
+    # limits and is not a meaningful robot posture.
     q_home = as_numpy(env.robot.get_dofs_position()).reshape(-1).copy()
-    q_neutral = np.zeros_like(q_home)
-    env.robot.set_qpos(q_neutral, zero_velocity=True)
-    _, _, seg_clear, _ = env.camera.render(rgb=True, depth=False, segmentation=True, radiance=False)
-    clear_mask, clear_bbox = _mask_and_bbox(np.asarray(seg_clear), ids)
-    env.robot.set_qpos(q_home, zero_velocity=True)
+    reference_env = build_free_slide_scene(cfg, dt_s=env.dt_s, with_camera=True)
+    if reference_env.camera is None:
+        raise RuntimeError("target-only camera reference was not constructed")
+    current_position = as_numpy(env.target.get_pos(relative=False)).reshape(-1)[:3]
+    reference_env.reset_episode(current_position, 0.0)
+    _, _, seg_clear, _ = reference_env.camera.render(
+        rgb=True, depth=False, segmentation=True, radiance=False,
+    )
+    reference_ids = _resolve_segmentation_ids(reference_env.scene, reference_env.target)
+    if not reference_ids:
+        raise RuntimeError("camera segmentation did not resolve target-only reference ID")
+    clear_mask, clear_bbox = _mask_and_bbox(np.asarray(seg_clear), reference_ids)
     total_px = int(clear_mask.sum())
     visible_px = int(mask.sum())
     occlusion = None if total_px == 0 else float(max(0, total_px - visible_px) / total_px)
+
+    # Check view coverage over the nominal launch-to-intercept path and the
+    # configured lateral launch range. These are static camera samples only;
+    # they do not replace the dynamic task rollout or move the target during it.
+    target_cfg = cfg["target"]
+    _, x_hi = (float(v) for v in target_cfg["launch_x_range_m"])
+    y_abs = max(abs(float(v)) for v in target_cfg["launch_y_range_m"])
+    intercept_x = float(cfg["controller"]["intercept_x_m"])
+    x_samples = sorted({x_hi, 0.5 * (x_hi + intercept_x), intercept_x}, reverse=True)
+    y_samples = sorted({-y_abs, 0.0, y_abs})
+    view_samples = []
+    for sample_x in x_samples:
+        for sample_y in y_samples:
+            sample_position = np.asarray([sample_x, sample_y, size / 2], dtype=np.float64)
+            env.robot.set_qpos(q_home, zero_velocity=True)
+            env.target.set_qpos(
+                np.concatenate((sample_position, np.asarray([1.0, 0.0, 0.0, 0.0]))),
+                zero_velocity=True,
+            )
+            _, _, sample_seg, _ = env.camera.render(
+                rgb=True, depth=False, segmentation=True, radiance=False,
+            )
+            sample_mask, sample_bbox = _mask_and_bbox(np.asarray(sample_seg), ids)
+            reference_env.reset_episode(sample_position, 0.0)
+            _, _, sample_reference_seg, _ = reference_env.camera.render(
+                rgb=True, depth=False, segmentation=True, radiance=False,
+            )
+            sample_reference_mask, _ = _mask_and_bbox(
+                np.asarray(sample_reference_seg), reference_ids,
+            )
+            sample_total = int(sample_reference_mask.sum())
+            sample_visible = int(sample_mask.sum())
+            sample_occlusion = (
+                None if sample_total == 0
+                else float(max(0, sample_total - sample_visible) / sample_total)
+            )
+            sample_short_side = (
+                None if sample_bbox is None
+                else min(sample_bbox[2] - sample_bbox[0], sample_bbox[3] - sample_bbox[1])
+            )
+            view_samples.append({
+                "target_position_m": sample_position.tolist(),
+                "target_pixels_target_only": sample_total,
+                "visible_target_pixels_with_robot_home": sample_visible,
+                "rendered_robot_occlusion_fraction": sample_occlusion,
+                "target_bbox_xyxy_px_with_robot_home": sample_bbox,
+                "target_projected_short_side_px_with_robot_home": sample_short_side,
+            })
+    env.robot.set_qpos(q_home, zero_velocity=True)
+    env.target.set_qpos(
+        np.concatenate((current_position, np.asarray([1.0, 0.0, 0.0, 0.0]))),
+        zero_velocity=True,
+    )
 
     camera_cfg = cfg["camera"]
     w, h = (int(v) for v in camera_cfg["resolution_wh"])
@@ -812,11 +873,12 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
         "intercept_render": {
             "resolved_target_segmentation_ids": ids,
             "target_bbox_xyxy_px_with_robot": bbox,
-            "target_bbox_xyxy_px_neutral_arm": clear_bbox,
+            "target_bbox_xyxy_px_target_only_reference": clear_bbox,
             "visible_target_pixels_with_robot": visible_px,
-            "target_pixels_neutral_arm": total_px,
+            "target_pixels_target_only_reference": total_px,
             "rendered_robot_occlusion_fraction": occlusion,
             "target_projected_short_side_px": None if bbox is None else min(bbox[2] - bbox[0], bbox[3] - bbox[1]),
+            "nominal_path_view_samples_robot_held_home": view_samples,
         },
         "radiance": {
             "dtype": str(hdr.dtype), "shape": list(hdr.shape),
@@ -825,7 +887,7 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
             "max": float(np.nanmax(hdr)) if hdr.size else None,
             "above_one_pixels": int((hdr > 1.0).any(axis=-1).sum()) if hdr.ndim == 3 else 0,
         },
-        "note": "The occlusion denominator is the target silhouette with the same camera and the Panda in neutral qpos; geometry is not hidden or replaced.",
+        "note": "Occlusion compares actual robot-scene target pixels against a target-only scene with identical camera, target geometry, and target pose. Path samples are static view checks with Panda held at the nominal pre-grasp home qpos; they are not task rollouts.",
     }
     (out / "camera_preflight.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     if report["status"] != "passed":

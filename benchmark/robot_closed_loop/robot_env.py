@@ -163,6 +163,7 @@ class FreeSlideScene:
     scene: Any
     plane: Any
     target: Any
+    camera: Optional[Any]
     dt_s: float
     config: Dict[str, Any]
 
@@ -187,7 +188,9 @@ class FreeSlideScene:
         return False
 
 
-def build_free_slide_scene(config: Dict[str, Any], *, dt_s: Optional[float] = None) -> FreeSlideScene:
+def build_free_slide_scene(
+    config: Dict[str, Any], *, dt_s: Optional[float] = None, with_camera: bool = False,
+) -> FreeSlideScene:
     """Build the exact target/support physics without any robot collision geometry."""
     import genesis as gs
 
@@ -215,12 +218,25 @@ def build_free_slide_scene(config: Dict[str, Any], *, dt_s: Optional[float] = No
         ),
         surface=gs.surfaces.Default(color=(0.14, 0.54, 0.26, 1.0)),
     )
+    camera = None
+    if with_camera:
+        camera_cfg = config["camera"]
+        camera = scene.add_camera(
+            res=tuple(int(v) for v in camera_cfg["resolution_wh"]),
+            pos=tuple(camera_cfg["position_m"]),
+            lookat=tuple(camera_cfg["lookat_m"]),
+            up=tuple(camera_cfg["up_m"]),
+            fov=float(camera_cfg["vertical_fov_deg"]),
+            GUI=False,
+        )
     scene.build()
     measured_mass = float(as_numpy(target.get_mass()).reshape(-1)[0])
     expected_mass = float(target_cfg["mass_kg"])
     if abs(measured_mass - expected_mass) > 0.005:
         raise RuntimeError(f"target mass {measured_mass:.6f} kg != configured {expected_mass:.6f} kg")
-    return FreeSlideScene(gs=gs, scene=scene, plane=plane, target=target, dt_s=dt, config=config)
+    return FreeSlideScene(
+        gs=gs, scene=scene, plane=plane, target=target, camera=camera, dt_s=dt, config=config,
+    )
 
 
 def build_robot_scene(config: Dict[str, Any], *, dt_s: Optional[float] = None) -> RobotScene:

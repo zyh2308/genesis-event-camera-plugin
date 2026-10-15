@@ -96,6 +96,12 @@ Sensitivity examples use one factor per run:
 ... --mode sensitivity --episodes 5 --speeds 0.4 --a-eff <calibrated-a> --extra-latency-ms 20 ...
 ```
 
+`--mode preflight` measures target visibility against a target-only reference
+scene rendered with the same camera and target geometry. It also samples the
+nominal launch-to-intercept view at the configured lateral range while holding
+Panda at its legal pre-grasp home pose. Those are static camera checks, not
+dynamic arm-trajectory coverage.
+
 For earlier closure timing, use a negative `--ttc-bias-ms`; e.g. `-20` starts
 closing when the predicted crossing is about 20 ms farther away than the
 configured lead threshold.
