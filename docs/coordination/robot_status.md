@@ -12,25 +12,25 @@
 - 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
 - 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
 - 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
-- 服务器 `g1` 的隔离 worktree 最近同步到 `af0548c`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
+- 服务器 `g1` 的隔离 worktree 最近同步到 `9c83cbd040388e50e49489e6d83b1d8431b863cd`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
 - 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
 ### 服务器实测结果
 
 **服务器实测（开发级）：** 在代码提交 `af0548c3ab6ccc663f25fea47e8dd59989b5d1a3`、配置 SHA256 `7a7f73803856f1bcf11f67d10c97d72cf5e46b84888bbd2f6c60247c83480ba6` 下，静态物理抓取 smoke 为 1/1：双侧接触、首次接触 0.064 s、抬升触发 0.134 s、底面净空 0.1016 m、保持 0.5 s，结果 `server_static_smoke_torch28/r0_static.csv`。视频、trace 和输出校验清单均已归档；样本量不足以表示稳定成功率。
 
-同一候选配置的 camera preflight 在代码 `af0548c...` 下 exit 0，但证据无效：报告 `target_pixels=0`，HDR 为 NaN 标量，RGB 全黑。根因确认是 benchmark 将 `camera.render(radiance=True)` 的辐射图误当第四个返回值；该 API 把 HDR 放在第一个返回值。原高机位也疑似遮住目标。修复将分开渲染显示 RGB/segmentation 与线性 HDR，并把候选机位降至 `[0.65,-0.45,0.25]`；新配置与结果需重新验证。Torch 2.5.1 下的一次失败接触 smoke 仍作为兼容性证据保留，不计样本。
+修正后的 camera preflight 在代码 `9c83cbd040388e50e49489e6d83b1d8431b863cd`、配置 SHA256 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a` 下通过。320×240、垂直 FOV 30° 的真实 Panda 抓取预备姿态画面中，目标 bbox 为 `[50,97,93,144]`、短边 43 px、可见 859 px；HDR 为有限 float32 `[240,320,3]`，范围 `[0.00441,1.12109]`。相机候选 `[0.65,-0.45,0.25]` 下目标能见且尺度可用。报告中的 0% occlusion 是与全零 Panda qpos 的对照；Genesis 日志提示该 qpos 越界，因此这个比例不能作为定量遮挡结论。应以后续用合法停放姿态或独立无机器人参考重新测量；当前只确认实际任务姿态下目标未被完全遮挡。旧高机位/旧 HDR preflight 仍保留为无效 bug 证据。Torch 2.5.1 下的一次失败接触 smoke 仍作为兼容性证据保留，不计任务样本。
 
 ## 分支、冻结基线与候选配置
 
 - GitHub：`zyh2308/genesis-event-camera-plugin`
 - 分支：`exp/robot-closed-loop-v1`
-- 本次静态 smoke 使用提交：`af0548c3ab6ccc663f25fea47e8dd59989b5d1a3`。HDR API 与相机候选修复正在提交，后续 run manifests 将记录新代码提交。
+- 静态 smoke 使用提交：`af0548c3ab6ccc663f25fea47e8dd59989b5d1a3`；通过的相机/HDR preflight 使用提交：`9c83cbd040388e50e49489e6d83b1d8431b863cd`。二者均在同一指定分支，run manifest 保存代码与配置来源。
 - 服务器隔离 worktree：`~/Eventbased_WAM/repositories/gec-robot`
 - 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
 - Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
 - 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，当前相机候选配置 SHA256 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`；旧相机配置 hash `7a7f73803856f1bcf11f67d10c97d72cf5e46b84888bbd2f6c60247c83480ba6`。配置仍未冻结。
-- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`，待 preflight 复核）、100 Hz 控制、10 ms 观测延迟、手爪闭合起始提前量 100 ms。减速度 0.0981 m/s² 仅是分析初值；正式 holdout/oracle 必须使用 no-hand calibration 共享拟合值。
+- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟、手爪闭合起始提前量 100 ms。实际目标短边 43 px，高于原候选下限 16 px。减速度 0.0981 m/s² 仅是分析初值；正式 holdout/oracle 必须使用 no-hand calibration 共享拟合值。
 
 ## 运行时与运行命令
 
@@ -43,6 +43,14 @@ ROBOT_TORCH_WHEEL="$HOME/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_
 CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python \
   -m benchmark.robot_closed_loop.run --mode static --episodes 1 --seed 2026101600 \
   --out benchmark/robot_closed_loop/results/server_static_smoke
+```
+
+校正后的 camera preflight 复跑命令：
+
+```bash
+CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.run --mode preflight --episodes 1 \
+  --out benchmark/robot_closed_loop/results/camera_preflight_low_20261016
 ```
 
 后续每个输出路径必须是新目录；跑批使用 `tmux`，写 project log 和 PID，并低频查看。建议顺序：
@@ -59,15 +67,16 @@ CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 代码、配置和复跑命令：[`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md)
 - 每次运行必须记录代码 commit、分支、Genesis/Torch/资产/overlay、配置 SHA256；产物 SHA256 清单在运行目录 `SHA256SUMS`。
 - 结果目标位置：服务器 `~/Eventbased_WAM/repositories/gec-robot/benchmark/robot_closed_loop/results/<run-id>/`；轻量原始 CSV、JSONL、摘要、短录像纳入分支。大型产物另存可访问位置并提供 URL 与校验清单。
-- 服务器静态成功原始数据 SHA256：CSV `cca2129f62c502bc2367128284065f6e006b21b8466c445471bf33b247138f66`；轨迹 `fa8f8c0d540f6106490a583979e054015213d78bb532a25e082a9a8479efb68b`；GIF `f363f4de5cd15c3a4d25e2c6d3062f2e7d16e97d60d19171f35a29c4e1c2e76d`；`SHA256SUMS` `c586944bf6ef0cea126dfeafffa2c6ded327d33b317b34a8c661df8b2bf78179`。产物已拉回本地分支，待随结果提交。
+- 服务器静态成功原始数据 SHA256：CSV `cca2129f62c502bc2367128284065f6e006b21b8466c445471bf33b247138f66`；轨迹 `fa8f8c0d540f6106490a583979e054015213d78bb532a25e082a9a8479efb68b`；GIF `f363f4de5cd15c3a4d25e2c6d3062f2e7d16e97d60d19171f35a29c4e1c2e76d`；`SHA256SUMS` `c586944bf6ef0cea126dfeafffa2c6ded327d33b317b34a8c661df8b2bf78179`。静态结果在服务器 `server_static_smoke_torch28/`，实际运行代码 commit `af0548c...`、配置 hash `7a7f738...`。
+- 通过的 camera preflight 位于 [`camera_preflight_low_20261016/`](../../benchmark/robot_closed_loop/results/camera_preflight_low_20261016/)；运行代码 commit `9c83cbd...`、配置 hash `39c7aff...`。JSON SHA256 `41733c813f37ccab58e211db7f646b29d8a98c292285b6220748ff1d5262018c`；RGB `c3fb74d89182d28b7a92579604ead018550ecc93e6f14721e075b4fff6050ef6`；HDR/depth/seg NPZ `fea84331929a5bfb29831d504c1893224d019505ae0bfb1a6c925b573c372179`；manifest `426e67b15058095f0906dfaf3be44ad2d91869c6d4c62535aeaf5563ecf970e1`；`SHA256SUMS` 文件本身 `fedc2831f0d34502b58b55f0a0ad7a129d94eeb9652aba957a0bd540fe5c8b63`。运行日志 SHA256 `93b36b3b9c2e1bb33c1534a9f4a83c1c93c80ff646f3a70398e71b48ae1b264c`。
 - 无效旧机位 preflight 仅作 bug 证据保留：报告 SHA256 `eb586dd8e7dffb69c480ac4e1d3e7c16c42bdd2008c900642a5fb7f477f08ea0`，输出清单 SHA256 `3d92ac2fcb06440c4cf16b9f69d7a145bd6cef2b867228cb1470160b86277ae6`；不得用于相机可见性结论。
 
 ## 尚未完成 / 风险
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
-- Camera render 返回值处理存在 benchmark bug，已定位并修正；旧高机位 preflight 记录到 0 可见像素。新低机位和修正后的 HDR/segmentation 流尚未在服务器验证。
+- Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。新低机位已确认实际抓取姿态下目标清晰可见，HDR 输出有效；遮挡百分比对照姿态不合法，仍待实现有效定量对照。
 - 方块摩擦/减速、自由滑动漂移与拦截时间尚未实测；`a_eff` 未拟合，不能据此做 holdout 或正式 oracle。
-- 固定相机的视场、目标像素尺度、机器人遮挡和 1/2 kHz Direct-HDR 运行成本尚无测量。
+- 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
 - 当前代码尚未给出 >95% 成功率证据；需先小批试运行和调整，再明确验证数量与 Wilson 95% 区间。正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
