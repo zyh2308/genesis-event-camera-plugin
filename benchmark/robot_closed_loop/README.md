@@ -10,10 +10,27 @@ ignored `.venv-robot/` environment.
 bash scripts/setup_robot_runtime.sh
 ```
 
-The setup pins Genesis 1.2.2 and Torch 2.8.0 CPU, then applies the tracked HDR
-overlay only to `.venv-robot`. CPU physics avoids occupying the 4 GB RTX 2050;
-the HDR renderer uses the headless EGL path. Runtime and asset hashes are saved
+The setup pins Genesis 1.2.2 and applies the tracked HDR overlay only to
+`.venv-robot`. On the local development workstation it installs Torch 2.8 CPU.
+On the research server, activate `Eventbased_WAM` first; the project venv
+inherits its provisioned Torch/dependencies and installs Genesis into private
+site-packages. This avoids changing the shared conda environment. The scene
+uses CPU physics and headless EGL rendering. Runtime and asset hashes are saved
 with every run.
+
+Server setup and run from the isolated worktree:
+
+```bash
+source ~/miniconda3/bin/activate Eventbased_WAM
+cd ~/Eventbased_WAM/repositories/gec-robot
+bash scripts/setup_robot_runtime.sh
+CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.run --mode static --episodes 1 --seed 2026101600 \
+  --out benchmark/robot_closed_loop/results/server_static_smoke
+```
+
+Select a currently idle GPU for EGL explicitly after checking ownership with
+`nvidia-smi`; `CUDA_VISIBLE_DEVICES=1` is only a server-specific example.
 
 ## R0 commands
 
@@ -30,11 +47,11 @@ PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_clo
   --out benchmark/robot_closed_loop/results/r0_slide_calibration
 
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
-  --mode slide --split holdout --episodes 10 --speeds 0.3,0.4,0.5 --a-eff 0.0981 --seed 2026101800 \
+  --mode slide --split holdout --episodes 10 --speeds 0.3,0.4,0.5 --a-eff "$A_EFF" --seed 2026101800 \
   --out benchmark/robot_closed_loop/results/r0_slide_holdout
 
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
-  --mode oracle --episodes 20 --speeds 0.3,0.4,0.5 --a-eff 0.0981 --seed 2026101900 \
+  --mode oracle --episodes 20 --speeds 0.3,0.4,0.5 --a-eff "$A_EFF" --seed 2026101900 \
   --out benchmark/robot_closed_loop/results/r0_oracle_dev
 
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
@@ -45,9 +62,15 @@ PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_clo
   --out benchmark/robot_closed_loop/results/direct_hdr_pilot
 ```
 
-After slide calibration, pass its single shared `a_eff` to holdout/oracle. Do
-not fit it on the same holdout trajectory or use future target states in the
-controller. Sensitivity examples use one factor per run:
+After slide calibration, extract its single shared `a_eff` for holdout/oracle.
+Do not fit it on the same holdout trajectory or use future target states in the
+controller. For the paths above:
+
+```bash
+A_EFF="$(.venv-robot/bin/python -c 'import json; print(json.load(open("benchmark/robot_closed_loop/results/r0_slide_calibration/r0_slide_calibration.json"))["a_eff_m_s2"])')"
+```
+
+Sensitivity examples use one factor per run:
 
 ```bash
 ... --mode sensitivity --episodes 5 --speeds 0.4 --a-eff <calibrated-a> --bias-y 0.005 ...

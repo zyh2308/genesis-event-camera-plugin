@@ -1,139 +1,72 @@
-# Robot Closed-loop Utility 状态登记
+# Genesis Event Camera：Robot R0 状态
 
-**状态更新时间：** 2026-10-08  
-**工作流：** `gec-robot/`  
-**研究方向：** Planar Sliding-object Intercept-and-Grasp
+**更新时间：** 2026-10-16（Asia/Tokyo）
+**阶段：** 场景实现与 GT oracle feasibility；候选配置尚未冻结。
+**研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
-## 1. Branch 与基线
+## 当前进度
 
-- Branch：`exp/robot-closed-loop-v1`
-- Worktree：`/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot`
-- Base：`origin/main`
-- Worktree HEAD：`568ebb5480b487340172230fa9490b017141d339`
-- 本次创建前 `origin/main` 已通过 `git fetch origin` 更新到上述提交。
+### 已完成并有证据
 
-原始机器人工作区保持不变：
+- 正式研究 baseline、robot handoff、R0 任务说明与候选场景配置已阅读；按其中的物理/碰撞规则实现 Panda + Plane + 平面方块。没有额外桌面碰撞盒。
+- 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
+- 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
+- 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
+- 服务器 `g1` 上的隔离 worktree 已快进到 `exp/robot-closed-loop-v1`；原 `main` 工作区未切换、未修改。服务器 Genesis 版本为 1.2.2，Torch 为 2.5.1+cu121；已有导入警告称 Genesis 1.2.2 不支持 Torch <2.8，需以服务器 smoke 运行确认兼容性。
+- 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
-- Repository/worktree：`/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin`
-- Branch：`main`
-- 原工作区 local main HEAD：`15479d97154274796043d5e5cc42a336f57b2dd9`
-- 原工作区未执行 reset、强制同步或修改；原有工作区状态保持 clean。
+### 服务器实测结果
 
-## 2. Frozen simulator
+**尚无正式服务器 episode 结果。** 当前没有可报告的服务器静态抓取、滑动标定/holdout、oracle 成功率、相机 preflight 或 Direct-HDR reference 成本。上面的本地静态调试不计入这些结果。所有实验结果必须保留在服务器 worktree 的新目录，附 `run_manifest.json`、逐 episode CSV、trace、代表性录像和 `SHA256SUMS` 后再更新本节。
 
-- Frozen simulator commit：`e79e656ac00f7847b98db9e12bf43b093f3afff1`
-- 检查：在新 worktree 中执行
+## 分支、冻结基线与候选配置
 
-  ```text
-  git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/
-  ```
+- GitHub：`zyh2308/genesis-event-camera-plugin`
+- 分支：`exp/robot-closed-loop-v1`
+- 本地/服务器当前代码提交：`3a002eee1863d99f26ad509c96d3e55b41e9d900`（`Implement R0 robot scene and oracle runner`）
+- 服务器隔离 worktree：`~/Eventbased_WAM/repositories/gec-robot`
+- 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
+- Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
+- 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，SHA256 `7a7f73803856f1bcf11f67d10c97d72cf5e46b84888bbd2f6c60247c83480ba6`。这是待测候选，不是冻结值。
+- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机、100 Hz 控制、10 ms 观测延迟、手爪闭合起始提前量 100 ms。减速度 0.0981 m/s² 仅是分析初值；正式 holdout/oracle 必须使用 no-hand calibration 共享拟合值。
 
-- 结果：PASS；相对于 frozen commit 未发现 `genesis_event_plugin/` 差异。
-- 本 robot branch 不拥有特制 simulator，也没有为机器人任务修改 simulator core。
+## 运行时与运行命令
 
-## 3. 历史机器人工作与 provenance
+在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将 Genesis HDR overlay 安装到 project venv，不修改共享 conda 环境。当前运行时 Torch 低于 Genesis 声明支持版本，必须先过单 episode smoke。
 
-历史 Task1/Task2 及其相关脚本、数据和结果属于旧工作流，统一标记为 `LEGACY`，继续保留在原路径，不在本轮大量复制进 Git repository。
-
-主要外部代码路径：
-
-- `/home/zhaoyuhan/Eventbased_WAM/code/task0_dp`
-- `/home/zhaoyuhan/Eventbased_WAM/downstream`
-- `/home/zhaoyuhan/Eventbased_WAM/validation/downstream`
-
-历史内容包括：
-
-- Task1 Dynamic Target Reaching
-- Task2 Fast Intercept and Hold
-- paired rollout 与事件表示转换工具
-- voxel grid、time-surface 和相关 metrics
-- RGB/Event 训练与评估脚本
-- 历史 checkpoint、rollout、HDF5/raw AER、视频和数据集
-
-本轮仅建立新的 robot worktree 与本状态登记文件；未移动、删除、重命名、覆盖或修改上述旧代码和资产。
-
-## 4. External Immutable Legacy Assets
-
-以下资产按 `EXTERNAL_IMMUTABLE_LEGACY_ASSETS` 处理：
-
-- 主要目录：`/home/zhaoyuhan/Eventbased_WAM/data`
-- 主要目录：`/home/zhaoyuhan/Eventbased_WAM/runs`
-- 主要目录：`/home/zhaoyuhan/Eventbased_WAM/logs`
-- 主要目录：`/home/zhaoyuhan/Eventbased_WAM/research`
-- 主要目录：`/home/zhaoyuhan/Eventbased_WAM/downstream`
-- 主要目录：`/home/zhaoyuhan/Eventbased_WAM/validation/downstream`
-- 资产类型：Task1/Task2 数据集、paired rollout、raw AER、HDF5、checkpoint、视频、评估结果和历史日志。
-
-本轮不复制完整大型数据备份。既有清单和小文件备份保留在：
-
-```text
-/home/zhaoyuhan/Eventbased_WAM/reorg_backups/robot20261007_164200/robot_assets_manifest.txt
-/home/zhaoyuhan/Eventbased_WAM/reorg_backups/robot20261007_164200/external_data_paths.txt
-/home/zhaoyuhan/Eventbased_WAM/reorg_backups/robot20261007_164200/large_assets_manifest.txt
-/home/zhaoyuhan/Eventbased_WAM/reorg_backups/robot20261007_164200/files/
+```bash
+source ~/miniconda3/bin/activate Eventbased_WAM
+cd ~/Eventbased_WAM/repositories/gec-robot
+bash scripts/setup_robot_runtime.sh
+CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.run --mode static --episodes 1 --seed 2026101600 \
+  --out benchmark/robot_closed_loop/results/server_static_smoke
 ```
 
-其中 `large_assets_manifest.txt` 记录大型资产的绝对路径和大小；已有小型源码、配置、Markdown 副本及 SHA256 清单继续作为 provenance 记录。
+后续每个输出路径必须是新目录；跑批使用 `tmux`，写 project log 和 PID，并低频查看。建议顺序：
 
-本次 Git 重组不会触碰这些资产。后续新实验必须写入新的、独立命名的目录，禁止覆盖上述历史路径、Task1/Task2 数据、rollout 或 checkpoint。
+1. `--mode static --episodes 20`：真实双侧接触、抬升和 0.5 s 保持。
+2. `--mode slide --split calibration --episodes 10 --speeds 0.3,0.4,0.5`：无手方块物理滑动和共同减速度拟合。
+3. `--mode slide --split holdout ... --a-eff <calibration 输出>`：独立种子检查漂移、到达时间和预测误差。
+4. `--mode oracle --episodes 20 --speeds 0.3,0.4,0.5 --a-eff <calibration 输出>`：GT 当前状态 → 固定预测器 → 固定控制器；不读取未来状态。
+5. 分别运行小幅 `--bias-y`、`--ttc-bias-ms`、`--extra-latency-ms` 注入；检查成功率和错误类别变化。
+6. `--mode preflight` 与 `--mode reference --reference-duration 0.20`：固定相机可见性、目标像素尺度、遮挡，以及直接 HDR 1/2 kHz reference 成本。
 
-## 5. paired rollout 与 voxel grid 状态
+## 证据入口与 provenance
 
-### paired rollout
+- 代码、配置和复跑命令：[`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md)
+- 每次运行必须记录代码 commit、分支、Genesis/Torch/资产/overlay、配置 SHA256；产物 SHA256 清单在运行目录 `SHA256SUMS`。
+- 结果目标位置：服务器 `~/Eventbased_WAM/repositories/gec-robot/benchmark/robot_closed_loop/results/<run-id>/`；轻量原始 CSV、JSONL、摘要、短录像纳入分支。大型产物另存可访问位置并提供 URL 与校验清单。
+- 当前阶段原始结果哈希：未产生（服务器实验尚未启动）。
 
-- 历史 Task1/Task2 exact-online、replay、time-surface 和 formal 目录继续保留，身份为 `LEGACY`。
-- 已知 Task2 canonical paired debug smoke 位于：
+## 尚未完成 / 风险
 
-  ```text
-  /home/zhaoyuhan/Eventbased_WAM/downstream/smoke/task2_paired_20260929_v122b
-  ```
+- 服务器隔离 runtime setup、HDR overlay smoke 与静态抓取 smoke 尚未执行。
+- `Torch 2.5.1+cu121` 低于 Genesis 1.2.2 声明支持版本；若 smoke 失败，需要在 project-local runtime 中解决，不改共享环境。
+- 方块摩擦/减速、自由滑动漂移与拦截时间尚未实测；`a_eff` 未拟合，不能据此做 holdout 或正式 oracle。
+- 固定相机的视场、目标像素尺度、机器人遮挡和 1/2 kHz Direct-HDR 运行成本尚无测量。
+- 当前代码尚未给出 >95% 成功率证据；需先小批试运行和调整，再明确验证数量与 Wilson 95% 区间。正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
-- 该 smoke 包含 common state/action/timestamp archive、Ours 事件输出、official V2E 输出及元数据。
-- `formal_metrics_executed` 为 false；该产物只证明输入血缘、接口和 smoke 链路，不是 policy success-rate 结果。
-- 不把历史 event count 或旧 smoke 输出写成机器人性能结论。
+## 冻结建议与研究会话需决策事项
 
-### voxel grid
-
-- `downstream/voxel_representation.py` 提供 raw-AER 到 polarity-separated temporal voxel 的确定性转换。
-- 已知 voxel self-test 通过：时间顺序、无未来事件泄漏和重复运行一致性均已检查。
-- 5-bin/8-bin 仍属于 representation candidate/development protocol；正式候选尚未在本新 workflow 中冻结。
-- voxel smoke 不是正式训练结果，也不代表事件策略已完成 Task1/Task2。
-
-## 6. 已完成测试与未完成事项
-
-已完成的历史基础设施或 debug/smoke 检查：
-
-- Git 与 frozen simulator provenance 检查
-- Task2 canonical paired rollout smoke
-- independent reference event-domain smoke
-- voxel representation self-test
-- Task2 metrics self-test
-- 外部机器人资产与路径审计
-
-上述检查均不等同于正式 policy 性能结果。
-
-尚未在本新 workflow 中完成：
-
-- 新任务正式数据生成
-- formal policy training
-- multi-seed training/evaluation
-- held-out test、full stress sweep
-- wrist-camera formal experiment
-- Franka + planar sliding target + oracle 环境实现
-
-## 7. 迁移标记
-
-- `MIGRATION_PENDING`：旧 Task1/Task2 代码是否在新任务冻结后以何种最小形式复用；新任务环境、oracle 和独立输出目录尚待设计。
-- `CROSS_BRANCH_CORE_CHANGE`：未发现。frozen core 检查 PASS；本轮未修改 simulator core。
-- `LEGACY`：历史 Task1/Task2、paired rollout、旧训练脚本、数据集、checkpoint 和视频。
-
-## 8. 下一阶段
-
-下一阶段只进行设计与环境准备：
-
-1. 设计 Franka + planar sliding target 场景；
-2. 设计可审计的 oracle/interception 参考行为；
-3. 固定新的输出目录和数据 provenance；
-4. 在获得明确协议后再考虑小规模验证。
-
-本状态文件对应的迁移阶段不直接训练复杂 policy，不修改 frozen simulator，也不改写任何历史大型资产。
+暂不冻结任务配置。先依据服务器证据调整摩擦、发射区、截距、闭合提前量与控制限幅；随后在独立 holdout 上确认单一减速度模型可用，再报告 oracle。若 Torch 兼容、HDR reference 成本或在合理调参后 oracle 可达性仍有实质障碍，将在此处附日志/哈希和建议方案后提交研究会话决定。主分支合并留待验收。
