@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set +e
+run_id=r0_direct_hdr_finalcam_dev_20261016
+log="benchmark/robot_closed_loop/results/runtime_logs/${run_id}.log"
+pid_file="benchmark/robot_closed_loop/results/runtime_logs/${run_id}.pid"
+exit_file="benchmark/robot_closed_loop/results/runtime_logs/${run_id}.exit"
+echo $$ > "$pid_file"
+env CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. \
+  /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.run --mode reference --speed 0.4 \
+  --reference-duration 0.20 --seed 2026102900 \
+  --out benchmark/robot_closed_loop/results/r0_direct_hdr_finalcam_dev_20261016 \
+  > "$log" 2>&1
+rc=$?
+echo "$rc" > "$exit_file"
+exit "$rc"

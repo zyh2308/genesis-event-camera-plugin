@@ -12,7 +12,7 @@
 - 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
 - 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
 - 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
-- 服务器 R0 worktree `~/Eventbased_WAM/repositories/gec-robot` 在运行批次时为 `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`；相机诊断 worktree `~/Eventbased_WAM/repositories/gec-robot-camera-sync` 已同步至 `062c3811684a854110e01cfb500222083f0f6deb`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
+- 服务器 R0 worktree `~/Eventbased_WAM/repositories/gec-robot` 在主要批次时为 `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`；相机诊断 worktree `~/Eventbased_WAM/repositories/gec-robot-camera-sync` 为 `062c3811684a854110e01cfb500222083f0f6deb`；最终机位录像与 HDR pilot 在干净 worktree `~/Eventbased_WAM/repositories/gec-robot-finalcam-e63fb94`、代码 `e63fb94872ddca204f6740981fe99b982e0b6777` 运行。原服务器 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
 - 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
 ### 服务器实测结果
@@ -48,7 +48,7 @@
 
 ## 运行时与运行命令
 
-在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv，在私有 venv 安装 Torch 2.8 CPU 并应用 HDR overlay，不修改共享 conda 环境。静态抓取 20/20、相机/HDR preflight、no-hand 标定/holdout 已通过；speed-conditioned GT-current oracle 开发集三档均 20/20。新正 x 侧相机的静态 preflight 已通过；1/2 kHz Direct-HDR reference 成本尚未测量。
+在服务器只使用隔离 worktree；启动前核对 GPU 进程归属，并仅将 EGL 设到当时空闲的设备。仓库 setup 使用 project venv 中的 Genesis 1.2.2、Torch 2.8 CPU 和 HDR overlay，不修改共享 conda 环境。静态抓取 20/20、相机/HDR preflight、no-hand 标定/holdout、GT-current oracle 三档各 100/100 均已完成；正 x 相机静态和动态视野复核已完成；Direct-HDR 1/2 kHz 小样本 reference 已运行。
 
 ```bash
 source ~/miniconda3/bin/activate Eventbased_WAM
@@ -67,7 +67,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
   --out benchmark/robot_closed_loop/results/camera_preflight_final_20261016
 ```
 
-Direct-HDR 1/2 kHz reference pilot（待服务器启动）：
+Direct-HDR 1/2 kHz reference pilot（已在服务器运行，代码 `e63fb948...`、配置 SHA256 `124d8718...`）：
 
 ```bash
 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python \
@@ -129,13 +129,13 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 5. ✅ `--ttc-bias-ms -20` 早闭合 sensitivity：每档 5 集，0.30 档 5/5，0.40/0.50 档 0/5；更早时序使手指在目标到达前过度闭合，已不作为候选。
 6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。
 7. ✅ 统一 speed-conditioned lead 开发复验每档 20/20；横向偏差、额外延迟注入完成；新 seed 独立 oracle 每档 100/100，Wilson 95% 下界 96.3%。
-8. ✅ 新相机候选 target-only preflight 9 点静态视野采样已通过；待检查真实 Panda 动态路径录像。`--mode reference --reference-duration 0.20` 的直接 HDR 1/2 kHz 成本仍待服务器实测。
+8. ✅ 新相机候选 target-only preflight 9 点静态视野采样通过；真实 Panda 动态 oracle 代表录像已检查；0.20 s Direct-HDR 1/2 kHz reference 路径已打通并测得成本。该 pilot 未验证长时采样率收敛或任何视觉估计器。
 
 ## 证据入口与 provenance
 
 - 代码、配置和复跑命令：[`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md)
 - 每次运行必须记录代码 commit、分支、Genesis/Torch/资产/overlay、配置 SHA256；产物 SHA256 清单在运行目录 `SHA256SUMS`。
-- 结果目标位置：服务器 `~/Eventbased_WAM/repositories/gec-robot/benchmark/robot_closed_loop/results/<run-id>/`；轻量原始 CSV、JSONL、摘要、短录像纳入分支。大型产物另存可访问位置并提供 URL 与校验清单。
+- 结果目标位置：服务器 `~/Eventbased_WAM/repositories/gec-robot-finalcam-e63fb94/benchmark/robot_closed_loop/results/<run-id>/`（较早 runs 位于 `gec-robot/`）；轻量原始 CSV、JSONL、摘要、短录像及 SHA256 清单纳入分支。当前新增产物均为小型文件，无需外部大型产物托管。
 - 服务器静态成功原始数据 SHA256：CSV `cca2129f62c502bc2367128284065f6e006b21b8466c445471bf33b247138f66`；轨迹 `fa8f8c0d540f6106490a583979e054015213d78bb532a25e082a9a8479efb68b`；GIF `f363f4de5cd15c3a4d25e2c6d3062f2e7d16e97d60d19171f35a29c4e1c2e76d`；`SHA256SUMS` `c586944bf6ef0cea126dfeafffa2c6ded327d33b317b34a8c661df8b2bf78179`。静态结果在服务器 `server_static_smoke_torch28/`，实际运行代码 commit `af0548c...`、配置 hash `7a7f738...`。
 - 历史低机位 preflight 位于 [`camera_preflight_low_20261016/`](../../benchmark/robot_closed_loop/results/camera_preflight_low_20261016/)；它的遮挡比例对照无效，已由新 target-only 测量取代。
 - 静态 20 集原始结果位于 [`r0_static_dev20_20261016/`](../../benchmark/robot_closed_loop/results/r0_static_dev20_20261016/)；运行代码 commit `418718a...`、配置 hash `39c7aff...`。CSV SHA256 `6bf0bf909ffd358a7edc51df738ab55713c98eeeff78a2df3cea6fb584b6c8ae`；代表性 trace `2154ab5d81a59bc146cc865c5f5d489594d4fb18491132729f366374ac371ab6`；成功 GIF `8dcd8ac511a432763d7073b9182470f0d2677869022f7a3bf4d626d5c84b787e`；run manifest `ca0d87b4f609f0520590fb77b7a1ee853bfde792533b5276fa28110ba76c89d0`；`SHA256SUMS` 文件本身 `603ff03fef8558ad79e49851d0bebc72a7da355c38eccec8de5fc9b52edca869`。日志 SHA256 `bbbf64d424ff6e4bf4dcdc4990424d238d37374044ef2e9680e0dd6dd5a053c7`，exit `0`，PID `1537609`。
@@ -151,17 +151,24 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 ## 尚未完成 / 风险
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
-- Camera render 返回值与 preflight 遮挡测量均已修正。旧高位负 y 机位在合法 home 姿态遮挡 98.31%，拒绝；修正同步后的 top-down 候选在拦截中心遮挡 100%，拒绝；正 x 侧候选 `[1.15,0,0.22]` 的静态 home 视角通过，0–6.7% 遮挡，30–55 px 短边。静态 path checks 固定 Panda 在 home；动态 Panda 运动中的遮挡仍待代表性录像检查。
+- Camera render 返回值与 preflight 遮挡测量均已修正。旧高位负 y 机位在合法 home 姿态遮挡 98.31%，拒绝；修正同步后的 top-down 候选在拦截中心遮挡 100%，拒绝；正 x 侧候选 `[1.15,0,0.22]` 静态 home 视角通过，0–6.7% 遮挡、30–55 px 短边。单次动态录像检查的 9 个均匀抽样帧中，方块始终有可见区域，接触时被夹爪部分遮挡；此观察是定性 smoke，不是跨随机轨迹的遮挡率统计。
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
 - 新 seed oracle 独立 holdout 三档均 100/100，Wilson 95% CI 下界 96.3%；仅支持当前物理场景、固定预测器与固定控制器的 oracle 可行性，不代表视觉估计器成功率。10 mm 横向位置偏差敏感性显著；总观测延迟增至 30 ms 的小样本仍 15/15。
-- 通过的正 x 侧机位已更新至当前候选配置，target-only 分母和 9 点静态路径视野采样均已服务器复测；采样保持 Panda 在预抓 home，动态机械臂运动中的遮挡仍待视频检查。1/2 kHz Direct-HDR reference 成本仍未测量。
+- 正 x 侧机位已更新为当前候选；9 点 preflight 静态采样保持 Panda 在 pre-grasp home。代表性动态录像显示接触附近有部分遮挡但目标未完全消失；多 seed 动态遮挡率仍未量化。Direct-HDR 已完成短 pilot：1/2 kHz 事件数量相差 18.16%，不得据此宣称时间采样已收敛；继续使用前应做较长窗口采样率收敛核验。
 - Top-down 相机的首次 launcher 误指向旧 preflight worktree；由本会话启动的 PID `1609155` 已经 `tmux` 定向中断，未生成完整相机结果且不计数。launcher 根路径已修正后重跑。
 - 新种子 oracle 独立 holdout 已完成：服务器 tmux `r0_oracle_holdout100x3_20261016`，PID `1594166`、exit `0`；实际代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、seed `2026102800`，每档 100/100，Wilson 95% CI 下界 96.3%。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
 
-建议暂定冻结候选为当前配置：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；相机 `[0.65,-0.45,0.25]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 是首次延迟补偿后的因果速度估计。该物理候选在独立新 seed 的 oracle holdout 每档 100/100 成功，Wilson 95% 下界约为 96.3%，达到 >95% 统计门槛。该结论只适用于 GT-current oracle。正 x 侧相机 `[1.15,0,0.22]`、lookat `[0.65,0,0.02]` 已通过 9 点静态 preflight，是当前冻结候选。还需检查代表性动态抓取录像并测 Direct-HDR reference 实际成本；完成后建议研究会话冻结完整任务配置。主分支合并留待验收。
+建议研究会话冻结 R0 场景候选：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；固定相机 `[1.15,0,0.22]` 看向 `[0.65,0,0.02]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 为首次延迟补偿的因果速度估计。当前配置文件 SHA256 `124d87188e9a383a054fb7e6e6eaf106c6d331ad0abfaf2a8a959364eafdc549`。物理与控制候选的独立新 seed oracle holdout 使用前一版相机配置 `9b313bfc...`，每档 100/100，Wilson 95% 下界约 96.3%；新机位配置下另有 0.40 m/s 1/1 dynamic smoke 成功。相机只改变观察渲染，不进入 GT oracle 决策，因此 holdout 支持任务物理/控制可行性而不构成新机位视觉成功率。Direct-HDR 短 pilot 已可运行，实际成本可接受；但 1/2 kHz event count 差异为 18.16%，采样收敛未确定。建议冻结任务和相机候选，后续 reference 正式比较前先决定是否要求更长的 1/2 kHz 收敛试验；不把本 pilot 的共享像素模型或理想阈值响应称为真实 EVK4 标定。主分支合并留待验收。
+
+### 最终机位动态 smoke 与 Direct-HDR 成本 pilot
+
+- 两次运行均由服务器 GPU 资源复核后在隔离 worktree `gec-robot-finalcam-e63fb94` 执行，代码 commit `e63fb94872ddca204f6740981fe99b982e0b6777`，配置 SHA256 `124d87188e9a383a054fb7e6e6eaf106c6d331ad0abfaf2a8a959364eafdc549`，Genesis 1.2.2、Torch 2.8.0+cpu、1 ms oracle 物理步；Direct-HDR 将场景步长设为 0.5 ms。
+- 动态机位 smoke：`--mode oracle --episodes 1 --speeds 0.4 --a-eff 0.09804843035177806 --seed 2026102910`，1/1 成功，含双侧接触、抬升及 0.5 s 保持。GIF 为 `r0_oracle_finalcam_video_smoke_20261016/videos/oracle_episode_0000_success.gif`；抽查 9 个均匀分布视频帧，目标接触时局部被夹爪遮挡，仍有可见目标像素。逐集 CSV SHA256 `7c40ba161aa8b2c241278d29e59ea107d1fe899047737893bd5d1ebbecc19d27`；trace SHA256 `d817576f3344b9be20e026c7532c8fbd7d968e29e14caef09de44e97513b1769`；GIF SHA256 `4db5d395dd1c48d21c32de19cdc98d290c75703806e3c0a41c618236cd837860`；manifest SHA256 `a716cb9ef353ad82e878b5b0ec4703b709381dad4d7fe57cba1219945e60cbdd`；目录 SHA256SUMS `dd97da3007943f4a6aea27384dde403bc9cc74f86d17f34e4c7885f49699c71a`。日志 SHA256 `b11f869a42fbf29c48b18fa623676525a96dc7c34c958866ae691905d06cc224`，exit `0`，PID `1618587`。
+- Direct-HDR pilot：`--mode reference --speed 0.4 --reference-duration 0.20 --seed 2026102900`，401 个 0.5 ms HDR render，产生 1 kHz 44,121 events、2 kHz 53,914 events，数量相差 18.16%；同像素同极性、2 ms 容差匹配率分别为 1 kHz 97.62%、2 kHz 79.88%。0.2 s source run 的计时合计 8.56 s（渲染与 DVS sample 计时之和；不含初始化/物理步/后续模型），首帧 render 269.75 ms，warm render mean/p50/p95 为 6.76/6.78/7.24 ms，DVS mean/p95 每采样 13.92/23.56 ms。线性外推 540 条、每条 0.2 s 的 render-only 成本为 0.203 h@1 kHz、0.406 h@2 kHz，不含物理、DVS、启动与模型成本。HDR 输入为线性 HDR luminance 的 log；像素响应复用 `genesis_event_plugin.DvsEmulator`，ideal threshold 0.2、无噪声/无限带宽；source 绕过 Ours 时间重建与 V2E 插帧。此短 pilot 能证明 reference 数据通路和初步成本，不能证明 1/2 kHz 收敛或传感器标定。`direct_hdr_events_1khz.npz` SHA256 `e1aff92d7cf518075200a01ef4eecf3c739ba6e037cfec5bb4a59ee5e505fe3d`，`direct_hdr_events_2khz.npz` `d3f7b52a606d98b886b0333992577bfb39556a95477f844810205b9cb2b55b72`，snapshots `e645297148691cdbe3c3fb5e344d3cf943b4613ddb7a2f78a6d59a6d5614ad89`；`reference_convergence.json` SHA256 `4ad2dfe051ebd84bcf94f4e29408808433315b8897d69d984ec8478490dbe5a5`；manifest `63afb1da672626ecf9e1f2de59a34f9b763abfbae6b708c9c5da4bf5d2d8b54f`；SHA256SUMS 文件 `427e7ea4ffed630324fc2ee9fad7c0785f4f1a68f792d4666a11c99d6ccb5f4f`；日志 SHA256 `15d0e68c3f2de60b0922323eb4310ba251858253ebf06cbd2c3c6bd8d984720f`，exit `0`，PID `1621195`。
+- 复跑 oracle 录像 smoke：`CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode oracle --episodes 1 --speeds 0.4 --a-eff 0.09804843035177806 --seed 2026102910 --out benchmark/robot_closed_loop/results/r0_oracle_finalcam_video_smoke_20261016`。在服务器 `~/Eventbased_WAM/repositories/gec-robot-finalcam-e63fb94` 执行；两个实际 launcher 与 project logs 位于 `results/runtime_logs/r0_oracle_finalcam_video_smoke_20261016.launch.sh`、`r0_direct_hdr_finalcam_dev_20261016.launch.sh`。Genesis 提示共享 Quadrants cache lock；不清理共享缓存，两次运行均正常 exit 0。所有运行结果都已在本分支归档，可执行各自目录 `sha256sum -c SHA256SUMS` 复验。
 
 
 ### speed-conditioned oracle 开发批次校验
