@@ -1,0 +1,60 @@
+version: 1
+updated: 2026-10-16
+status_note: >-
+  These are candidate locks from the supplied research audit. Full server-side
+  checkout, exact license text and data hashes remain to be confirmed before use.
+repositories:
+  eventgenesis:
+    url: https://github.com/zyh2308/genesis-event-camera-plugin.git
+    frozen_core_commit: e79e656ac00f7847b98db9e12bf43b093f3afff1
+    branch_at_local_audit: exp/public-sim2real-v1
+    local_branch_commit_at_audit: cfb16c665216fda0f591bee877ed0b9635da20d0
+    license: upstream repository license; core is frozen
+  v2e:
+    url: https://github.com/SensorsINI/v2e.git
+    commit: cac638444557a224ba6ee5c29260916f152c00bd
+    license: present in pinned tree; exact text to be recorded at server checkout
+  e2vid_training:
+    url: https://github.com/TimoStoff/event_cnn_minimal.git
+    commit: 78aa471a66593f55e349303563997297fbc816e8
+    license: no clear top-level license in supplied audit snapshot; verify before use
+  evreal:
+    url: https://github.com/ercanburak/EVREAL.git
+    commit: 398f03551b7f5d150ae10aa89e4e731557fce240
+    license: present in pinned tree; exact text to be recorded at server checkout
+  ste_flownet:
+    url: https://github.com/ruizhao26/STE-FlowNet.git
+    commit: eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6
+    license: MIT (per supplied source audit; verify pinned LICENSE text)
+  singleshotpose:
+    url: https://github.com/microsoft/singleshotpose.git
+    commit: 2c282619101f9f31666dd18b42393375bea1600f
+    license: present in pinned tree; exact text to be recorded at server checkout
+  e_pose_annotations:
+    url: https://github.com/oussamaabdulhay/E_Pose.git
+    commit: b96ae783fcb6de84e1e9c602e91bce941cab0234
+    license: no clear top-level license in supplied audit snapshot; verify before use
+
+datasets:
+  hqf:
+    canonical_set: all 14 sequences
+    access_evidence: public author page and EVREAL preparation route recorded in source audit
+    local_wsl_files: not found in finite project scan
+    server_files: not checked
+    files_sha256: not available
+    license: not confirmed in this audit
+  mvsec:
+    sequences_candidate: [indoor_flying1, indoor_flying2, indoor_flying3, outdoor_day1]
+    access_evidence: official download page; selected raw+GT size estimate approximately 33.2 GB
+    local_wsl_files: not found in finite project scan
+    server_files: not checked
+    files_sha256: not available
+    license: CC BY-SA 4.0 per official project page/source audit
+  e_pose:
+    article_id: 28106717
+    api_url: https://api.figshare.com/v2/articles/28106717
+    last_observed_status: 403 Forbidden on 2026-10-16
+    local_wsl_files: not found in finite project scan
+    server_files: not checked
+    files_sha256: not available
+    license: not confirmed in this audit

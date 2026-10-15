@@ -1,0 +1,386 @@
+schema: eventgenesis_sim2real_research_candidate_v1
+date: '2026-10-16'
+timezone: Asia/Tokyo
+status: research_decisions_pending_engineering_acceptance
+formal_real_scoring_enabled: false
+simulator_core: e79e656ac00f7847b98db9e12bf43b093f3afff1
+scope: synthetic_task_training_to_public_real_event_testing
+generators: [EventGenesis, V2E]
+seeds: [0, 1, 2]
+pairing:
+  latent_trajectories: exact_same_ids_and_hashes
+  labels: exact_same_files
+  initial_model_state: exact_same_per_seed
+  sampler_and_augmentation: exact_same_per_seed
+  optimization_updates: equal_within_task_and_dt
+  event_count_matching: false
+  drop_empty_event_windows: false
+  privileged_inference_inputs: false
+  downstream_real_event_pretraining: false
+  real_finetuning: false
+  real_checkpoint_selection: false
+  test_time_adaptation: false
+  checkpoint_rule: best_synthetic_validation_only
+  fixed_time_windows: true
+  task_native_representations_allowed: true
+  train_recurrent_state_resets: clip_boundary
+  real_recurrent_state_resets: sequence_boundary
+
+motion_bank:
+  role: shared_L1_L2_latent_bank
+  rollout_count: 160
+  rollout_duration_s: 10
+  train_rollouts: 144
+  synthetic_validation_rollouts: 16
+  split_unit: scene_and_trajectory_group
+  split_seed: 20261016
+  strata:
+    - indoor_static_world_camera_motion
+    - outdoor_static_world_camera_motion
+    - static_camera_independent_rigid_motion
+    - camera_and_independent_rigid_motion
+  rollouts_per_stratum: 40
+  train_rollouts_per_stratum: 36
+  validation_rollouts_per_stratum: 4
+  sensor_width: 346
+  sensor_height: 260
+  base_radiance_endpoint_hz: 100
+  physical_label_hz: 20
+  illumination_varies_within_rollout: false
+  train_windows_dt1: 28800
+  validation_windows_dt1: 3200
+  train_windows_dt4: 28368
+  validation_windows_dt4: 3152
+  split_manifest_sha256: null
+  bank_manifest_sha256: null
+
+generator_export:
+  v2e_repo: https://github.com/SensorsINI/v2e
+  v2e_commit: cac638444557a224ba6ee5c29260916f152c00bd
+  input_frame_hz: 100
+  lossy_video_encoding: false
+  super_slomo_enabled: true
+  auto_timestamp_resolution: false
+  timestamp_resolution_s: 0.001
+  super_slomo_checkpoint_sha256: null
+  luminance_mapping:
+    exposure: 1.0
+    display_transform: srgb_of_reinhard_of_exposure_times_scene_linear_Y
+    quantization_bits: 8
+    auto_exposure_or_per_frame_normalization: false
+    status: proposed_requires_renderer_unit_check_on_synthetic_only
+  v2e_nominal_parameters:
+    pos_thres: 0.2
+    neg_thres: 0.2
+    sigma_thres: 0.03
+    cutoff_hz: 300
+    leak_rate_hz: 0.01
+    shot_noise_rate_hz: 0.001
+    refractory_period_s: 0.0005
+    evidence_type: nominal_official_defaults_not_target_sensor_measurement
+  eventgenesis_config_sha256: null
+  eventgenesis_sensor_policy: match_available_nominal_parameters_without_core_change
+  unsupported_sensor_terms_must_be_reported: true
+  export_adapter_sha256: null
+  claim_scope: complete_event_generation_pipelines
+
+L2_flow:
+  priority: primary
+  model: STE-FlowNet
+  repo: https://github.com/ruizhao26/STE-FlowNet
+  commit: eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6
+  downstream_initialization: random_paired
+  representation:
+    type: native_polarity_separated_gaussian_weighted_counts
+    basic_interval_slices: 5
+    dt4_slices: 20
+    equal_event_count_slicing_within_fixed_physical_interval: true
+    native_outdoor_13_to_5_subsampling: preserve_in_real_MVSEC_adapter
+    synthetic_bank_branch: generic_5_slice
+    numeric_boundary_policy: freeze_after_synthetic_encoder_audit_no_silent_wrap_or_NaN
+  training_inputs: events_only
+  training_supervision: shared_synthetic_grayscale_images
+  synthetic_flow_gt_use: validation_and_diagnostics
+  crop:
+    train_hw: [256, 256]
+    real_test_hw: [256, 256]
+    real_test_xy_offset: [45, 2]
+  objective:
+    photometric: native_charbonnier
+    smoothness: native_second_order
+    smoothness_weight: 10
+    multiscale_weights: [1, 1, 1, 1]
+    dt4_supervision: native_average_over_four_endpoint_losses
+  optimizer:
+    type: Adam
+    betas: [0.9, 0.999]
+    weight_decay_weights: 0.0004
+    weight_decay_biases: 0.0
+  effective_batch_size: 8
+  drop_last: true
+  dt1:
+    learning_rate: 0.0004
+    epochs: 45
+    milestones: [5, 10, 20]
+    gamma: 0.7
+    optimizer_updates: 162000
+  dt4:
+    learning_rate: 0.0002
+    epochs: 100
+    milestones: [5, 10, 20, 30, 40, 50, 70, 90, 110, 130, 150, 170]
+    gamma: 0.7
+    optimizer_updates: 354600
+  augmentation:
+    horizontal_flip_probability: 0.5
+    vertical_flip_probability: 0.5
+    rotation_degrees: 30
+    random_resized_crop_scale: [0.5, 1.0]
+    random_resized_crop_ratio: [0.75, 1.3333333333333333]
+    synchronized_across_all_slices_and_images: true
+  validate_every_epochs: 5
+  validate_final_epoch: true
+  selection_metric: synthetic_validation_AEE
+  real_test:
+    dataset: MVSEC
+    camera: left
+    source_format: official_HDF5_and_flow_GT
+    sequences: [indoor_flying1, indoor_flying2, indoor_flying3, outdoor_day1]
+    dt_settings: [1, 4]
+    dt_meaning: APS_frame_intervals_from_actual_timestamps
+    output_units: pixels_per_interval
+    event_window: '(t_i,t_i_plus_dt]'
+    prediction_available_at: interval_end
+    indoor_index_condition: 'i > 20 and i + 20 < N and all_inputs_and_GT_exist'
+    outdoor_day1_index_ranges_zero_based_half_open: [[9200, 9600], [10500, 10900]]
+    outdoor_top_rows_after_center_crop: 190
+    primary_mask: official_nonzero_valid_GT_intersect_raw_real_event_support
+    primary_endpoint: dt1_AEE_equal_mean_of_four_sequences
+    secondary:
+      - dt4_AEE
+      - outlier_EPE_gt_3px_AND_gt_5percent_GT_magnitude
+      - legacy_STE_error_EPE_ge_3px
+      - all_valid_GT_AEE
+      - valid_pixel_counts
+    empty_GT_mask_is_zero_error: false
+    aggregation: frame_then_sequence_equal_weight
+    dataset_manifest_sha256: null
+    evaluator_and_patch_sha256: null
+
+L1_reconstruction:
+  priority: supporting
+  architecture: E2VIDRecurrent
+  training_reference: E2VID_plus_public_config_with_explicit_5_signed_channels
+  training_repo: https://github.com/TimoStoff/event_cnn_minimal
+  training_commit: 78aa471a66593f55e349303563997297fbc816e8
+  evaluation_repo: https://github.com/ercanburak/EVREAL
+  evaluation_commit: 398f03551b7f5d150ae10aa89e4e731557fce240
+  model:
+    num_bins: 5
+    skip_type: sum
+    recurrent_block_type: convlstm
+    num_encoders: 3
+    base_num_channels: 32
+    num_residual_blocks: 2
+    use_upsample_conv: true
+    final_activation: ''
+    norm: none
+  downstream_initialization: random_paired
+  representation: signed_5bin_temporally_interpolated_voxel
+  event_tensor_normalization: false
+  sequence_length: 40
+  train_clip_stride_windows: 40
+  train_crop_hw: [112, 112]
+  synthetic_val_center_crop_hw: [160, 160]
+  synthetic_val_sequence_length: 200
+  effective_batch_size_clips: 2
+  epochs: 200
+  updates_per_epoch: 360
+  total_optimizer_updates: 72000
+  optimizer:
+    type: Adam
+    learning_rate: 0.0001
+    betas: [0.9, 0.999]
+    weight_decay: 0.0
+    amsgrad: true
+    lr_schedule: constant
+  objective:
+    perceptual_loss: LPIPS_VGG
+    perceptual_weight: 1.0
+    temporal_consistency_weight: 2.0
+    temporal_consistency_L0: 2
+    temporal_flow_source: shared_Genesis_GT_training_only
+    perceptual_network_frozen: true
+  augmentation:
+    random_flip: true
+    pause_probability_running: 0.05
+    pause_probability_paused: 0.9
+    paused_images_and_flow_are_consistent: true
+    extra_tensor_gaussian_noise: false
+    extra_hot_pixel_augmentation: false
+  validate_every_epochs: 5
+  selection_metric: synthetic_validation_LPIPS_Alex
+  real_test:
+    dataset: HQF
+    sequences:
+      - bike_bay_hdr
+      - boxes
+      - desk_6k
+      - desk_fast
+      - desk_hand_only
+      - desk_slow
+      - engineering_posters
+      - high_texture_plants
+      - poster_pillar_1
+      - poster_pillar_2
+      - reflective_materials
+      - slow_and_fast_desk
+      - slow_hand
+      - still_life
+    native_resolution: true
+    voxel_method: between_frames
+    state_reset: sequence_start_only
+    seed_RGB_frame: false
+    warmup_exclusion: none_beyond_first_complete_interval
+    histogram_equalization: none
+    postprocess_normalization: none
+    GT_fitted_brightness_or_gamma: false
+    output_and_reference_clip: [0.0, 1.0]
+    image_metric_path: floating_point_common_to_both_arms
+    LPIPS_variant: alex
+    LPIPS_grayscale_channels: replicate_to_three
+    primary_metric: LPIPS
+    secondary_metrics: [SSIM, PSNR, MSE]
+    SSIM_gaussian_weights: true
+    SSIM_sigma: 1.5
+    SSIM_use_sample_covariance: false
+    SSIM_data_range: 1.0
+    aggregation: frame_then_sequence_equal_weight
+    dataset_manifest_sha256: null
+  optional_HS_ERGB:
+    enabled_by_default: false
+    splits: [close_test, far_test]
+    coordinate_divisor: 32
+    coordinate_policy: fixed_spatial_bilinear_splat_for_remapped_float_coordinates
+    reference: original_images_corrected_and_timestamps
+    synthetic_interpolated_GT: false
+    official_EVREAL_HS_ERGB_protocol_claim: false
+
+L3_pose:
+  priority: optional_strengthening_after_engineering_acceptance
+  model: YOLO_6D_SingleShotPose_multi_object
+  repo: https://github.com/microsoft/singleshotpose
+  commit: 2c282619101f9f31666dd18b42393375bea1600f
+  dataset: E_POSE
+  annotation_repo: https://github.com/oussamaabdulhay/E_Pose
+  annotation_commit: b96ae783fcb6de84e1e9c602e91bce941cab0234
+  downstream_initialization: random_paired_no_LINEMOD_or_real_event_weights
+  classes: 13
+  objects:
+    - wood_block
+    - sugar_box
+    - bleach_cleanser
+    - scissors
+    - drill
+    - hammer
+    - wrench
+    - potted_meat_can
+    - cracker_box
+    - rubiks_cube
+    - nine_hole_peg
+    - timer
+    - mustard_bottle
+  sensor_hw: [260, 346]
+  model_hw: [416, 416]
+  window_duration_ms: 10
+  pose_label_timestamp: fixed_window_right_endpoint_shared_across_generators
+  representation: native_E_POSE_three_channel_event_time_image
+  representation_state_and_normalization_hash: null
+  representation_requires_paper_code_consistency_check: true
+  GT_masks_boxes_or_segmented_events_at_inference: false
+  geometric_inference_priors: [public_K, public_CAD]
+  inference_depth_or_ICP: false
+  synthetic_bank:
+    rollouts_per_target_class: 20
+    rollout_duration_s: 2
+    train_rollouts_per_class: 18
+    val_rollouts_per_class: 2
+    train_windows: 46800
+    val_windows: 5200
+    additional_objects_per_rollout_range: [0, 4]
+    labels_for_all_visible_objects: true
+  head:
+    keypoints: 9
+    coords: 18
+    anchors: 5
+    channels: 160
+    pretrain_num_epochs: 0
+  optimizer:
+    type: SGD_native_sum_loss_scaling
+    effective_batch_size: 32
+    nominal_learning_rate: 0.001
+    actual_learning_rate_rule: nominal_lr_divided_by_batch_size
+    momentum: 0.9
+    nominal_decay: 0.0005
+    actual_weight_decay_rule: nominal_decay_times_batch_size
+    schedule_steps: [-1, 100, 20000, 30000]
+    schedule_scales: [0.1, 10.0, 0.1, 0.1]
+    total_optimizer_updates: 80200
+  loss_scales:
+    object: 5.0
+    noobject: 0.1
+    class: 1.0
+    coord: 1.0
+  augmentation:
+    geometric_native_with_synchronized_keypoints: true
+    HSV_jitter: false
+    RGB_background_compositing: false
+    multiscale_model_resolution: false
+  validation_every_updates: 2000
+  selection_metric: synthetic_validation_ADD_or_ADDS_success_at_0point1_diameter
+  real_test:
+    target_pool: all_306_released_sequences_with_valid_pose_K_and_CAD_mapping
+    official_train_test_split_claim: false
+    primary_metric: ADD_nonsymmetric_or_ADDS_symmetric_below_0point1_diameter
+    secondary_metrics:
+      - ADDS_AUC_0_to_0point1_meters
+      - legacy_ADDS_below_0point1_meters
+      - reprojection_error
+      - translation_error_cm
+      - rotation_error_deg_with_symmetry_caveat
+    failures_in_denominator: true
+    ground_truth_keypoints: reproject_from_verified_pose_CAD_K_not_unchecked_exported_2D_files
+    aggregate: sequence_then_object_then_equal_object_mean
+    dataset_manifest_sha256: null
+    CAD_mapping_and_symmetry_sha256: null
+    PnP_and_detection_configuration_sha256: null
+
+statistics:
+  confirmatory_endpoint: L2_dt1_four_sequence_equal_weight_AEE
+  independent_repetitions: paired_training_seeds
+  summarize: mean_and_sample_standard_deviation_over_3_seeds
+  error_improvement: V2E_minus_EventGenesis
+  success_improvement: EventGenesis_minus_V2E
+  paired_delta_CI: 'mean(delta) +/- 4.303 * sample_sd(delta) / sqrt(3)'
+  CI_scope: training_seed_variability_on_fixed_test_pool_only
+  frame_count_as_independent_training_repeats: false
+  p_value_claims: false
+
+engineering_acceptance:
+  synthetic_only_pilot: true
+  real_candidate_model_predictions_or_scores_before_freeze: false
+  data_schema_and_calibration_metadata_inspection_allowed: true
+  required:
+    - complete_generator_configs_and_export_photometric_units
+    - V2E_SuperSloMo_checkpoint_hash
+    - STE_encoder_numeric_and_boundary_policy_and_patches
+    - E2VID_5_channel_and_temporal_flow_direction_smoke
+    - exact_real_and_synthetic_manifests_with_exclusions
+    - dependency_lock_and_evaluator_hashes
+    - E_POSE_data_CAD_representation_acceptance_for_L3_only
+  provisional_engineering_effort_caps_workdays:
+    STE_adapter: 1
+    E2VID_adapter: 1
+    E_POSE_adapter: 2
+  budget_caps_are_training_runtime_estimates: false
+  bug_policy: method_independent_logged_fix_and_rerun_all_affected_arms
+  formal_protocol_sha256: null

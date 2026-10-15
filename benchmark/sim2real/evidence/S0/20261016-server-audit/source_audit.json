@@ -1,0 +1,28 @@
+{
+  "audit_date": "2026-10-16",
+  "status": "static source audit only; no candidate model execution",
+  "routes": {
+    "reconstruction": {
+      "training_source": "TimoStoff/event_cnn_minimal@78aa471a66593f55e349303563997297fbc816e8",
+      "evaluator": "ercanburak/EVREAL@398f03551b7f5d150ae10aa89e4e731557fce240",
+      "dataset": "HQF",
+      "findings": ["network config says 10 bins while loader uses 5", "configured HDF5Dataset class is absent; source class is DynamicH5Dataset", "loader expects CSV file lists rather than a direct HDF5 path", "candidate validation L=200 and base length=200 yields zero samples under current L>=length behavior", "stored polarity must be OFF=0, ON=1 because loader computes 2p-1", "event index to GT endpoint needs timestamp-fixture validation", "candidate train/validation image normalization differs", "EVREAL accepts converted memmap files, not raw bags directly", "E2VID and E2VID+ have distinct normalization paths"],
+      "data_status": "not found in finite local WSL scan; server not checked; dataset not determined unavailable"
+    },
+    "flow": {
+      "source": "ruizhao26/STE-FlowNet@eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "dataset": "MVSEC",
+      "findings": ["generic five-slice encoder can leave data_split undefined", "empty or duplicate timestamp slices can fail", "remainder events are dropped and uint8 counts can wrap", "official training path evaluates real MVSEC during training", "some outdoor_day1 loader ranges disagree with validate()"],
+      "environment_mismatch": "upstream tested Python 3.9 / torch 1.10.2+cu113 / spatial-correlation-sampler 0.3.0; server torch 2.5.1+cu121; extension compatibility untested",
+      "data_status": "not found in finite local WSL scan; server not checked; official download-size estimate about 33.2 GB for selected raw+GT files"
+    },
+    "pose": {
+      "model_source": "microsoft/singleshotpose@2c282619101f9f31666dd18b42393375bea1600f",
+      "dataset_source": "oussamaabdulhay/E_Pose@b96ae783fcb6de84e1e9c602e91bce941cab0234",
+      "findings": ["available source is incomplete", "E-POSE scripts are ROS bag oriented and one multi-object path is hard-coded for three objects", "SingleShotPose loader depends on LINEMOD RGB/mask/crop/compositing", "trainer loads weights and evaluates LINEMOD by default", "unsegmented full-frame events only; GT masks/crops/segmented events are prohibited as inputs"],
+      "data_status": "not found locally; recorded Figshare API request returned 403 on 2026-10-16; server access not checked"
+    }
+  },
+  "source_files_and_locks": "../../../research/input_2026-10-16/source_metadata and ../../../research/input_2026-10-16/protocol/SOURCE_AUDIT.md",
+  "experiment_status": "none; no shared trajectory, event generation, loader, training, validation, or real scoring run"
+}
