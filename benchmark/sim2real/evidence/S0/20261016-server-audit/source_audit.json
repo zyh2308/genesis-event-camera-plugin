@@ -7,11 +7,29 @@
     "required_inputs": ["linear HDR/radiance frame provider", "camera_to_world pose", "object_to_world poses indexed by segmentation IDs"],
     "renderer_dependency": "camera.render(radiance=True) requires an isolated copy of the installed Genesis package with the complete repository overlay under genesis/ applied",
     "overlay_files": 8,
-    "server_renderer_status": "installed genesis-world 1.2.2 lacks radiance support; first smoke failed because runtime assembly copied only vis/ instead of the complete overlay; corrected runtime builder added locally, rerun pending",
-    "server_smoke_log": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke/stdout.log",
-    "server_smoke_exit_code": 1,
-    "server_smoke_error": "TypeError: OffscreenRenderer.render() got an unexpected keyword argument 'radiance'",
-    "shared_cache_lock_warning": "Quadrants reported an existing ticache.lock under /home/zhaoyuhan/.cache; lock was not cleaned or modified"
+    "server_renderer_status": "installed genesis-world 1.2.2 lacks radiance support; isolated runtime built with all overlay files; renderer and adapter contract smokes passed",
+    "initial_incomplete_runtime_smoke": {
+      "log": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke/stdout.log",
+      "exit_code": 1,
+      "error": "TypeError: OffscreenRenderer.render() got an unexpected keyword argument 'radiance'"
+    },
+    "runtime_manifest": "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/runtime_manifest.json",
+    "successful_renderer_smoke": {
+      "run_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke-full-overlay",
+      "exit_code": 0,
+      "legacy_rgb": {"dtype": "uint8", "shape": [48, 64, 3]},
+      "radiance": {"dtype": "float32", "shape": [48, 64, 3], "finite": true, "max": 10.6015625, "pixels_above_one": 295},
+      "depth": {"dtype": "float32", "shape": [48, 64]},
+      "measured_call_ms": {"legacy_rgb_first_call": 25107.16, "radiance_rgbd_second_call": 34.62}
+    },
+    "successful_adapter_smoke": {
+      "run_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-adapter-smoke-v2",
+      "exit_code": 0,
+      "radiance_max": 6.44140625,
+      "payload_shapes": {"rgb": [48, 64, 3], "depth": [48, 64], "seg": [48, 64], "radiance": [48, 64, 3]},
+      "plugin_attach_and_two_capture_calls": "passed; test asserts Nx4 event-array interface but does not assert a nonzero event count; stationary scene, not a moving trajectory"
+    },
+    "cache_policy": "initial renderer smoke warned on the shared Quadrants cache without modifying/cleaning it; corrected adapter smoke set XDG_CACHE_HOME, GS_CACHE_FILE_PATH and TI_OFFLINE_CACHE_FILE_PATH under the run directory and completed without the shared-cache warning"
   },
   "routes": {
     "reconstruction": {
@@ -19,22 +37,22 @@
       "evaluator": "ercanburak/EVREAL@398f03551b7f5d150ae10aa89e4e731557fce240",
       "dataset": "HQF",
       "findings": ["network config says 10 bins while loader uses 5", "configured HDF5Dataset class is absent; source class is DynamicH5Dataset", "loader expects CSV file lists rather than a direct HDF5 path", "candidate validation L=200 and base length=200 yields zero samples under current L>=length behavior", "stored polarity must be OFF=0, ON=1 because loader computes 2p-1", "event index to GT endpoint needs timestamp-fixture validation", "candidate train/validation image normalization differs", "EVREAL accepts converted memmap files, not raw bags directly", "E2VID and E2VID+ have distinct normalization paths"],
-      "data_status": "not found in finite local WSL scan; server not checked; dataset not determined unavailable"
+      "data_status": "not found in finite local WSL scan or targeted server scan of ~/Eventbased_WAM/data (max depth 4); not searched globally and not determined unavailable"
     },
     "flow": {
       "source": "ruizhao26/STE-FlowNet@eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
       "dataset": "MVSEC",
       "findings": ["generic five-slice encoder can leave data_split undefined", "empty or duplicate timestamp slices can fail", "remainder events are dropped and uint8 counts can wrap", "official training path evaluates real MVSEC during training", "some outdoor_day1 loader ranges disagree with validate()"],
       "environment_mismatch": "upstream tested Python 3.9 / torch 1.10.2+cu113 / spatial-correlation-sampler 0.3.0; server torch 2.5.1+cu121; extension compatibility untested",
-      "data_status": "not found in finite local WSL scan; server not checked; official download-size estimate about 33.2 GB for selected raw+GT files"
+      "data_status": "not found in finite local WSL scan or targeted server scan of ~/Eventbased_WAM/data (max depth 4); not searched globally; official download-size estimate about 33.2 GB for selected raw+GT files"
     },
     "pose": {
       "model_source": "microsoft/singleshotpose@2c282619101f9f31666dd18b42393375bea1600f",
       "dataset_source": "oussamaabdulhay/E_Pose@b96ae783fcb6de84e1e9c602e91bce941cab0234",
       "findings": ["available source is incomplete", "E-POSE scripts are ROS bag oriented and one multi-object path is hard-coded for three objects", "SingleShotPose loader depends on LINEMOD RGB/mask/crop/compositing", "trainer loads weights and evaluates LINEMOD by default", "unsegmented full-frame events only; GT masks/crops/segmented events are prohibited as inputs"],
-      "data_status": "not found locally; recorded Figshare API request returned 403 on 2026-10-16; server access not checked"
+      "data_status": "not found in local WSL resources or targeted server scan of ~/Eventbased_WAM/data (max depth 4); the paper describes public Figshare data; one API endpoint returned 403; dataset is not determined unavailable"
     }
   },
   "source_files_and_locks": "../../../research/input_2026-10-16/source_metadata and ../../../research/input_2026-10-16/protocol/SOURCE_AUDIT.md",
-  "experiment_status": "none; no shared trajectory, event generation, loader, training, validation, or real scoring run"
+  "experiment_status": "HDR renderer and stationary-scene plugin adapter smokes ran successfully; no moving shared trajectory, paired EventGenesis/V2E output, task loader, training, synthetic validation, or real scoring run"
 }
