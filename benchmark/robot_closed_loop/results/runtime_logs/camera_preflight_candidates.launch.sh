@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -u
-root=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-preflight
+root=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-camera-sync
 python=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
 variant=${1:?pass one camera candidate name}
 run_id=camera_preflight_${variant}_20261016

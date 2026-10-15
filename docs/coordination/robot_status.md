@@ -146,6 +146,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
 - 新 seed oracle 独立 holdout 三档均 100/100，Wilson 95% CI 下界 96.3%；仅支持当前物理场景、固定预测器与固定控制器的 oracle 可行性，不代表视觉估计器成功率。10 mm 横向位置偏差敏感性显著；总观测延迟增至 30 ms 的小样本仍 15/15。
 - 低机位与高位负 y 候选均不能提供足够目标可见性；负 y 高位候选实测 98.31% 遮挡。target-only 分母和静态路径视野测量代码已修正，但正确同步后的路径采样和其他机位仍待服务器复测。1/2 kHz Direct-HDR reference 成本仍未测量。
+- Top-down 相机的首次 launcher 误指向旧 preflight worktree；由本会话启动的 PID `1609155` 已经 `tmux` 定向中断，未生成完整相机结果且不计数。launcher 根路径已修正后重跑。
 - 新种子 oracle 独立 holdout 已完成：服务器 tmux `r0_oracle_holdout100x3_20261016`，PID `1594166`、exit `0`；实际代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、seed `2026102800`，每档 100/100，Wilson 95% CI 下界 96.3%。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
