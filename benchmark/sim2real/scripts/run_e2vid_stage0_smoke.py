@@ -8,6 +8,7 @@ import json
 import random
 import sys
 import time
+import types
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -73,6 +74,16 @@ def main() -> None:
 
     if not hasattr(skimage.measure, "compare_ssim"):
         skimage.measure.compare_ssim = structural_similarity
+
+    # IPython is only imported by the pinned LPIPS utility for an interactive
+    # debug helper; it is not used during training. Provide that unused symbol
+    # locally if the server environment omits IPython.
+    try:
+        import IPython  # noqa: F401
+    except ImportError:
+        ipython_stub = types.ModuleType("IPython")
+        ipython_stub.embed = lambda *unused_args, **unused_kwargs: None
+        sys.modules["IPython"] = ipython_stub
 
     from data_loader import dataset as dataset_module
     from data_loader.data_loaders import HDF5DataLoader
@@ -227,7 +238,7 @@ def main() -> None:
         "model_args": MODEL_ARGS,
         "optimizer": {"type": "Adam", "lr": 1e-4, "weight_decay": 0, "amsgrad": True},
         "losses": ["LPIPS-VGG weight=1.0", "temporal_consistency weight=2.0 L0=2"],
-        "adapter": "right-endpoint HDF5 loader; duplicate timestamp ties use numpy.searchsorted(side=right); fixed seed 71",
+        "adapter": "right-endpoint HDF5 loader; duplicate timestamp ties use numpy.searchsorted(side=right); fixed seed 71; runtime aliases for removed compare_ssim and unused IPython debug import",
         "results": results,
     }
     args.output_root.mkdir(parents=True, exist_ok=True)

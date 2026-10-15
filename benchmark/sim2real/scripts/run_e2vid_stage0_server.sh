@@ -3,7 +3,8 @@ set -u
 
 PROJECT_DIR=/home/zhaoyuhan/Eventbased_WAM
 REPO_DIR="$PROJECT_DIR/repositories/gec-sim2real"
-RUN_DIR="$PROJECT_DIR/runs/sim2real/20261016-s0-e2vid-stage0"
+RUN_ID="${1:-20261016-s0-e2vid-stage0-v2}"
+RUN_DIR="$PROJECT_DIR/runs/sim2real/$RUN_ID"
 DATA_ROOT="$PROJECT_DIR/data/sim2real/stage0/e2vid_loader_20261016-v1"
 MODEL_ROOT="$PROJECT_DIR/external/sources/downstream/event_cnn_minimal"
 

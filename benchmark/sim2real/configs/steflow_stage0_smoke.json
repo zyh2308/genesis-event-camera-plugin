@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "https://github.com/ruizhao26/STE-FlowNet.git",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "architecture": "FlowNetS_spike / steflow"
+  },
+  "data": {
+    "generators": ["eventgenesis", "v2e"],
+    "train_interval_index": 9,
+    "validation_interval_index": 9,
+    "input_representation": "native polarity-separated Gaussian weighted count, 5 equal-event-count slices per interval",
+    "event_tensor_shape": [1, 2, 256, 256, 5],
+    "image_preprocessing": "same fixed-mapped shared grayscale endpoints, [0,1], center-padded from 160x128 to 256x256",
+    "event_edge_fixes": ["retain remainder events across five slices", "guard empty and constant-timestamp slices", "raise on uint8 count overflow"],
+    "real_data_accessed": false
+  },
+  "training": {
+    "seed": 71,
+    "updates_per_generator": 1,
+    "optimizer": {"type": "Adam", "learning_rate": 0.0004, "betas": [0.9, 0.999], "weight_decay": {"weights": 0.0004, "biases": 0.0}},
+    "objective": "official four-scale Charbonnier photometric loss + 10x official second-order smoothness",
+    "flow_ground_truth": "synthetic validation diagnostic only; never passed to model or optimizer",
+    "checkpoint_selection": "none; save the single post-update state"
+  },
+  "correlation_adapter": "Runtime-only pure PyTorch unfold implementation of the official 9x9 spatial correlation call; upstream files unchanged.",
+  "fairness": "Same shared physical interval, image endpoints, labels, split, seed, model initialization, optimizer, input resolution, and update count for EventGenesis and V2E.",
+  "limitations": [
+    "This is one update on one physical interval, not a convergence or performance result.",
+    "The official source targets older PyTorch; compatibility is assessed only for this server smoke.",
+    "The center pad is an engineering adapter for the 256x256 model input and is not target-camera calibration."
+  ]
+}
