@@ -1,0 +1,3 @@
+# Invalid preflight output: radiance return was misread
+
+This run used code commit `af0548c3ab6ccc663f25fea47e8dd59989b5d1a3` and the old camera config SHA256 `7a7f73803856f1bcf11f67d10c97d72cf5e46b84888bbd2f6c60247c83480ba6`. The command exited 0, but the report has zero target pixels and scalar NaN HDR. Review found the benchmark read `camera.render(radiance=True)` from the fourth return slot; Genesis returns the radiance image in the first slot. The RGB was a uint8 cast of HDR and therefore black. Do not use this output for visibility or renderer conclusions. The benchmark adapter and candidate camera pose were corrected afterward.

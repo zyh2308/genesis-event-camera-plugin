@@ -571,12 +571,13 @@ def run_reference(env: RobotScene, duration_s: float, speed: float, seed: int, o
             env.hold_robot_home()
             env.scene.step()
         start = time.perf_counter()
-        rgb, _, _, hdr = env.render(hdr=True)
+        hdr, _, _, _ = env.camera.render(
+            rgb=True, depth=False, segmentation=False, radiance=True,
+        )
         elapsed_render = (time.perf_counter() - start) * 1000.0
         render_ms.append(elapsed_render)
         if step == 0:
             render_cold_ms = elapsed_render
-        rgb = np.asarray(rgb, dtype=np.uint8)
         hdr = np.asarray(hdr, dtype=np.float32)
         gray = np.clip(hdr[..., 0] * 0.2126 + hdr[..., 1] * 0.7152 + hdr[..., 2] * 0.0722, 0.0, None)
         log_gray = np.log(gray.astype(np.float64) + 1e-6)
@@ -591,6 +592,10 @@ def run_reference(env: RobotScene, duration_s: float, speed: float, seed: int, o
                 ev_1k.append(emu_1k.generate_events(log_gray, t=t))
         dvs_ms.append((time.perf_counter() - start_dvs) * 1000.0)
         if step in {0, sim_steps // 2, sim_steps}:
+            rgb, _, _, _ = env.camera.render(
+                rgb=True, depth=False, segmentation=False, radiance=False,
+            )
+            rgb = np.asarray(rgb, dtype=np.uint8)
             rgb_samples.append(rgb)
             hdr_samples.append(hdr)
     all_1k = np.concatenate(ev_1k, axis=0) if ev_1k else np.empty((0, 4), dtype=np.float64)
@@ -682,7 +687,12 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
     size = float(cfg["target"]["size_m"][0])
     _set_episode_origin(env, (0.55, 0.0, size / 2), 0.0)
     _settle(env)
-    rgb, depth, seg, hdr = env.camera.render(rgb=True, depth=True, segmentation=True, radiance=True)
+    rgb, depth, seg, _ = env.camera.render(
+        rgb=True, depth=True, segmentation=True, radiance=False,
+    )
+    hdr, _, _, _ = env.camera.render(
+        rgb=True, depth=True, segmentation=False, radiance=True,
+    )
     rgb = np.asarray(rgb, dtype=np.uint8)
     depth = np.asarray(depth)
     seg = np.asarray(seg)
@@ -715,7 +725,9 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
         camera_to_world = as_numpy(camera_to_world_cv(env.camera)).tolist()
     except Exception as exc:
         camera_to_world = {"error": f"{type(exc).__name__}: {exc}"}
+    radiance_ok = bool(hdr.shape == (h, w, 3) and np.isfinite(hdr).all())
     report = {
+        "status": "passed" if radiance_ok and total_px > 0 and visible_px > 0 else "failed",
         "camera": {
             "resolution_wh": [w, h], "vertical_fov_deg": camera_cfg["vertical_fov_deg"],
             "intrinsics_fx_fy_cx_cy": [fx, fy, w / 2.0, h / 2.0],
@@ -733,12 +745,18 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
         "radiance": {
             "dtype": str(hdr.dtype), "shape": list(hdr.shape),
             "finite": bool(np.isfinite(hdr).all()),
-            "min": float(hdr.min()), "max": float(hdr.max()),
-            "above_one_pixels": int((hdr > 1.0).any(axis=-1).sum()),
+            "min": float(np.nanmin(hdr)) if hdr.size else None,
+            "max": float(np.nanmax(hdr)) if hdr.size else None,
+            "above_one_pixels": int((hdr > 1.0).any(axis=-1).sum()) if hdr.ndim == 3 else 0,
         },
         "note": "The occlusion denominator is the target silhouette with the same camera and the Panda in neutral qpos; geometry is not hidden or replaced.",
     }
     (out / "camera_preflight.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    if report["status"] != "passed":
+        raise RuntimeError(
+            "camera preflight failed: target silhouette/visibility or finite HDR check did not pass; "
+            "see camera_preflight.json"
+        )
     return report
 
 
