@@ -72,6 +72,13 @@ controller. For the paths above:
 A_EFF="$(.venv-robot/bin/python -c 'import json; print(json.load(open("benchmark/robot_closed_loop/results/r0_slide_calibration/r0_slide_calibration.json"))["a_eff_m_s2"])')"
 ```
 
+The oracle controller uses only the delayed observation and fixed motion model.
+After the gripper starts closing, closure stays latched even if a later
+prediction says the target has stopped before the intercept plane. Lifting
+requires both a sustained gripper stall and a current propagated target estimate
+inside the configured x/y gate and below its planar-speed threshold. Contact
+labels are reserved for evaluation and traces; they do not trigger control.
+
 Slide calibration uses a target-only Genesis scene containing the same Plane
 and cube material/geometry as the robot task; Panda is absent so the hand cannot
 alter the measured free-slide deceleration. Its run manifest records
@@ -84,6 +91,10 @@ Sensitivity examples use one factor per run:
 ... --mode sensitivity --episodes 5 --speeds 0.4 --a-eff <calibrated-a> --ttc-bias-ms 20 ...
 ... --mode sensitivity --episodes 5 --speeds 0.4 --a-eff <calibrated-a> --extra-latency-ms 20 ...
 ```
+
+For earlier closure timing, use a negative `--ttc-bias-ms`; e.g. `-20` starts
+closing when the predicted crossing is about 20 ms farther away than the
+configured lead threshold.
 
 R0 development uses 20 trials/speed. Only after the configuration is fixed,
 run three new-seed groups of 100 trials/speed for the held-out oracle gate.
