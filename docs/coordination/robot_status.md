@@ -12,7 +12,7 @@
 - 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
 - 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
 - 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
-- 服务器 `g1` 上的隔离 worktree 已快进到 `exp/robot-closed-loop-v1`；原 `main` 工作区未切换、未修改。服务器 Genesis 版本为 1.2.2，Torch 为 2.5.1+cu121；已有导入警告称 Genesis 1.2.2 不支持 Torch <2.8，需以服务器 smoke 运行确认兼容性。
+- 服务器 `g1` 上的隔离 worktree 目前仍在 `3a002ee`；原 `main` 工作区未切换、未修改。服务器 Genesis 版本为 1.2.2，Torch 为 2.5.1+cu121；已有导入警告称 Genesis 1.2.2 不支持 Torch <2.8，需以服务器 smoke 运行确认兼容性。
 - 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
 ### 服务器实测结果
@@ -23,7 +23,7 @@
 
 - GitHub：`zyh2308/genesis-event-camera-plugin`
 - 分支：`exp/robot-closed-loop-v1`
-- 本地/服务器当前代码提交：`3a002eee1863d99f26ad509c96d3e55b41e9d900`（`Implement R0 robot scene and oracle runner`）
+- 本地代码提交：`ee523962eb60294d3e3e665ba0e2b4377869526f`（服务器运行时适配）。GitHub 分支已推进到此提交；服务器 worktree 尚未推进。
 - 服务器隔离 worktree：`~/Eventbased_WAM/repositories/gec-robot`
 - 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
 - Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
@@ -32,7 +32,7 @@
 
 ## 运行时与运行命令
 
-在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将 Genesis HDR overlay 安装到 project venv，不修改共享 conda 环境。当前运行时 Torch 低于 Genesis 声明支持版本，必须先过单 episode smoke。
+在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv 并在那里应用 HDR overlay，不修改共享 conda 环境或依赖服务器 package download。当前运行时 Torch 低于 Genesis 声明支持版本，必须先过单 episode smoke。
 
 ```bash
 source ~/miniconda3/bin/activate Eventbased_WAM
@@ -61,7 +61,7 @@ CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ## 尚未完成 / 风险
 
-- 服务器隔离 runtime setup、HDR overlay smoke 与静态抓取 smoke 尚未执行。
+- 服务器隔离 runtime setup、HDR overlay smoke 与静态抓取 smoke 尚未执行。服务器端 GitHub fetch 曾等待超过 90 秒；中断了我启动的唯一 SSH 客户端。之后的只读 SSH 查询正常，但 worktree 仍在 `3a002ee`。本地 commit bundle 已通过 SCP 传到 `~/Eventbased_WAM/robot_r0_ee52396.bundle`，SHA256 `b203d22c63c4f810ec48253562c535317ced131b281bd579889311066bfa4da7`，待在隔离 worktree 快进。
 - `Torch 2.5.1+cu121` 低于 Genesis 1.2.2 声明支持版本；若 smoke 失败，需要在 project-local runtime 中解决，不改共享环境。
 - 方块摩擦/减速、自由滑动漂移与拦截时间尚未实测；`a_eff` 未拟合，不能据此做 holdout 或正式 oracle。
 - 固定相机的视场、目标像素尺度、机器人遮挡和 1/2 kHz Direct-HDR 运行成本尚无测量。

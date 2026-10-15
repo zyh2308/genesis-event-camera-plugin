@@ -13,10 +13,11 @@ bash scripts/setup_robot_runtime.sh
 The setup pins Genesis 1.2.2 and applies the tracked HDR overlay only to
 `.venv-robot`. On the local development workstation it installs Torch 2.8 CPU.
 On the research server, activate `Eventbased_WAM` first; the project venv
-inherits its provisioned Torch/dependencies and installs Genesis into private
-site-packages. This avoids changing the shared conda environment. The scene
-uses CPU physics and headless EGL rendering. Runtime and asset hashes are saved
-with every run.
+inherits its provisioned Torch/dependencies and copies the existing Genesis
+1.2.2 package into private site-packages. This avoids changing the shared conda
+environment and needs no server-side package download. The scene uses CPU
+physics and headless EGL rendering. Runtime and asset hashes are saved with
+every run.
 
 Server setup and run from the isolated worktree:
 

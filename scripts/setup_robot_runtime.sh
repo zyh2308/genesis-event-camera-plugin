@@ -15,9 +15,9 @@ if command -v uv >/dev/null 2>&1 && command -v python3.10 >/dev/null 2>&1; then
 else
   # The shared research server has Python 3.11 and a provisioned Genesis/Torch
   # stack but no uv/Python 3.10. Keep that environment untouched: create a
-  # project venv with system dependencies visible, then place a pinned Genesis
-  # wheel into its private site-packages so the HDR overlay cannot alter the
-  # shared conda installation.
+  # project venv with system dependencies visible, then copy its pinned Genesis
+  # package into private site-packages so the HDR overlay cannot alter the
+  # shared conda installation or depend on a server-side package download.
   runtime_python="${ROBOT_PYTHON:-python3}"
   if ! command -v "$runtime_python" >/dev/null 2>&1; then
     echo "Set ROBOT_PYTHON to an available Python executable" >&2
@@ -27,7 +27,15 @@ else
     "$runtime_python" -m venv --system-site-packages .venv-robot
   fi
   site_packages="$(.venv-robot/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
-  .venv-robot/bin/python -m pip install --upgrade --no-deps --target "$site_packages" 'genesis-world==1.2.2'
+  "$runtime_python" -c 'import genesis, importlib.metadata as m; assert genesis.__version__ == "1.2.2"; assert m.version("genesis-world") == "1.2.2"' || {
+    echo "The activated environment must provide genesis-world==1.2.2" >&2
+    exit 2
+  }
+  genesis_source="$("$runtime_python" -c 'import pathlib, genesis; print(pathlib.Path(genesis.__file__).resolve().parent)')"
+  genesis_metadata="$("$runtime_python" -c 'import importlib.metadata as m; print(m.distribution("genesis-world")._path)')"
+  mkdir -p "$site_packages/genesis"
+  cp -a "$genesis_source"/. "$site_packages/genesis/"
+  cp -a "$genesis_metadata" "$site_packages/"
 fi
 .venv-robot/bin/python scripts/apply_robot_hdr_overlay.py
 PYOPENGL_PLATFORM=egl .venv-robot/bin/python - <<'PY'
