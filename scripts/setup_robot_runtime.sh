@@ -34,7 +34,15 @@ else
   genesis_source="$("$runtime_python" -c 'import pathlib, genesis; print(pathlib.Path(genesis.__file__).resolve().parent)')"
   genesis_metadata="$("$runtime_python" -c 'import importlib.metadata as m; print(m.distribution("genesis-world")._path)')"
   mkdir -p "$site_packages/genesis"
-  cp -a "$genesis_source"/. "$site_packages/genesis/"
+  "$runtime_python" - "$genesis_source" "$site_packages/genesis" <<'PY'
+import shutil
+import sys
+
+shutil.copytree(
+    sys.argv[1], sys.argv[2], dirs_exist_ok=True,
+    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+)
+PY
   cp -a "$genesis_metadata" "$site_packages/"
 fi
 .venv-robot/bin/python scripts/apply_robot_hdr_overlay.py

@@ -61,7 +61,7 @@ CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ## 尚未完成 / 风险
 
-- 服务器隔离 runtime setup、HDR overlay smoke 与静态抓取 smoke 尚未执行。服务器端 GitHub fetch 曾等待超过 90 秒；中断了我启动的唯一 SSH 客户端。之后的只读 SSH 查询正常，但 worktree 仍在 `3a002ee`。本地 commit bundle 已通过 SCP 传到 `~/Eventbased_WAM/robot_r0_ee52396.bundle`，SHA256 `b203d22c63c4f810ec48253562c535317ced131b281bd579889311066bfa4da7`，待在隔离 worktree 快进。
+- 服务器端 GitHub fetch 曾等待超过 90 秒；之后改用 Git bundle 完成同步，隔离 worktree 已在 `3dbd6e9`。runtime setup 首次运行因共享 Genesis 安装中的 `utils/__pycache__` 文件无读取权限而退出；setup 日志在服务器 `logs/robot_r0/setup.log`。正在修复为跳过缓存文件，HDR overlay 与 episode smoke 尚未完成。第一次的连接问题及 bundle SHA 保留于工作记录；新的修复提交将继续通过 bundle 同步。
 - `Torch 2.5.1+cu121` 低于 Genesis 1.2.2 声明支持版本；若 smoke 失败，需要在 project-local runtime 中解决，不改共享环境。
 - 方块摩擦/减速、自由滑动漂移与拦截时间尚未实测；`a_eff` 未拟合，不能据此做 holdout 或正式 oracle。
 - 固定相机的视场、目标像素尺度、机器人遮挡和 1/2 kHz Direct-HDR 运行成本尚无测量。
