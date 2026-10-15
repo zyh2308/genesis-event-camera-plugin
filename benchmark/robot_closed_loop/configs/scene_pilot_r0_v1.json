@@ -72,7 +72,14 @@
     "legal_intercept_y_range_m": [-0.09, 0.09],
     "observation_latency_s": 0.010,
     "event_burn_in_s": 0.050,
-    "closure_lead_initial_s": 0.100,
+    "closure_lead_speed_schedule": {
+      "reference_speed_m_s": 0.30,
+      "reference_lead_s": 0.080,
+      "slope_s_per_mps": -0.100,
+      "min_lead_s": 0.050,
+      "max_lead_s": 0.100,
+      "status": "candidate_interpolated_from_single_factor_sensitivity_not_frozen"
+    },
     "terminal_commit_guard_s": 0.030,
     "motion_model": "constant deceleration opposite velocity, fit only from no-hand calibration episodes",
     "lift_gate": {

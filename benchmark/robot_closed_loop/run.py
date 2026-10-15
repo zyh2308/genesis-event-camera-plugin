@@ -369,6 +369,8 @@ def run_oracle_trial(
     terminal_commit = False
     last_prediction = None
     estimated_current_state = None
+    closure_speed_reference_m_s = None
+    closure_lead_used_s = None
     last_obs = history[-1]
     last_command = {"y_command_m": 0.0, "closing": False, "lifting": False}
     crossing_actual = None
@@ -380,7 +382,7 @@ def run_oracle_trial(
     prev_obj = None
     timeout_s = 2.5
     max_steps = int(round(timeout_s / env.dt_s))
-    close_lead = float(controller_cfg["closure_lead_initial_s"])
+    close_schedule = controller_cfg["closure_lead_speed_schedule"]
     guard = float(controller_cfg["terminal_commit_guard_s"])
     y_bounds = tuple(float(v) for v in controller_cfg["legal_intercept_y_range_m"])
     home_hand = _home_hand_goal(env)
@@ -407,6 +409,18 @@ def run_oracle_trial(
                 prediction = predictor.predict(last_obs, latency)
                 last_prediction = prediction
                 estimated_current_state = prediction.propagated_state
+                if closure_speed_reference_m_s is None and estimated_current_state is not None:
+                    closure_speed_reference_m_s = float(np.linalg.norm(estimated_current_state.velocity_m_s[:2]))
+                if closure_speed_reference_m_s is not None:
+                    close_lead = float(np.clip(
+                        float(close_schedule["reference_lead_s"])
+                        + float(close_schedule["slope_s_per_mps"])
+                        * (closure_speed_reference_m_s - float(close_schedule["reference_speed_m_s"])),
+                        float(close_schedule["min_lead_s"]),
+                        float(close_schedule["max_lead_s"]),
+                    ))
+                else:
+                    close_lead = float(close_schedule["max_lead_s"])
                 if prediction.reachable:
                     ttc_cmd = prediction.ttc_s + float(ttc_bias_s)
                     target_y = float(np.clip(prediction.position_m[1], *y_bounds))
@@ -421,6 +435,7 @@ def run_oracle_trial(
                         env.command_hand(hand_goal)
                     if close_started_s is None and 0.0 <= ttc_cmd <= close_lead:
                         close_started_s = rel_t
+                        closure_lead_used_s = close_lead
                     if close_started_s is not None:
                         env.command_fingers_close()
                     else:
@@ -428,6 +443,8 @@ def run_oracle_trial(
                     last_command = {
                         "y_target_predicted_m": target_y, "y_command_m": y_cmd,
                         "y_command_velocity_m_s": y_speed, "ttc_predicted_s": ttc_cmd,
+                        "closure_lead_s": close_lead,
+                        "closure_speed_reference_m_s": closure_speed_reference_m_s,
                         "hand_goal_m": hand_goal, "closing": close_started_s is not None,
                         "lifting": lift_q is not None, "terminal_commit": terminal_commit,
                     }
@@ -441,6 +458,8 @@ def run_oracle_trial(
                         env.command_fingers_close()
                     last_command = {
                         "reachable": False, "y_command_m": command.position_m,
+                        "closure_lead_s": close_lead,
+                        "closure_speed_reference_m_s": closure_speed_reference_m_s,
                         "closing": close_started_s is not None, "lifting": False,
                     }
 
@@ -540,6 +559,8 @@ def run_oracle_trial(
         "actual_crossing_y_m": crossing_y,
         "contact_minus_crossing_s": t_contact_error,
         "close_start_minus_crossing_s": close_to_crossing,
+        "closure_speed_reference_m_s": closure_speed_reference_m_s,
+        "closure_lead_used_s": closure_lead_used_s,
         "last_predicted_ttc_s": None if last_prediction is None or not last_prediction.reachable else last_prediction.ttc_s,
         "last_predicted_y_m": None if last_prediction is None or not last_prediction.reachable else float(last_prediction.position_m[1]),
         "final_tcp_y_m": y_tcp, "measured_net_opening_m": env.jaw_opening_m(),

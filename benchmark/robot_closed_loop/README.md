@@ -78,6 +78,10 @@ prediction says the target has stopped before the intercept plane. Lifting
 requires both a sustained gripper stall and a current propagated target estimate
 inside the configured x/y gate and below its planar-speed threshold. Contact
 labels are reserved for evaluation and traces; they do not trigger control.
+The candidate closure lead is computed once from the first propagated current
+velocity estimate using the configured linear schedule, then held for the
+episode. `--ttc-bias-ms` remains an additive timing perturbation for sensitivity
+runs; it does not select a speed-specific lead manually.
 
 Slide calibration uses a target-only Genesis scene containing the same Plane
 and cube material/geometry as the robot task; Panda is absent so the hand cannot

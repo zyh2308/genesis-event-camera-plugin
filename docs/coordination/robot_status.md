@@ -12,7 +12,7 @@
 - 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
 - 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
 - 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
-- 服务器 `g1` 的隔离 worktree 已同步到 `eff4f592fe4e503b8f4264415c2b3b0b0b326165`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
+- 服务器 `g1` 的隔离 worktree 最近同步到 `ae34e8c94fb6c0b8646cc0b901e42bd218617151`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
 - 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
 ### 服务器实测结果
@@ -37,16 +37,16 @@
 
 - GitHub：`zyh2308/genesis-event-camera-plugin`
 - 分支：`exp/robot-closed-loop-v1`
-- 早期静态 smoke 使用提交 `af0548c3ab6ccc663f25fea47e8dd59989b5d1a3`；相机/HDR preflight 使用 `9c83cbd040388e50e49489e6d83b1d8431b863cd`；静态 20 集复测使用 `418718af6c0052c6a368cedd9d5928a1bccec458`；no-hand slide calibration 使用 `865b79e777ff054856ea49cbf36bf0aa3f1ccf1a`；slide holdout 使用 `93e739eec055b440516c02335a295fe43167d948`；首批 oracle 使用 `4d70b8f0f796ca5163d47ab3b5aac98f71aa45a4`。均在指定分支，run manifest 保存每次代码与配置来源。
+- 早期静态 smoke 使用提交 `af0548c3ab6ccc663f25fea47e8dd59989b5d1a3`；相机/HDR preflight 使用 `9c83cbd040388e50e49489e6d83b1d8431b863cd`；静态 20 集复测使用 `418718af6c0052c6a368cedd9d5928a1bccec458`；no-hand slide calibration 使用 `865b79e777ff054856ea49cbf36bf0aa3f1ccf1a`；slide holdout 使用 `93e739eec055b440516c02335a295fe43167d948`；首批 oracle 使用 `4d70b8f0f796ca5163d47ab3b5aac98f71aa45a4`；GT oracle 控制门控修正使用 `eff4f592fe4e503b8f4264415c2b3b0b0b326165`；较晚闭合敏感性运行使用 `ae34e8c94fb6c0b8646cc0b901e42bd218617151`，结果归档在 `47f5427cb1aedb8cd783f8d890351dd507cd9f62`。均在指定分支，run manifest 保存每次代码与配置来源。
 - 服务器隔离 worktree：`~/Eventbased_WAM/repositories/gec-robot`
 - 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
 - Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
-- 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，当前配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`（加入状态估计门控、校准来源）；本批 oracle 仍使用旧版 SHA256 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`。配置仍未冻结。
-- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟、手爪闭合起始提前量 100 ms。实际目标短边 43 px，高于原候选下限 16 px。共享减速度候选为 0.09804843 m/s²，独立 no-hand holdout 已支持该模型；首批 oracle 只有 0.30 m/s 达到 20/20，0.40/0.50 m/s 均未能抬升，任务配置尚不可冻结。
+- 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，当前配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`（状态估计门控、校准来源与 speed-conditioned closure lead）；较晚闭合 sensitivity 使用 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，首批 oracle 使用 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`。当前 schedule 尚未经过统一控制器开发批次复验，仍未冻结。
+- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟。闭合 lead 候选是首次因果速度估计 `v0` 下 `clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，预计三个主档约 80/70/60 ms；40 mm 目标短边 43 px。共享减速度候选为 0.09804843 m/s²，独立 no-hand holdout 已支持该模型。较晚单因子 timing sensitivity 三档分别达到 5/5，但统一 schedule 还未复验，配置尚不可冻结。
 
 ## 运行时与运行命令
 
-在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv，在私有 venv 安装 Torch 2.8 CPU 并应用 HDR overlay，不修改共享 conda 环境。新 runtime 下静态抓取 20/20、校正后的相机/HDR preflight 与 no-hand 标定/holdout 均已通过；GT-current oracle 开发集为 0.30 档 20/20、0.40 与 0.50 档 0/20，控制器调试仍在进行，Direct-HDR reference 成本尚未测量。
+在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv，在私有 venv 安装 Torch 2.8 CPU 并应用 HDR overlay，不修改共享 conda 环境。静态抓取 20/20、相机/HDR preflight、no-hand 标定/holdout 已通过；旧配置首批 GT-current oracle 仅 0.30 档 20/20。时序 sensitivity 各单点三档 5/5；统一速度条件化 lead 开发集待跑，Direct-HDR reference 成本尚未测量。
 
 ```bash
 source ~/miniconda3/bin/activate Eventbased_WAM
@@ -103,6 +103,12 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode sensitivity --episodes 5 --speeds 0.5 --a-eff 0.09804843035177806 --ttc-bias-ms 40 --seed 2026102300 --out benchmark/robot_closed_loop/results/r0_sens_late40ms_dev05_20261016
 ```
 
+统一 speed-conditioned lead oracle 开发复验（配置 `9b313bfc...`；每档 20 集）：
+
+```bash
+CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode oracle --episodes 20 --speeds 0.3,0.4,0.5 --a-eff 0.09804843035177806 --seed 2026102500 --out benchmark/robot_closed_loop/results/r0_oracle_adaptive_dev60_20261016
+```
+
 后续每个输出路径必须是新目录；跑批使用 `tmux`，写 project log 和 PID，并低频查看。建议顺序：
 
 1. ✅ `--mode static --episodes 20`：已验证 20/20 真实双侧接触、抬升和 0.5 s 保持；样本量仍仅为开发级。
@@ -110,7 +116,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 3. ✅ `--mode slide --split holdout --episodes 10 --speeds 0.3,0.4,0.5 --a-eff 0.09804843035177806`：新种子 30/30 到达，固定模型 TTC 与横向误差均较小。
 4. ⚠️ 首批 GT-current oracle：0.30 m/s 20/20，0.40/0.50 m/s 0/20；控制器已改为闭合 latch、状态门控抬升并优先保留接触失败类别。
 5. ⚠️ `--ttc-bias-ms -20`：每档 5 集，0.30 档 5/5，0.40/0.50 档 0/5；更早时序使手指在目标到达前过度闭合。继续试较晚闭合，不运行正式独立成功率批次。
-6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。拟合固定 speed-conditioned lead 后，先做 20 集/档 GT oracle 开发复测。
+6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。已实现固定 speed-conditioned lead，下一步每档跑 20 集 GT oracle 开发复测。
 7. 任务开发复测通过后分别做小幅 `--bias-y`、`--ttc-bias-ms`、`--extra-latency-ms` 误差注入，再跑新种子独立成功率批次。
 8. `--mode preflight` 与 `--mode reference --reference-duration 0.20`：固定相机可见性、目标像素尺度、遮挡，以及直接 HDR 1/2 kHz reference 成本。
 
@@ -135,10 +141,10 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
 - Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。新低机位已确认实际抓取姿态下目标清晰可见，HDR 输出有效；遮挡百分比对照姿态不合法，仍待实现有效定量对照。
-- no-hand calibration 与独立 holdout 均已完成；小样本较晚闭合试验目前已分别在三档获得 5/5 完整成功：0.30 档 lead 80 ms、0.40 档 lead 70 ms、0.50 档 lead 60 ms。样本量不足以声称 >95% 可靠性，需将这三点整合成基于首次当前速度估计的单一 lead 规则，并用每档 20 集开发批次复验。
+- no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描三档均各有 5/5 成功点。speed-conditioned schedule 已实现但没有运行证据；需先完成每档 20 集开发复验，之后才可运行误差注入和独立成功率批次。
 - 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
 
-暂不冻结任务配置。no-hand 独立 holdout 支持固定减速度预测。小样本结果建议试用固定 speed-conditioned closure lead：以首次因果速度估计 `v0` 为输入，lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，对应约 80/70/60 ms 三档；该线性规则是三个已成功单点的插值，尚未作为一个固定控制器复测。若每档 20 集开发 oracle 通过，再运行误差注入和新种子独立统计；正式冻结前还需相机遮挡复测和 Direct-HDR 成本。主分支合并留待验收。
+暂不冻结任务配置。no-hand 独立 holdout 支持固定减速度预测。小样本结果建议采用已实现的 speed-conditioned closure lead：以首次因果速度估计 `v0` 为输入，lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，对应约 80/70/60 ms 三档；这是三个成功时序单点的线性插值，统一 schedule 尚无实测。下一步每档跑 20 集开发 oracle；若通过，再做误差注入和新种子独立统计。正式冻结前还需相机遮挡复测与 Direct-HDR 成本。主分支合并留待验收。
