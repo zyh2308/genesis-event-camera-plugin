@@ -72,6 +72,11 @@ controller. For the paths above:
 A_EFF="$(.venv-robot/bin/python -c 'import json; print(json.load(open("benchmark/robot_closed_loop/results/r0_slide_calibration/r0_slide_calibration.json"))["a_eff_m_s2"])')"
 ```
 
+Slide calibration uses a target-only Genesis scene containing the same Plane
+and cube material/geometry as the robot task; Panda is absent so the hand cannot
+alter the measured free-slide deceleration. Its run manifest records
+`panda_asset_in_scene: false`.
+
 Sensitivity examples use one factor per run:
 
 ```bash

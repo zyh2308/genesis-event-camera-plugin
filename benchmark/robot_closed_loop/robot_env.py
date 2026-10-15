@@ -155,6 +155,74 @@ class RobotScene:
         )
 
 
+@dataclass
+class FreeSlideScene:
+    """Target-only calibration scene; the Panda is deliberately absent."""
+
+    gs: Any
+    scene: Any
+    plane: Any
+    target: Any
+    dt_s: float
+    config: Dict[str, Any]
+
+    def reset_episode(self, position_m: Sequence[float], heading_rad: float = 0.0) -> None:
+        self.scene.reset()
+        x, y, z = (float(v) for v in position_m)
+        quat = np.asarray([np.cos(heading_rad / 2), 0.0, 0.0, np.sin(heading_rad / 2)])
+        self.target.set_qpos(np.concatenate(([x, y, z], quat)), zero_velocity=True)
+        self.target.set_dofs_velocity(np.zeros(6, dtype=np.float32))
+
+    def set_initial_target_velocity(self, velocity_m_s: Sequence[float]) -> None:
+        v = np.asarray(velocity_m_s, dtype=np.float32).reshape(3)
+        self.target.set_dofs_velocity(np.concatenate((v, np.zeros(3, dtype=np.float32))))
+
+    def support_contact(self) -> bool:
+        contacts = self.target.get_contacts(with_entity=self.plane)
+        if "geom_a" in contacts:
+            value = contacts["geom_a"]
+            if hasattr(value, "numel"):
+                return int(value.numel()) > 0
+            return np.asarray(value).size > 0
+        return False
+
+
+def build_free_slide_scene(config: Dict[str, Any], *, dt_s: Optional[float] = None) -> FreeSlideScene:
+    """Build the exact target/support physics without any robot collision geometry."""
+    import genesis as gs
+
+    if getattr(gs, "_initialized", False) is False:
+        gs.init(backend=gs.cpu, logging_level="warning")
+    physics = config["physics"]
+    dt = float(dt_s if dt_s is not None else physics["dt_s"])
+    scene = gs.Scene(
+        sim_options=gs.options.SimOptions(dt=dt, gravity=tuple(physics["gravity_m_s2"])),
+        vis_options=gs.options.VisOptions(ambient_light=(0.25, 0.25, 0.25)),
+        show_viewer=False,
+    )
+    plane = scene.add_entity(
+        gs.morphs.Plane(),
+        material=gs.materials.Rigid(friction=float(physics["support_friction"])),
+        surface=gs.surfaces.Default(color=(0.40, 0.42, 0.44, 1.0)),
+    )
+    target_cfg = config["target"]
+    size = tuple(float(v) for v in target_cfg["size_m"])
+    target = scene.add_entity(
+        gs.morphs.Box(size=size, pos=(0.80, 0.0, size[2] / 2)),
+        material=gs.materials.Rigid(
+            friction=float(target_cfg["friction"]),
+            rho=float(target_cfg["density_kg_m3"]),
+        ),
+        surface=gs.surfaces.Default(color=(0.14, 0.54, 0.26, 1.0)),
+    )
+    scene.build()
+    measured_mass = float(as_numpy(target.get_mass()).reshape(-1)[0])
+    expected_mass = float(target_cfg["mass_kg"])
+    if abs(measured_mass - expected_mass) > 0.005:
+        raise RuntimeError(f"target mass {measured_mass:.6f} kg != configured {expected_mass:.6f} kg")
+    return FreeSlideScene(gs=gs, scene=scene, plane=plane, target=target, dt_s=dt, config=config)
+
+
 def build_robot_scene(config: Dict[str, Any], *, dt_s: Optional[float] = None) -> RobotScene:
     import genesis as gs
 

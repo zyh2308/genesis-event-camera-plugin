@@ -26,8 +26,10 @@ from benchmark.robot_closed_loop.predictor import (
     fit_common_deceleration,
 )
 from benchmark.robot_closed_loop.robot_env import (
+    FreeSlideScene,
     RobotScene,
     as_numpy,
+    build_free_slide_scene,
     build_robot_scene,
     object_state,
 )
@@ -95,6 +97,12 @@ def _settle(env: RobotScene, duration_s: float = 0.05) -> None:
     steps = max(1, int(round(duration_s / env.dt_s)))
     for _ in range(steps):
         env.hold_robot_home()
+        env.scene.step()
+
+
+def _settle_free_slide(env: FreeSlideScene, duration_s: float = 0.05) -> None:
+    steps = max(1, int(round(duration_s / env.dt_s)))
+    for _ in range(steps):
         env.scene.step()
 
 
@@ -212,14 +220,14 @@ def _crossing(states: Sequence[Dict[str, Any]], x_int: float) -> Optional[Dict[s
 
 
 def run_slide_trial(
-    env: RobotScene, episode_id: int, seed: int, speed: float, *, duration_s: float = 2.5,
+    env: FreeSlideScene, episode_id: int, seed: int, speed: float, *, duration_s: float = 2.5,
     deceleration_m_s2: Optional[float] = None,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[MotionState]]:
     rng = np.random.default_rng(seed)
     x, y, theta = _sample_initial(rng, env.config)
     size = float(env.config["target"]["size_m"][2])
-    _set_episode_origin(env, (x, y, size / 2), 0.0)
-    _settle(env)
+    env.reset_episode((x, y, size / 2), 0.0)
+    _settle_free_slide(env)
     launch_t = get_sim_time(env)
     env.set_initial_target_velocity((-speed * np.cos(theta), speed * np.sin(theta), 0.0))
     history: List[Dict[str, Any]] = []
@@ -812,6 +820,7 @@ def write_run_manifest(args: argparse.Namespace, config: Dict[str, Any], out: Pa
             "python": sys.version.split()[0], "genesis": getattr(gs, "__version__", "unknown"),
             "genesis_module": gs.__file__, "torch": torch.__version__,
             "torch_cuda_available": torch.cuda.is_available(), "sim_backend": "cpu",
+            "panda_asset_in_scene": args.mode != "slide",
             "panda_asset": str(asset), "panda_asset_sha256": sha256(asset),
             "contact_source": str(contact), "contact_source_sha256": sha256(contact),
             "material_source_sha256": sha256(material),
@@ -843,7 +852,7 @@ def run_batch(args: argparse.Namespace) -> None:
     write_run_manifest(args, config, out)
 
     dt = 0.0005 if args.mode == "reference" else None
-    env = build_robot_scene(config, dt_s=dt)
+    env = build_free_slide_scene(config, dt_s=dt) if args.mode == "slide" else build_robot_scene(config, dt_s=dt)
     results: List[Dict[str, Any]] = []
     trace_by_id: Dict[int, List[Dict[str, Any]]] = {}
     motion_histories: List[List[MotionState]] = []
