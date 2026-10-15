@@ -31,10 +31,15 @@ else
     echo "The activated environment must provide genesis-world==1.2.2" >&2
     exit 2
   }
-  genesis_source="$("$runtime_python" -c 'import pathlib, genesis; print(pathlib.Path(genesis.__file__).resolve().parent)')"
-  genesis_metadata="$("$runtime_python" -c 'import importlib.metadata as m; print(m.distribution("genesis-world")._path)')"
-  mkdir -p "$site_packages/genesis"
-  "$runtime_python" - "$genesis_source" "$site_packages/genesis" <<'PY'
+  private_genesis="$(.venv-robot/bin/python -c 'import pathlib, genesis; print(pathlib.Path(genesis.__file__).resolve().parent)' 2>/dev/null || true)"
+  case "$private_genesis" in
+    "$repo_root"/.venv-robot/*)
+      ;;
+    *)
+      genesis_source="$("$runtime_python" -c 'import pathlib, genesis; print(pathlib.Path(genesis.__file__).resolve().parent)')"
+      genesis_metadata="$("$runtime_python" -c 'import importlib.metadata as m; print(m.distribution("genesis-world")._path)')"
+      mkdir -p "$site_packages/genesis"
+      "$runtime_python" - "$genesis_source" "$site_packages/genesis" <<'PY'
 import shutil
 import sys
 
@@ -43,14 +48,35 @@ shutil.copytree(
     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
 )
 PY
-  cp -a "$genesis_metadata" "$site_packages/"
+      cp -a "$genesis_metadata" "$site_packages/"
+      ;;
+  esac
+  torch_version="$(.venv-robot/bin/python -c 'import torch; print(torch.__version__)' 2>/dev/null || true)"
+  case "$torch_version" in
+    2.8.*)
+      ;;
+    *)
+      if [[ -n "${ROBOT_TORCH_WHEEL:-}" ]]; then
+        if [[ ! -f "$ROBOT_TORCH_WHEEL" ]]; then
+          echo "ROBOT_TORCH_WHEEL does not exist: $ROBOT_TORCH_WHEEL" >&2
+          exit 2
+        fi
+        .venv-robot/bin/python -m pip install --no-deps --target "$site_packages" "$ROBOT_TORCH_WHEEL"
+      else
+        .venv-robot/bin/python -m pip install --no-deps --target "$site_packages" \
+          --index-url https://download.pytorch.org/whl/cpu 'torch==2.8.0+cpu'
+      fi
+      ;;
+  esac
 fi
 .venv-robot/bin/python scripts/apply_robot_hdr_overlay.py
 PYOPENGL_PLATFORM=egl .venv-robot/bin/python - <<'PY'
 import inspect
 import genesis as gs
+import torch
 from genesis.vis.camera import Camera
 assert gs.__version__ == "1.2.2"
+assert torch.__version__.startswith("2.8."), torch.__version__
 assert "radiance" in inspect.signature(Camera.render).parameters
 assert "radiance" in inspect.getsource(Camera.render)
 print("robot runtime ready:", gs.__version__, gs.__file__)

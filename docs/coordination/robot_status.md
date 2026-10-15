@@ -12,18 +12,18 @@
 - 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
 - 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
 - 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
-- 服务器 `g1` 上的隔离 worktree 目前仍在 `3a002ee`；原 `main` 工作区未切换、未修改。服务器 Genesis 版本为 1.2.2，Torch 为 2.5.1+cu121；已有导入警告称 Genesis 1.2.2 不支持 Torch <2.8，需以服务器 smoke 运行确认兼容性。
+- 服务器 `g1` 的隔离 worktree 已同步到 `bd6824b`；原 `main` 工作区未切换、未修改。服务器基础 Genesis 为 1.2.2，基础 Torch 为 2.5.1+cu121。
 - 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
 ### 服务器实测结果
 
-**尚无正式服务器 episode 结果。** 当前没有可报告的服务器静态抓取、滑动标定/holdout、oracle 成功率、相机 preflight 或 Direct-HDR reference 成本。上面的本地静态调试不计入这些结果。所有实验结果必须保留在服务器 worktree 的新目录，附 `run_manifest.json`、逐 episode CSV、trace、代表性录像和 `SHA256SUMS` 后再更新本节。
+**尚无完整成功的服务器 episode。** 单 episode 静态 smoke 在 `bd6824b209f63cb72c7b7c4f6df2ef38351d7f9b`、配置 SHA256 `7a7f73803856f1bcf11f67d10c97d72cf5e46b84888bbd2f6c60247c83480ba6`、seed `2026101600` 下运行，但 Genesis 接触查询抛出 `gather(): Expected dtype int64 for index`，exit 1；Torch 为 2.5.1+cu121，Genesis 在启动时也明确警告 Torch <2.8 不受支持。该目录只有未完成 `run_manifest.json`，不含完整 episode CSV，不计成功或失败样本。静态抓取、滑动标定/holdout、oracle 成功率、相机 preflight 与 Direct-HDR 成本均尚无可报告结论。此前本地静态调试不纳入统计。
 
 ## 分支、冻结基线与候选配置
 
 - GitHub：`zyh2308/genesis-event-camera-plugin`
 - 分支：`exp/robot-closed-loop-v1`
-- 本地代码提交：`ee523962eb60294d3e3e665ba0e2b4377869526f`（服务器运行时适配）。GitHub 分支已推进到此提交；服务器 worktree 尚未推进。
+- 本地/服务器运行时修复前提交：`bd6824b209f63cb72c7b7c4f6df2ef38351d7f9b`；包含本次静态 smoke 的代码。后续 Torch 2.8 隔离支持正在修改。
 - 服务器隔离 worktree：`~/Eventbased_WAM/repositories/gec-robot`
 - 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
 - Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
@@ -32,12 +32,12 @@
 
 ## 运行时与运行命令
 
-在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv 并在那里应用 HDR overlay，不修改共享 conda 环境或依赖服务器 package download。当前运行时 Torch 低于 Genesis 声明支持版本，必须先过单 episode smoke。
+在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv，在私有 venv 安装 Torch 2.8 CPU 并应用 HDR overlay，不修改共享 conda 环境。修正兼容问题后必须重跑单 episode smoke。
 
 ```bash
 source ~/miniconda3/bin/activate Eventbased_WAM
 cd ~/Eventbased_WAM/repositories/gec-robot
-bash scripts/setup_robot_runtime.sh
+ROBOT_TORCH_WHEEL="$HOME/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl" bash scripts/setup_robot_runtime.sh
 CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python \
   -m benchmark.robot_closed_loop.run --mode static --episodes 1 --seed 2026101600 \
   --out benchmark/robot_closed_loop/results/server_static_smoke
@@ -61,8 +61,8 @@ CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ## 尚未完成 / 风险
 
-- 服务器端 GitHub fetch 曾等待超过 90 秒；之后改用 Git bundle 完成同步，隔离 worktree 已在 `3dbd6e9`。runtime setup 首次运行因共享 Genesis 安装中的 `utils/__pycache__` 文件无读取权限而退出；setup 日志在服务器 `logs/robot_r0/setup.log`。正在修复为跳过缓存文件，HDR overlay 与 episode smoke 尚未完成。第一次的连接问题及 bundle SHA 保留于工作记录；新的修复提交将继续通过 bundle 同步。
-- `Torch 2.5.1+cu121` 低于 Genesis 1.2.2 声明支持版本；若 smoke 失败，需要在 project-local runtime 中解决，不改共享环境。
+- 服务器端 GitHub fetch 曾等待超过 90 秒；之后改用 Git bundle 完成同步，隔离 worktree 当前为 `bd6824b`。首次 runtime setup 因共享 Genesis 安装中的无权限 `utils/__pycache__` 文件失败；修复后 setup exit 0，overlay 接口检查通过，日志 `logs/robot_r0/setup_attempt2.log`。
+- 静态 smoke 证实 Torch 2.5.1+cu121 与接触查询不兼容；已在 project-local setup 中加入 Torch 2.8 CPU 安装路径，等待提交和重跑验证。
 - 方块摩擦/减速、自由滑动漂移与拦截时间尚未实测；`a_eff` 未拟合，不能据此做 holdout 或正式 oracle。
 - 固定相机的视场、目标像素尺度、机器人遮挡和 1/2 kHz Direct-HDR 运行成本尚无测量。
 - 当前代码尚未给出 >95% 成功率证据；需先小批试运行和调整，再明确验证数量与 Wilson 95% 区间。正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
