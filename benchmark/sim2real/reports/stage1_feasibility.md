@@ -2,17 +2,18 @@
 
 Date: 2026-10-16 (Asia/Tokyo)
 
-Status: initial source and server-environment audit. **No experiment has run yet.**
+Status: source/server audit plus one failed HDR renderer smoke. No simulator trajectory, event pair, downstream loader/training cycle, or real scoring has run.
 
 ## Scope and evidence labels
 
-This report records static source review, one read-only server environment/repository check, and data availability observed on the WSL preparation machine. `Source checked` means code/config metadata was inspected at a pinned revision or in the provided audited snapshot. `Actually run` is limited to environment imports and inspection commands. No simulator trajectory, event export, model forward, optimizer step, or real-set model scoring has run. Cost estimates are labeled as estimates.
+This report records static source review, server environment/repository checks, and one failed renderer-only smoke on the server. `Source checked` means code/config metadata was inspected at a pinned revision or in the provided audited snapshot. The renderer smoke did not exercise a simulator trajectory, event export, model forward, optimizer step, or real-set scoring. Cost estimates are labeled as estimates.
 
 ## Repository and simulator baseline
 
 - The existing dedicated branch is `exp/public-sim2real-v1`, commit `cfb16c665216fda0f591bee877ed0b9635da20d0`, based on upstream main `568ebb5480b487340172230fa9490b017141d339`.
 - Frozen core `e79e656ac00f7847b98db9e12bf43b093f3afff1` resolves locally and is an ancestor of the dedicated branch. This work has not modified core files.
-- Server checkout: `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin`, branch `main`, commit `15479d97154274796043d5e5cc42a336f57b2dd9`, clean and reported one commit behind `origin/main`. Server does not yet contain `repositories/gec-sim2real`.
+- Server checkout: `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin`, branch `main`, commit `15479d97154274796043d5e5cc42a336f57b2dd9`, clean and reported one commit behind `origin/main`. The dedicated server worktree is now `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real`, branch `exp/public-sim2real-v1`, commit `75217b0cba3c655aa8491ae0a381af79a72844b9`.
+- The frozen core's physics-first plugin requires linear radiance and explicit camera/object pose providers. The repository overlay contains eight Genesis source/shader files. The conda-installed Genesis 1.2.2 has no `radiance` argument. The first renderer smoke used an incomplete runtime copy with only the two `genesis/vis` files applied and failed with `TypeError: OffscreenRenderer.render() got an unexpected keyword argument 'radiance'`; the remaining six overlay files are under `genesis/ext/pyrender/`. A benchmark-local builder now applies the complete overlay to an isolated package copy. The corrected copy still needs a rerun before EventGenesis export.
 - The local WSL checkout is preparation/review only. The user has directed all experiments to the remote research server.
 
 ## Server environment and resource observation
@@ -25,6 +26,7 @@ Measured during a read-only remote inspection:
 - GPU inventory: 2× RTX 3090 (24 GB each), 3× V100S (32 GB each), 1× TITAN RTX (24 GB). During audit, GPU 0 and GPU 3 were occupied by other users' processes. GPU 1, 2, 4, and 5 showed no compute processes. Recheck immediately before launch; do not use GPU 0 or 3.
 - `/home` NFS had 12 TB available; per-user quota was not checked.
 - An existing user-level `gpu_watch.py` process was observed and left untouched.
+- Immediately before the renderer smoke, GPU 1 (RTX 3090) was idle and selected; no other compute process was assigned to it. GPU 3 had two other-user CARLA processes and was not used. The smoke exited with code 1. A shared Quadrants cache-lock warning appeared at `/home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock`; that cache was not cleaned or modified. Raw log: `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke/stdout.log`.
 
 ## Route findings
 
@@ -66,9 +68,9 @@ Measured during a read-only remote inspection:
 
 ## Shared constraints and current blockers
 
-- No shared physical trajectory has been generated; therefore no EventGenesis/V2E event pair, shared label artifact, loader example, short training, or synthetic validation exists yet.
+- No shared physical trajectory has been generated; therefore no EventGenesis/V2E event pair, shared label artifact, loader example, short training, or synthetic validation exists yet. The frozen EventGenesis physics plugin requires a scene-linear HDR renderer plus explicit camera/object pose providers; the first HDR smoke failed due to an incomplete runtime copy, so valid EventGenesis export remains gated on rerun.
 - No real public dataset has been opened for model evaluation. The candidate models have not been scored or ranked on any real data.
-- Main engineering gate is establishing the dedicated branch on the server and confirming source/data access. Next is a small common Genesis-rendered physical trajectory, exported once and consumed by both EventGenesis and V2E.
+- Main engineering gates are rerunning the full HDR overlay, then checking source/data availability. Next is a small common Genesis-rendered physical trajectory, exported once and consumed by both EventGenesis and V2E.
 - The research candidate's formal corpus sizes and update budgets are not adopted as Stage 1 pilot requirements; Stage 1 uses a few trajectories and a handful of synthetic-only updates.
 - No cost is estimated as a measured runtime. The 33.2 GB MVSEC figure is a download-size estimate only.
 

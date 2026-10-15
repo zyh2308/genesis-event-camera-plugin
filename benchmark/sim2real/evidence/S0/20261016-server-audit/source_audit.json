@@ -1,6 +1,18 @@
 {
   "audit_date": "2026-10-16",
   "status": "static source audit only; no candidate model execution",
+  "eventgenesis_core": {
+    "commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+    "entrypoint": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+    "required_inputs": ["linear HDR/radiance frame provider", "camera_to_world pose", "object_to_world poses indexed by segmentation IDs"],
+    "renderer_dependency": "camera.render(radiance=True) requires an isolated copy of the installed Genesis package with the complete repository overlay under genesis/ applied",
+    "overlay_files": 8,
+    "server_renderer_status": "installed genesis-world 1.2.2 lacks radiance support; first smoke failed because runtime assembly copied only vis/ instead of the complete overlay; corrected runtime builder added locally, rerun pending",
+    "server_smoke_log": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke/stdout.log",
+    "server_smoke_exit_code": 1,
+    "server_smoke_error": "TypeError: OffscreenRenderer.render() got an unexpected keyword argument 'radiance'",
+    "shared_cache_lock_warning": "Quadrants reported an existing ticache.lock under /home/zhaoyuhan/.cache; lock was not cleaned or modified"
+  },
   "routes": {
     "reconstruction": {
       "training_source": "TimoStoff/event_cnn_minimal@78aa471a66593f55e349303563997297fbc816e8",

@@ -1,15 +1,29 @@
-# Genesis renderer HDR v2（独立副本说明）
+# Genesis renderer HDR v2 overlay
 
-这是 2026-09-27 为事件插件验证建立的 Genesis 1.2.2 renderer patch overlay（v3
-主线继续使用）。
+This is the versioned source overlay for the independent Genesis 1.2.2 runtime.
+It contains changes below `genesis/vis/` and `genesis/ext/pyrender/`, including
+the float framebuffer and its shaders. The active conda installation must not
+be edited in place.
 
-- 完整的独立 renderer 副本位于研究工作区；本目录只保留可分发的修改文件和 smoke tests。
-- 本地目录保存本次修改的 renderer/vis 文件、适配器接口和 smoke tests；没有覆盖原始 Genesis 安装。
-- 运行时应把远程完整副本放在 `PYTHONPATH` 最前面，并使用 `PYOPENGL_PLATFORM=egl` 的 headless rasterizer。
-- 默认 `camera.render()` 保持 uint8；只有显式 `radiance=True` 才返回 scene-linear float32。
-- 当前 RGBA16F buffer 是 HDR 数值接口，不等于 EVK4 的绝对光子/曝光标定。
-- `camera.render(motion_vectors=True)` 当前会显式报错；1.2.2 overlay 没有
-  可验证的 previous clip-space attachment，不能伪造 renderer-native flow。
+On the research server, build a project-local runtime by copying the installed
+`genesis` package and applying the complete `genesis/` subtree from this
+directory:
 
-完整实施、验证输出、速度与 EViS 对照见：
-`research/reports/Genesis原生HDR渲染副本实施与EViS速度分析_20260927.md`
+```bash
+python benchmark/sim2real/scripts/prepare_hdr_runtime.py \
+  --runtime-root "$PWD/runtime/sim2real/genesis_hdr_v2"
+```
+
+The script verifies `genesis-world==1.2.2`, verifies every overlay file after
+copy, and writes `runtime_manifest.json`. Put that runtime first on
+`PYTHONPATH` and use `PYOPENGL_PLATFORM=egl` for headless rasterization.
+
+Default `camera.render()` remains uint8; only explicit `radiance=True` returns
+scene-linear float32. The RGBA16F buffer is an HDR numeric interface, not an
+absolute EVK4 photon/exposure calibration. `camera.render(motion_vectors=True)`
+fails explicitly because this overlay does not have a verifiable previous
+clip-space attachment.
+
+The smoke tests exercise the renderer and adapter contracts. Full historical
+implementation and performance comparison notes remain in the original
+research workspace.
