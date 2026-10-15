@@ -818,11 +818,18 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
                 np.concatenate((sample_position, np.asarray([1.0, 0.0, 0.0, 0.0]))),
                 zero_velocity=True,
             )
+            env.hold_robot_home()
+            # Advance one physical step so Genesis synchronizes the new target
+            # pose to the renderer before the static view measurement.
+            env.scene.step()
+            rendered_sample_position = as_numpy(
+                env.target.get_pos(relative=False),
+            ).reshape(-1)[:3]
             _, _, sample_seg, _ = env.camera.render(
                 rgb=True, depth=False, segmentation=True, radiance=False,
             )
             sample_mask, sample_bbox = _mask_and_bbox(np.asarray(sample_seg), ids)
-            reference_env.reset_episode(sample_position, 0.0)
+            reference_env.reset_episode(rendered_sample_position, 0.0)
             _, _, sample_reference_seg, _ = reference_env.camera.render(
                 rgb=True, depth=False, segmentation=True, radiance=False,
             )
@@ -840,7 +847,7 @@ def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
                 else min(sample_bbox[2] - sample_bbox[0], sample_bbox[3] - sample_bbox[1])
             )
             view_samples.append({
-                "target_position_m": sample_position.tolist(),
+                "target_position_m": rendered_sample_position.tolist(),
                 "target_pixels_target_only": sample_total,
                 "visible_target_pixels_with_robot_home": sample_visible,
                 "rendered_robot_occlusion_fraction": sample_occlusion,

@@ -142,16 +142,16 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 ## 尚未完成 / 风险
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
-- Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。低机位图像与 HDR 输出有效，但保存的 RGB 可见夹爪对目标有遮挡；旧 0% 遮挡来自非法 Panda qpos，不能采用。已把 preflight 改为同相机 target-only 参考，并新增发射到拦截区的 9 个静态视野采样；新实现待服务器实测，完整动态机械臂遮挡仍未测量。
+- Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。低机位图像与 HDR 输出有效，但保存的 RGB 可见夹爪对目标有遮挡；旧 0% 遮挡来自非法 Panda qpos，不能采用。高位负 y 候选 `[0.65,-0.25,0.75]` 的合法拦截姿态复测显示 98.31% 遮挡、短边仅 2 px，已拒绝。首轮 9 点路径数据因 `set_qpos` 后未推进渲染状态而失效；修复已加入代码并待服务器复测。完整动态机械臂遮挡仍未测量。
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
 - 新 seed oracle 独立 holdout 三档均 100/100，Wilson 95% CI 下界 96.3%；仅支持当前物理场景、固定预测器与固定控制器的 oracle 可行性，不代表视觉估计器成功率。10 mm 横向位置偏差敏感性显著；总观测延迟增至 30 ms 的小样本仍 15/15。
-- 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
+- 低机位与高位负 y 候选均不能提供足够目标可见性；负 y 高位候选实测 98.31% 遮挡。target-only 分母和静态路径视野测量代码已修正，但正确同步后的路径采样和其他机位仍待服务器复测。1/2 kHz Direct-HDR reference 成本仍未测量。
 - 新种子 oracle 独立 holdout 已完成：服务器 tmux `r0_oracle_holdout100x3_20261016`，PID `1594166`、exit `0`；实际代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、seed `2026102800`，每档 100/100，Wilson 95% CI 下界 96.3%。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
 
-建议暂定冻结候选为当前配置：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；相机 `[0.65,-0.45,0.25]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 是首次延迟补偿后的因果速度估计。该物理候选在独立新 seed 的 oracle holdout 每档 100/100 成功，Wilson 95% 下界约为 96.3%，达到 >95% 统计门槛。该结论只适用于 GT-current oracle。相机机位正经有效 target-only 参考重测，后续还需完成视野/遮挡确认与 Direct-HDR reference 成本，再建议研究会话冻结任务配置。主分支合并留待验收。
+建议暂定冻结候选为当前配置：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；相机 `[0.65,-0.45,0.25]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 是首次延迟补偿后的因果速度估计。该物理候选在独立新 seed 的 oracle holdout 每档 100/100 成功，Wilson 95% 下界约为 96.3%，达到 >95% 统计门槛。该结论只适用于 GT-current oracle。候选相机机位尚未通过：当前已测两个机位均不合格。需先完成正确同步的视野/遮挡复测并选出可用视角，再测 Direct-HDR reference 成本，之后建议研究会话冻结完整任务配置。主分支合并留待验收。
 
 
 ### speed-conditioned oracle 开发批次校验
@@ -175,3 +175,10 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 0.30/0.40/0.50 m/s 各 100/100 完整成功；各档 Wilson 95% CI `[0.9630,1.0000]`。固定 10 ms GT observation latency；成功定义含真实接触、合格抬升、净空与 0.5 s 保持。每档使用连续且不重叠 seed block，总成功数 300/300。
 - 归档 [`r0_oracle_holdout100x3_20261016/`](../../benchmark/robot_closed_loop/results/r0_oracle_holdout100x3_20261016/)；逐集 CSV SHA256 `17b4f6ff5c0abc7615b31b80f4c48aa336ea3cfbf237c4d5b7d660d4e6e7894c`；summary `420e9f994ff688d3ce64e33d1d779e1ab70c44ce87939b38a980dbd9826b30e3`；代表 trace `1a733d85e111332d5ddc3835e0cc9a82cb70e78b792af884422b77741f822247`；GIF `3a1806a61f92c37a6aa2cf7ea7dcae40ae5406faf3c4e1d30fa29a45f2b75574`；manifest `7bc3c5b9b69f52834c2dc78243d1fd77b8edf5ea134706f51a6aba53e5d46588`；SHA256SUMS 文件 `de9d6c2f5fb07e61dcc51fc33c689d6621362bf791c0471d82a5f679f76aae35`。本地 `sha256sum -c SHA256SUMS` 全项通过。
 - 服务器日志 SHA256 `e0f82252cd7f3cf42fc0d917b12709e432f5c583b630f6b787a86b62ef7eb578`，launcher `933e76254030e99fc939c3c925f967cf4f8c59e0f165519211ac4d294b4d3f2a`，exit 文件 `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`（内容 0），PID `94bd2aef56d16331563e9025cab15eb6a69f031f32344f58130c3763da89a307`（内容 1594166）。Genesis 有共享 Quadrants cache lock 警告，但运行完成并 exit 0；未运行提示中的共享缓存清理命令。
+
+
+### 首轮高位负 y 相机候选（拒绝）
+
+- 运行代码 commit `a0db01337cbf9266ede5518cdfe034b2e0a995f1`，配置 `high_oblique_neg_y.json` SHA256 `eb20e525fa63ddc89887be244086c406aad9ae17e98dafb59d301dfeb333d05f`；相机 `[0.65,-0.25,0.75]` 看向 `[0.65,0,0.02]`，320×240/FOV30°。
+- 合法 pre-grasp home 姿态、拦截点的 target-only 像素数为 771，机器人场景仅见 13 px，遮挡 98.31%、短边 2 px，候选拒绝。RGB 显示目标几乎被 Panda 手掌遮住。
+- 首轮输出 [`camera_preflight_high_oblique_neg_y_20261016/`](../../benchmark/robot_closed_loop/results/camera_preflight_high_oblique_neg_y_20261016/) 中 `intercept_render` 有效；9 个路径采样的 robot-scene mask 因没有在 `set_qpos()` 后推进物理/渲染同步而重复，已在 `NOTE.md` 标为无效。后续复测使用同步修复。JSON SHA256 `cff9ef8a8719bb7ab726312f937577df0816c06dc8eda96a282226f3b66d322b`；RGB `0285aa68a016f70faba00ed87f9458d4b3119ea7f11b5b8a46e888e3a76d4773`；HDR/depth/seg `372cb9987986b040c359f7bbd49fe5fc7774e6fd3a6fb4af3203e5e356bbdaa7`；manifest `5e8df2512103b25eb666bf64747b1e99640227a10eab32bfb1682de2d039bdd8`；SHA256SUMS `c61e86218f36a6be59a58937a98cd0c51f19586520914b4b04010004781d5718`。服务器 log `fd1efae6872e8638fea90f731955dafbcfc2c41f679c29589bfc48cc03199972`，exit `0`，PID `1605800`。
