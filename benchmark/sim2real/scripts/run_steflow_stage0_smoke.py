@@ -61,7 +61,7 @@ def photometric_objective(output, gray_prev, gray_next, event_tensor, loss_modul
     # formulas. The upstream function calls .cuda(), mapped to physical GPU 1
     # by CUDA_VISIBLE_DEVICES in the server launcher.
     photo = loss_module.compute_photometric_loss(
-        gray_prev[:, None, :, :], gray_next[:, None, :, :],
+        gray_prev, gray_next,
         torch.sum(event_tensor, dim=4), output, weights=[1.0, 1.0, 1.0, 1.0],
     )
     smooth = loss_module.smooth_loss(output)
