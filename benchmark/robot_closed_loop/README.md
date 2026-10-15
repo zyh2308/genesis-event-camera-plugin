@@ -31,8 +31,10 @@ CUDA_VISIBLE_DEVICES=1 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
   --out benchmark/robot_closed_loop/results/server_static_smoke
 ```
 
-Select a currently idle GPU for EGL explicitly after checking ownership with
-`nvidia-smi`; `CUDA_VISIBLE_DEVICES=1` is only a server-specific example.
+Check GPU ownership with `nvidia-smi` before launching. For EGL, set both
+`EGL_DEVICE_ID` to the confirmed idle EGL device and `CUDA_VISIBLE_DEVICES` for
+CUDA consumers; `CUDA_VISIBLE_DEVICES` alone does not constrain EGL device
+selection. The server pilot used `EGL_DEVICE_ID=2`, verified as a V100S renderer.
 
 ## R0 commands
 
