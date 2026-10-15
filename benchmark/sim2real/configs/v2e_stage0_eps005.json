@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "base_config": "shared_trajectory_stage0.json",
+  "base_v2e_timestamp_resolution_s": 0.001,
+  "v2e_override": {
+    "timestamp_resolution_s": 2.5e-05
+  },
+  "rationale": "Use dt/tau <= 0.05 for the configured 300 Hz low-pass cutoff (tau=1/(2*pi*f)); at 25 us, dt/tau is approximately 0.0471. This is a numerical stability choice. It is not calibrated or tuned using real event data.",
+  "used_for_run_id": "20261016-s0-v2e-pair-eps005",
+  "excluded_run_id": "20261016-s0-v2e-pair-v1",
+  "status": "The 1 ms base candidate was executed, but V2E emitted large IIR-step guidance and its outputs are excluded from downstream paired training."
+}
