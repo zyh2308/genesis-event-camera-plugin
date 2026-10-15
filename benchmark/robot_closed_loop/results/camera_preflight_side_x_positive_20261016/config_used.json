@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "status": "blind_r0_candidate_not_frozen",
+  "task": "planar_sliding_cube_intercept_grasp_lift_hold",
+  "units": {
+    "length": "m",
+    "time": "s",
+    "mass": "kg"
+  },
+  "provenance": {
+    "research_inputs": [
+      "C:/Users/zhaoyuhan/Desktop/10.08/\u7f51\u9875\u7248\u6587\u4ef6/01_COMMON_RESEARCH_BASELINE.md",
+      "C:/Users/zhaoyuhan/Desktop/10.08/\u7f51\u9875\u7248\u6587\u4ef6/04_CHAT_ROBOT_HANDOFF.md",
+      "C:/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_scene_research_2026-10-15/ROBOT_CODEX_R0_TASK.md"
+    ],
+    "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+    "genesis_version": "1.2.2",
+    "genesis_source_commit": "72bdd98b8d77d249e9c5296e4a6746ff680416a2"
+  },
+  "physics": {
+    "backend": "cpu",
+    "dt_s": 0.001,
+    "gravity_m_s2": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "table_top_z_m": 0.0,
+    "support": "Genesis infinite plane; no auxiliary table collision box",
+    "support_friction": 0.01
+  },
+  "target": {
+    "shape": "box",
+    "size_m": [
+      0.04,
+      0.04,
+      0.04
+    ],
+    "mass_kg": 0.08,
+    "density_kg_m3": 1250.0,
+    "friction": 0.01,
+    "launch_x_range_m": [
+      0.79,
+      0.81
+    ],
+    "launch_y_range_m": [
+      -0.06,
+      0.06
+    ],
+    "heading_from_negative_x_range_deg": [
+      -3.0,
+      3.0
+    ],
+    "initial_angular_velocity_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "launch_speed_candidates_m_s": [
+      0.3,
+      0.4,
+      0.5
+    ],
+    "velocity_set_once_after_settle": true,
+    "per_step_pose_or_velocity_overwrite": false
+  },
+  "robot": {
+    "asset": "genesis-world 1.2.2 xml/franka_emika_panda/panda.xml",
+    "base_position_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "controller_tcp_reference_m": [
+      0.55,
+      0.0,
+      0.02
+    ],
+    "hand_link_z_offset_to_pad_center_m": 0.105,
+    "hand_orientation_wxyz": [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    "jaw_axis_world": "y",
+    "initial_net_opening_m": 0.05,
+    "initial_finger_joint_position_m_each": 0.025,
+    "robot_friction_coefficient": 0.8,
+    "finger_close_joint_force_command_each": -5.0,
+    "finger_force_range_each": [
+      -10.0,
+      10.0
+    ],
+    "arm_kp": [
+      4500,
+      4500,
+      3500,
+      3500,
+      2000,
+      2000,
+      2000
+    ],
+    "arm_kv": [
+      450,
+      450,
+      350,
+      350,
+      200,
+      200,
+      200
+    ],
+    "arm_force_range": [
+      [
+        -87,
+        -87,
+        -87,
+        -87,
+        -12,
+        -12,
+        -12
+      ],
+      [
+        87,
+        87,
+        87,
+        87,
+        12,
+        12,
+        12
+      ]
+    ],
+    "cartesian_speed_limit_m_s": 0.4,
+    "cartesian_acceleration_limit_m_s2": 4.0,
+    "lift_hand_delta_z_m": 0.105,
+    "controller_uses_joint_position_drive": true,
+    "weld_attach_or_pose_teleport_during_episode": false
+  },
+  "camera": {
+    "mount": "fixed_eye_to_hand",
+    "resolution_wh": [
+      320,
+      240
+    ],
+    "position_m": [
+      1.15,
+      0.0,
+      0.22
+    ],
+    "lookat_m": [
+      0.65,
+      0.0,
+      0.02
+    ],
+    "up_m": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "vertical_fov_deg": 30.0,
+    "auto_exposure": false,
+    "target_short_side_candidate_px": 16
+  },
+  "controller": {
+    "high_level_hz": 100,
+    "intercept_x_m": 0.55,
+    "legal_intercept_y_range_m": [
+      -0.09,
+      0.09
+    ],
+    "observation_latency_s": 0.01,
+    "event_burn_in_s": 0.05,
+    "closure_lead_speed_schedule": {
+      "reference_speed_m_s": 0.3,
+      "reference_lead_s": 0.08,
+      "slope_s_per_mps": -0.1,
+      "min_lead_s": 0.05,
+      "max_lead_s": 0.1,
+      "status": "candidate_interpolated_from_single_factor_sensitivity_not_frozen"
+    },
+    "terminal_commit_guard_s": 0.03,
+    "motion_model": "constant deceleration opposite velocity, fit only from no-hand calibration episodes",
+    "lift_gate": {
+      "x_tolerance_m": 0.04,
+      "y_tolerance_m": 0.035,
+      "planar_speed_max_m_s": 0.12
+    },
+    "initial_deceleration_assumption_m_s2": 0.09804843035177806,
+    "deceleration_status": "fitted_from_no_hand_calibration_and_supported_by_independent_holdout",
+    "gt_future_arrival_or_per_episode_speed_input": false,
+    "lift_trigger": "gripper joint stall sustained 30ms while current estimated target position is within intercept gate and estimated planar speed is below threshold; evaluator contact GT is not read"
+  },
+  "success": {
+    "target_bottom_clearance_m": 0.08,
+    "continuous_hold_s": 0.5,
+    "maximum_object_to_tcp_slip_m": 0.01,
+    "oracle_development_episodes_per_speed": 20,
+    "oracle_heldout_episodes_per_speed": 100,
+    "target_empirical_success_rate": 0.98,
+    "stop_threshold_success_rate": 0.95
+  },
+  "direct_hdr_reference": {
+    "sampling_hz_initial": 1000,
+    "convergence_hz": [
+      1000,
+      2000
+    ],
+    "shared_response_implementation": "genesis_event_plugin.DvsEmulator; direct HDR log-intensity input",
+    "shared_response_parameters": {
+      "on_threshold": 0.2,
+      "off_threshold": 0.2,
+      "threshold_std": 0.0,
+      "noise": false,
+      "bandwidth": "infinite"
+    },
+    "source_is_temporal_reconstruction_independent": true,
+    "sensor_status": "assumed ideal synthetic response; not calibrated EVK4"
+  }
+}

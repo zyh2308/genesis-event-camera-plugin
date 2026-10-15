@@ -1,0 +1,3 @@
+Rejected camera candidate: position `[0.65, 0, 0.85]`, lookat `[0.65, 0, 0.02]`, up `[1,0,0]`, resolution 320x240, vertical FOV 30 degrees. Server code commit `062c3811684a854110e01cfb500222083f0f6deb`; exact used config is preserved as `config_used.json` (SHA256 `b987145661715118ae77ef5d879a980762e6ece316445d84392d42f93f301096`).
+
+Corrected path samples show 0% occlusion and 22–23 px short side at launch and midpoint, but the target is fully occluded at the intercept center with Panda in legal pre-grasp home (528 target-only pixels, zero visible), so the camera preflight failed and this pose was rejected. Intercept edge samples had 79.4–100% occlusion. This is a valid failed candidate, not task failure.

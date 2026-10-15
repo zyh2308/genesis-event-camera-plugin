@@ -102,6 +102,11 @@ nominal launch-to-intercept view at the configured lateral range while holding
 Panda at its legal pre-grasp home pose. Those are static camera checks, not
 dynamic arm-trajectory coverage.
 
+The current camera candidate is fixed at `[1.15, 0.0, 0.22]`, looking at
+`[0.65, 0.0, 0.02]` with 320×240 resolution and 30° vertical FOV. The matching
+scene config records the pose and its SHA256; R0 oracle rollouts used the
+previous camera pose, which does not affect their GT-only controller or physics.
+
 For earlier closure timing, use a negative `--ttc-bias-ms`; e.g. `-20` starts
 closing when the predicted crossing is about 20 ms farther away than the
 configured lead threshold.
