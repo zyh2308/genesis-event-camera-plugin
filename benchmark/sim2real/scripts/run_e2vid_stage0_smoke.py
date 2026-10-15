@@ -166,7 +166,7 @@ def main() -> None:
             temporal_consistency_loss(weight=2.0, L0=2),
         ]
         set_seed(args.seed)
-        model = E2VIDRecurrent(MODEL_ARGS).to(device)
+        model = E2VIDRecurrent(MODEL_ARGS["unet_kwargs"]).to(device)
         model.train()
         initial_hash = state_sha256(model)
         initial_hashes[generator] = initial_hash
