@@ -44,7 +44,7 @@
 - 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
 - Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
 - 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，当前配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`（状态估计门控、校准来源与 speed-conditioned closure lead）；较晚闭合 sensitivity 使用 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，首批 oracle 使用 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`。当前 schedule 已通过统一控制器每档 20 集开发复验，仍未冻结。
-- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟。闭合 lead 使用首次因果速度估计 `v0` 下的 `clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒；开发复验三档各 20/20，实际 lead 中位数约 80.49/70.49/60.49 ms。目标短边 43 px。共享减速度候选为 0.09804843 m/s²，独立 no-hand holdout 已支持该模型。经验成功率为 100%，但每档 Wilson 95% CI 下界为 83.9%；仍需误差注入和独立大样本确认。
+- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟。闭合 lead 使用首次因果速度估计 `v0` 下的 `clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒；开发复验三档各 20/20，实际 lead 中位数约 80.49/70.49/60.49 ms。目标短边 43 px。共享减速度候选为 0.09804843 m/s²，独立 no-hand holdout 已支持该模型。经验成功率为 100%，但每档 Wilson 95% CI 下界为 83.9%；已完成小规模误差注入；独立大样本确认仍待运行。
 
 ## 运行时与运行命令
 
@@ -119,7 +119,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 4. ✅ 统一 speed-conditioned lead oracle：每档 20/20 完整成功；Wilson 区间 83.9%–100%，样本量不足以证明真实成功率下界 >95%。
 5. ⚠️ `--ttc-bias-ms -20`：每档 5 集，0.30 档 5/5，0.40/0.50 档 0/5；更早时序使手指在目标到达前过度闭合。继续试较晚闭合，不运行正式独立成功率批次。
 6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。
-7. ✅ 统一 speed-conditioned lead 已完成每档 20 集开发复验，三档均 20/20；下一步做少量位置/时序误差注入，再运行新种子独立成功率样本。
+7. ✅ 统一 speed-conditioned lead 开发复验每档 20/20；横向偏差与额外延迟注入已完成，下一步运行新种子每档 100 集独立成功率样本。
 8. `--mode preflight` 与 `--mode reference --reference-duration 0.20`：固定相机可见性、目标像素尺度、遮挡，以及直接 HDR 1/2 kHz reference 成本。
 
 ## 证据入口与 provenance
@@ -144,13 +144,13 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
 - Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。新低机位已确认实际抓取姿态下目标清晰可见，HDR 输出有效；遮挡百分比对照姿态不合法，仍待实现有效定量对照。
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
-- 统一 speed-conditioned lead 三档开发复验均 20/20，但每档 Wilson 95% CI 下界为 83.9%；位置/时序误差注入和新 seed 的大样本独立成功率尚未完成，暂不把 20/20 解释成可推广的 >95% 成功率。
+- 统一 speed-conditioned lead 三档开发复验均 20/20，但每档 Wilson 95% CI 下界为 83.9%；10 mm 横向位置偏差敏感性显著，额外 20 ms 延迟未影响该小样本。新 seed 的大样本独立成功率尚未完成，暂不把 20/20 解释成可推广的 >95% 成功率。
 - 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
 
-建议暂定冻结候选为当前配置：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；相机 `[0.65,-0.45,0.25]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 是首次延迟补偿后的因果速度估计。该候选在独立调参 seed 的开发批次中每档 20/20 成功，仍不足以证明真实成功率下界超过 95%。建议先完成小规模误差注入，再以新 seed 每档运行至少 100 集；若 100/100，Wilson 95% 下界约为 96.3%。随后补齐完整相机轨迹/合法姿态遮挡量化与 Direct-HDR reference 成本，再由研究会话决定冻结。主分支合并留待验收。
+建议暂定冻结候选为当前配置：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；相机 `[0.65,-0.45,0.25]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 是首次延迟补偿后的因果速度估计。该候选在独立调参 seed 的开发批次中每档 20/20 成功，仍不足以证明真实成功率下界超过 95%。已完成小规模误差注入；建议以新 seed 每档运行至少 100 集独立 oracle；若 100/100，Wilson 95% 下界约为 96.3%。随后补齐完整相机轨迹/合法姿态遮挡量化与 Direct-HDR reference 成本，再由研究会话决定冻结。主分支合并留待验收。
 
 
 ### speed-conditioned oracle 开发批次校验
@@ -158,3 +158,10 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 归档目录：[`r0_oracle_adaptive_dev60_20261016/`](../../benchmark/robot_closed_loop/results/r0_oracle_adaptive_dev60_20261016/)。服务器运行 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`，配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`，运行命令见“统一 speed-conditioned lead oracle 开发复验”。每档 20/20；Wilson 95% CI 为 `[0.8389, 1.0]`。
 - 结果 SHA256：逐集 CSV `3b44f6cd783562594da04fc246cdc1cc708c3ab240aa3227cc5cc56e1c7ebb78`；摘要 `0d48fb7adb6003e1d2bdd7aeec128e65ee36b4d9363531e4021bf6ed2961d1ac`；代表 trace `d21fcfc1858ed84d7888041b84793b867145244fee87f24225cdae3365e4d214`；GIF `57cd46752368283ba27d46ea7962c52bf368a218d1bc53482b49c4016f0a5651`；manifest `5dedfb11e9c68bc4d354c6672c599982f4a1335813ea00000fc8ae09a452db25`；SHA256SUMS `128ede7a3a32588b1778481368b7825cb07688e0963aa7a52569dc2823418800`。
 - 运行日志 `results/runtime_logs/r0_oracle_adaptive_dev60_20261016.log` SHA256 `f487e018a1934edc1198393acd3303cb4fe7ce713e39d9e6c85b8c49714b1951`；launcher SHA256 `a47f4d9fb01143aff29cae51a4061716fa8ee1433243c500aa34b965c8a1cdaf`；exit `0`，PID `1582044`。
+
+
+### 位置偏差与附加延迟敏感性
+
+- 两批运行均用代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`；每档 5 集，敏感性结果不计入独立成功率估计。
+- `r0_sens_biasy10mm_dev15_20261016/`：命令参数 `--bias-y 0.010 --seed 2026102600`。0.30/0.40/0.50 m/s 分别 0/5、1/5、0/5，合计 1/15；14 个失败均为 `unstable_grasp`。注入的横向偏差为目标宽度的 25%，显示抓取对横向状态误差敏感。CSV SHA256 `81321b67711f04938851de4d167dd443156f63a0d813bc4e42b362a22573ce2e`；manifest `ba13329b623253ecea1458ac780fb01864f99f7c198ce6d8f878ed8ea74b4a9b`；目录 SHA256SUMS 文件 `a3ce6e24e40dc93f17329b09d8df8d2550532b1161c53d3a934e87594b5013f3`；运行日志 `99ffa4d9dee1cf5b8fac9fdad3e2a707a6ec41efd2c605ced15056d404a33a73`，launcher `641aca95f3be085446898aacd512cd966cf657608f3dc6fead8ec676be331ab3`，exit 0，PID 1588265。
+- `r0_sens_latency20ms_dev15_20261016/`：命令参数 `--extra-latency-ms 20 --seed 2026102700`。总观测延迟从配置的 10 ms 增至 30 ms；0.30/0.40/0.50 m/s 均 5/5，合计 15/15，故该扰动幅度下未观察到性能退化。CSV SHA256 `79782d3aaa00d8e6570ed986eeb4cc402a08b6a09caa6a51b8435b684ad91518`；manifest `2d7e820763a065a234f718e0438075f7124fb294026745b74a1ea5cb2a8f27fe`；目录 SHA256SUMS 文件 `5cf2d81249b303dfa9354a666be680b3ce567400314fb9d18718ccda653fc787`；运行日志 `eac734660b1b8dc7657db8cb15dbc1783b0778fe6687aa584cf4913c379d1335`，launcher `1a30b5a20caca9045b4802118964536a2da618397743e311d560f45fd83d1490`，exit 0，PID 1591125。两个目录中的代表性 trace/GIF 均由 SHA256SUMS 覆盖；两份清单均已在本地逐项验证。
