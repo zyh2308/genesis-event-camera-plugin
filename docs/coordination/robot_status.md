@@ -95,6 +95,14 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode sensitivity --episodes 5 --speeds 0.3,0.4,0.5 --a-eff 0.09804843035177806 --ttc-bias-ms -20 --seed 2026102100 --out benchmark/robot_closed_loop/results/r0_sens_early20ms_dev15_20261016
 ```
 
+较晚闭合扫描（各 run 均新 seed、新输出目录）：
+
+```bash
+CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode sensitivity --episodes 5 --speeds 0.3,0.4,0.5 --a-eff 0.09804843035177806 --ttc-bias-ms 20 --seed 2026102200 --out benchmark/robot_closed_loop/results/r0_sens_late20ms_dev15_20261016
+CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode sensitivity --episodes 5 --speeds 0.4 --a-eff 0.09804843035177806 --ttc-bias-ms 30 --seed 2026102400 --out benchmark/robot_closed_loop/results/r0_sens_late30ms_mid04_20261016
+CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode sensitivity --episodes 5 --speeds 0.5 --a-eff 0.09804843035177806 --ttc-bias-ms 40 --seed 2026102300 --out benchmark/robot_closed_loop/results/r0_sens_late40ms_dev05_20261016
+```
+
 后续每个输出路径必须是新目录；跑批使用 `tmux`，写 project log 和 PID，并低频查看。建议顺序：
 
 1. ✅ `--mode static --episodes 20`：已验证 20/20 真实双侧接触、抬升和 0.5 s 保持；样本量仍仅为开发级。
@@ -102,8 +110,9 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 3. ✅ `--mode slide --split holdout --episodes 10 --speeds 0.3,0.4,0.5 --a-eff 0.09804843035177806`：新种子 30/30 到达，固定模型 TTC 与横向误差均较小。
 4. ⚠️ 首批 GT-current oracle：0.30 m/s 20/20，0.40/0.50 m/s 0/20；控制器已改为闭合 latch、状态门控抬升并优先保留接触失败类别。
 5. ⚠️ `--ttc-bias-ms -20`：每档 5 集，0.30 档 5/5，0.40/0.50 档 0/5；更早时序使手指在目标到达前过度闭合。继续试较晚闭合，不运行正式独立成功率批次。
-6. 任务可行后分别做小幅 `--bias-y`、`--ttc-bias-ms`、`--extra-latency-ms` 误差注入。
-7. `--mode preflight` 与 `--mode reference --reference-duration 0.20`：固定相机可见性、目标像素尺度、遮挡，以及直接 HDR 1/2 kHz reference 成本。
+6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。拟合固定 speed-conditioned lead 后，先做 20 集/档 GT oracle 开发复测。
+7. 任务开发复测通过后分别做小幅 `--bias-y`、`--ttc-bias-ms`、`--extra-latency-ms` 误差注入，再跑新种子独立成功率批次。
+8. `--mode preflight` 与 `--mode reference --reference-duration 0.20`：固定相机可见性、目标像素尺度、遮挡，以及直接 HDR 1/2 kHz reference 成本。
 
 ## 证据入口与 provenance
 
@@ -117,16 +126,19 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - no-hand holdout 原始结果位于 [`r0_slide_holdout_20261016/`](../../benchmark/robot_closed_loop/results/r0_slide_holdout_20261016/)；运行代码 commit `93e739e...`、配置 hash `39c7aff...`、`panda_asset_in_scene=false`。CSV SHA256 `2588b58dfe2d13b7397d5956cdbf545efb8aec7a9491d7174351b38eaeb33bae`；manifest `7ba5d4097a4079a00c534e71d2e14697c864a803c91cd4cb77a6dbb764ce0915`；`SHA256SUMS` 文件本身 `51288e81254627504e6c393a6800dbb215207571d1e5415a04d8ab60d8abd053`；逐集 traces 均含于清单。日志 SHA256 `bf7ce564d21c03f5e08ab59613b0f4e321bc98ec47011a7311696163bc1a851e`，exit `0`，PID `1548544`。
 - 首批 GT-current oracle 原始结果位于 [`r0_oracle_dev60_20261016/`](../../benchmark/robot_closed_loop/results/r0_oracle_dev60_20261016/)；运行代码 commit `4d70b8f0f796ca5163d47ab3b5aac98f71aa45a4`、配置 SHA256 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`、`a_eff=0.09804843035177806`、GT observation latency 10 ms。CSV SHA256 `2b3fc7ea3294a371d2b9d8cfc51cb20583df9da661a7eea6a2ebefa21fdfa7d`；summary SHA256 `bb87bcda337e3edd4f71b9968b20515221bb6813e22429907721b712dbdf6bab`；manifest SHA256 `e31d39b053de368e57313fb52a5a75164ef15779a5591193ecdb76243cc9efc5`；`SHA256SUMS` 文件 SHA256 `3d339625fcc2f5897d11a30c447ac9fb7ebf494793204dc07b36dc70bedeb6b6`。逐集结果 CSV、代表性成功/失败 trace 与 GIF 均在清单。日志 SHA256 `3b1c69c2750de50eb4988563f7e537ece0ff3c61d264bdd71b7fc64b11f7e2fa`，exit `0`，PID `1551511`。
 - 20 ms earlier closure sensitivity 结果位于 [`r0_sens_early20ms_dev15_20261016/`](../../benchmark/robot_closed_loop/results/r0_sens_early20ms_dev15_20261016/)；代码 commit `eff4f592fe4e503b8f4264415c2b3b0b0b326165`，配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，每档 5 集、`--ttc-bias-ms -20`。CSV SHA256 `dcc9b9cacceb810655a1b86a6b084de6582399f529a2621f5a96e2f1aa814993`；summary SHA256 `af44f9b96169ea20268833db48cf617f02460e1aa15124347f8d8da6c2a6a683`；manifest SHA256 `9c2a57cee87c646e1a7cfd8dcd5f62b97bcbceabc3a740aee87ed6cb2ce05899`；`SHA256SUMS` 文件 SHA256 `fe6a3b83635a2146cffc39f9d55f5788e017bdd8b17210698b541511fd42c744`。成功/失败 traces、GIF 与清单含于目录；launcher SHA256 `a5745c079001edc780f61d00b547f9feaba11ed6e5a14f33f8f0c7c82d1b3b15`；运行日志 SHA256 `c44e5351df71f87a05081b3bb4254359a15763e117d6f6fbc36d699b75c508dd`，exit `0`，PID `1565416`。
+- 较晚闭合 `+20 ms` 结果位于 [`r0_sens_late20ms_dev15_20261016/`](../../benchmark/robot_closed_loop/results/r0_sens_late20ms_dev15_20261016/)；代码 commit `ae34e8c94fb6c0b8646cc0b901e42bd218617151`、配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，0.30/0.40 m/s 各 5/5 成功，0.50 m/s 0/5。manifest `ddaac966ffbbf7c84dbf3b77c7c2b2b2682abf49ff782a7a721b8949e5be446c`；`SHA256SUMS` `0d48368bf7be48108051512a70a6c5c67b35fcce4ad53a730914c398589c81db`；launcher `50b718ec347ebfbb7b437aa643dfad9f5a29712b4f16a87f4525a90becca4a3b`；log `3f94104713fb67f0e782f3c87dfad11aba166cb948aa852bbb6d9b331cd249e1`，exit `0`，PID `1570682`。
+- 较晚闭合 `+30 ms` 的 0.40 m/s 结果位于 [`r0_sens_late30ms_mid04_20261016/`](../../benchmark/robot_closed_loop/results/r0_sens_late30ms_mid04_20261016/)；代码 commit `ae34e8c94fb6c0b8646cc0b901e42bd218617151`、配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，5/5 成功；manifest `15130a5b6c08360e2759e209ad5661893a97d6c9759581b189966fd52b202261`；`SHA256SUMS` `a1c955731fe0eb5dc6adf8e7eaef2d0b1b347877ff24039b3aa06cb0c624944c`；launcher `97bed4d5c72151ea60bb8f89c2c1dce359b55c23c2efbe76805a5eed8ea32d77`；log `2e9cff43544194d22d445b1ca1782d8bdf39955f17d447f9bcf63aeaa3787c91`，exit `0`，PID `1577375`。
+- 较晚闭合 `+40 ms` 的 0.50 m/s 结果位于 [`r0_sens_late40ms_dev05_20261016/`](../../benchmark/robot_closed_loop/results/r0_sens_late40ms_dev05_20261016/)；代码 commit `ae34e8c94fb6c0b8646cc0b901e42bd218617151`、配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，5/5 成功，底面净空 0.10095–0.10237 m；manifest `81ff27e3df895d3afdcb1e3a6e6423e2ccb053ba5a693621ac55eacab76ad06b`；`SHA256SUMS` `0fe24e890ded18e3368d5b7f6ce4f836f994f5a9d7f318e4bbaf1c4704063924`；launcher `4a3cbe287104c72ad107b69bd0e9cb8a887ac4d9dd2721d5a1e4943612c63082`；log `420d95bc9d9bf5b30c1cac830bb30ed7197b8a38ffa2dbdc97ac91d9941ae5b2`，exit `0`，PID `1574449`。
 - 无效旧机位 preflight 仅作 bug 证据保留：报告 SHA256 `eb586dd8e7dffb69c480ac4e1d3e7c16c42bdd2008c900642a5fb7f477f08ea0`，输出清单 SHA256 `3d92ac2fcb06440c4cf16b9f69d7a145bd6cef2b867228cb1470160b86277ae6`；不得用于相机可见性结论。
 
 ## 尚未完成 / 风险
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
 - Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。新低机位已确认实际抓取姿态下目标清晰可见，HDR 输出有效；遮挡百分比对照姿态不合法，仍待实现有效定量对照。
-- no-hand calibration 与独立 holdout 均已完成；首次 oracle 与 -20 ms 提前闭合 sensitivity 均未使 0.40/0.50 m/s 成功抬升。lift gate 已阻止空夹爪硬停触发，剩余高档主要是闭合时机/手指几何未能让目标进入稳定夹持。未达标前不运行独立成功率批次或宣称闭环可行。
+- no-hand calibration 与独立 holdout 均已完成；小样本较晚闭合试验目前已分别在三档获得 5/5 完整成功：0.30 档 lead 80 ms、0.40 档 lead 70 ms、0.50 档 lead 60 ms。样本量不足以声称 >95% 可靠性，需将这三点整合成基于首次当前速度估计的单一 lead 规则，并用每档 20 集开发批次复验。
 - 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
 
-暂不冻结任务配置。no-hand 独立 holdout 支持固定减速度预测；首批 oracle 和 -20 ms 提前闭合试验均未让 0.40/0.50 m/s 稳定抓取。下一步建议对比 `ttc-bias-ms=0` 与 `+20 ms`（相对首批 oracle 当前控制修正版本），同时检查接触时目标中心/手指有效开度；若目标仍被挡停，再考虑可解释的手爪预定位或降低主速度档。只有各选定档开发批次稳定后再跑足量独立样本和小误差注入。若这些控制/参数调整仍不能可靠抓取，再提交研究会话讨论是否改变接触几何或任务速度。主分支合并留待验收。
+暂不冻结任务配置。no-hand 独立 holdout 支持固定减速度预测。小样本结果建议试用固定 speed-conditioned closure lead：以首次因果速度估计 `v0` 为输入，lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，对应约 80/70/60 ms 三档；该线性规则是三个已成功单点的插值，尚未作为一个固定控制器复测。若每档 20 集开发 oracle 通过，再运行误差注入和新种子独立统计；正式冻结前还需相机遮挡复测和 Direct-HDR 成本。主分支合并留待验收。
