@@ -75,10 +75,15 @@
     "closure_lead_initial_s": 0.100,
     "terminal_commit_guard_s": 0.030,
     "motion_model": "constant deceleration opposite velocity, fit only from no-hand calibration episodes",
-    "initial_deceleration_assumption_m_s2": 0.0981,
-    "deceleration_status": "analytical_seed_only_pending_genesis_slide_calibration",
+    "lift_gate": {
+      "x_tolerance_m": 0.040,
+      "y_tolerance_m": 0.035,
+      "planar_speed_max_m_s": 0.12
+    },
+    "initial_deceleration_assumption_m_s2": 0.09804843035177806,
+    "deceleration_status": "fitted_from_no_hand_calibration_and_supported_by_independent_holdout",
     "gt_future_arrival_or_per_episode_speed_input": false,
-    "lift_trigger": "gripper joint position stall under closing force; contact GT is evaluator-only"
+    "lift_trigger": "gripper joint stall sustained 30ms while current estimated target position is within intercept gate and estimated planar speed is below threshold; evaluator contact GT is not read"
   },
   "success": {
     "target_bottom_clearance_m": 0.08,

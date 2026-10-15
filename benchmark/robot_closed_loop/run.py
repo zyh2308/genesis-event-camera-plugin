@@ -112,6 +112,35 @@ def _gripper_stall(env: RobotScene) -> bool:
     return bool(np.all((q > 0.012) & (q < 0.029)) and np.max(np.abs(qd)) < 0.03)
 
 
+def _lift_gate(
+    estimated_state: Optional[MotionState],
+    hand_y_m: float,
+    intercept_x_m: float,
+    gate_cfg: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Gate lifting with the same estimated target state available to a policy."""
+    if estimated_state is None:
+        return {"eligible": False, "reason": "no_current_state_estimate"}
+    p = np.asarray(estimated_state.position_m, dtype=np.float64)
+    v = np.asarray(estimated_state.velocity_m_s, dtype=np.float64)
+    dx = float(p[0] - intercept_x_m)
+    dy = float(p[1] - hand_y_m)
+    planar_speed = float(np.linalg.norm(v[:2]))
+    x_ok = abs(dx) <= float(gate_cfg["x_tolerance_m"])
+    y_ok = abs(dy) <= float(gate_cfg["y_tolerance_m"])
+    speed_ok = planar_speed <= float(gate_cfg["planar_speed_max_m_s"])
+    return {
+        "eligible": bool(x_ok and y_ok and speed_ok),
+        "estimated_position_m": p.tolist(),
+        "estimated_planar_speed_m_s": planar_speed,
+        "dx_m": dx,
+        "dy_m": dy,
+        "x_ok": x_ok,
+        "y_ok": y_ok,
+        "speed_ok": speed_ok,
+    }
+
+
 def run_static_trial(
     env: RobotScene, episode_id: int, seed: int, *, capture: bool = False,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
@@ -339,6 +368,7 @@ def run_oracle_trial(
     stall_time = 0.0
     terminal_commit = False
     last_prediction = None
+    estimated_current_state = None
     last_obs = history[-1]
     last_command = {"y_command_m": 0.0, "closing": False, "lifting": False}
     crossing_actual = None
@@ -376,6 +406,7 @@ def run_oracle_trial(
                 last_obs.position_m[1] += float(position_bias_y_m)
                 prediction = predictor.predict(last_obs, latency)
                 last_prediction = prediction
+                estimated_current_state = prediction.propagated_state
                 if prediction.reachable:
                     ttc_cmd = prediction.ttc_s + float(ttc_bias_s)
                     target_y = float(np.clip(prediction.position_m[1], *y_bounds))
@@ -402,14 +433,29 @@ def run_oracle_trial(
                     }
                 elif lift_q is None:
                     env.command_hand(np.asarray([float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2]]))
-                    env.command_fingers_open()
-                    last_command = {"reachable": False, "y_command_m": command.position_m, "closing": False, "lifting": False}
+                    if close_started_s is None:
+                        env.command_fingers_open()
+                    else:
+                        # Once closure begins, loss of a crossing prediction must
+                        # not reopen the gripper while it is enclosing the target.
+                        env.command_fingers_close()
+                    last_command = {
+                        "reachable": False, "y_command_m": command.position_m,
+                        "closing": close_started_s is not None, "lifting": False,
+                    }
 
         if close_started_s is not None and lift_q is None and rel_t - close_started_s >= 0.05:
-            if _gripper_stall(env):
+            lift_gate = _lift_gate(
+                estimated_current_state, command.position_m,
+                float(controller_cfg["intercept_x_m"]), controller_cfg["lift_gate"],
+            )
+            if _gripper_stall(env) and lift_gate["eligible"]:
                 stall_time += env.dt_s
             else:
                 stall_time = 0.0
+            last_command = {**last_command, "lift_gate": lift_gate,
+                            "gripper_stalled": _gripper_stall(env),
+                            "lift_gate_stall_s": stall_time}
             if stall_time >= 0.03:
                 lift_hand_goal = np.asarray([float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2] + float(cfg["robot"]["lift_hand_delta_z_m"])])
                 lift_q = as_numpy(env.command_hand(lift_hand_goal)).reshape(-1)
@@ -471,16 +517,17 @@ def run_oracle_trial(
     close_to_crossing = None if close_started_s is None or crossing_actual is None else float(close_started_s - crossing_actual["time_s"])
     if success:
         primary = "success"
+    elif first_contact_s is not None:
+        if first_bilateral_s is None or lift_started_s is None:
+            primary = "unstable_grasp"
+        elif max_clearance >= float(cfg["success"]["target_bottom_clearance_m"]):
+            primary = "escape"
+        else:
+            primary = "unstable_grasp"
     elif not last_prediction or not last_prediction.reachable:
         primary = "oracle_unreachable"
     elif first_contact_s is None:
         primary = "spatial_miss" if crossing_y is not None and abs(crossing_y - y_tcp) > 0.02 else "late_closure"
-    elif not bilateral:
-        primary = "unstable_grasp"
-    elif lift_started_s is None:
-        primary = "unstable_grasp"
-    elif final_bottom < float(cfg["success"]["target_bottom_clearance_m"]):
-        primary = "escape"
     else:
         primary = "unstable_grasp"
     result = {
