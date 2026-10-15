@@ -12,7 +12,7 @@
 - 已将下游场景、固定减速度预测器、共享控制器入口、episode CSV/轨迹/GIF、配置与运行时 setup 提交到指定分支。
 - 已在本地完成工程级静态抓取调试：使用官方 Panda IK/位置驱动和手指力控，出现双侧接触并抬升保持。该调试不是服务器实验、不纳入成功率，不作为 R0 结论。
 - 本地 frozen-core 差异检查通过：`git diff --exit-code e79e656ac00f7847b98db9e12bf43b093f3afff1 -- genesis_event_plugin/`。
-- 服务器 `g1` 的隔离 worktree 最近同步到 `ae34e8c94fb6c0b8646cc0b901e42bd218617151`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
+- 服务器 `g1` 的隔离 worktree 最近同步到 `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`；原 `main` 工作区未切换、未修改。R0 project venv 使用 Genesis 1.2.2 + Torch 2.8.0+cpu，Torch wheel SHA256 `cb06175284673a581dd91fb1965662ae4ecaba6e5c357aa0ea7bb8b84b6b7eeb`，文件位于服务器 `~/Eventbased_WAM/torch-2.8.0+cpu-cp311-cp311-manylinux_2_28_x86_64.whl`。基础共享环境仍是 Torch 2.5.1+cu121。
 - 资源检查时 GPU 0 有其他用户计算进程、GPU 3 有 CARLA；GPU 1、2、4、5 当时空闲。后续 EGL 运行显式限制在经再次检查的空闲设备，不触碰其他用户进程。
 
 ### 服务器实测结果
@@ -31,7 +31,9 @@
 
 失败轨迹细查发现：0.40 m/s 的 20 集全部出现机器人接触，其中 19 集有短暂双指接触；0.50 m/s 有 19 集出现接触、18 集有短暂双指接触；高档均没有成功抬升。代表失败 trace 显示目标接触后速度反向并从手指逃逸。摘要将所有失败都分成 `oracle_unreachable`，是因为控制器在物体离开拦截区后最后一次预测不可达，掩盖了之前发生的接触；失败分类优先级需修正。0.40 m/s 批次还有手指停滞触发空夹爪抬升的 episode，说明仅凭关节停滞不能区分物体夹持与夹爪自身硬停；后续控制器会加入同一估计状态下的几何接近/速度门限，仍不使用 evaluator 的 GT 接触标签。
 
-**闭合提前 20 ms sensitivity（开发批次）：** 使用代码 `eff4f592fe4e503b8f4264415c2b3b0b0b326165`、配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`、每档 5 集，`--ttc-bias-ms -20`（相对 100 ms lead，触发提前到预测 crossing 前约 120 ms）。结果 0.30 档 5/5；0.40、0.50 档均 0/5。0.40 档 3/5、0.50 档 5/5 有双侧接触，但均未发生合格抬升；高档失败为 8 个 `unstable_grasp`、2 个无接触 `oracle_unreachable`。代表 trace 显示在高速度下手指到目标前已接近/到达闭合硬限位，方块停在夹爪前缘，没进入有效夹持开度；此前闭合 latch 与状态门控阻止了错误开爪和空夹爪触发。该单因子试验不支持更早闭合，下一步扫描较晚时序。
+**闭合提前 20 ms sensitivity（开发批次）：** 使用代码 `eff4f592fe4e503b8f4264415c2b3b0b0b326165`、配置 SHA256 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`、每档 5 集，`--ttc-bias-ms -20`（相对 100 ms lead，触发提前到预测 crossing 前约 120 ms）。结果 0.30 档 5/5；0.40、0.50 档均 0/5。0.40 档 3/5、0.50 档 5/5 有双侧接触，但均未发生合格抬升；高档失败为 8 个 `unstable_grasp`、2 个无接触 `oracle_unreachable`。代表 trace 显示在高速度下手指到目标前已接近/到达闭合硬限位，方块停在夹爪前缘，没进入有效夹持开度；此前闭合 latch 与状态门控阻止了错误开爪和空夹爪触发。该单因子试验不支持更早闭合；较晚闭合 sensitivity 找到三档成功点。
+
+**统一 speed-conditioned GT-current oracle 开发复验：** 代码提交 `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、固定减速度 `0.09804843035177806 m/s²`、延迟 10 ms、每档 20 集、新 seed。首次延迟补偿当前速度估计中位数为 0.2951/0.3951/0.4951 m/s；实际 closure lead 中位数为 80.49/70.49/60.49 ms，与三个单因子成功点吻合。三档均 20/20 完整成功（Wilson 95% CI 各为 83.9%–100%）；每档 20/20 有双侧接触并启动抬升，保持均 0.5 s；夹持开度中位数约 39.8 mm，目标底面最终净空范围 0.10045–0.10263 m。该开发批次未证明真实成功率下界超过 95%，仍需独立样本估计不确定性。
 
 ## 分支、冻结基线与候选配置
 
@@ -41,12 +43,12 @@
 - 服务器隔离 worktree：`~/Eventbased_WAM/repositories/gec-robot`
 - 服务器原始仓库工作区 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin` 保持在 `main`，HEAD `15479d97154274796043d5e5cc42a336f57b2dd9`。
 - Frozen simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`；任务新增代码不在 `genesis_event_plugin/`。
-- 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，当前配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`（状态估计门控、校准来源与 speed-conditioned closure lead）；较晚闭合 sensitivity 使用 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，首批 oracle 使用 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`。当前 schedule 尚未经过统一控制器开发批次复验，仍未冻结。
-- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟。闭合 lead 候选是首次因果速度估计 `v0` 下 `clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，预计三个主档约 80/70/60 ms；40 mm 目标短边 43 px。共享减速度候选为 0.09804843 m/s²，独立 no-hand holdout 已支持该模型。较晚单因子 timing sensitivity 三档分别达到 5/5，但统一 schedule 还未复验，配置尚不可冻结。
+- 场景配置：[`scene_pilot_r0_v1.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_v1.json)，当前配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`（状态估计门控、校准来源与 speed-conditioned closure lead）；较晚闭合 sensitivity 使用 `c85cb2b117d90704f2d824ccf7f0e102019b7d8e5d814a2edcdf3a6004932edf`，首批 oracle 使用 `39c7aff627b2caa72a98fea2e8d4067218267d6f0b23507ecd59f0a7008bb70a`。当前 schedule 已通过统一控制器每档 20 集开发复验，仍未冻结。
+- 当前候选：40 mm 立方体、80 g、低摩擦 Plane、1 ms 物理步、0.30/0.40/0.50 m/s 发射、固定外置 320×240 相机（机位 `[0.65,-0.45,0.25]`；实际姿态 preflight 已通过，遮挡比例仍待合法参考姿态复核）、100 Hz 控制、10 ms 观测延迟。闭合 lead 使用首次因果速度估计 `v0` 下的 `clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒；开发复验三档各 20/20，实际 lead 中位数约 80.49/70.49/60.49 ms。目标短边 43 px。共享减速度候选为 0.09804843 m/s²，独立 no-hand holdout 已支持该模型。经验成功率为 100%，但每档 Wilson 95% CI 下界为 83.9%；仍需误差注入和独立大样本确认。
 
 ## 运行时与运行命令
 
-在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv，在私有 venv 安装 Torch 2.8 CPU 并应用 HDR overlay，不修改共享 conda 环境。静态抓取 20/20、相机/HDR preflight、no-hand 标定/holdout 已通过；旧配置首批 GT-current oracle 仅 0.30 档 20/20。时序 sensitivity 各单点三档 5/5；统一速度条件化 lead 开发集待跑，Direct-HDR reference 成本尚未测量。
+在服务器只使用上述隔离 worktree；先检查 GPU 进程归属，再将 `CUDA_VISIBLE_DEVICES` 设为一个当时空闲的物理卡。仓库 setup 将已有 Genesis 1.2.2 包复制到 project venv，在私有 venv 安装 Torch 2.8 CPU 并应用 HDR overlay，不修改共享 conda 环境。静态抓取 20/20、相机/HDR preflight、no-hand 标定/holdout 已通过；speed-conditioned GT-current oracle 开发集三档均 20/20。Direct-HDR reference 成本尚未测量。
 
 ```bash
 source ~/miniconda3/bin/activate Eventbased_WAM
@@ -114,10 +116,10 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 1. ✅ `--mode static --episodes 20`：已验证 20/20 真实双侧接触、抬升和 0.5 s 保持；样本量仍仅为开发级。
 2. ✅ `--mode slide --split calibration --episodes 10 --speeds 0.3,0.4,0.5`：target-only scene 完成 30 集 no-hand 轨迹；共享拟合 `a_eff=0.09804843 m/s²`。
 3. ✅ `--mode slide --split holdout --episodes 10 --speeds 0.3,0.4,0.5 --a-eff 0.09804843035177806`：新种子 30/30 到达，固定模型 TTC 与横向误差均较小。
-4. ⚠️ 首批 GT-current oracle：0.30 m/s 20/20，0.40/0.50 m/s 0/20；控制器已改为闭合 latch、状态门控抬升并优先保留接触失败类别。
+4. ✅ 统一 speed-conditioned lead oracle：每档 20/20 完整成功；Wilson 区间 83.9%–100%，样本量不足以证明真实成功率下界 >95%。
 5. ⚠️ `--ttc-bias-ms -20`：每档 5 集，0.30 档 5/5，0.40/0.50 档 0/5；更早时序使手指在目标到达前过度闭合。继续试较晚闭合，不运行正式独立成功率批次。
-6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。已实现固定 speed-conditioned lead，下一步每档跑 20 集 GT oracle 开发复测。
-7. 任务开发复测通过后分别做小幅 `--bias-y`、`--ttc-bias-ms`、`--extra-latency-ms` 误差注入，再跑新种子独立成功率批次。
+6. ✅ 较晚时序 sensitivity：+20 ms 下 0.30/0.40 各 5/5；+30 ms 下 0.40 为 5/5；+40 ms 下 0.50 为 5/5。
+7. ✅ 统一 speed-conditioned lead 已完成每档 20 集开发复验，三档均 20/20；下一步做少量位置/时序误差注入，再运行新种子独立成功率样本。
 8. `--mode preflight` 与 `--mode reference --reference-duration 0.20`：固定相机可见性、目标像素尺度、遮挡，以及直接 HDR 1/2 kHz reference 成本。
 
 ## 证据入口与 provenance
@@ -141,10 +143,18 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 - GitHub fetch 从服务器等待超时后，改用已推送 commit bundle 串行同步。runtime setup 第一次因共享包缓存权限失败，第二次成功但 Torch 2.5.1+cu121 的接触查询失败；project venv 安装 Torch 2.8 CPU 后静态抓取 1/1 成功。
 - Camera render 返回值处理存在 benchmark bug，已修正并在服务器复测；旧高机位 preflight 记录到 0 可见像素，仅保留作 bug 证据。新低机位已确认实际抓取姿态下目标清晰可见，HDR 输出有效；遮挡百分比对照姿态不合法，仍待实现有效定量对照。
-- no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描三档均各有 5/5 成功点。speed-conditioned schedule 已实现但没有运行证据；需先完成每档 20 集开发复验，之后才可运行误差注入和独立成功率批次。
+- no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
+- 统一 speed-conditioned lead 三档开发复验均 20/20，但每档 Wilson 95% CI 下界为 83.9%；位置/时序误差注入和新 seed 的大样本独立成功率尚未完成，暂不把 20/20 解释成可推广的 >95% 成功率。
 - 已测单个抓取姿态的相机视场与目标像素尺度；完整运动轨迹视野、基于合法参考姿态的定量遮挡，以及 1/2 kHz Direct-HDR reference 路径成本仍未测量。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
 ## 冻结建议与研究会话需决策事项
 
-暂不冻结任务配置。no-hand 独立 holdout 支持固定减速度预测。小样本结果建议采用已实现的 speed-conditioned closure lead：以首次因果速度估计 `v0` 为输入，lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，对应约 80/70/60 ms 三档；这是三个成功时序单点的线性插值，统一 schedule 尚无实测。下一步每档跑 20 集开发 oracle；若通过，再做误差注入和新种子独立统计。正式冻结前还需相机遮挡复测与 Direct-HDR 成本。主分支合并留待验收。
+建议暂定冻结候选为当前配置：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；相机 `[0.65,-0.45,0.25]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 是首次延迟补偿后的因果速度估计。该候选在独立调参 seed 的开发批次中每档 20/20 成功，仍不足以证明真实成功率下界超过 95%。建议先完成小规模误差注入，再以新 seed 每档运行至少 100 集；若 100/100，Wilson 95% 下界约为 96.3%。随后补齐完整相机轨迹/合法姿态遮挡量化与 Direct-HDR reference 成本，再由研究会话决定冻结。主分支合并留待验收。
+
+
+### speed-conditioned oracle 开发批次校验
+
+- 归档目录：[`r0_oracle_adaptive_dev60_20261016/`](../../benchmark/robot_closed_loop/results/r0_oracle_adaptive_dev60_20261016/)。服务器运行 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`，配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`，运行命令见“统一 speed-conditioned lead oracle 开发复验”。每档 20/20；Wilson 95% CI 为 `[0.8389, 1.0]`。
+- 结果 SHA256：逐集 CSV `3b44f6cd783562594da04fc246cdc1cc708c3ab240aa3227cc5cc56e1c7ebb78`；摘要 `0d48fb7adb6003e1d2bdd7aeec128e65ee36b4d9363531e4021bf6ed2961d1ac`；代表 trace `d21fcfc1858ed84d7888041b84793b867145244fee87f24225cdae3365e4d214`；GIF `57cd46752368283ba27d46ea7962c52bf368a218d1bc53482b49c4016f0a5651`；manifest `5dedfb11e9c68bc4d354c6672c599982f4a1335813ea00000fc8ae09a452db25`；SHA256SUMS `128ede7a3a32588b1778481368b7825cb07688e0963aa7a52569dc2823418800`。
+- 运行日志 `results/runtime_logs/r0_oracle_adaptive_dev60_20261016.log` SHA256 `f487e018a1934edc1198393acd3303cb4fe7ce713e39d9e6c85b8c49714b1951`；launcher SHA256 `a47f4d9fb01143aff29cae51a4061716fa8ee1433243c500aa34b965c8a1cdaf`；exit `0`，PID `1582044`。
