@@ -1,0 +1,83 @@
+/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py:10: ImportWarning: failed to load custom correlation modulewhich is needed for FlowNetC
+  warnings.warn("failed to load custom correlation module"
+/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/torch/nn/functional.py:4902: UserWarning: Default grid_sample and affine_grid behavior has changed to align_corners=False since 1.3.0. Please specify align_corners=True if the old behavior is desired. See the documentation of grid_sample for details.
+  warnings.warn(
+{
+  "status": "pass",
+  "scope": "one synthetic-only STE-FlowNet dt=1 update per generator plus one synthetic validation interval",
+  "real_data_accessed": false,
+  "initial_state_hashes_match": true,
+  "optimizer": {
+    "type": "Adam",
+    "lr": 0.0004,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": "4e-4 weights, 0 biases"
+  },
+  "objective": "official four-scale Charbonnier photometric loss + 10x official second-order smoothness",
+  "correlation_adapter": "pure PyTorch F.unfold equivalent for upstream spatial_correlation_sampler 1x1 kernel, 9x9 patch; benchmark runtime injection only",
+  "representation_adapter": "official polarity-separated Gaussian-weighted equal-event-count 5 slices; retain remainder; tied/empty times guarded; uint8 overflow fails closed; center-pad 160x128 to 256x256",
+  "flow_ground_truth_use": "synthetic validation only; never passed to model or optimizer",
+  "results": [
+    {
+      "generator": "eventgenesis",
+      "seed": 71,
+      "updates": 1,
+      "train_sample_interval_index": 9,
+      "validation_sample_interval_index": 9,
+      "train_interval_event_count": 670,
+      "validation_interval_event_count": 861,
+      "representation_shape": [
+        1,
+        2,
+        256,
+        256,
+        5
+      ],
+      "representation_order": "[B, ON/OFF, H, W, 5 equal-event-count Gaussian slices]",
+      "initial_state_sha256": "c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4",
+      "train_loss": 140.42642211914062,
+      "train_photometric_loss": 116.10098266601562,
+      "train_smoothness_loss": 2.432544231414795,
+      "synthetic_validation_loss": 336.469482421875,
+      "synthetic_validation_photometric_loss": 179.53756713867188,
+      "synthetic_validation_smoothness_loss": 15.693191528320312,
+      "synthetic_validation_epe_px_per_interval": 0.7087956666946411,
+      "train_step_wall_seconds": 1.8460992071777582,
+      "peak_allocated_gpu_bytes": 12739819008,
+      "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-steflow-stage0-v2/eventgenesis_step000001.pt",
+      "checkpoint_sha256": "9b19db44e66cc9394c3ccfab6d1ed1b174d1c3941ddca2f9af43f65245c84c0c"
+    },
+    {
+      "generator": "v2e",
+      "seed": 71,
+      "updates": 1,
+      "train_sample_interval_index": 9,
+      "validation_sample_interval_index": 9,
+      "train_interval_event_count": 393,
+      "validation_interval_event_count": 510,
+      "representation_shape": [
+        1,
+        2,
+        256,
+        256,
+        5
+      ],
+      "representation_order": "[B, ON/OFF, H, W, 5 equal-event-count Gaussian slices]",
+      "initial_state_sha256": "c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4",
+      "train_loss": 132.1948699951172,
+      "train_photometric_loss": 111.898193359375,
+      "train_smoothness_loss": 2.029667377471924,
+      "synthetic_validation_loss": 286.0927429199219,
+      "synthetic_validation_photometric_loss": 161.28350830078125,
+      "synthetic_validation_smoothness_loss": 12.48092269897461,
+      "synthetic_validation_epe_px_per_interval": 0.6549453139305115,
+      "train_step_wall_seconds": 0.5527802184224129,
+      "peak_allocated_gpu_bytes": 13060759552,
+      "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-steflow-stage0-v2/v2e_step000001.pt",
+      "checkpoint_sha256": "936136dd9334fc937308f0de995060221a505059849714ac5a4f3443417ec3d4"
+    }
+  ]
+}

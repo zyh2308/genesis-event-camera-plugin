@@ -1,0 +1,64 @@
+{
+  "status": "pass",
+  "scope": "one synthetic-only E2VID+ update and one synthetic validation sequence per generator",
+  "real_data_accessed": false,
+  "initial_state_hashes_match": true,
+  "model_args": {
+    "unet_kwargs": {
+      "num_bins": 5,
+      "skip_type": "sum",
+      "recurrent_block_type": "convlstm",
+      "num_encoders": 3,
+      "base_num_channels": 32,
+      "num_residual_blocks": 2,
+      "use_upsample_conv": true,
+      "norm": "none",
+      "num_output_channels": 1
+    }
+  },
+  "optimizer": {
+    "type": "Adam",
+    "lr": 0.0001,
+    "weight_decay": 0,
+    "amsgrad": true
+  },
+  "losses": [
+    "LPIPS-VGG weight=1.0",
+    "temporal_consistency weight=2.0 L0=2"
+  ],
+  "adapter": "right-endpoint HDF5 loader; duplicate timestamp ties use numpy.searchsorted(side=right); fixed seed 71; runtime aliases for removed compare_ssim and unused IPython debug import",
+  "results": [
+    {
+      "generator": "eventgenesis",
+      "seed": 71,
+      "updates": 1,
+      "train_loader_sequences": 5,
+      "validation_loader_sequences": 5,
+      "sequence_length": 2,
+      "channels": 5,
+      "initial_state_sha256": "d2d016f8b7589e0764cf7257a629dac84f1c6b6c70392964a185035b4acee008",
+      "train_loss": 0.8050370216369629,
+      "validation_loss": 0.8066641688346863,
+      "train_step_wall_seconds": 5.991894895210862,
+      "peak_allocated_gpu_bytes": 398907904,
+      "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-e2vid-stage0-v3/eventgenesis_step000001.pt",
+      "checkpoint_sha256": "c46985327ee727bb07ab4ff713f0ac585fd56c1a63e218f4b15587469bf2730e"
+    },
+    {
+      "generator": "v2e",
+      "seed": 71,
+      "updates": 1,
+      "train_loader_sequences": 5,
+      "validation_loader_sequences": 5,
+      "sequence_length": 2,
+      "channels": 5,
+      "initial_state_sha256": "d2d016f8b7589e0764cf7257a629dac84f1c6b6c70392964a185035b4acee008",
+      "train_loss": 0.8122234344482422,
+      "validation_loss": 0.8141091465950012,
+      "train_step_wall_seconds": 0.055535283870995045,
+      "peak_allocated_gpu_bytes": 417556480,
+      "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-e2vid-stage0-v3/v2e_step000001.pt",
+      "checkpoint_sha256": "6f55982c4c079b6c63703bd5a15db09d008d6991ca5e7e18e2c6db116ff69673"
+    }
+  ]
+}

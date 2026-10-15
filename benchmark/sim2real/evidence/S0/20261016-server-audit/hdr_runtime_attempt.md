@@ -1,4 +1,4 @@
-# HDR renderer smoke attempt
+# HDR renderer smoke: initial failure and corrected pass
 
 - Host/worktree: `g1:/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real`
 - Branch/commit during run: `exp/public-sim2real-v1` / `75217b0cba3c655aa8491ae0a381af79a72844b9`
@@ -9,4 +9,4 @@
 - Result: exit code 1 after about 21 seconds. The copied `Camera` called `OffscreenRenderer.render(radiance=True)`, but the unpatched installed `genesis/ext/pyrender/offscreen.py` did not accept that argument. This is an incomplete runtime assembly, not evidence that the full source overlay fails.
 - Shared cache: Quadrants warned that it could not acquire `/home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock`. No shared cache files were cleaned or modified.
 - Raw log: `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke/stdout.log`; command record is in the same server run directory.
-- Corrective implementation: `benchmark/sim2real/scripts/prepare_hdr_runtime.py` copies the installed package into an isolated project runtime, applies the entire overlay subtree, and verifies its hashes. Rerun remains pending.
+- Corrective implementation: `benchmark/sim2real/scripts/prepare_hdr_runtime.py` copied the installed package into an isolated project runtime and applied the entire overlay subtree. The corrected renderer smoke passed in `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-render-smoke-full-overlay/`; a subsequent project-scoped-cache adapter smoke passed in `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-hdr-adapter-smoke-v2/`. These results are documented in `source_audit.json` and `reports/stage1_feasibility.md`.

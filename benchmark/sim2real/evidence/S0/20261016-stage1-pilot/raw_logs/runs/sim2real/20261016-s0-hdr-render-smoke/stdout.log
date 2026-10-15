@@ -1,0 +1,24 @@
+/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/__init__.py:39: UserWarning: 'torch<2.8.0' is not supported. Please upgrade pytorch manually: https://pytorch.org/get-started/locally/
+  warn("'torch<2.8.0' is not supported. Please upgrade pytorch manually: https://pytorch.org/get-started/locally/")
+[38;5;226m[Genesis] [16:17:16] [WARNING] 'torch<2.8.0' is not supported. Please upgrade pytorch manually: https://pytorch.org/get-started/locally/[0m
+[W 10/15/26 16:17:20.828 1516491] [kernel_compilation_manager.cpp:KernelCompilationManager@59] Lock /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock failed. Please run 'ti cache clean -p /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager' and try again.
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/integrations/genesis_renderer_hdr_v2_overlay/tests/hdr_renderer_smoke.py", line 80, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/integrations/genesis_renderer_hdr_v2_overlay/tests/hdr_renderer_smoke.py", line 49, in main
+    rgb, _, _, _ = camera.render(rgb=True, depth=False, segmentation=False)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/utils/misc.py", line 144, in wrapper
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/vis/camera.py", line 480, in render
+    rgb_arr, depth_arr, seg_idxc_arr, normal_arr = self._rasterizer.render_camera(
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/vis/rasterizer.py", line 95, in render_camera
+    retval = self._renderer.render(
+             ^^^^^^^^^^^^^^^^^^^^^^
+TypeError: OffscreenRenderer.render() got an unexpected keyword argument 'radiance'
+
+[38;5;9m[Genesis] [16:17:37] [ERROR] TypeError: OffscreenRenderer.render() got an unexpected keyword argument 'radiance'[0m
+[W 10/15/26 16:17:37.329 1516491] [offline_cache.h:run@165] Lock /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock failed. You can run 'ti cache clean -p /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager' and try again.
+[W 10/15/26 16:17:37.532 1516491] [kernel_compilation_manager.cpp:dump@88] Lock /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock failed. Please run 'ti cache clean -p /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager' and try again.

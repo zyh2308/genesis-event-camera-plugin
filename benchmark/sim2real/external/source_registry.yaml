@@ -1,8 +1,11 @@
 version: 1
 updated: 2026-10-16
 status_note: >-
-  These are candidate locks from the supplied research audit. Full server-side
-  checkout, exact license text and data hashes remain to be confirmed before use.
+  Pinned source checkouts were copied to g1 and the downstream file manifest was
+  verified there. Small synthetic outputs and pilot checkpoints are indexed in
+  evidence/S0/20261016-stage1-pilot. Public real datasets were not downloaded or
+  used for training, validation, tuning, or ranking; do not infer unavailable
+  from absence in the inspected task data roots.
 repositories:
   eventgenesis:
     url: https://github.com/zyh2308/genesis-event-camera-plugin.git
@@ -40,21 +43,23 @@ datasets:
     canonical_set: all 14 sequences
     access_evidence: public author page and EVREAL preparation route recorded in source audit
     local_wsl_files: not found in finite project scan
-    server_files: not checked
+    server_files: not found in the inspected project task-data roots; no global search
     files_sha256: not available
     license: not confirmed in this audit
   mvsec:
     sequences_candidate: [indoor_flying1, indoor_flying2, indoor_flying3, outdoor_day1]
     access_evidence: official download page; selected raw+GT size estimate approximately 33.2 GB
     local_wsl_files: not found in finite project scan
-    server_files: not checked
+    server_files: not found in the inspected project task-data roots; no global search
     files_sha256: not available
     license: CC BY-SA 4.0 per official project page/source audit
   e_pose:
     article_id: 28106717
     api_url: https://api.figshare.com/v2/articles/28106717
-    last_observed_status: 403 Forbidden on 2026-10-16
+    publisher_figshare_page: https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717
+    last_observed_status: public page accessible; full archive listed as 27.72 GB; not downloaded
+    api_route_last_observed_status: 403 Forbidden; this API response did not establish that the dataset was unavailable
     local_wsl_files: not found in finite project scan
-    server_files: not checked
+    server_files: not found in the inspected project task-data roots; no global search
     files_sha256: not available
     license: not confirmed in this audit

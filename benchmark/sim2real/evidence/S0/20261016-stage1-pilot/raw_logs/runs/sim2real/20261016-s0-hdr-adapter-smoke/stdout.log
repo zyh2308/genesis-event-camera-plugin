@@ -1,0 +1,18 @@
+/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/__init__.py:39: UserWarning: 'torch<2.8.0' is not supported. Please upgrade pytorch manually: https://pytorch.org/get-started/locally/
+  warn("'torch<2.8.0' is not supported. Please upgrade pytorch manually: https://pytorch.org/get-started/locally/")
+[38;5;226m[Genesis] [16:27:51] [WARNING] 'torch<2.8.0' is not supported. Please upgrade pytorch manually: https://pytorch.org/get-started/locally/[0m
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/integrations/genesis_renderer_hdr_v2_overlay/tests/hdr_adapter_smoke.py", line 59, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/integrations/genesis_renderer_hdr_v2_overlay/tests/hdr_adapter_smoke.py", line 31, in main
+    payload = make_frame_provider(cam, native_radiance=True)(scene, cam)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/genesis_event_plugin/genesis_adapter.py", line 110, in provider
+    rgb, depth, seg, _ = active_camera.render(
+                         ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/utils/misc.py", line 144, in wrapper
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Camera.render() got an unexpected keyword argument 'radiance'
+
+[38;5;9m[Genesis] [16:28:17] [ERROR] TypeError: Camera.render() got an unexpected keyword argument 'radiance'[0m

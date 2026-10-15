@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-16",
+  "execution_host": {
+    "hostname": "g1",
+    "project_root": "/home/zhaoyuhan/Eventbased_WAM",
+    "repository": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real",
+    "branch": "exp/public-sim2real-v1",
+    "environment": "Eventbased_WAM",
+    "python": "3.11.15",
+    "torch": "2.5.1+cu121",
+    "runtime_cuda": "12.1",
+    "genesis": "1.2.2",
+    "gpu_used": "physical GPU 1: RTX 3090"
+  },
+  "server_data_artifacts": [
+    {
+      "role": "shared physics, render, labels, and EventGenesis events",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/shared-trajectory-20261016-v1/shared_trajectory.h5",
+      "size_bytes": 1749505,
+      "sha256": "e80a8f3411a97129048863f606657e7e8ae941b0524cb93c4c6fb5f06f926346",
+      "tracked_sample_path": "benchmark/sim2real/evidence/S0/20261016-stage1-pilot/samples/data/sim2real/stage0/shared-trajectory-20261016-v1/shared_trajectory.h5"
+    },
+    {
+      "role": "V2E 25us train events",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/shared-trajectory-20261016-v1/v2e_output_eps005/train_00.h5",
+      "size_bytes": 13582,
+      "sha256": "43193b20ef88e022552ec310b03ba84393a828075f180b296485b1d152eb12e8"
+    },
+    {
+      "role": "V2E 25us validation events",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/shared-trajectory-20261016-v1/v2e_output_eps005/validation_00.h5",
+      "size_bytes": 15689,
+      "sha256": "506f6a1b0d3815178d0d14ae4e6727218f964f4a08ebf511d2e356b1d0c392a8"
+    },
+    {
+      "role": "V2E 1ms excluded train attempt",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/shared-trajectory-20261016-v1/v2e_output/train_00.h5",
+      "size_bytes": 10627,
+      "sha256": "cbe1bafecc5f45646645e2f18325cbe09eceec9bf684f819bf983e3efa30cfbf"
+    },
+    {
+      "role": "V2E 1ms excluded validation attempt",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/shared-trajectory-20261016-v1/v2e_output/validation_00.h5",
+      "size_bytes": 12239,
+      "sha256": "e8e81170dbe532460fa5de5aa453bba1c20ba9a5daa8d39079c3334b43487021"
+    },
+    {
+      "role": "E2VID converted EventGenesis train/validation and V2E train/validation HDF5",
+      "server_directory": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/e2vid_loader_20261016-v1",
+      "files": [
+        {"path": "eventgenesis/train.h5", "size_bytes": 669214, "sha256": "174536079033e7e585f76d4b791695154f01162fe25652119a6b4a0dd4a678ff"},
+        {"path": "eventgenesis/validation.h5", "size_bytes": 674238, "sha256": "3ce99d9c32e3d6405d98af2c84537694fd6cc57214d281162e145c148fd74817"},
+        {"path": "v2e/train.h5", "size_bytes": 649977, "sha256": "2d277c5c5a41e5c2a62cdbd2b500c8c2fc819fab008e4d95b863eb0090631651"},
+        {"path": "v2e/validation.h5", "size_bytes": 652656, "sha256": "6f3f3447aa21749770328f22bf31896f1807bf7a44cfa157def4eb103cfe7779"},
+        {"path": "conversion_manifest.json", "size_bytes": 1801, "sha256": "ed76e30b1e23f4d6e41e1f88a626fad8aca47966744711368da9216abf2429d1"}
+      ]
+    },
+    {
+      "role": "STE-FlowNet converted EventGenesis/V2E train/validation inputs",
+      "server_directory": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage0/steflow_inputs_20261016-v1",
+      "files": [
+        {"path": "eventgenesis/train.npz", "size_bytes": 513334, "sha256": "36475ce2d0a64c0a292eac2e2d83b8e9759ab4f8d0652ed3ad1258f7a4bb5d1b"},
+        {"path": "eventgenesis/validation.npz", "size_bytes": 514250, "sha256": "30a6eb537c06e9d726aface193ebb1cf85ec48e6eca5c851ac61ea4cf2caa54c"},
+        {"path": "v2e/train.npz", "size_bytes": 512461, "sha256": "e60d443d77bac9edd0158d2840e077e2605b93cbf3d00fc107f4dbed140ef2fe"},
+        {"path": "v2e/validation.npz", "size_bytes": 513299, "sha256": "bf1d87374f2ec0a0c6f2e84afe87028a773e62e9dd11cc98ff79537229f14bef"},
+        {"path": "conversion_manifest.json", "size_bytes": 3167, "sha256": "6d54b0f4a8c0579a4b49e26c824ac50330a4e20e3d92431f04b0b0cda85c72ad"}
+      ]
+    }
+  ],
+  "server_checkpoints_not_in_git": [
+    {
+      "task": "E2VID+",
+      "generator": "EventGenesis",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-e2vid-stage0-v3/eventgenesis_step000001.pt",
+      "size_bytes": 171415846,
+      "sha256": "c46985327ee727bb07ab4ff713f0ac585fd56c1a63e218f4b15587469bf2730e"
+    },
+    {
+      "task": "E2VID+",
+      "generator": "V2E",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-e2vid-stage0-v3/v2e_step000001.pt",
+      "size_bytes": 171414396,
+      "sha256": "6f55982c4c079b6c63703bd5a15db09d008d6991ca5e7e18e2c6db116ff69673"
+    },
+    {
+      "task": "STE-FlowNet",
+      "generator": "EventGenesis",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-steflow-stage0-v2/eventgenesis_step000001.pt",
+      "size_bytes": 580026218,
+      "sha256": "9b19db44e66cc9394c3ccfab6d1ed1b174d1c3941ddca2f9af43f65245c84c0c"
+    },
+    {
+      "task": "STE-FlowNet",
+      "generator": "V2E",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-steflow-stage0-v2/v2e_step000001.pt",
+      "size_bytes": 580023490,
+      "sha256": "936136dd9334fc937308f0de995060221a505059849714ac5a4f3443417ec3d4"
+    }
+  ],
+  "external_fixed_loss_weight": {
+    "name": "torchvision VGG16 feature weights used by pinned LPIPS loss",
+    "path": "/home/zhaoyuhan/.cache/torch/hub/checkpoints/vgg16-397923af.pth",
+    "sha256": "397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0",
+    "note": "Fetched by the fixed LPIPS perceptual loss; not an E2VID initialization or real-data checkpoint."
+  },
+  "server_run_directories": [
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-shared-trajectory-v1",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-v2e-pair-v1",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-v2e-pair-eps005",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-e2vid-prepare",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-e2vid-stage0-v3",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-steflow-prepare-v2",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s0-steflow-stage0-v2"
+  ],
+  "public_real_datasets": {
+    "hqf": {"availability": "public route listed by event_flow source", "downloaded": false, "real_tested": false},
+    "mvsec": {"availability": "official data and flow page verified", "downloaded": false, "real_tested": false, "selected_bundle_size_estimate": "about 33.2 GB"},
+    "e_pose": {"availability": "publisher Figshare record; full archive page metadata 27.72 GB", "downloaded": false, "real_tested": false}
+  },
+  "transfer_archives": [
+    {"name": "sample artifacts", "sha256": "e972c21b281c1f9c9a8188b49aa31378ed116b4af69f94135f770b8f13fbf210", "verified_on_wsl": true},
+    {"name": "run logs without checkpoints or generated media", "sha256": "38c0497140b41c6951b2641ce6565d532970df916080d419c7716a872ee71ada", "verified_on_wsl": true}
+  ],
+  "caveats": [
+    "The shared trajectory command exit code was not captured; its summary and HDF5 contents were inspected on g1.",
+    "The 1 ms V2E attempt is retained as a numerical-warning run and excluded from paired training.",
+    "The checkpoint SHA-256 values match the model runner result JSON and server-side sha256sum output.",
+    "Large public real datasets and all downstream checkpoints remain on or absent from the server; only the listed small synthetic examples and logs are committed."
+  ]
+}

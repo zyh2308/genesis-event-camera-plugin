@@ -1,6 +1,6 @@
 {
   "audit_date": "2026-10-16",
-  "status": "static source audit only; no candidate model execution",
+  "status": "initial source audit snapshot before the later Stage-1 pilots; current execution results are in benchmark/sim2real/reports/stage1_feasibility.md",
   "eventgenesis_core": {
     "commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
     "entrypoint": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
@@ -50,9 +50,10 @@
       "model_source": "microsoft/singleshotpose@2c282619101f9f31666dd18b42393375bea1600f",
       "dataset_source": "oussamaabdulhay/E_Pose@b96ae783fcb6de84e1e9c602e91bce941cab0234",
       "findings": ["available source is incomplete", "E-POSE scripts are ROS bag oriented and one multi-object path is hard-coded for three objects", "SingleShotPose loader depends on LINEMOD RGB/mask/crop/compositing", "trainer loads weights and evaluates LINEMOD by default", "unsegmented full-frame events only; GT masks/crops/segmented events are prohibited as inputs"],
-      "data_status": "not found in local WSL resources or targeted server scan of ~/Eventbased_WAM/data (max depth 4); the paper describes public Figshare data; one API endpoint returned 403; dataset is not determined unavailable"
+      "data_status": "not found in local WSL resources or targeted server scan of ~/Eventbased_WAM/data (max depth 4); publisher Figshare record was later accessible and lists a 27.72 GB archive; no data downloaded; absence from inspected roots is not unavailability"
     }
   },
   "source_files_and_locks": "../../../research/input_2026-10-16/source_metadata and ../../../research/input_2026-10-16/protocol/SOURCE_AUDIT.md",
-  "experiment_status": "HDR renderer and stationary-scene plugin adapter smokes ran successfully; no moving shared trajectory, paired EventGenesis/V2E output, task loader, training, synthetic validation, or real scoring run"
+  "experiment_status_at_initial_snapshot": "HDR renderer and stationary-scene plugin adapter smokes ran successfully; the shared trajectory and downstream pilots had not yet run at this snapshot. Later Stage-1 runs are recorded separately.",
+  "later_stage1_evidence": "../20261016-stage1-pilot/README.md"
 }
