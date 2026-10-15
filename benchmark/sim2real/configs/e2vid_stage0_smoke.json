@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "https://github.com/TimoStoff/event_cnn_minimal.git",
+    "commit": "78aa471a66593f55e349303563997297fbc816e8",
+    "model": "E2VIDRecurrent"
+  },
+  "data": {
+    "train_split": "train_00 only",
+    "validation_split": "validation_00 only",
+    "generators": ["eventgenesis", "v2e"],
+    "input_bins": 5,
+    "combined_voxel_channels": true,
+    "image_normalization": false,
+    "crop_or_resize": "none",
+    "sequence_length": 2,
+    "batch_size": 1,
+    "real_data_accessed": false
+  },
+  "model_args": {
+    "num_bins": 5,
+    "skip_type": "sum",
+    "recurrent_block_type": "convlstm",
+    "num_encoders": 3,
+    "base_num_channels": 32,
+    "num_residual_blocks": 2,
+    "use_upsample_conv": true,
+    "final_activation": "",
+    "norm": "none"
+  },
+  "losses": {
+    "LPIPS-VGG": {"weight": 1.0, "weights_source": "pinned PerceptualSimilarity submodule"},
+    "temporal_consistency": {"weight": 2.0, "L0": 2, "flow_source": "shared synthetic SE(3) labels"}
+  },
+  "optimizer": {"type": "Adam", "learning_rate": 0.0001, "weight_decay": 0.0, "amsgrad": true},
+  "training": {"seed": 71, "updates_per_generator": 1, "checkpoint_selection": "none; save the single post-update state"},
+  "fairness": "Same trajectory split, luma targets, flow labels, model initialization seed, architecture, loader settings, loss, optimizer and update count for both generators.",
+  "adapter_notes": [
+    "Upstream config names a non-existent HDF5Dataset; benchmark adapter uses the pinned DynamicH5Dataset-derived class.",
+    "The stock binary search returns an arbitrary index on duplicate timestamps; adapter uses np.searchsorted(side='right') for inclusive right endpoints.",
+    "A right-endpoint frame sequence [I1,...,I10,I10] makes the upstream length=num_imgs-1 loader yield all 10 physical event intervals without a leading empty interval.",
+    "The upstream loader multiplies stored flow by observed event duration; adapter stores interval displacement divided by that duration so the loader returns the shared per-interval displacement.",
+    "The pinned PerceptualSimilarity import expects removed skimage.measure.compare_ssim; the runner supplies a runtime alias to skimage.metrics.structural_similarity without editing third-party source."
+  ]
+}
