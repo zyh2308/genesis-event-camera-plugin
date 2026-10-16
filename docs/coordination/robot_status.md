@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0 已验收；R0.5 严格评分和统一 0.5 ms 时间步已实现，服务器严格 GT oracle 已完成 300/300，无手 holdout 完成 30/30；strict +10 mm 横向偏差 sensitivity 正在运行，Direct-HDR/event-state 复验待运行；协议尚未冻结。
+**阶段：** R0 已验收；R0.5 严格评分和统一 0.5 ms 时间步已实现，服务器严格 GT oracle 已完成 300/300，无手 holdout 完成 30/30；strict +10 mm 横向偏差 sensitivity 的日志诊断 bug 已修复，15 集新 seed 复跑中；Direct-HDR/event-state 复验待运行；协议尚未冻结。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
@@ -244,7 +244,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 ### 当前运行与待完成验证
 
 - 固定减速度 no-hand holdout 已完成：30 集、0.5 ms、0.30/0.40/0.50 m/s 各 10 集，使用 calibration 固定 a_eff=0.09803606718731761 m/s²，未在 holdout 重拟合；30/30 到达拦截平面。各档 TTC 误差绝对值 P95 为 1.004/0.669/0.569 ms，横向预测误差绝对值 P95 为 2.150/1.120/0.571 mm。holdout 预测只使用固定模型与每集初始测量状态，未来 crossing 只供 evaluator 计分。代码 commit 8573279936d40102efeabf00286e34b6c99e7681、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103600；CSV 3093e28c4fab340904f9592540114d6418cd0ad24dd9ddabc08ae76b00edfc39，summary 0eb3bec1c54e5eee975a9e6fd1251bad8b60c5a760b72b39bef668248ed7a013，manifest 2e0c22aaf0c792cfe23f6073f5215b183a7a030c5662a0e3dfd311d91bca839c，SHA256SUMS dc637f2aad7acc0af9bf0b3e28b6ebcc4fc3cc2e7930ca362458582585eea004；服务器和本地逐项校验通过。完整进程 wall 88.06 s、CPU user 60.52 s、max RSS 848,140 KB，exit 0，launcher PID 1990576 / Python PID 1990580；log SHA256 94c02ee2188976210a8eac6c9f65dc0b7141550482dfbb2914fd8cceeab2caf3，runtime f808314c50a732e9f77e6250657b40bf43aa92686a2f634c59c02b8f53b0d8ae。
-- strict 横向位置偏差 +10 mm sensitivity 正在 g1 CPU-only detached tmux r0_5_sens_biasy10mm_strict15_20261016 运行，15 集（每档 5），seed 2026103500，launcher PID 1992589；使用 commit 8573279936d40102efeabf00286e34b6c99e7681 与同一候选配置，不占 GPU。
+- strict 横向位置偏差 +10 mm sensitivity 的首次运行未形成统计结果：commit 8573279936d40102efeabf00286e34b6c99e7681、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103500。首次仿真完成后，历史评分停止条件未触发，结果组装遇到未初始化的 legacy_true_bottom_min_at_stop 并 exit 1；没有 CSV/summary，因此该次不计 episode 指标。诊断目录 r0_5_sens_biasy10mm_strict15_20261016/ 保存 run manifest 与 FAILURE_NOTE.md；stderr/log SHA256 9af60700ff7b7cade5b26183ee3856ac6d968d5ba982a68a123ed2c742739bd2，exit=1，完整 Python wall 87.82 s。已在 benchmark 层将缺失旧评分诊断初始化为 null，不改控制或成功条件；修复 commit fcf567f7485e590b075b378c4ff726079e0a287a。新的 15 集 retry 以 seed 2026103515 在 CPU-only detached tmux r0_5_sens_biasy10mm_strict15_retry_20261016 运行，launcher PID 1995457，使用同一配置，不占 GPU。
 - sensitivity 结束后运行完整 Direct-HDR/reference/event-state 批次（速度 × 横向边缘轨迹、同物理轨迹 paired 1/2 kHz、0.5 ms）。启动前检查 GPU 2 PID/归属与空闲状态，GPU 3 的 CARLA 进程保持不动。服务器到 GitHub HTTPS 的一次 git ls-remote 超时，已通过 SHA256 校验的本地 Git bundle 更新隔离 worktree；SSH 正常，未触碰其他项目或进程。
 - reference 评估将报告接触/抬升窗口的动态可见性、事件时间戳与 voxel 采样差异、事件估计对接触后 lift gate 所需位置/速度的因果支持、实际端到端 wall/CPU/GPU 时间。centroid tracker 当前只是可接线基线，不能宣称完成学习型 estimator 或采样率收敛结论。
 - freeze 候选仍为同一平面滑块/Panda/侧面相机、三档速度、固定 a_eff 与控制器；strict scorer 的 80 mm/0.5 s/双侧接触/无支撑/10 mm 相对滑移作为建议正式成功定义。等待 holdout、敏感性和 Direct-HDR/event-state 验证完成后，再提出正式冻结建议；现阶段不启动规模数据、训练或 Ours/V2E 排名。
