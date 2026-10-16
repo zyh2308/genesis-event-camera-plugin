@@ -115,6 +115,11 @@ def verify_correlation(device: torch.device) -> dict:
 
 
 def objective_dt1(output, gray_prev, gray_next, event_tensor, loss_module):
+    # STEFlow returns a tuple of four scales in train mode but only the final
+    # full-resolution tensor in eval mode. The pinned objective accepts a
+    # sequence of scale tensors in both cases.
+    if torch.is_tensor(output):
+        output = (output,)
     photo = loss_module.compute_photometric_loss(
         gray_prev, gray_next, torch.sum(event_tensor, dim=4), output, weights=WEIGHTS
     )
@@ -277,15 +282,17 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
                 )
                 gray = gray_window(sample, index, dt)
                 if dt == 1:
-                    val_output = model(tensor, SIZE, use_dt4=False, flow_seq=False)
                     val_loss, val_photo, val_smooth = objective_dt1(
-                        val_output, gray[0:1], gray[1:2], tensor, multiscaleloss
+                        pred, gray[0:1], gray[1:2], tensor, multiscaleloss
                     )
                 else:
-                    val_output = model(tensor, SIZE, use_dt4=True, flow_seq=False)
-                    gray_batch = [frame[None, ...] for frame in gray]
-                    val_loss, val_photo, val_smooth = objective_dt4(
-                        val_output, gray_batch, tensor, multiscaleloss
+                    # In eval mode the pinned model returns the final dt4 flow
+                    # tensor rather than its four intermediate training flows.
+                    # Score this output against the matching first/last image
+                    # endpoints with the same official photometric/smoothness
+                    # operators; validation EPE above uses the shared dt4 label.
+                    val_loss, val_photo, val_smooth = objective_dt1(
+                        pred, gray[0:1], gray[-1:], tensor, multiscaleloss
                     )
                 validation.append({
                     "episode_id": episode_id,
@@ -344,6 +351,7 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
         "epochs": epochs,
         "selected_intervals_per_train_rollout": train_indices,
         "train_objective": "official four-scale Charbonnier photometric loss + 10x second-order smoothness",
+        "validation_objective": "eval-mode final flow tensor; dt1 adjacent endpoints or dt4 first/last endpoints, official photometric/smoothness operators",
         "flow_gt_use": "synthetic validation EPE only; never passed to the model or optimizer",
         "train_wall_seconds": train_seconds,
         "train_loss_mean": float(np.mean([row["loss"] for row in records])),
