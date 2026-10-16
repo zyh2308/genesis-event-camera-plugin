@@ -20,6 +20,7 @@ def pose_position(body: Any) -> np.ndarray:
 
 
 def object_state(target: Any, t_s: float) -> Dict[str, Any]:
+    qpos = as_numpy(target.get_qpos()).reshape(-1)
     dof_v = as_numpy(target.get_dofs_velocity()).reshape(-1)
     linear = np.zeros(3, dtype=np.float64)
     angular = np.zeros(3, dtype=np.float64)
@@ -29,6 +30,7 @@ def object_state(target: Any, t_s: float) -> Dict[str, Any]:
     return {
         "time_s": float(t_s),
         "position_m": pose_position(target),
+        "orientation_wxyz": qpos[3:7].copy() if len(qpos) >= 7 else np.asarray([1.0, 0.0, 0.0, 0.0]),
         "velocity_m_s": linear,
         "angular_velocity_rad_s": angular,
     }

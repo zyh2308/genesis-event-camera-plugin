@@ -33,6 +33,12 @@ from benchmark.robot_closed_loop.robot_env import (
     build_robot_scene,
     object_state,
 )
+from benchmark.robot_closed_loop.scoring import (
+    LEGACY_SCORE_VERSION,
+    STRICT_SCORE_VERSION,
+    StrictHoldScorer,
+    cube_bottom_clearance_m,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -69,15 +75,22 @@ def contact_snapshot(env: RobotScene) -> Dict[str, Any]:
             "robot_link_ids": c["robot_link_ids"], "support": env.support_contact()}
 
 
-def _record_state(env: RobotScene, t_s: float, stage: str, command: Dict[str, Any]) -> Dict[str, Any]:
+def _record_state(
+    env: RobotScene, t_s: float, stage: str, command: Dict[str, Any],
+    contacts: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     obj = object_state(env.target, t_s)
     q = as_numpy(env.robot.get_dofs_position()).reshape(-1)
     qv = as_numpy(env.robot.get_dofs_velocity()).reshape(-1)
     return {
         "time_s": float(t_s), "stage": stage, "object": obj,
+        "true_bottom_clearance_m": cube_bottom_clearance_m(
+            obj["position_m"], obj["orientation_wxyz"], env.config["target"]["size_m"],
+            float(env.config["physics"].get("table_top_z_m", 0.0)),
+        ),
         "hand_link_position_m": env.hand_position(), "tcp_pad_center_m": env.tcp_position(),
         "jaw_opening_m": env.jaw_opening_m(), "finger_q_m": q[7:9],
-        "finger_qd_m_s": qv[7:9], "contacts": contact_snapshot(env),
+        "finger_qd_m_s": qv[7:9], "contacts": contact_snapshot(env) if contacts is None else contacts,
         "robot_qpos": q, "robot_qvel": qv, "command": command,
     }
 
@@ -152,6 +165,7 @@ def run_static_trial(
     x = float(cfg["controller"]["intercept_x_m"])
     _set_episode_origin(env, (x, target_y, size / 2), yaw)
     _settle(env)
+    trial_start_t = get_sim_time(env)
 
     trace: List[Dict[str, Any]] = []
     frames: List[np.ndarray] = []
@@ -160,12 +174,23 @@ def run_static_trial(
     bilateral = False
     stall_s = 0.0
     lift_q = None
-    clearance_since = None
-    min_clearance = 0.0
     lift_trigger_s = None
-    max_steps = int(round(1.8 / env.dt_s))
-    sample_steps = max(1, int(round(0.01 / env.dt_s)))
+    max_steps = int(round(float(cfg["success"].get("episode_timeout_s", 3.0)) / env.dt_s))
+    sample_steps = max(1, int(round(0.001 / env.dt_s)))
     video_steps = max(1, int(round(0.05 / env.dt_s)))
+    scorer = StrictHoldScorer(
+        float(cfg["success"]["target_bottom_clearance_m"]),
+        float(cfg["success"]["maximum_object_to_tcp_slip_m"]),
+        float(cfg["success"]["continuous_hold_s"]),
+    )
+    strict_score = dict(scorer.last)
+    legacy_hold_steps = 0
+    legacy_stop_s = None
+    legacy_success = False
+    legacy_bilateral_at_stop = False
+    legacy_clearance_at_stop = None
+    bilateral_seen = False
+    max_true_clearance = -float("inf")
 
     for step in range(max_steps):
         now = get_sim_time(env)
@@ -181,6 +206,7 @@ def run_static_trial(
         c = contact_snapshot(env)
         if c["bilateral"]:
             bilateral = True
+            bilateral_seen = True
         if (c["left"] or c["right"]) and first_contact_s is None:
             first_contact_s = now
         if lift_q is None and _gripper_stall(env):
@@ -193,25 +219,45 @@ def run_static_trial(
             lift_q = as_numpy(env.command_hand(goal)).reshape(-1)
             lift_trigger_s = now
             stage = "lift_hold"
+        obj = object_state(env.target, now)
+        pos = np.asarray(obj["position_m"], dtype=np.float64)
+        clearance = cube_bottom_clearance_m(
+            pos, obj["orientation_wxyz"], cfg["target"]["size_m"],
+            float(cfg["physics"].get("table_top_z_m", 0.0)),
+        )
+        max_true_clearance = max(max_true_clearance, clearance)
+        tcp = env.tcp_position()
+        strict_score = scorer.update(
+            now, pos - tcp, clearance, bool(c["bilateral"]), bool(c["support"]), env.dt_s,
+        )
+        center_bottom = float(pos[2] - size / 2)
+        if center_bottom >= float(cfg["success"]["target_bottom_clearance_m"]):
+            legacy_hold_steps += 1
+        else:
+            legacy_hold_steps = 0
+        if legacy_stop_s is None and legacy_hold_steps * env.dt_s + 1e-12 >= float(cfg["success"]["continuous_hold_s"]):
+            legacy_stop_s = now
+            legacy_success = bool(now - trial_start_t <= 1.8 + 1e-9 and bilateral_seen and center_bottom >= float(cfg["success"]["target_bottom_clearance_m"]))
+            legacy_bilateral_at_stop = bool(bilateral_seen)
+            legacy_clearance_at_stop = center_bottom
         if step % sample_steps == 0 or c["bilateral"]:
-            trace.append(_record_state(env, now, stage, {"finger_force_each": -5.0, "lift": lift_q is not None}))
+            frame = _record_state(env, now, stage, {"finger_force_each": -5.0, "lift": lift_q is not None}, contacts=c)
+            frame["score"] = strict_score
+            trace.append(frame)
         if capture and step % video_steps == 0:
             rgb, _, _, _ = env.render(hdr=False)
             frames.append(np.asarray(rgb, dtype=np.uint8))
-        bottom = float(object_state(env.target, now)["position_m"][2] - size / 2)
-        if bottom >= float(cfg["success"]["target_bottom_clearance_m"]):
-            min_clearance = min(min_clearance, bottom) if clearance_since is not None else bottom
-            if clearance_since is None:
-                clearance_since = now
-            if now - clearance_since >= float(cfg["success"]["continuous_hold_s"]):
-                break
-        elif clearance_since is not None:
-            clearance_since = None
+        if scorer.success_at(env.dt_s):
+            break
 
-    held_s = 0.0 if clearance_since is None else max(0.0, get_sim_time(env) - clearance_since)
-    target_p = object_state(env.target, get_sim_time(env))["position_m"]
-    bottom = float(target_p[2] - size / 2)
-    success = bool(bilateral and bottom >= cfg["success"]["target_bottom_clearance_m"] and held_s >= cfg["success"]["continuous_hold_s"])
+    target_final = object_state(env.target, get_sim_time(env))
+    target_p = target_final["position_m"]
+    bottom = cube_bottom_clearance_m(
+        target_p, target_final["orientation_wxyz"], cfg["target"]["size_m"],
+        float(cfg["physics"].get("table_top_z_m", 0.0)),
+    )
+    strict_summary = scorer.summary(env.dt_s, step + 1)
+    success = bool(scorer.success_at(env.dt_s) and bottom >= cfg["success"]["target_bottom_clearance_m"])
     result = {
         "episode_id": episode_id, "seed": seed, "phase": "static", "speed_m_s": 0.0,
         "target_initial_y_m": target_y, "target_yaw_deg": float(np.rad2deg(yaw)),
@@ -220,7 +266,17 @@ def run_static_trial(
         "measured_net_opening_initial_m": float(cfg["robot"]["initial_net_opening_m"]),
         "measured_net_opening_after_close_m": env.jaw_opening_m(),
         "lift_trigger_s": lift_trigger_s, "target_bottom_clearance_m": bottom,
-        "hold_s": held_s, "success": success,
+        "hold_s": strict_summary["continuous_qualified_hold_s"],
+        "maximum_true_bottom_clearance_m": max_true_clearance,
+        "score_version": STRICT_SCORE_VERSION, "strict_score": strict_summary,
+        "legacy_score_version": LEGACY_SCORE_VERSION, "success_legacy_r0": legacy_success,
+        "legacy_first_stop_s": legacy_stop_s,
+        "legacy_score": {
+            "score_version": LEGACY_SCORE_VERSION, "success": legacy_success,
+            "first_stop_s": legacy_stop_s, "center_based_bottom_clearance_at_stop_m": legacy_clearance_at_stop,
+            "historical_bilateral_contact_by_stop": legacy_bilateral_at_stop,
+        },
+        "success": success, "success_strict_r0_5": success,
         "failure_primary": "success" if success else ("unstable_grasp" if bilateral else "spatial_miss"),
         "object_final_position_m": target_p.tolist(), "sim_duration_s": get_sim_time(env),
     }
@@ -334,18 +390,31 @@ def run_oracle_trial(
     position_bias_y_m: float = 0.0,
     ttc_bias_s: float = 0.0,
     extra_latency_s: float = 0.0,
+    event_source: Optional[Any] = None,
+    initial_y_m: Optional[float] = None,
+    visibility_evaluator: Optional[Any] = None,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
     x, y, theta = _sample_initial(rng, cfg)
-    target_size = float(cfg["target"]["size_m"][2])
-    _set_episode_origin(env, (x, y, target_size / 2), 0.0)
+    if initial_y_m is not None:
+        y = float(initial_y_m)
+    target_size = np.asarray(cfg["target"]["size_m"], dtype=np.float64)
+    _set_episode_origin(env, (x, y, target_size[2] / 2), 0.0)
     _settle(env, float(cfg["controller"]["event_burn_in_s"]))
     launch_t = get_sim_time(env)
-    env.set_initial_target_velocity((-speed * np.cos(theta), speed * np.sin(theta), 0.0))
+    initial_velocity = np.asarray([-speed * np.cos(theta), speed * np.sin(theta), 0.0], dtype=np.float64)
+    env.set_initial_target_velocity(initial_velocity)
+    if event_source is not None:
+        event_source.initialize(env.camera, 0.0)
+        event_source.capture_snapshot("launch", 0.0)
 
     controller_cfg = cfg["controller"]
     predictor = FixedDecelerationPredictor(float(controller_cfg["intercept_x_m"]), deceleration)
+    initial_prediction = predictor.predict(
+        MotionState(0.0, np.asarray([x, y, target_size[2] / 2]), initial_velocity), 0.0,
+    )
+    planned_arrival_s = float(initial_prediction.ttc_s) if initial_prediction.reachable else None
     latency = float(controller_cfg["observation_latency_s"] if latency_s is None else latency_s) + float(extra_latency_s)
     command = BoundedLateralCommand(
         0.0,
@@ -353,15 +422,20 @@ def run_oracle_trial(
         float(cfg["robot"]["cartesian_acceleration_limit_m_s2"]),
     )
     control_steps = max(1, int(round((1.0 / float(controller_cfg["high_level_hz"])) / env.dt_s)))
-    sample_steps = control_steps
+    # Score every physics step and preserve 1 kHz state/control evidence.
+    sample_steps = max(1, int(round(0.001 / env.dt_s)))
     video_steps = max(1, int(round(0.05 / env.dt_s)))
     history: deque = deque(maxlen=max(32, int(math.ceil((latency + 0.03) / env.dt_s)) + 4))
-    history.append(MotionState(0.0, np.asarray([x, y, target_size / 2]), np.zeros(3)))
+    history.append(MotionState(0.0, np.asarray([x, y, target_size[2] / 2]), initial_velocity))
     trace: List[Dict[str, Any]] = []
     frames: List[np.ndarray] = []
     close_started_s = None
     first_contact_s = None
     first_bilateral_s = None
+    first_contact_position_m = None
+    first_contact_tcp_m = None
+    first_contact_relative_velocity_m_s = None
+    first_bilateral_position_m = None
     lift_started_s = None
     lift_q = None
     lift_stall_time = 0.0
@@ -375,20 +449,30 @@ def run_oracle_trial(
     last_command = {"y_command_m": 0.0, "closing": False, "lifting": False}
     crossing_actual = None
     object_history: List[Dict[str, Any]] = []
-    hold_start = None
-    hold_duration = 0.0
-    max_clearance = 0.0
-    prev_x = x
+    strict_scorer = StrictHoldScorer(
+        float(cfg["success"]["target_bottom_clearance_m"]),
+        float(cfg["success"]["maximum_object_to_tcp_slip_m"]),
+        float(cfg["success"]["continuous_hold_s"]),
+    )
+    strict_score = dict(strict_scorer.last)
+    maximum_true_clearance = -float("inf")
+    legacy_hold_steps = 0
+    legacy_stop_s = None
+    legacy_hold_at_stop_s = 0.0
+    legacy_success = False
+    legacy_bilateral_at_stop = False
+    legacy_clearance_at_stop = None
+    bilateral_seen = False
+    previous_contacts = (False, False, False, False)
+    tcp_velocity = np.zeros(3, dtype=np.float64)
     prev_obj = None
-    timeout_s = 2.5
+    timeout_s = float(cfg["success"].get("episode_timeout_s", 3.0))
     max_steps = int(round(timeout_s / env.dt_s))
     close_schedule = controller_cfg["closure_lead_speed_schedule"]
     guard = float(controller_cfg["terminal_commit_guard_s"])
     y_bounds = tuple(float(v) for v in controller_cfg["legal_intercept_y_range_m"])
     home_hand = _home_hand_goal(env)
     lift_hand_goal = None
-    hold_steps_needed = int(round(float(cfg["success"]["continuous_hold_s"]) / env.dt_s))
-    hold_steps = 0
 
     for step in range(max_steps):
         t_abs = get_sim_time(env)
@@ -402,11 +486,12 @@ def run_oracle_trial(
         prev_obj = state
 
         if step % control_steps == 0 and rel_t + 1e-9 >= float(controller_cfg["event_burn_in_s"]):
-            obs = _delayed_observation(history, rel_t - latency)
+            obs = event_source.observe(rel_t - latency) if event_source is not None else _delayed_observation(history, rel_t - latency)
             if obs is not None:
                 last_obs = MotionState(obs.time_s, obs.position_m.copy(), obs.velocity_m_s.copy())
                 last_obs.position_m[1] += float(position_bias_y_m)
-                prediction = predictor.predict(last_obs, latency)
+                observation_age = max(0.0, rel_t - last_obs.time_s) if event_source is not None else latency
+                prediction = predictor.predict(last_obs, observation_age)
                 last_prediction = prediction
                 estimated_current_state = prediction.propagated_state
                 if closure_speed_reference_m_s is None and estimated_current_state is not None:
@@ -445,6 +530,7 @@ def run_oracle_trial(
                         "y_command_velocity_m_s": y_speed, "ttc_predicted_s": ttc_cmd,
                         "closure_lead_s": close_lead,
                         "closure_speed_reference_m_s": closure_speed_reference_m_s,
+                        "observation_age_s": observation_age,
                         "hand_goal_m": hand_goal, "closing": close_started_s is not None,
                         "lifting": lift_q is not None, "terminal_commit": terminal_commit,
                     }
@@ -460,6 +546,7 @@ def run_oracle_trial(
                         "reachable": False, "y_command_m": command.position_m,
                         "closure_lead_s": close_lead,
                         "closure_speed_reference_m_s": closure_speed_reference_m_s,
+                        "observation_age_s": observation_age,
                         "closing": close_started_s is not None, "lifting": False,
                     }
 
@@ -484,16 +571,85 @@ def run_oracle_trial(
             env.robot.control_dofs_position(lift_q[:7], env.arm_dofs)
             env.command_fingers_close()
 
+        tcp_before_step = env.tcp_position()
         env.scene.step()
         next_t = get_sim_time(env)
         next_rel_t = next_t - launch_t
-        if step % sample_steps == 0:
-            c = contact_snapshot(env)
-            if (c["left"] or c["right"]) and first_contact_s is None:
-                first_contact_s = next_rel_t
-            if c["bilateral"] and first_bilateral_s is None:
-                first_bilateral_s = next_rel_t
-            frame = _record_state(env, next_rel_t, "lift_hold" if lift_q is not None else ("closing" if close_started_s is not None else "intercept"), last_command)
+        c = contact_snapshot(env)
+        contact_tuple = (bool(c["left"]), bool(c["right"]), bool(c["bilateral"]), bool(c["support"]))
+        obj_after = object_state(env.target, next_rel_t)
+        obj_position = np.asarray(obj_after["position_m"], dtype=np.float64)
+        obj_velocity = np.asarray(obj_after["velocity_m_s"], dtype=np.float64)
+        tcp_after = env.tcp_position()
+        tcp_velocity = (tcp_after - tcp_before_step) / env.dt_s
+        exact_clearance = cube_bottom_clearance_m(
+            obj_position, obj_after["orientation_wxyz"], target_size,
+            float(cfg["physics"].get("table_top_z_m", 0.0)),
+        )
+        maximum_true_clearance = max(maximum_true_clearance, exact_clearance)
+        if (c["left"] or c["right"]) and first_contact_s is None:
+            first_contact_s = next_rel_t
+            first_contact_position_m = obj_position.copy()
+            first_contact_tcp_m = tcp_after.copy()
+            first_contact_relative_velocity_m_s = obj_velocity - tcp_velocity
+        if c["bilateral"] and first_bilateral_s is None:
+            first_bilateral_s = next_rel_t
+            first_bilateral_position_m = obj_position.copy()
+        bilateral_seen = bilateral_seen or bool(c["bilateral"])
+        strict_score = strict_scorer.update(
+            next_rel_t,
+            obj_position - tcp_after,
+            exact_clearance,
+            bool(c["bilateral"]),
+            bool(c["support"]),
+            env.dt_s,
+        )
+        if event_source is not None:
+            event_source.advance(env.camera, next_rel_t)
+            if first_contact_s == next_rel_t:
+                event_source.capture_snapshot("first_contact", next_rel_t)
+            if first_bilateral_s == next_rel_t:
+                event_source.capture_snapshot("bilateral_contact", next_rel_t)
+            if lift_started_s is not None and abs(lift_started_s - rel_t) <= env.dt_s + 1e-9:
+                event_source.capture_snapshot("lift_start", next_rel_t)
+        if visibility_evaluator is not None and step % visibility_evaluator.sample_every_steps == 0:
+            visibility_evaluator.sample(env, next_rel_t)
+
+        # Reproduce the old R0 scorer at its original first stop point so the
+        # historical result remains interpretable alongside the strict score.
+        legacy_center_bottom = float(obj_position[2] - target_size[2] / 2)
+        if legacy_center_bottom >= float(cfg["success"]["target_bottom_clearance_m"]):
+            legacy_hold_steps += 1
+        else:
+            legacy_hold_steps = 0
+        if legacy_stop_s is None and legacy_hold_steps * env.dt_s + 1e-12 >= float(cfg["success"]["continuous_hold_s"]):
+            legacy_stop_s = next_rel_t
+            legacy_hold_at_stop_s = legacy_hold_steps * env.dt_s
+            legacy_success = bool(next_rel_t <= 2.5 + 1e-9 and bilateral_seen and legacy_center_bottom >= float(cfg["success"]["target_bottom_clearance_m"]))
+            legacy_bilateral_at_stop = bool(bilateral_seen)
+            legacy_clearance_at_stop = legacy_center_bottom
+
+        contact_changed = contact_tuple != previous_contacts
+        should_log = step % sample_steps == 0 or contact_changed or (lift_q is not None and step % control_steps == 0)
+        if should_log:
+            frame = _record_state(
+                env, next_rel_t,
+                "lift_hold" if lift_q is not None else ("closing" if close_started_s is not None else "intercept"),
+                last_command, contacts=c,
+            )
+            frame["score"] = strict_score
+            frame["tcp_velocity_m_s"] = tcp_velocity.tolist()
+            frame["state_source"] = "direct_hdr_events" if event_source is not None else "current_gt_delayed"
+            if event_source is not None:
+                frame["event_state_by_rate"] = {}
+                for rate_hz in (1000, 2000):
+                    estimate = event_source.latest(rate_hz)
+                    frame["event_state_by_rate"][str(rate_hz)] = None if estimate is None else {
+                        "time_s": estimate.time_s,
+                        "position_m": estimate.position_m.tolist(),
+                        "velocity_m_s": estimate.velocity_m_s.tolist(),
+                        "age_s": float(next_rel_t - estimate.time_s),
+                    }
             if last_prediction is not None:
                 frame["observation_cutoff_s"] = last_obs.time_s
                 frame["prediction"] = {
@@ -502,47 +658,52 @@ def run_oracle_trial(
                     "position_m": None if last_prediction.position_m is None else last_prediction.position_m.tolist(),
                 }
             trace.append(frame)
+        previous_contacts = contact_tuple
         if capture and step % video_steps == 0:
             rgb, _, _, _ = env.render(hdr=False)
             frames.append(np.asarray(rgb, dtype=np.uint8))
-
-        obj_p = object_state(env.target, next_rel_t)["position_m"]
-        clearance = float(obj_p[2] - target_size / 2)
-        max_clearance = max(max_clearance, clearance)
-        held = clearance >= float(cfg["success"]["target_bottom_clearance_m"])
-        if held:
-            hold_steps += 1
-            if hold_start is None:
-                hold_start = next_rel_t
-            hold_duration = hold_steps * env.dt_s
-        else:
-            hold_start = None
-            hold_steps = 0
-            hold_duration = 0.0
-        if hold_steps >= hold_steps_needed:
+        if strict_scorer.success_at(env.dt_s):
+            if event_source is not None:
+                event_source.capture_snapshot("strict_hold_complete", next_rel_t)
             break
         if np.linalg.norm(object_state(env.target, next_rel_t)["velocity_m_s"][:2]) < 0.015 and next_rel_t > 0.4 and lift_q is None:
             # Continue until timeout so an ungrasped stop is explicitly classified.
             pass
 
     final_state = object_state(env.target, get_sim_time(env) - launch_t)
-    final_bottom = float(final_state["position_m"][2] - target_size / 2)
+    final_bottom = cube_bottom_clearance_m(
+        final_state["position_m"], final_state["orientation_wxyz"], target_size,
+        float(cfg["physics"].get("table_top_z_m", 0.0)),
+    )
     contacts = contact_snapshot(env)
-    bilateral = first_bilateral_s is not None
-    success = bool(bilateral and hold_duration >= cfg["success"]["continuous_hold_s"] and final_bottom >= cfg["success"]["target_bottom_clearance_m"])
+    strict_summary = strict_scorer.summary(env.dt_s, max_steps if len(trace) == 0 else step + 1)
+    success = bool(strict_scorer.success_at(env.dt_s) and final_bottom >= cfg["success"]["target_bottom_clearance_m"])
     crossing_y = None if crossing_actual is None else float(crossing_actual["position_m"][1])
     t_contact_error = None if first_contact_s is None or crossing_actual is None else float(first_contact_s - crossing_actual["time_s"])
     y_tcp = float(env.tcp_position()[1])
     close_to_crossing = None if close_started_s is None or crossing_actual is None else float(close_started_s - crossing_actual["time_s"])
+    contact_to_planned_arrival = None if first_contact_s is None or planned_arrival_s is None else float(first_contact_s - planned_arrival_s)
+    close_to_planned_arrival = None if close_started_s is None or planned_arrival_s is None else float(close_started_s - planned_arrival_s)
+    contact_to_close_s = None if first_contact_s is None or close_started_s is None else float(first_contact_s - close_started_s)
+    first_contact_relative_speed = None if first_contact_relative_velocity_m_s is None else float(np.linalg.norm(first_contact_relative_velocity_m_s[:2]))
+    first_contact_location_error = None if first_contact_position_m is None or first_contact_tcp_m is None else {
+        "object_x_minus_intercept_m": float(first_contact_position_m[0] - float(controller_cfg["intercept_x_m"])),
+        "object_y_minus_tcp_y_m": float(first_contact_position_m[1] - first_contact_tcp_m[1]),
+        "object_minus_tcp_m": (first_contact_position_m - first_contact_tcp_m).tolist(),
+    }
     if success:
         primary = "success"
     elif first_contact_s is not None:
         if first_bilateral_s is None or lift_started_s is None:
             primary = "unstable_grasp"
-        elif max_clearance >= float(cfg["success"]["target_bottom_clearance_m"]):
-            primary = "escape"
+        elif strict_scorer.support_contact_when_clearance_met_samples > 0 and strict_scorer.qualified_samples == 0:
+            primary = "support_contact_violation"
+        elif strict_scorer.max_slip_m > float(cfg["success"]["maximum_object_to_tcp_slip_m"]):
+            primary = "relative_slip"
+        elif maximum_true_clearance >= float(cfg["success"]["target_bottom_clearance_m"]):
+            primary = "strict_hold_constraint_failed"
         else:
-            primary = "unstable_grasp"
+            primary = "insufficient_clearance"
     elif not last_prediction or not last_prediction.reachable:
         primary = "oracle_unreachable"
     elif first_contact_s is None:
@@ -555,6 +716,17 @@ def run_oracle_trial(
         "heading_deg": float(np.rad2deg(theta)), "observation_latency_s": latency,
         "position_bias_y_m": position_bias_y_m, "ttc_bias_s": ttc_bias_s,
         "first_contact_s": first_contact_s, "first_bilateral_contact_s": first_bilateral_s,
+        "first_contact_position_m": None if first_contact_position_m is None else first_contact_position_m.tolist(),
+        "first_bilateral_contact_position_m": None if first_bilateral_position_m is None else first_bilateral_position_m.tolist(),
+        "first_contact_tcp_position_m": None if first_contact_tcp_m is None else first_contact_tcp_m.tolist(),
+        "first_contact_location_error": first_contact_location_error,
+        "first_contact_relative_velocity_m_s": None if first_contact_relative_velocity_m_s is None else first_contact_relative_velocity_m_s.tolist(),
+        "first_contact_relative_speed_m_s": first_contact_relative_speed,
+        "planned_free_slide_arrival_t_s": planned_arrival_s,
+        "close_start_s": close_started_s,
+        "close_start_minus_planned_arrival_s": close_to_planned_arrival,
+        "first_contact_minus_planned_arrival_s": contact_to_planned_arrival,
+        "first_contact_minus_close_start_s": contact_to_close_s,
         "actual_crossing_t_s": None if crossing_actual is None else crossing_actual["time_s"],
         "actual_crossing_y_m": crossing_y,
         "contact_minus_crossing_s": t_contact_error,
@@ -565,8 +737,22 @@ def run_oracle_trial(
         "last_predicted_y_m": None if last_prediction is None or not last_prediction.reachable else float(last_prediction.position_m[1]),
         "final_tcp_y_m": y_tcp, "measured_net_opening_m": env.jaw_opening_m(),
         "lift_start_s": lift_started_s, "target_bottom_clearance_m": final_bottom,
-        "maximum_target_bottom_clearance_m": max_clearance, "hold_s": hold_duration,
-        "bilateral_contact_at_end": contacts["bilateral"], "success": success,
+        "maximum_target_bottom_clearance_m": maximum_true_clearance,
+        "hold_s": strict_summary["continuous_qualified_hold_s"],
+        "bilateral_contact_at_end": contacts["bilateral"],
+        "score_version": STRICT_SCORE_VERSION, "success": success,
+        "success_strict_r0_5": success,
+        "strict_score": strict_summary,
+        "legacy_score_version": LEGACY_SCORE_VERSION,
+        "success_legacy_r0": legacy_success,
+        "legacy_first_stop_s": legacy_stop_s,
+        "legacy_hold_at_stop_s": legacy_hold_at_stop_s,
+        "legacy_score": {
+            "score_version": LEGACY_SCORE_VERSION, "success": legacy_success,
+            "first_stop_s": legacy_stop_s, "continuous_center_clearance_hold_s": legacy_hold_at_stop_s,
+            "center_based_bottom_clearance_at_stop_m": legacy_clearance_at_stop,
+            "historical_bilateral_contact_by_stop": legacy_bilateral_at_stop,
+        },
         "failure_primary": primary, "final_object_position_m": final_state["position_m"].tolist(),
         "final_object_velocity_m_s": final_state["velocity_m_s"].tolist(),
         "sim_duration_s": get_sim_time(env) - launch_t,
@@ -584,7 +770,7 @@ def _event_config():
     )
 
 
-def _event_match_summary(events_1k: np.ndarray, events_2k: np.ndarray, tolerance_s: float = 0.002) -> Dict[str, Any]:
+def _event_match_summary(events_1k: np.ndarray, events_2k: np.ndarray, tolerance_s: float = 0.0005) -> Dict[str, Any]:
     groups: Dict[Tuple[int, int, int], List[float]] = {}
     for event in events_2k:
         key = (int(event[1]), int(event[2]), int(event[3]))
@@ -607,112 +793,162 @@ def _event_match_summary(events_1k: np.ndarray, events_2k: np.ndarray, tolerance
     return {
         "events_1khz": int(len(events_1k)), "events_2khz": int(len(events_2k)),
         "count_relative_difference": None if not len(events_2k) else float(abs(len(events_1k) - len(events_2k)) / len(events_2k)),
-        "matched_same_pixel_polarity_within_2ms": int(matched),
+        "matched_same_pixel_polarity_within_tolerance": int(matched),
         "fraction_1khz_matched": None if not len(events_1k) else float(matched / len(events_1k)),
         "fraction_2khz_matched": None if not len(events_2k) else float(matched / len(events_2k)),
         "matched_event_time_mae_ms": None if not deltas else float(np.mean(deltas) * 1000),
         "matched_event_time_p95_ms": None if not deltas else float(np.percentile(deltas, 95) * 1000),
-        "time_tolerance_ms": 2.0,
+        "time_tolerance_ms": float(tolerance_s * 1000.0),
     }
 
 
-def run_reference(env: RobotScene, duration_s: float, speed: float, seed: int, out: Path) -> Dict[str, Any]:
-    from genesis_event_plugin.dvs_emulator import DvsEmulator
+def run_reference(
+    env: RobotScene,
+    duration_s: float,
+    speed: float,
+    seed: int,
+    out: Path,
+    *,
+    speeds: Optional[Sequence[float]] = None,
+    episodes_per_speed: int = 1,
+    y_values: Optional[Sequence[float]] = None,
+    controller_hz: int = 2000,
+    visibility_hz: float = 50.0,
+) -> Dict[str, Any]:
+    from benchmark.robot_closed_loop.event_state import DirectHdrEventSource, voxel_convergence_summary
 
     cfg = env.config
-    x, y, theta = _sample_initial(np.random.default_rng(seed), cfg)
-    # Keep this small source pilot focused on a directly moving target. It is
-    # not a full estimator-in-the-loop R2 rollout.
-    size = float(cfg["target"]["size_m"][2])
-    _set_episode_origin(env, (x, y, size / 2), 0.0)
-    _settle(env)
-    launch_t = get_sim_time(env)
-    env.set_initial_target_velocity((-speed * np.cos(theta), speed * np.sin(theta), 0.0))
-    w, h = (int(v) for v in cfg["camera"]["resolution_wh"])
-    emu_1k = DvsEmulator(res=(h, w), config=_event_config(), device="cpu")
-    emu_2k = DvsEmulator(res=(h, w), config=_event_config(), device="cpu")
-    ev_1k: List[np.ndarray] = []
-    ev_2k: List[np.ndarray] = []
-    rgb_samples: List[np.ndarray] = []
-    hdr_samples: List[np.ndarray] = []
-    render_ms: List[float] = []
-    dvs_ms: List[float] = []
-    render_cold_ms = None
-    sim_steps = int(round(duration_s / env.dt_s))
-    sample_1k_steps = max(1, int(round(0.001 / env.dt_s)))
-    t_previous = None
-    for step in range(sim_steps + 1):
-        t = step * env.dt_s
-        if step > 0:
-            env.hold_robot_home()
-            env.scene.step()
-        start = time.perf_counter()
-        hdr, _, _, _ = env.camera.render(
-            rgb=True, depth=False, segmentation=False, radiance=True,
-        )
-        elapsed_render = (time.perf_counter() - start) * 1000.0
-        render_ms.append(elapsed_render)
-        if step == 0:
-            render_cold_ms = elapsed_render
-        hdr = np.asarray(hdr, dtype=np.float32)
-        gray = np.clip(hdr[..., 0] * 0.2126 + hdr[..., 1] * 0.7152 + hdr[..., 2] * 0.0722, 0.0, None)
-        log_gray = np.log(gray.astype(np.float64) + 1e-6)
-        start_dvs = time.perf_counter()
-        if step == 0:
-            emu_1k.initialize(log_gray, t=t)
-            emu_2k.initialize(log_gray, t=t)
-        else:
-            events = emu_2k.generate_events(log_gray, t=t)
-            ev_2k.append(events)
-            if step % sample_1k_steps == 0 and abs((t / 0.001) - round(t / 0.001)) < 1e-6:
-                ev_1k.append(emu_1k.generate_events(log_gray, t=t))
-        dvs_ms.append((time.perf_counter() - start_dvs) * 1000.0)
-        if step in {0, sim_steps // 2, sim_steps}:
-            rgb, _, _, _ = env.camera.render(
-                rgb=True, depth=False, segmentation=False, radiance=False,
+    speed_grid = [float(v) for v in (speeds or [speed])]
+    y_grid = list(float(v) for v in y_values) if y_values is not None else []
+    if y_grid and len(y_grid) != len(speed_grid) * int(episodes_per_speed):
+        raise ValueError("--reference-y-values must provide one value per reference episode")
+    visibility = DynamicVisibilityEvaluator(cfg, env.dt_s, sample_hz=visibility_hz)
+    episode_rows = []
+    reference_started = time.perf_counter()
+    sample_index = 0
+    for speed_index, launch_speed in enumerate(speed_grid):
+        for repeat in range(int(episodes_per_speed)):
+            episode_id = sample_index
+            episode_seed = int(seed) + sample_index
+            # The default 3-speed sweep includes both configured lateral edges.
+            default_y = [0.0, -0.055, 0.055][speed_index % 3] if len(speed_grid) >= 3 else 0.0
+            launch_y = y_grid[sample_index] if y_grid else default_y
+            episode_out = out / "episodes" / f"episode_{episode_id:03d}"
+            episode_out.mkdir(parents=True, exist_ok=False)
+            source = DirectHdrEventSource(cfg, env.dt_s, controller_hz=controller_hz)
+            visibility_start = len(visibility.rows)
+            episode_started = time.perf_counter()
+            row, trace, frames = run_oracle_trial(
+                env, episode_id, episode_seed, launch_speed,
+                float(cfg["controller"]["initial_deceleration_assumption_m_s2"]),
+                capture=True, event_source=source, initial_y_m=launch_y,
+                visibility_evaluator=visibility,
             )
-            rgb = np.asarray(rgb, dtype=np.uint8)
-            rgb_samples.append(rgb)
-            hdr_samples.append(hdr)
-    all_1k = np.concatenate(ev_1k, axis=0) if ev_1k else np.empty((0, 4), dtype=np.float64)
-    all_2k = np.concatenate(ev_2k, axis=0) if ev_2k else np.empty((0, 4), dtype=np.float64)
-    np.savez_compressed(out / "direct_hdr_events_1khz.npz", events=all_1k)
-    np.savez_compressed(out / "direct_hdr_events_2khz.npz", events=all_2k)
-    np.savez_compressed(
-        out / "direct_hdr_snapshots.npz",
-        rgb=np.stack(rgb_samples), hdr=np.stack(hdr_samples),
-    )
-    conv = _event_match_summary(all_1k, all_2k)
-    conv.update({
-        "status": "short synthetic direct-HDR source pilot; no downstream estimator was run",
-        "sampling_hz": {"low": 1000, "high": 2000},
-        "physics_dt_s": env.dt_s,
-        "simulated_duration_s": duration_s,
-        "genesis_renders": len(render_ms),
-        "cold_first_render_ms": render_cold_ms,
-        "steady_render_mean_ms": float(np.mean(render_ms[1:])) if len(render_ms) > 1 else None,
-        "steady_render_p50_ms": float(np.median(render_ms[1:])) if len(render_ms) > 1 else None,
-        "steady_render_p95_ms": float(np.percentile(render_ms[1:], 95)) if len(render_ms) > 1 else None,
-        "dvs_mean_ms_per_sample": float(np.mean(dvs_ms[1:])) if len(dvs_ms) > 1 else None,
-        "dvs_p95_ms_per_sample": float(np.percentile(dvs_ms[1:], 95)) if len(dvs_ms) > 1 else None,
-        "episode_wall_s": float(sum(render_ms) + sum(dvs_ms)) / 1000.0,
-        "dvs_response": {
-            "implementation": "genesis_event_plugin.DvsEmulator",
-            "input": "log of linear HDR luminance, no display RGB or temporal reconstruction",
-            "on_off_threshold": 0.2, "threshold_std": 0.0,
-            "noise": False, "bandwidth": "infinite",
-            "pixel_model_shared_with_plugin": True,
+            episode_wall_s = time.perf_counter() - episode_started
+            row.update({
+                "phase": "direct_hdr_event_state_smoke",
+                "reference_episode_wall_s": episode_wall_s,
+                "reference_requested_duration_s_ignored_until_task_end": float(duration_s),
+                "reference_controller_sampling_hz": int(controller_hz),
+            })
+            write_csv(episode_out / "episode.csv", [row])
+            write_trace(episode_out / "state_control_trace.jsonl", trace)
+            save_gif(episode_out / "rollout.gif", frames)
+            source_summary = source.save(episode_out)
+            events_1k = np.concatenate(source.events[1000], axis=0) if source.events[1000] else np.empty((0, 4), dtype=np.float64)
+            events_2k = np.concatenate(source.events[2000], axis=0) if source.events[2000] else np.empty((0, 4), dtype=np.float64)
+            conv = _event_match_summary(events_1k, events_2k)
+            conv["voxel_convergence"] = voxel_convergence_summary(events_1k, events_2k, cfg["camera"]["resolution_wh"])
+            state_errors = []
+            gt_trace = [f for f in trace if f.get("object") and f.get("time_s") is not None]
+            for frame in trace:
+                estimates = frame.get("event_state_by_rate", {})
+                if not estimates or not gt_trace:
+                    continue
+                for hz in (1000, 2000):
+                    estimate = estimates.get(str(hz))
+                    if estimate is None:
+                        continue
+                    aligned = min(gt_trace, key=lambda item: abs(float(item["time_s"]) - float(estimate["time_s"])))
+                    aligned_object = aligned["object"]
+                    gt_position = np.asarray(aligned_object["position_m"], dtype=np.float64)
+                    gt_velocity = np.asarray(aligned_object["velocity_m_s"], dtype=np.float64)
+                    tracker = source.trackers[hz]
+                    state_errors.append({
+                        "episode_id": episode_id, "evaluation_time_s": float(frame["time_s"]),
+                        "estimate_time_s": float(estimate["time_s"]), "sampling_hz": hz,
+                        "position_error_xy_m": float(np.linalg.norm(np.asarray(estimate["position_m"][:2]) - gt_position[:2])),
+                        "velocity_error_xy_m_s": float(np.linalg.norm(np.asarray(estimate["velocity_m_s"][:2]) - gt_velocity[:2])),
+                        "estimate_age_ms": float(estimate["age_s"] * 1000.0),
+                        "nearest_gt_sample_time_error_ms": float(abs(float(aligned["time_s"]) - float(estimate["time_s"])) * 1000.0),
+                        "event_count_window": int(tracker.last_confidence["event_count"]),
+                        "time_bins_window": int(tracker.last_confidence["time_bin_count"]),
+                    })
+            write_csv(episode_out / "event_state_error.csv", state_errors)
+            errors_by_rate = {}
+            for hz in (1000, 2000):
+                rows = [r for r in state_errors if r["sampling_hz"] == hz]
+                errors_by_rate[str(hz)] = {
+                    "n": len(rows),
+                    "position_error_xy_mean_m": None if not rows else float(np.mean([r["position_error_xy_m"] for r in rows])),
+                    "position_error_xy_p95_m": None if not rows else float(np.percentile([r["position_error_xy_m"] for r in rows], 95)),
+                    "velocity_error_xy_mean_m_s": None if not rows else float(np.mean([r["velocity_error_xy_m_s"] for r in rows])),
+                    "velocity_error_xy_p95_m_s": None if not rows else float(np.percentile([r["velocity_error_xy_m_s"] for r in rows], 95)),
+                    "estimate_age_p95_ms": None if not rows else float(np.percentile([r["estimate_age_ms"] for r in rows], 95)),
+                }
+            visibility_summary = visibility.summary(visibility_start)
+            (episode_out / "reference_metrics.json").write_text(json.dumps(jsonable({
+                "episode_id": episode_id, "seed": episode_seed, "speed_m_s": launch_speed,
+                "launch_y_m": launch_y, "physics_dt_s": env.dt_s,
+                "strict_score_version": row["score_version"],
+                "strict_success": row["success"], "legacy_success_at_legacy_stop": row["success_legacy_r0"],
+                "full_episode_wall_s": episode_wall_s,
+                "simulated_duration_s": row["sim_duration_s"],
+                "real_time_factor": row["sim_duration_s"] / max(episode_wall_s, 1e-9),
+                "event_source": source_summary,
+                "event_convergence": conv,
+                "event_state_accuracy_evaluator_only": errors_by_rate,
+                "dynamic_visibility_evaluator_only": visibility_summary,
+                "reference_duration_setting_s": duration_s,
+            }), indent=2), encoding="utf-8")
+            episode_rows.append({
+                "episode_id": episode_id, "seed": episode_seed, "speed_m_s": launch_speed,
+                "launch_y_m": launch_y, "strict_success": row["success"],
+                "success_legacy_r0": row["success_legacy_r0"],
+                "first_contact_s": row["first_contact_s"], "lift_start_s": row["lift_start_s"],
+                "sim_duration_s": row["sim_duration_s"], "wall_s": episode_wall_s,
+                "event_count_1khz": len(events_1k), "event_count_2khz": len(events_2k),
+                "state_control_trace": str((episode_out / "state_control_trace.jsonl").relative_to(out)),
+                "raw_events": str((episode_out / "direct_hdr_events_1khz_2khz.npz").relative_to(out)),
+                "dynamic_visibility_min": visibility_summary["minimum_visible_fraction"],
+                "state_accuracy_1khz_p95_m": errors_by_rate["1000"]["position_error_xy_p95_m"],
+                "state_accuracy_2khz_p95_m": errors_by_rate["2000"]["position_error_xy_p95_m"],
+            })
+            sample_index += 1
+    total_wall_s = time.perf_counter() - reference_started
+    write_csv(out / "r0_5_reference_episodes.csv", episode_rows)
+    summary = {
+        "mode": "r0_5_direct_hdr_reference_and_event_state_smoke",
+        "code_scope": "robot benchmark; frozen simulator core unchanged",
+        "physics_dt_s": env.dt_s, "paired_event_rates_hz": [1000, 2000],
+        "controller_state_source": "2 kHz causal event tracker" if controller_hz == 2000 else "1 kHz causal event tracker",
+        "episodes": episode_rows,
+        "strict_success_by_speed": {
+            str(s): {"n": sum(1 for r in episode_rows if r["speed_m_s"] == s),
+                     "successes": sum(bool(r["strict_success"]) for r in episode_rows if r["speed_m_s"] == s)}
+            for s in speed_grid
         },
-        "projected_540_rollout_render_hours_at_1khz": float(
-            540 * duration_s * 1000 * np.mean(render_ms[1:]) / 3.6e6
-        ) if len(render_ms) > 1 else None,
-        "projected_540_rollout_render_hours_at_2khz": float(
-            540 * duration_s * 2000 * np.mean(render_ms[1:]) / 3.6e6
-        ) if len(render_ms) > 1 else None,
-        "projection_note": "linear extrapolation from warm direct render; excludes physics, DVS, model, and startup costs",
-    })
-    (out / "reference_convergence.json").write_text(json.dumps(jsonable(conv), indent=2), encoding="utf-8")
-    return conv
+        "total_end_to_end_wall_s": total_wall_s,
+        "mean_full_episode_wall_s": None if not episode_rows else float(np.mean([r["wall_s"] for r in episode_rows])),
+        "cost_boundary": "measured complete closed-loop episode, including physics, 2 kHz HDR renders, both DVS streams, event tracking, visibility audit, trace, video, and serialization",
+        "no_rollout_scale_extrapolation": True,
+        "pixel_response_model_boundary": "Direct linear-HDR input and DvsEmulator are shared with the plugin; Ours temporal reconstruction and V2E frame interpolation are bypassed. This ideal synthetic threshold model is uncalibrated to EVK4.",
+        "visibility_evaluation_boundary": "uses evaluator-only segmentation and matched-pose target-only render; those data do not enter the event state source or controller",
+        "small_smoke_only": True,
+    }
+    (out / "r0_5_reference_summary.json").write_text(json.dumps(jsonable(summary), indent=2), encoding="utf-8")
+    (out / "dynamic_visibility.json").write_text(json.dumps(jsonable(visibility.summary()), indent=2), encoding="utf-8")
+    return summary
 
 
 def _resolve_segmentation_ids(scene: Any, entity: Any) -> List[int]:
@@ -755,6 +991,64 @@ def _mask_and_bbox(seg: np.ndarray, ids: Sequence[int]) -> Tuple[np.ndarray, Opt
     if not len(xx):
         return mask, None
     return mask, [int(xx.min()), int(yy.min()), int(xx.max() + 1), int(yy.max() + 1)]
+
+
+class DynamicVisibilityEvaluator:
+    """Paired segmentation audit; its GT input never reaches the event controller."""
+
+    def __init__(self, config: Dict[str, Any], dt_s: float, sample_hz: float = 50.0):
+        self.reference = build_free_slide_scene(config, dt_s=dt_s, with_camera=True)
+        if self.reference.camera is None:
+            raise RuntimeError("could not construct target-only visibility scene")
+        self.sample_every_steps = max(1, int(round(1.0 / (float(sample_hz) * float(dt_s)))))
+        self.reference.camera.render(rgb=True, depth=False, segmentation=True, force_render=True)
+        self.target_only_ids = _resolve_segmentation_ids(self.reference.scene, self.reference.target)
+        if not self.target_only_ids:
+            raise RuntimeError("target-only segmentation IDs missing in dynamic visibility audit")
+        self.rows: List[Dict[str, Any]] = []
+        self.render_ms: List[float] = []
+
+    def sample(self, env: RobotScene, time_s: float) -> None:
+        started = time.perf_counter()
+        _rgb, _depth, actual_seg, _normal = env.camera.render(
+            rgb=True, depth=False, segmentation=True, force_render=True,
+        )
+        actual_ids = _resolve_segmentation_ids(env.scene, env.target)
+        actual_mask, actual_bbox = _mask_and_bbox(actual_seg, actual_ids)
+        qpos = as_numpy(env.target.get_qpos()).astype(np.float32)
+        self.reference.target.set_qpos(qpos, zero_velocity=True)
+        self.reference.target.set_dofs_velocity(np.zeros(6, dtype=np.float32))
+        _rgb, _depth, clear_seg, _normal = self.reference.camera.render(
+            rgb=True, depth=False, segmentation=True, force_render=True,
+        )
+        clear_mask, clear_bbox = _mask_and_bbox(clear_seg, self.target_only_ids)
+        actual_pixels = int(actual_mask.sum())
+        clear_pixels = int(clear_mask.sum())
+        self.render_ms.append((time.perf_counter() - started) * 1000.0)
+        self.rows.append({
+            "time_s": float(time_s),
+            "target_position_m": as_numpy(env.target.get_qpos()).reshape(-1)[:3].tolist(),
+            "visible_target_pixels": actual_pixels,
+            "target_only_pixels": clear_pixels,
+            "visible_fraction_of_unoccluded_mask": None if clear_pixels == 0 else float(actual_pixels / clear_pixels),
+            "robot_occlusion_fraction": None if clear_pixels == 0 else float(1.0 - actual_pixels / clear_pixels),
+            "visible_bbox_xyxy": actual_bbox,
+            "unoccluded_bbox_xyxy": clear_bbox,
+        })
+
+    def summary(self, start_index: int = 0) -> Dict[str, Any]:
+        rows = self.rows[int(start_index):]
+        render_ms = self.render_ms[int(start_index):]
+        fractions = [r["visible_fraction_of_unoccluded_mask"] for r in rows if r["visible_fraction_of_unoccluded_mask"] is not None]
+        return {
+            "method": "live robot segmentation divided by target-only segmentation at matching GT pose; evaluator-only",
+            "sample_hz": 1.0 / (self.sample_every_steps * self.reference.dt_s),
+            "sample_count": len(rows),
+            "minimum_visible_fraction": None if not fractions else float(np.min(fractions)),
+            "median_visible_fraction": None if not fractions else float(np.median(fractions)),
+            "mean_visibility_render_pair_ms": None if not render_ms else float(np.mean(render_ms)),
+            "rows": rows,
+        }
 
 
 def run_preflight(env: RobotScene, out: Path) -> Dict[str, Any]:
@@ -988,7 +1282,7 @@ def run_batch(args: argparse.Namespace) -> None:
     videos_dir.mkdir(exist_ok=True)
     write_run_manifest(args, config, out)
 
-    dt = 0.0005 if args.mode == "reference" else None
+    dt = float(args.physics_dt_us) / 1e6 if args.physics_dt_us is not None else None
     env = build_free_slide_scene(config, dt_s=dt) if args.mode == "slide" else build_robot_scene(config, dt_s=dt)
     results: List[Dict[str, Any]] = []
     trace_by_id: Dict[int, List[Dict[str, Any]]] = {}
@@ -996,7 +1290,12 @@ def run_batch(args: argparse.Namespace) -> None:
     if args.mode == "preflight":
         run_preflight(env, out)
     elif args.mode == "reference":
-        run_reference(env, args.reference_duration, args.speed, args.seed, out)
+        run_reference(
+            env, args.reference_duration, args.speed, args.seed, out,
+            speeds=args.speeds, episodes_per_speed=args.reference_episodes,
+            y_values=args.reference_y_values,
+            controller_hz=args.event_controller_hz, visibility_hz=args.visibility_hz,
+        )
     elif args.mode == "static":
         for i in range(args.episodes):
             seed = args.seed + i
@@ -1055,7 +1354,7 @@ def run_batch(args: argparse.Namespace) -> None:
                 row["config_sha256"] = sha256(config_path)
                 results.append(row)
                 trace_by_id[eid] = trace
-        csv_name = "r0_sensitivity.csv" if args.mode == "sensitivity" else "r0_oracle_per_episode.csv"
+        csv_name = "r0_5_sensitivity.csv" if args.mode == "sensitivity" else "r0_5_oracle_per_episode.csv"
         write_csv(out / csv_name, results)
         reps = []
         seen_failures = set()
@@ -1090,12 +1389,21 @@ def run_batch(args: argparse.Namespace) -> None:
             grouped[str(speed)] = {"n": n, "successes": k, "success_rate": phat, "wilson_95_ci": [center - half, center + half] if n else None}
         summary = {
             "mode": args.mode, "a_eff_m_s2": args.a_eff, "observation_latency_s": args.latency,
+            "score_version": STRICT_SCORE_VERSION,
+            "legacy_score_version": LEGACY_SCORE_VERSION,
             "success_by_speed": grouped,
+            "legacy_success_by_speed": {
+                str(speed): {
+                    "n": sum(1 for r in results if abs(float(r["launch_speed_m_s"]) - float(speed)) < 1e-9),
+                    "successes": sum(bool(r["success_legacy_r0"]) for r in results if abs(float(r["launch_speed_m_s"]) - float(speed)) < 1e-9),
+                }
+                for speed in args.speeds
+            },
             "failure_counts": {key: sum(r["failure_primary"] == key for r in results) for key in sorted(set(r["failure_primary"] for r in results))},
             "not_formal_freeze": bool(args.mode == "sensitivity" or any(v["n"] < 100 for v in grouped.values())),
             "note": "Wilson intervals describe independent rollout outcomes only; current run is a development or single-factor sensitivity result.",
         }
-        (out / ("r0_sensitivity_summary.json" if args.mode == "sensitivity" else "r0_oracle_summary.json")).write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        (out / ("r0_5_sensitivity_summary.json" if args.mode == "sensitivity" else "r0_5_oracle_summary.json")).write_text(json.dumps(summary, indent=2), encoding="utf-8")
     write_run_manifest(args, config, out, finalize=True)
     env.gs.destroy()
 
@@ -1116,6 +1424,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ttc-bias-ms", type=float, default=0.0)
     parser.add_argument("--extra-latency-ms", type=float, default=0.0)
     parser.add_argument("--reference-duration", type=float, default=0.20)
+    parser.add_argument("--reference-episodes", type=int, default=1, help="episodes per speed for complete reference rollouts")
+    parser.add_argument("--reference-y-values", type=lambda s: [float(v) for v in s.split(",")], help="explicit launch y values, one per reference episode")
+    parser.add_argument("--event-controller-hz", type=int, choices=[1000, 2000], default=2000)
+    parser.add_argument("--visibility-hz", type=float, default=50.0)
+    parser.add_argument("--physics-dt-us", type=float, help="override configured physical timestep in microseconds")
     return parser
 
 

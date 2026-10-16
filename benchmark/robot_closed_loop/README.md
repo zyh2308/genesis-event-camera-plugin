@@ -36,7 +36,11 @@ Check GPU ownership with `nvidia-smi` before launching. For EGL, set both
 CUDA consumers; `CUDA_VISIBLE_DEVICES` alone does not constrain EGL device
 selection. The server pilot used `EGL_DEVICE_ID=2`, verified as a V100S renderer.
 
-## R0 commands
+## Historical R0 commands
+
+These commands describe the implementation recorded at R0 commit `e70ba12`.
+For an exact replay, check out that commit; the current runner uses the R0.5
+score and is documented below.
 
 Use a new output directory for every run. The runner refuses to mix results in
 an existing non-empty directory.
@@ -61,9 +65,6 @@ PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_clo
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
   --mode preflight --episodes 1 --out benchmark/robot_closed_loop/results/camera_preflight
 
-PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
-  --mode reference --speed 0.4 --reference-duration 0.20 --seed 2026102000 \
-  --out benchmark/robot_closed_loop/results/direct_hdr_pilot
 ```
 
 After slide calibration, extract its single shared `a_eff` for holdout/oracle.
@@ -104,10 +105,9 @@ nominal launch-to-intercept view at the configured lateral range while holding
 Panda at its legal pre-grasp home pose. Those are static camera checks, not
 dynamic arm-trajectory coverage.
 
-The current camera candidate is fixed at `[1.15, 0.0, 0.22]`, looking at
+The R0 camera candidate was fixed at `[1.15, 0.0, 0.22]`, looking at
 `[0.65, 0.0, 0.02]` with 320×240 resolution and 30° vertical FOV. The matching
-scene config records the pose and its SHA256; R0 oracle rollouts used the
-previous camera pose, which does not affect their GT-only controller or physics.
+scene config records the pose and its SHA256.
 
 For earlier closure timing, use a negative `--ttc-bias-ms`; e.g. `-20` starts
 closing when the predicted crossing is about 20 ms farther away than the
@@ -120,14 +120,71 @@ Empirical rate and Wilson 95% interval are reported; 98/100 does not mean a
 
 ## Evidence
 
-Each run contains per-episode CSV, selected 10 ms traces, selected short GIFs,
+Each run contains per-episode CSV, state/control traces, selected short GIFs,
 `run_manifest.json`, and `SHA256SUMS`. A reference run also writes compressed
-1 kHz/2 kHz event arrays, sparse HDR snapshots, and sampling/runtime comparison.
+1 kHz/2 kHz event arrays, key HDR snapshots, and sampling/runtime comparison.
 The reference uses direct scene-linear HDR and the repository's
 `DvsEmulator` with a shared ideal log-threshold response. It bypasses Ours'
-temporal reconstruction and V2E interpolation; it is still synthetic and the
-pixel response implementation is shared.
+temporal reconstruction and V2E interpolation; it is synthetic and the pixel
+response implementation is shared.
 
 The initial config is a candidate, not a frozen protocol. A formal freeze must
 follow the static/contact checks, no-hand slide calibration plus holdout, and
 GT-current-state oracle feasibility results.
+
+## R0.5 closeout protocol candidate
+
+Use `scene_pilot_r0_5_candidate.json` for the unified 0.5 ms physics timeline.
+The R0 files and score remain archived. New oracle runs report both the
+historical R0 score and `r0_5_strict_continuous_contact_clearance_slip`.
+Strict success requires 0.5 s of uninterrupted samples with the true lowest
+transformed cube vertex at least 80 mm above the plane, bilateral finger
+contact, no plane contact, and no more than 10 mm change in object-to-TCP
+relative position from bilateral grasp acquisition. The strict score samples
+every physics step; the controller still updates at its configured 100 Hz.
+The old score's first stop point is reproduced and logged separately.
+
+Recalibrate free-slide deceleration on this same 0.5 ms configuration before
+oracle evaluation:
+
+```bash
+export EGL_DEVICE_ID=2
+export CUDA_VISIBLE_DEVICES=2
+PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
+  --mode slide --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --split calibration --episodes 20 --speeds 0.3,0.4,0.5 --seed 2026101700 \
+  --out benchmark/robot_closed_loop/results/r0_5_slide_calibration
+```
+
+After fitting, update the candidate's single shared deceleration value from the
+calibration summary, record the new config hash, and run strict oracle episodes
+with new seeds. Use 100 trials per speed for the closeout gate:
+
+```bash
+PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
+  --mode oracle --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --episodes 100 --speeds 0.3,0.4,0.5 --a-eff "$A_EFF" --seed 2026102600 \
+  --out benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3
+```
+
+The Direct-HDR command below renders every 0.5 ms from the same physical rollout,
+feeds paired 1/2 kHz DVS streams, and closes the loop using the causal 2 kHz
+event state adapter. The three default speeds use center and opposite lateral
+edge launch positions. Segmentation is used only by an evaluator that compares
+the live target mask with a matched-pose target-only rendering; that audit is
+not connected to the controller or event source. The event centroid tracker is
+only a causal plumbing smoke, not an estimator quality claim.
+
+```bash
+PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
+  --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --speeds 0.3,0.4,0.5 --reference-episodes 1 --reference-y-values 0,-0.055,0.055 \
+  --event-controller-hz 2000 --visibility-hz 50 --seed 2026102700 \
+  --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke
+```
+
+`reference_metrics.json` reports paired event matching, 10 ms voxel agreement,
+1/2 kHz event-state errors against evaluator-only GT, dynamic target visibility,
+and complete episode wall time. The cost includes physics, HDR rendering,
+event generation, event tracking, visibility auditing, trace/video writing, and
+serialization; no old short-run extrapolation is used.

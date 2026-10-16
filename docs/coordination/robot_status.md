@@ -1,10 +1,12 @@
-# Genesis Event Camera：Robot R0 状态
+# Genesis Event Camera：Robot R0 / R0.5 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** 场景实现与 GT oracle feasibility；候选配置尚未冻结。
+**阶段：** R0 已由研究会话验收；正在完成 R0.5 strict scoring、0.5 ms 统一物理时间步和事件状态接入验证；协议尚未冻结。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
+
+R0.5 新实现已完成静态代码/配置检查，尚未在服务器运行，不能视为实验通过。R0 的 300/300 旧评分结果及历史 0.2 s Direct-HDR pilot 均不作为 R0.5 验收证据。R0.5 的服务器样本、代码提交、配置哈希和结果清单将在下方追加。
 
 ### 已完成并有证据
 
@@ -206,3 +208,27 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 合法 Panda home 姿态下拦截中心目标 1060 px 全可见，0% 遮挡，短边 30 px。发射与中段路径样本 0% 遮挡、短边 36–55 px；拦截 y 边缘遮挡 5.29–6.65%，短边 32 px。HDR 是有限 float32 `[240,320,3]`。RGB 已人工查看，方块在夹爪下方可见。九点是静态姿态采样，未覆盖 Panda 动态横移过程。
 - 结果目录 [`camera_preflight_side_x_positive_20261016/`](../../benchmark/robot_closed_loop/results/camera_preflight_side_x_positive_20261016/)：JSON SHA256 `38448fcc48c4a7671cf467012eef1db86fd144d89e681aa79be6526fe20f393d`；HDR/depth/seg `3124df3e100360306ede3bd9900e167aef3863f24f0ce94dd6f36529de3ce591`；RGB `a76203b0d8f3fbc8813d6a3492454387f594898a9e7b7ceb7a4e17765e3fbe2b`；manifest `9655d8f6afcaa045969dce8c7baefbab8a9aa6c0f5422ba0ae708dcce584ec30`；SHA256SUMS `983d7b9608c178447cc6ce8c7baefbab8a9aa6c0f5422ba0ae708dcce584ec30`。日志 `1e5e84ae0d1ea87c8f831cdb90ac8eaeac4c16afb6fa06b9a1f9e99b7e412dc8`，exit `0`，PID `1612441`。结果清单本地全项验证通过。
 - Top-down 失败候选已归档在 [`camera_preflight_top_down_20261016/`](../../benchmark/robot_closed_loop/results/camera_preflight_top_down_20261016/)；配置 SHA256 `b987145661715118ae77ef5d879a980762e6ece316445d84392d42f93f301096`，代码 commit `062c381...`。发射/中段目标无遮挡，但拦截中心 100% 被挡，exit `1`，拒绝该机位；目录 SHA256SUMS `b70826cf369e3bfdb6741f41a53e5e8547a735ca60d347da740f51f8be5efcff` 已为归档文件重新生成并校验。
+
+
+## R0.5 strict closeout（进行中）
+
+### 已落地、待服务器复核
+
+- 新增下游严格评分：每个物理步计算旋转后立方体 8 个角点相对 Plane 的真实最低净空；连续 0.5 s 同时要求双侧指接触、无 Plane 接触、真实净空 ≥80 mm，且从首次双侧接触起 object-to-TCP 相对位置漂移 ≤10 mm。逐集结果和 1 kHz 状态 trace 保存严格评分统计、接触/支撑样本数、滑移峰值及最小净空。
+- 保留 R0 旧规则 `r0_v1_legacy_center_clearance_historical_contact`，在旧规则首次满足停止条件时单独复算并记录；新正式 `success` 字段采用 `r0_5_strict_continuous_contact_clearance_slip`。历史归档文件不改写。
+- 新 R0.5 候选配置将 GT oracle、Direct-HDR 与自由滑动校准统一到 0.5 ms 物理步；控制仍为 100 Hz，预测器/闭合调度/机器人任务候选不变。因物理时间步改变，需要先重做无手减速度拟合，再运行 oracle。
+- 同一 oracle 控制与评分循环可接 GT 当前状态或因果事件状态。事件源只接收相机、固定针孔标定与直接 HDR 生成的 `[t_s,x_px,y_px,p]`；不读目标 GT、GT segmentation、depth 或未来状态。GT 误差评估和 segmentation 可见性审计在控制循环的独立输出侧进行。
+- 新 reference 每物理步 direct-render 线性 HDR，在同一条闭环物理轨迹中并行产生 1/2 kHz 事件流；日志计划覆盖 event-time 对齐误差、10 ms voxel 一致性、事件状态误差、动态目标遮挡率及完整 episode wall time。此时的 centroid/regression 仅用于状态接线 smoke，不构成可用 estimator 的精度结论。
+
+### 尚未运行 / 不可声称
+
+- 服务器代码 commit、0.5 ms no-hand 减速度及其配置 hash 尚未产生；旧 `a_eff=0.09804843 m/s²` 暂不视为新配置校准值。
+- strict oracle 试跑与统计、旧/新评分差异、误差注入 strict 复测尚未运行。旧 R0 的 300/300 不能引用为新成功率。
+- 完整拦截/接触/抬升 Direct-HDR 的 paired 1/2 kHz、横向边缘轨迹动态可见性、事件状态接管控制和实际成本均待服务器验证。
+- 本地只做了 Python 编译、JSON 解析、diff whitespace 与 frozen-core 差异检查；没有在本地执行物理实验。
+
+### 当前复跑入口
+
+配置起点：[`scene_pilot_r0_5_candidate.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json)。命令、评分边界和事件接入说明见 [`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md) 的 R0.5 小节。服务器只在新的 branch worktree 执行，保留服务器原 `main` 工作区；启动前检查 GPU PID/归属，EGL 仅选空闲的 GPU 2。
+
+R0.5 代码当前尚未提交，因此不能附运行 commit/hash。完成重标定和 smoke 后，将在本节追加逐 episode 结果、关键成功/失败 trace 与录像入口、代码 commit、配置 SHA256、数据 SHA256SUMS、服务器日志与 exit 文件哈希，并提出冻结协议候选。
