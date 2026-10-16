@@ -1,0 +1,312 @@
+{
+  "schema": "eventgenesis_synthetic_training_launch_v1",
+  "date": "2026-10-16",
+  "status": "research_authorized_for_synthetic_training",
+  "role": "first_scaled_synthetic_training_campaign_not_a_final_real_result",
+  "reviewed_engineering_commit": "78f71615acc7824072b0888eb16972c9a908ea44",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_scoring_enabled": false,
+  "real_inference_enabled_in_this_stage": false,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "launch_order": [
+    "flow_dt1_seed0_paired",
+    "reconstruction_seed0_paired_when_resources_allow",
+    "remaining_seeds_same_frozen_training_config"
+  ],
+  "dt4_new_training_in_this_launch": false,
+  "pose_blocks_launch": false,
+  "source_locks": {
+    "downstream_bundle_path": "manifests/downstream_source_bundle.json",
+    "downstream_bundle_sha256": "828bccdaf0b046b56ee2b8c8230ebc3651b8ccfc16652ae7ea9a3f739dbabdb9",
+    "accepted_generator_config_path": "configs/stage2_pilot.json",
+    "accepted_generator_config_sha256": "759e39512649e2fa32b6de573d88e48c8e3a47159755f57cf54b697a7549565a",
+    "e2vid_training_commit": "78aa471a66593f55e349303563997297fbc816e8",
+    "STE_FlowNet_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "V2E_commit": "cac638444557a224ba6ee5c29260916f152c00bd"
+  },
+  "paired_controls": {
+    "same_physical_bank_and_labels": true,
+    "same_whole_scene_trajectory_split": true,
+    "same_model_initial_state_per_seed": true,
+    "same_sampler_and_joint_augmentation_per_seed": true,
+    "same_effective_batch_and_optimizer_updates": true,
+    "match_event_counts": false,
+    "drop_windows_because_one_generator_has_no_events": false,
+    "downstream_initialization": "random_per_registered_seed_not_old_smoke_weights",
+    "downstream_real_pretraining_or_finetuning": false,
+    "privileged_inference_inputs": false,
+    "real_feedback_to_training_or_generator": false
+  },
+  "shared_bank": {
+    "version": "training_bank_v1_32x2s",
+    "rollouts": 32,
+    "duration_s": 2.0,
+    "train_rollouts": 24,
+    "validation_rollouts": 8,
+    "strata": [
+      "camera_motion_static_scene",
+      "independent_rigid_motion_static_camera",
+      "camera_and_independent_rigid_motion",
+      "combined_motion_with_occlusion"
+    ],
+    "rollouts_per_stratum": 8,
+    "train_per_stratum": 6,
+    "validation_per_stratum": 2,
+    "split_seed": 20261016,
+    "split_unit": "independent_scene_and_trajectory_group",
+    "sensor_wh": [
+      346,
+      260
+    ],
+    "physics_dt_s": 0.001,
+    "radiance_endpoint_hz": 100,
+    "expected_frames_per_rollout": 201,
+    "base_event_window_s": 0.01,
+    "motion_and_visibility": "sustained visible motion, varied textures/depths; no mostly static post-drop clips",
+    "illumination_within_rollout": "constant; vary predetermined scene parameters across rollouts, no test-driven fitting",
+    "shared_fields": [
+      "radiance",
+      "depth",
+      "segmentation",
+      "camera_pose",
+      "object_pose",
+      "K",
+      "timestamps",
+      "physical_flow",
+      "validity",
+      "reconstruction_targets"
+    ],
+    "labels": "common physical endpoint projections; count-independent labels; geometry/visibility validity recorded and identical",
+    "bank_manifest_sha256": null,
+    "split_manifest_sha256": null,
+    "manifest_rule": "write and hash actual complete paired bank/split before first optimizer update; no mutable bank append within run"
+  },
+  "generators": {
+    "eventgenesis": {
+      "entrypoint": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+      "input_space": "linear",
+      "response_mode": "physical_log",
+      "radiometric_calibration_status": "uncalibrated",
+      "warp_backend": "numpy",
+      "device": "cpu",
+      "sensor_eps_target": 0.05,
+      "pos_thres": 0.2,
+      "neg_thres": 0.2,
+      "sigma_thres": 0.03,
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "noise_rate_cov_decades": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "refractory_period_s": 0.0005,
+      "seed": 42
+    },
+    "v2e": {
+      "repository": "https://github.com/SensorsINI/v2e",
+      "commit": "cac638444557a224ba6ee5c29260916f152c00bd",
+      "input_rate_hz": 100,
+      "auto_timestamp_resolution": false,
+      "timestamp_resolution_s": 2.5e-05,
+      "slomo_checkpoint_name": "SuperSloMo39.ckpt",
+      "thresholds_log_e": {
+        "positive": 0.2,
+        "negative": 0.2,
+        "sigma": 0.03
+      },
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "noise_rate_cov_decades": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "refractory_period_s": 0.0005,
+      "seed": 42
+    },
+    "v2e_input_mapping": {
+      "input": "scene-linear RGB radiance from the same Genesis endpoint render",
+      "luminance": "Rec.709 linear Y",
+      "exposure": 1.0,
+      "display_transform": "Reinhard(Y) followed by sRGB transfer function",
+      "quantization": "uint8 round-to-nearest",
+      "per_frame_auto_exposure_or_normalization": false,
+      "status": "fixed engineering mapping for the pipeline pilot; not sensor calibrated"
+    },
+    "eventgenesis_input": "scene-linear RGB radiance",
+    "mapping_policy": "retain accepted fixed mapping, uncalibrated; claim scope is complete native input/event-generation pipelines",
+    "forbid_V2E_1ms_fallback": true
+  },
+  "flow_dt1": {
+    "priority": "primary",
+    "model": "pinned_STE_FlowNet",
+    "physical_base_endpoint_stride": 3,
+    "window_duration_s": 0.03,
+    "derived_dt4_window_s": 0.12,
+    "window_rule": "(t_i,t_i+3] on the 100Hz bank; take every third endpoint without overlaps between basic intervals",
+    "expected_intervals_per_rollout": 66,
+    "expected_train_intervals": 1584,
+    "expected_validation_intervals": 528,
+    "representation": "same accepted five equal-count Gaussian ON/OFF slices in each fixed physical interval",
+    "remainder_empty_tied_overflow_policy": "retain accepted guarded encoder identically for both arms",
+    "train_crop_hw": [
+      256,
+      256
+    ],
+    "validation": "all 8 held-out rollouts; native raster with deterministic padding/crop; complete two-component output",
+    "objective": {
+      "photometric": "official_multiscale_Charbonnier",
+      "smoothness": "official_second_order",
+      "smoothness_weight": 10,
+      "scale_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "GT_use": "synthetic_validation_only; grayscale targets allowed in training loss, no GT flow as model input",
+    "optimizer": {
+      "type": "Adam",
+      "lr": 0.0004,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "weight_decay_weights": 0.0004,
+      "weight_decay_biases": 0.0
+    },
+    "effective_batch": 8,
+    "microbatch": "engineer_choice_record_actual",
+    "gradient_accumulation": "allowed, average gradients to effective batch",
+    "epochs": 45,
+    "drop_last": true,
+    "expected_optimizer_updates": 8910,
+    "scheduler": {
+      "type": "MultiStepLR",
+      "unit": "epoch",
+      "milestones": [
+        5,
+        10,
+        20
+      ],
+      "gamma": 0.7
+    },
+    "augmentation": {
+      "horizontal_flip_p": 0.5,
+      "vertical_flip_p": 0.5,
+      "rotation_degrees": 30,
+      "random_resized_crop_scale": [
+        0.5,
+        1.0
+      ],
+      "random_resized_crop_ratio": [
+        0.75,
+        1.3333333333333333
+      ],
+      "joint_across_events_images_and_labels": true
+    },
+    "validate_every_epochs": 1,
+    "selection": "minimum synthetic validation EPE; frame then rollout equal weight; tie -> earlier epoch",
+    "real_test_during_training": false
+  },
+  "reconstruction": {
+    "model": "pinned_E2VIDRecurrent",
+    "model_args": {
+      "num_bins": 5,
+      "skip_type": "sum",
+      "recurrent_block_type": "convlstm",
+      "num_encoders": 3,
+      "base_num_channels": 32,
+      "num_residual_blocks": 2,
+      "use_upsample_conv": true,
+      "final_activation": "",
+      "norm": "none"
+    },
+    "event_window_s": 0.01,
+    "representation": "five signed temporally interpolated bins; no additional event normalization",
+    "sequence_length": 40,
+    "clip_stride": 40,
+    "expected_train_clips": 120,
+    "train_crop_hw": [
+      112,
+      112
+    ],
+    "validation_center_crop_hw": [
+      160,
+      160
+    ],
+    "validation_sequence_length": 200,
+    "validation_rollouts": 8,
+    "effective_batch_clips": 2,
+    "microbatch": "engineer_choice_record_actual",
+    "epochs": 200,
+    "expected_updates_per_epoch": 60,
+    "expected_optimizer_updates": 12000,
+    "optimizer": {
+      "type": "Adam",
+      "lr": 0.0001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "weight_decay": 0.0,
+      "amsgrad": true,
+      "schedule": "constant"
+    },
+    "loss": {
+      "LPIPS_VGG_weight": 1.0,
+      "temporal_weight": 2.0,
+      "temporal_L0": 2,
+      "perceptual_features_frozen": true,
+      "flow_source": "shared physical displacement with same transforms as images/events"
+    },
+    "augmentation": {
+      "random_crop": true,
+      "horizontal_and_vertical_flip": true,
+      "pause_probability": 0.0,
+      "extra_tensor_noise": false,
+      "extra_hot_pixel_noise": false,
+      "flow_and_validity_use_same_transform_seed": true
+    },
+    "reset_state": "every training clip; synthetic validation rollout start",
+    "validate_every_epochs": 5,
+    "validate_final_epoch": true,
+    "selection": "minimum synthetic validation LPIPS-VGG, equal rollout weight; tie -> earlier epoch",
+    "temporal_loss_report_separately": true,
+    "real_test_during_training": false
+  },
+  "runtime": {
+    "first_training_evidence_after_optimizer_updates_per_arm": 20,
+    "live_status_path": "TRAINING_LIVE_STATUS.md",
+    "log_every_optimizer_updates": 10,
+    "early_progress_evidence_updates": [
+      20,
+      100,
+      500
+    ],
+    "checkpoint": "first 20 updates and periodic resumable last; retain synthetic-best; do not dump every iteration",
+    "checkpoint_contains": [
+      "model",
+      "optimizer",
+      "scheduler",
+      "RNG",
+      "sampler_position",
+      "epoch",
+      "optimizer_update",
+      "config_and_data_hashes"
+    ],
+    "finite_loss_and_gradient_required": true,
+    "stop_on": [
+      "nonfinite_loss_or_gradient",
+      "bad_time_or_label_contract",
+      "paired_data_mismatch",
+      "unrestorable_checkpoint"
+    ],
+    "stop_because_V2E_is_better": false,
+    "GPU_allocation": "recheck occupancy; prefer available GPUs 0/1 for paired primary; protect other users; GPU3 occupied at research check",
+    "allow_routine_engineering_decisions_without_reapproval": true,
+    "final_real_results_enabled": false
+  }
+}

@@ -1,6 +1,8 @@
-# Public-data Sim-to-Real status — Stage 3
+# Public-data Sim-to-Real status — Stage 4 execution
 
-Updated: 2026-10-16. Branch: `exp/public-sim2real-v1`. Server: `zhaoyuhan@g1.pkuml.org`, repository worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real`. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged.
+Updated: 2026-10-16. Branch: `exp/public-sim2real-v1`. Server: `zhaoyuhan@g1.pkuml.org`, repository worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real`. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged. Stage 3 remains the latest accepted evaluation; Stage 4 is the first fixed larger synthetic-only training campaign.
+
+Stage 4 launch configuration is [`STAGE4_TRAINING_START.md`](STAGE4_TRAINING_START.md) plus [`configs/stage4_training_launch_v1.json`](configs/stage4_training_launch_v1.json). The campaign uses a new 32-rollout bank and does not reuse Stage 2 smoke inputs or checkpoints. Live run evidence is collected in [`TRAINING_LIVE_STATUS.md`](TRAINING_LIVE_STATUS.md).
 
 Stage 3 repaired two independent correctness bugs, validated existing synthetic checkpoints, parsed preregistered public HQF/MVSEC samples, and ran event-only candidate inference. It did not select checkpoints or rank generators on real GT.
 
@@ -33,4 +35,4 @@ EventGenesis and V2E use the same six physical rollouts, labels, rollout split, 
 - Stage 3 run/evidence index and external data/checkpoint paths: [`evidence/S3/20261016-stage3/`](evidence/S3/20261016-stage3/).
 - Stage 2 historical report and independent review: [`reports/stage2_execution.md`](reports/stage2_execution.md), [`reviews/stage2_2834540/REVIEW.md`](reviews/stage2_2834540/REVIEW.md). The old flow and pose EPE are clearly marked invalid and retained only as history.
 
-The formal real evaluation protocol remains a research-review decision. Do not interpret fixed-sample pipeline scores or the short synthetic pilots as sim-to-real performance evidence.
+The formal real evaluation protocol remains a research-review decision. Do not interpret fixed-sample pipeline scores or the short synthetic pilots as sim-to-real performance evidence. The Stage 4 pilot also remains synthetic-only training-chain evidence until a formally frozen real evaluation is later run.
