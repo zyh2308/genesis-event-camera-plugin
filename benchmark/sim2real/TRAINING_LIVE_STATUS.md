@@ -1,6 +1,6 @@
 # Stage 4 训练实时状态
 
-最近刷新：2026-10-16 UTC。首个启动尝试已失败并保留；第二次 campaign 将使用新的 run ID，尚未重新启动。
+最近刷新：2026-10-16 UTC。前两次启动尝试已失败并保留；修正 V2E 源码 pin 校验后，第三次 campaign 尚未重新启动。
 
 ## 固定配置
 
@@ -18,6 +18,7 @@
 
 - `20261016-stage4-flowdt1-seed0-v1`：campaign exit code 90，2026-10-16T10:40:17Z 结束。配置哈希检查通过，未创建 bank、V2E 事件或训练进程。根因是启动器引用了不存在的项目内 miniconda 路径；服务器实际环境位于 `/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM`。启动器现使用 `/home/zhaoyuhan/miniconda3/bin/activate Eventbased_WAM`。完整预检与错误日志保存在 g1 的 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v1/` 和 `/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。
 - 一次后续只读启动前核验因同一 miniconda 路径假设退出，未创建 run directory 或远端进程；该核验不触及 GPU，也没有修改远端文件。
+- `20261016-stage4-flowdt1-seed0-v2`：campaign exit code 4，2026-10-16T10:49:41Z 结束。环境版本和下游源 bundle 校验通过，尚未创建 bank。根因是服务器 V2E 源码为去除 `.git` 的固定副本，而启动器错误地用 `git rev-parse` 验证；现改为逐文件 SHA-256 manifest 校验，并同时核验 107 个源文件及 SuperSloMo checkpoint 的大小和 SHA-256。日志同见上述 g1 tmux 外层日志；逐文件清单为 `manifests/v2e_source_pin.json`。
 
 ## V2E 25 μs 导出
 

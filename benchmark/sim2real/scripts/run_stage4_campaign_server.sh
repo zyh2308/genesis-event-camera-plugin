@@ -8,7 +8,7 @@ SIM="$REPO/benchmark/sim2real"
 COMMIT=$(git -C "$REPO" rev-parse HEAD)
 CONFIG="$SIM/configs/stage4_training_launch_v1.json"
 CONFIG_SHA=$(sha256sum "$CONFIG" | awk '{print $1}')
-RUN_ID=${STAGE4_RUN_ID:-20261016-stage4-flowdt1-seed0-v2}
+RUN_ID=${STAGE4_RUN_ID:-20261016-stage4-flowdt1-seed0-v3}
 RUN_ROOT="$PROJECT/runs/sim2real/$RUN_ID"
 BANK_ROOT="$PROJECT/data/sim2real/stage4/training_bank_v1_32x2s"
 V2E_ROOT="$RUN_ROOT/v2e_events"
@@ -77,6 +77,9 @@ PY
   sha256sum "$CONFIG" "$SIM/scripts/generate_stage4_flow_bank.py" \
     "$SIM/scripts/run_stage4_v2e_shard.py" "$SIM/scripts/finalize_stage4_v2e.py" \
     "$SIM/scripts/prepare_stage4_steflow_bank.py" "$SIM/scripts/train_steflow_stage4.py" \
+    "$SIM/scripts/verify_v2e_source.py" "$SIM/scripts/watch_stage4_training_status.py" \
+    "$SIM/scripts/run_stage4_campaign_server.sh" "$SIM/scripts/start_stage4_campaign_tmux.sh" \
+    "$SIM/manifests/v2e_source_pin.json" \
     "$PROJECT/external/sources/v2e-cac6384445/v2e-pinned/v2e.py" \
     "$PROJECT/external/sources/v2e-cac6384445/input/SuperSloMo39.ckpt"
 } > "$RUN_ROOT/source_hashes.txt" 2>&1
@@ -84,12 +87,13 @@ PY
   --manifest "$SIM/manifests/downstream_source_bundle.json" \
   --source-root "$PROJECT/external/sources/downstream" \
   > "$RUN_ROOT/downstream_source_verification.json" 2>&1 || exit 4
-V2E_COMMIT=$(git -C "$PROJECT/external/sources/v2e-cac6384445/v2e-pinned" rev-parse HEAD) || exit 4
 EXPECTED_V2E_COMMIT=$("$ENV_BIN/python" -c 'import json,sys; print(json.load(open(sys.argv[1]))["generators"]["v2e"]["commit"])' "$CONFIG")
-if [[ "$V2E_COMMIT" != "$EXPECTED_V2E_COMMIT" ]]; then
-  echo "V2E pin mismatch: $V2E_COMMIT != $EXPECTED_V2E_COMMIT" >&2
-  exit 4
-fi
+if ! "$ENV_BIN/python" "$SIM/scripts/verify_v2e_source.py" \
+  --source-root "$PROJECT/external/sources/v2e-cac6384445/v2e-pinned" \
+  --manifest "$SIM/manifests/v2e_source_pin.json" --expected-commit "$EXPECTED_V2E_COMMIT" \
+  --checkpoint "$PROJECT/external/sources/v2e-cac6384445/input/SuperSloMo39.ckpt" \
+  > "$RUN_ROOT/v2e_source_verification.json" 2>&1; then exit 4; fi
+V2E_COMMIT="$EXPECTED_V2E_COMMIT"
 printf 'STE-FlowNet commit=%s\nV2E commit=%s\n' \
   "$("$ENV_BIN/python" -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_locks"]["STE_FlowNet_commit"])' "$CONFIG")" \
   "$V2E_COMMIT" >> "$RUN_ROOT/source_hashes.txt"
