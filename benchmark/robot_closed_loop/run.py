@@ -667,6 +667,19 @@ def run_oracle_trial(
                     }
             if last_prediction is not None:
                 frame["observation_cutoff_s"] = last_obs.time_s
+                frame["controller_observation_state"] = {
+                    "time_s": last_obs.time_s,
+                    "position_m": last_obs.position_m.tolist(),
+                    "velocity_m_s": last_obs.velocity_m_s.tolist(),
+                    "age_at_log_s": float(next_rel_t - last_obs.time_s),
+                }
+                if estimated_current_state is not None:
+                    frame["controller_estimated_current_state"] = {
+                        "time_s": estimated_current_state.time_s,
+                        "position_m": estimated_current_state.position_m.tolist(),
+                        "velocity_m_s": estimated_current_state.velocity_m_s.tolist(),
+                        "age_at_log_s": float(next_rel_t - estimated_current_state.time_s),
+                    }
                 frame["prediction"] = {
                     "reachable": last_prediction.reachable,
                     "ttc_s": last_prediction.ttc_s if last_prediction.reachable else None,
@@ -878,32 +891,66 @@ def run_reference(
             conv = _event_match_summary(events_1k, events_2k)
             conv["voxel_convergence"] = voxel_convergence_summary(events_1k, events_2k, cfg["camera"]["resolution_wh"])
             state_errors = []
+            post_contact_event_errors: Dict[int, List[Dict[str, float]]] = {1000: [], 2000: []}
+            post_contact_controller_errors: List[Dict[str, float]] = []
+            post_contact_frame_count = 0
+            post_contact_gate_sample_count = 0
+            post_contact_gate_eligible_count = 0
             gt_trace = [f for f in trace if f.get("object") and f.get("time_s") is not None]
             for frame in trace:
                 estimates = frame.get("event_state_by_rate", {})
-                if not estimates or not gt_trace:
-                    continue
-                for hz in (1000, 2000):
-                    estimate = estimates.get(str(hz))
-                    if estimate is None:
-                        continue
-                    aligned = min(gt_trace, key=lambda item: abs(float(item["time_s"]) - float(estimate["time_s"])))
-                    aligned_object = aligned["object"]
-                    gt_position = np.asarray(aligned_object["position_m"], dtype=np.float64)
-                    gt_velocity = np.asarray(aligned_object["velocity_m_s"], dtype=np.float64)
-                    tracker = source.trackers[hz]
-                    state_errors.append({
-                        "episode_id": episode_id, "evaluation_time_s": float(frame["time_s"]),
-                        "estimate_time_s": float(estimate["time_s"]), "sampling_hz": hz,
-                        "position_error_xy_m": float(np.linalg.norm(np.asarray(estimate["position_m"][:2]) - gt_position[:2])),
-                        "velocity_error_xy_m_s": float(np.linalg.norm(np.asarray(estimate["velocity_m_s"][:2]) - gt_velocity[:2])),
-                        "estimate_age_ms": float(estimate["age_s"] * 1000.0),
-                        "nearest_gt_sample_time_error_ms": float(abs(float(aligned["time_s"]) - float(estimate["time_s"])) * 1000.0),
-                        "event_count_window": int(tracker.last_confidence["event_count"]),
-                        "time_bins_window": int(tracker.last_confidence["time_bin_count"]),
+                frame_t = float(frame["time_s"])
+                contact_t = row.get("first_contact_s")
+                lift_t = row.get("lift_start_s")
+                in_post_contact_window = bool(
+                    contact_t is not None and frame_t >= float(contact_t)
+                    and (lift_t is None or frame_t <= float(lift_t))
+                )
+                if in_post_contact_window:
+                    post_contact_frame_count += 1
+                    lift_gate = frame.get("command", {}).get("lift_gate")
+                    if lift_gate is not None:
+                        post_contact_gate_sample_count += 1
+                        post_contact_gate_eligible_count += int(bool(lift_gate.get("eligible", False)))
+                if estimates and gt_trace:
+                    for hz in (1000, 2000):
+                        estimate = estimates.get(str(hz))
+                        if estimate is None:
+                            continue
+                        aligned = min(gt_trace, key=lambda item: abs(float(item["time_s"]) - float(estimate["time_s"])))
+                        aligned_object = aligned["object"]
+                        gt_position = np.asarray(aligned_object["position_m"], dtype=np.float64)
+                        gt_velocity = np.asarray(aligned_object["velocity_m_s"], dtype=np.float64)
+                        tracker = source.trackers[hz]
+                        error_row = {
+                            "position_error_xy_m": float(np.linalg.norm(np.asarray(estimate["position_m"][:2]) - gt_position[:2])),
+                            "velocity_error_xy_m_s": float(np.linalg.norm(np.asarray(estimate["velocity_m_s"][:2]) - gt_velocity[:2])),
+                            "estimate_age_ms": float(estimate["age_s"] * 1000.0),
+                        }
+                        state_errors.append({
+                            "episode_id": episode_id, "evaluation_time_s": float(frame["time_s"]),
+                            "estimate_time_s": float(estimate["time_s"]), "sampling_hz": hz,
+                            **error_row,
+                            "nearest_gt_sample_time_error_ms": float(abs(float(aligned["time_s"]) - float(estimate["time_s"])) * 1000.0),
+                            "event_count_window": int(tracker.last_confidence["event_count"]),
+                            "time_bins_window": int(tracker.last_confidence["time_bin_count"]),
+                        })
+                        if in_post_contact_window:
+                            post_contact_event_errors[hz].append(error_row)
+                controlled = frame.get("controller_estimated_current_state")
+                if in_post_contact_window and controlled and gt_trace:
+                    aligned_current = min(gt_trace, key=lambda item: abs(float(item["time_s"]) - frame_t))
+                    gt_current = aligned_current["object"]
+                    controlled_pos = np.asarray(controlled["position_m"], dtype=np.float64)
+                    controlled_vel = np.asarray(controlled["velocity_m_s"], dtype=np.float64)
+                    post_contact_controller_errors.append({
+                        "position_error_xy_m": float(np.linalg.norm(controlled_pos[:2] - np.asarray(gt_current["position_m"], dtype=np.float64)[:2])),
+                        "velocity_error_xy_m_s": float(np.linalg.norm(controlled_vel[:2] - np.asarray(gt_current["velocity_m_s"], dtype=np.float64)[:2])),
+                        "age_ms": float(controlled["age_at_log_s"] * 1000.0),
                     })
             write_csv(episode_out / "event_state_error.csv", state_errors)
             errors_by_rate = {}
+            post_contact_event_errors_by_rate = {}
             for hz in (1000, 2000):
                 rows = [r for r in state_errors if r["sampling_hz"] == hz]
                 errors_by_rate[str(hz)] = {
@@ -914,6 +961,29 @@ def run_reference(
                     "velocity_error_xy_p95_m_s": None if not rows else float(np.percentile([r["velocity_error_xy_m_s"] for r in rows], 95)),
                     "estimate_age_p95_ms": None if not rows else float(np.percentile([r["estimate_age_ms"] for r in rows], 95)),
                 }
+                contact_rows = post_contact_event_errors[hz]
+                post_contact_event_errors_by_rate[str(hz)] = {
+                    "n_event_states_evaluated": len(contact_rows),
+                    "position_error_xy_mean_m": None if not contact_rows else float(np.mean([r["position_error_xy_m"] for r in contact_rows])),
+                    "position_error_xy_p95_m": None if not contact_rows else float(np.percentile([r["position_error_xy_m"] for r in contact_rows], 95)),
+                    "velocity_error_xy_mean_m_s": None if not contact_rows else float(np.mean([r["velocity_error_xy_m_s"] for r in contact_rows])),
+                    "velocity_error_xy_p95_m_s": None if not contact_rows else float(np.percentile([r["velocity_error_xy_m_s"] for r in contact_rows], 95)),
+                    "event_state_age_p95_ms": None if not contact_rows else float(np.percentile([r["estimate_age_ms"] for r in contact_rows], 95)),
+                }
+            post_control = post_contact_controller_errors
+            post_contact_controller_summary = {
+                "first_contact_to_lift_start_or_episode_end_frame_count": post_contact_frame_count,
+                "controller_state_available_count": len(post_control),
+                "controller_state_available_fraction": None if not post_contact_frame_count else float(len(post_control) / post_contact_frame_count),
+                "lift_gate_evaluation_count": post_contact_gate_sample_count,
+                "lift_gate_eligible_count": post_contact_gate_eligible_count,
+                "lift_gate_eligible_fraction": None if not post_contact_gate_sample_count else float(post_contact_gate_eligible_count / post_contact_gate_sample_count),
+                "position_error_xy_mean_m": None if not post_control else float(np.mean([r["position_error_xy_m"] for r in post_control])),
+                "position_error_xy_p95_m": None if not post_control else float(np.percentile([r["position_error_xy_m"] for r in post_control], 95)),
+                "velocity_error_xy_mean_m_s": None if not post_control else float(np.mean([r["velocity_error_xy_m_s"] for r in post_control])),
+                "velocity_error_xy_p95_m_s": None if not post_control else float(np.percentile([r["velocity_error_xy_m_s"] for r in post_control], 95)),
+                "controller_state_age_p95_ms": None if not post_control else float(np.percentile([r["age_ms"] for r in post_control], 95)),
+            }
             visibility_summary = visibility.summary(visibility_start)
             (episode_out / "reference_metrics.json").write_text(json.dumps(jsonable({
                 "episode_id": episode_id, "seed": episode_seed, "speed_m_s": launch_speed,
@@ -926,6 +996,9 @@ def run_reference(
                 "event_source": source_summary,
                 "event_convergence": conv,
                 "event_state_accuracy_evaluator_only": errors_by_rate,
+                "post_contact_event_state_accuracy_evaluator_only": post_contact_event_errors_by_rate,
+                "post_contact_controller_state_accuracy_evaluator_only": post_contact_controller_summary,
+                "post_contact_controller_state_boundary": "scores the actual causal event-derived observation propagated by the fixed predictor and used by the lift gate; evaluator GT aligns position/velocity after the episode and never enters the controller",
                 "dynamic_visibility_evaluator_only": visibility_summary,
                 "reference_duration_setting_s": duration_s,
             }), indent=2), encoding="utf-8")
