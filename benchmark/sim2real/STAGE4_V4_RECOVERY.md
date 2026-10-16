@@ -84,5 +84,52 @@ adapter; the GPU flow output and its autograd graph are unchanged. The corrected
 rerun is launched by `scripts/start_stage4_training_after_shape_fix_tmux.sh`,
 which first archives both no-update attempts under
 `flow_dt1_seed0/failed_attempt02_pinned_loss_channel_shape/`. The result remains
-pending until real optimizer updates and checkpoint-reload verification are
-observed.
+subject to the paired update-20 evidence below.
+
+## Paired seed-0 update-20 delivery
+
+The corrected run started on g1 at `2026-10-16T16:34:32Z` under tmux session
+`stage4_flowdt1_seed0_shape_fix`, with the Stage 4 Torch CUDA config
+(`c0ab0d17f024b00106957c3e44d7a013e920f6e760f70266c43a9cf904634685`). It uses
+the pinned STE-FlowNet source, seed `0`, the same initial state for both arms
+(`acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf`),
+effective batch `8`, Adam `4e-4`, and the registered `45 × 198 = 8910` update
+budget. EventGenesis ran on physical GPU 2; V2E ran on GPU 4. No real data or
+GT flow entered training.
+
+Both arms completed at least 20 actual `optimizer.step()` calls. Their immutable
+first-20 metric snapshots are committed under
+`evidence/S4/20261016-stage4-flowdt1-seed0-v4-update20/`; each has exactly 20
+contiguous update records, effective batch 8, finite loss components, finite
+gradient norm, and 70 finite gradient tensors per update. The `update_000020.pt`
+checkpoints are external on g1, 580,038,432 bytes each:
+
+- EventGenesis: `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4/flow_dt1_seed0/eventgenesis/update_000020.pt`, SHA-256 `f7eb58f5dae4b914050a38c5c68596e23a64372f68584fa5c1ba00e3c14c63ec`.
+- V2E: `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4/flow_dt1_seed0/v2e/update_000020.pt`, SHA-256 `ce2b5b076b9ba6df9af525a6ca478c8f3d0b20a37e7783de433986619d7cc763`.
+
+For each checkpoint the training process restored model, optimizer, and
+scheduler state and compared a synthetic validation probe. The model-state
+hash matched and prediction max absolute error was `7.152557373046875e-07`
+for EventGenesis and `6.705522537231445e-08` for V2E. This is a checkpoint
+integrity check, not a real-data score. Peak allocated GPU memory through
+update 20 was 24,354,208,256 bytes per arm.
+
+The `TRAINING_LIVE_STATUS.md` snapshot in the evidence directory was captured
+at 58 updates per arm; the full run continued after the first delivery point.
+The mutable current JSONL, stdout/stderr, PID and exit records remain under the
+g1 run root. The live-status reader was also corrected to read per-update JSONL
+records between checkpoint writes; commit `ea64262` contains only this monitor
+correction, while the actual training code was launched from `1fab7e1`.
+
+Reproduction/inspection entrypoints:
+
+- Launch/recovery: `scripts/start_stage4_training_after_shape_fix_tmux.sh` and
+  `scripts/resume_stage4_after_shape_fix_server.sh`.
+- Full metrics: `.../flow_dt1_seed0/{eventgenesis,v2e}/training_metrics.jsonl`.
+- Human-readable live status: `TRAINING_LIVE_STATUS.md`.
+- Immutable first-20 metric records and SHA-256 values:
+  `evidence/S4/20261016-stage4-flowdt1-seed0-v4-update20/README.md`.
+
+These short-run loss values are optimization diagnostics only. The models have
+not completed the registered epochs or synthetic validation selection, and no
+real-data ranking has been run.
