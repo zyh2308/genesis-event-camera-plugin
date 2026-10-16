@@ -224,6 +224,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 ### 尚未运行 / 不可声称
 
 - strict oracle 小样本试跑已通过；尚未完成更新评分下的独立大样本统计和误差注入 strict 复测。旧 R0 的 300/300 不能引用为新成功率。
+- 0.5 ms no-hand 拟合数据已有 60 集，但固定 `a_eff` 的新种子预测 holdout（30 集）尚未运行；将用于校验自由滑动到达参考。
 - 完整拦截/接触/抬升 Direct-HDR 的 paired 1/2 kHz、横向边缘轨迹动态可见性、事件状态接管控制和实际成本均待服务器验证。
 - 本地只做了 Python 编译、JSON 解析、diff whitespace 与 frozen-core 差异检查；物理实验均在服务器执行。
 
@@ -244,4 +245,4 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 配置起点：[`scene_pilot_r0_5_candidate.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json)。命令、评分边界和事件接入说明见 [`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md) 的 R0.5 小节。服务器只在新的 branch worktree 执行，保留服务器原 `main` 工作区；启动前检查 GPU PID/归属，EGL 仅选空闲的 GPU 2。
 
-机器人 bench 代码、报告与 launcher commits `3c60932`、`02b1afc`、`8f22be2`、`841ef98`、`95f8269`、`3a6a366`、`1b2cb24`、`0f2fafb`、`96b6450`、`b829e31`、`d7da857` 均已推送。`1b2cb24` 增加旧评分 hold 窗内最低真实净空的逐集/trace 字段；`0f2fafb` 加入 strict 10 mm 位置偏差敏感性 launcher；`96b6450` 记录事件路径控制器实际使用的因果观测、传播后当前状态、时间戳/年龄与 lift-gate 结果，并报告接触后到抬升前的 evaluator-only 状态误差；`d7da857` 将事件数和有效时间 bin 一并写入对应 trace 时刻，避免最终窗口值回填历史记录；`3a6a366` 的 reference 计划为三档速度各覆盖 `y=-55/0/+55 mm`。严格 oracle 新种子 100×3 批次正在服务器隔离 worktree `~/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc` 上运行，实际 benchmark code commit `8f22be28c7f334062de3e9a34b6c10352a2524f9`、配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`、seed `2026103300`、Python PID `1939038`、tmux `r0_5_oracle_strict100x3_20261016`。该命令 `CUDA_VISIBLE_DEVICES=`，无 GPU 占用；launcher 使用 `/usr/bin/time` 记录完整 Python 进程 wall/CPU 时间。批次完成后再运行完整 Direct-HDR/event-state smoke，并在本节补录逐集结果、轨迹/录像、数据与日志哈希及协议建议。
+所有机器人分支改动已推送至 `5fbe64a`。其中 `1b2cb24` 加入旧评分窗口最低真实净空，`96b6450`/`d7da857` 补充 lift-gate 因果状态和逐时刻事件置信度日志，`0f2fafb`/`3a6a366`/`5fbe64a` 分别准备 strict 位置偏差、速度×横向位置 reference、0.5 ms no-hand holdout 运行器。严格 oracle 新种子 100×3 批次正在服务器隔离 worktree `~/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc` 上运行，实际 benchmark code commit `8f22be28c7f334062de3e9a34b6c10352a2524f9`、配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`、seed `2026103300`、Python PID `1939038`、tmux `r0_5_oracle_strict100x3_20261016`。该命令 `CUDA_VISIBLE_DEVICES=`，无 GPU 占用；launcher 使用 `/usr/bin/time` 记录完整 Python 进程 wall/CPU 时间。待主批次完成后，先运行固定 `a_eff` 的 30 集 no-hand holdout，再运行完整 Direct-HDR/event-state smoke，并在本节补录逐集结果、轨迹/录像、数据与日志哈希及协议建议。
