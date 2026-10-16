@@ -185,10 +185,15 @@ only a causal plumbing smoke, not an estimator quality claim.
 ```bash
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
   --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
-  --speeds 0.3,0.4,0.5 --reference-episodes 1 --reference-y-values 0,-0.055,0.055 \
+  --speeds 0.3,0.4,0.5 --reference-episodes 3 \
+  --reference-y-values -0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 \
   --event-controller-hz 2000 --visibility-hz 50 --seed 2026102700 \
   --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke
 ```
+
+The explicit y list gives each speed the left edge, center, and right edge in
+that order, so the view/estimator check does not confound speed with lateral
+position.
 
 `reference_metrics.json` reports paired event matching, 10 ms voxel agreement,
 1/2 kHz event-state errors against evaluator-only GT, dynamic target visibility,
