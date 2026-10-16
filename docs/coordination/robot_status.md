@@ -316,7 +316,7 @@ benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_controller_3sample_2
 
 质心诊断显示接触前位置 P95 为 18–50 cm、速度 P95 为 3.2–18.1 m/s，中心轨迹接触后 lift gate 无一次 eligible。下一步已增加简单 2D CNN 诊断脚本：输入固定五时间 bin 的 `10×64×64` log-count tensor，输出 observation cutoff 时刻的 world xyz 位置和速度；只用同三条已存 GT-shadow Direct-HDR raw-event 轨迹训练并做 in-sample overfit 检查。GT pose/velocity 只生成训练标签和离线评分，不进入模型输入或推理控制；没有 episode holdout，因此不报告泛化性能。此处不会重渲染或改 lift trigger。
 
-脚本 [`train_event_state_overfit.py`](../../benchmark/robot_closed_loop/diagnostics/train_event_state_overfit.py) 与 launcher [`r0_6_event_state_overfit_20261017.launch.sh`](../../benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_state_overfit_20261017.launch.sh) 已在分支；配置 SHA256 仍为 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，raw 输入复用上节 episode 0/4/8 及同一源清单 SHA。使用服务器项目 venv CPU PyTorch、4 CPU threads、120 epochs；run output 计划为 `results/r0_6_event_state_overfit_20261017/`，当前状态待启动/补充训练摘要、模型 latency 和 SHA256。
+脚本 [`train_event_state_overfit.py`](../../benchmark/robot_closed_loop/diagnostics/train_event_state_overfit.py) 与 launcher [`r0_6_event_state_overfit_20261017.launch.sh`](../../benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_state_overfit_20261017.launch.sh) 已在分支。实际运行 code commit `1e2ddc98907138b21225306cdea3c4b5882111a2`，配置 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，raw 输入复用上节 episode 0/4/8 和源清单 SHA。使用服务器 venv CPU PyTorch 2.8.0+cpu、4 CPU threads、120 epochs；tmux session `r0_6_overfit_20261017`、launcher PID `2460434`，当前运行中。输出目录 `results/r0_6_event_state_overfit_20261017/`；训练摘要、model-only latency 和数据哈希待完成后补。
 
 ### 建议的下一步配对训练 pilot（协议候选，未执行/未冻结）
 
