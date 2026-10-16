@@ -156,7 +156,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - Camera render 返回值与 preflight 遮挡测量均已修正。旧高位负 y 机位在合法 home 姿态遮挡 98.31%，拒绝；修正同步后的 top-down 候选在拦截中心遮挡 100%，拒绝；正 x 侧候选 `[1.15,0,0.22]` 静态 home 视角通过，0–6.7% 遮挡、30–55 px 短边。单次动态录像检查的 9 个均匀抽样帧中，方块始终有可见区域，接触时被夹爪部分遮挡；此观察是定性 smoke，不是跨随机轨迹的遮挡率统计。
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
 - 新 seed oracle 独立 holdout 三档均 100/100，Wilson 95% CI 下界 96.3%；仅支持当前物理场景、固定预测器与固定控制器的 oracle 可行性，不代表视觉估计器成功率。10 mm 横向位置偏差敏感性显著；总观测延迟增至 30 ms 的小样本仍 15/15。
-- event-controller smoke 中边缘轨迹的低可见比例与失控后的机器人姿态同时出现；独立 GT-shadow 的九条完整成功轨迹在相同左右边缘范围内仍有 98.86% 最低动态可见比例、100% 中心可见比例，目标短边为 31–55 px。当前证据支持正 x 侧机位作为任务相机冻结候选；结论限于当前成功轨迹、配置和 evaluator-only target mask，不代表估计器精度或真实传感器标定。
+- event-controller smoke 中边缘轨迹的低可见比例与失控后的机器人姿态同时出现；独立 GT-shadow 的九条完整成功轨迹在相同左右边缘范围内仍有 98.86% 最低动态可见比例、100% 中心可见比例。按该批 bbox 半开区间口径，目标短边为 30–54 px。当前证据支持正 x 侧机位作为任务相机冻结候选；结论限于当前成功轨迹、配置和 evaluator-only target mask，不代表估计器精度或真实传感器标定。
 - Top-down 相机的首次 launcher 误指向旧 preflight worktree；由本会话启动的 PID `1609155` 已经 `tmux` 定向中断，未生成完整相机结果且不计数。launcher 根路径已修正后重跑。
 - 新种子 oracle 独立 holdout 已完成：服务器 tmux `r0_oracle_holdout100x3_20261016`，PID `1594166`、exit `0`；实际代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、seed `2026102800`，每档 100/100，Wilson 95% CI 下界 96.3%。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
@@ -292,7 +292,13 @@ PYTHONPATH=. /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/b
 
 ### R0.6 小规模真实事件控制 rollout
 
-在 g1 branch worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d`、commit `30177915e0e260d6161feb48dddf087809268f73` 下，使用同一因果 centroid 状态接口、固定预测器/控制器、strict scorer 做 0.30/0.40/0.50 m/s 各一集，seed `2026103700`，事件状态 2 kHz、物理步 0.5 ms、GPU3 Direct-HDR。tmux session `r0_6_evt_20261016`、launcher PID `2445286`；run output `benchmark/robot_closed_loop/results/r0_6_event_controller_3sample_20261016/`；状态仍在运行，结果/日志哈希待补。执行 launcher：`benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_controller_3sample_20261016.launch.sh`。该小样本用于检查真实无 GT 接入、接触和 lift，不估计总体成功率。
+在 g1 branch worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d`、commit `30177915e0e260d6161feb48dddf087809268f73` 下，使用同一因果 centroid 状态接口、固定预测器/控制器、strict scorer 做 0.30/0.40/0.50 m/s 各一集，seed `2026103700`，事件状态 2 kHz、物理步 0.5 ms、GPU3 Direct-HDR。tmux session `r0_6_evt_20261016`、launcher PID `2445286`；run output `benchmark/robot_closed_loop/results/r0_6_event_controller_3sample_20261016/`；状态仍在运行，结果/日志哈希待补。命令：
+
+~~~bash
+benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_controller_3sample_20261016.launch.sh
+~~~
+
+该小样本用于检查真实无 GT 接入、接触和 lift，不估计总体成功率。
 
 ### 复跑命令与运行约定
 
