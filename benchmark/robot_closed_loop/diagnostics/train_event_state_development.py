@@ -84,8 +84,8 @@ def _build_dataset(source_root: Path, episode_ids: Sequence[int], config: Dict[s
             bin_counts = voxel.sum(axis=(1, 2, 3))
             metadata.append({
                 "episode_id": int(episode_id),
-                "speed_m_s": float(episode["speed_m_s"]),
-                "launch_y_m": float(episode["launch_y_m"]),
+                "speed_m_s": float(episode["launch_speed_m_s"]),
+                "launch_y_m": float(episode["start_y_m"]),
                 "evaluation_time_s": float(now_s),
                 "observation_cutoff_s": cutoff_s,
                 "phase": _phase(cutoff_s, contact_s, lift_s),

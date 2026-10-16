@@ -17,6 +17,7 @@ printf '%s\n' "$$" > "$PID_FILE"
 cd "$REPO"
 set +e
 /usr/bin/time -v -o "$RUNTIME_FILE" env CUDA_VISIBLE_DEVICES= PYTHONPATH=. \
+  OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
   "$PYTHON" -m benchmark.robot_closed_loop.diagnostics.train_event_state_development \
   --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
   --source-results "$SOURCE" \
