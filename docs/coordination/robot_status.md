@@ -6,7 +6,7 @@
 
 ## 当前进度
 
-R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 已完成 raw-event 离线回放和三集 2 kHz 真实事件闭环；随后会用已保存 GT-shadow 事件做 tiny overfit 管线诊断，不新增 Direct-HDR 渲染轨迹。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
+R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 已完成 raw-event 离线回放、三集 2 kHz 真实事件闭环和复用 GT-shadow 事件的 tiny overfit 诊断，没有新增 Direct-HDR 渲染轨迹。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
 
 ### 已完成并有证据
 
@@ -312,9 +312,9 @@ benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_controller_3sample_2
 
 该小样本用于检查真实无 GT 接入、接触和 lift，不估计总体成功率。像素响应共用插件 `DvsEmulator` 的 ideal threshold 0.2、无噪声、无限带宽；绕开 Ours 时间重建和 V2E 插帧，不是 EVK4 标定。可视化 segmentation 只用于 evaluator。
 
-### Tiny event-to-state overfit 诊断（小规模、尚未启动）
+### Tiny event-to-state overfit 诊断（小规模，已完成）
 
-质心诊断显示接触前位置 P95 为 18–50 cm、速度 P95 为 3.2–18.1 m/s，中心轨迹接触后 lift gate 无一次 eligible。下一步已增加简单 2D CNN 诊断脚本：输入固定五时间 bin 的 `10×64×64` log-count tensor，输出 observation cutoff 时刻的 world xyz 位置和速度；只用同三条已存 GT-shadow Direct-HDR raw-event 轨迹训练并做 in-sample overfit 检查。GT pose/velocity 只生成训练标签和离线评分，不进入模型输入或推理控制；没有 episode holdout，因此不报告泛化性能。此处不会重渲染或改 lift trigger。
+质心诊断显示接触前位置 P95 为 18–50 cm、速度 P95 为 3.2–18.1 m/s，中心轨迹接触后 lift gate 无一次 eligible。简单 2D CNN 输入固定五时间 bin 的 `10×64×64` log-count tensor，输出 observation cutoff 时刻的 world xyz 位置和速度；只用同三条已存 GT-shadow Direct-HDR raw-event 轨迹训练。GT pose/velocity 只生成训练标签和离线评分，不进入模型输入或推理控制。没有 episode holdout，因此结果只验证可拟合，不报告泛化性能；模型也没有 confidence/status 输出，未接入控制器。未重渲染或改变 lift trigger。
 
 脚本 [`train_event_state_overfit.py`](../../benchmark/robot_closed_loop/diagnostics/train_event_state_overfit.py) 与 launcher [`r0_6_event_state_overfit_20261017.launch.sh`](../../benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_state_overfit_20261017.launch.sh) 已在分支。实际运行 code commit `1e2ddc98907138b21225306cdea3c4b5882111a2`，配置 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，raw 输入复用上节 episode 0/4/8，源清单 SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`，三条 event NPZ 的摘要均保存在 run manifest 并校验通过。CPU PyTorch 2.8.0+cpu、4 CPU threads、120 epochs、batch 64、seed 606；tmux session `r0_6_overfit_20261017`、launcher PID `2460434`、exit 0。输出在 [`r0_6_event_state_overfit_20261017/`](../../benchmark/robot_closed_loop/results/r0_6_event_state_overfit_20261017/)；共 417 窗口（pre-contact/contact-to-lift/post-lift 为 197/21/199），模型 16,758 参数，fit 30.03 s，完整 Python wall/user/system/max RSS 为 `38.12/114.38/9.34 s / 779,712 KB`。in-sample XY position P95：全阶段 22.4 mm、pre-contact 25.6 mm、contact-to-lift 32.9 mm、post-lift 18.4 mm；全阶段 XY velocity P95 `0.0327 m/s`，contact-to-lift `0.1001 m/s`。batch-1 model-only latency mean/p50/p95 `0.857/0.531/0.716 ms`，不含事件分箱、render、DVS、物理和控制。结果仅证明同数据可拟合；无 episode holdout、没有 confidence/status 输出、未接入 controller，不能声称泛化或任务可行。
 
