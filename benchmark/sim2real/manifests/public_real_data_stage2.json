@@ -1,7 +1,8 @@
 {
   "schema_version": 1,
-  "checked_at_utc": "2026-10-16T03:32:31Z",
+  "checked_at_utc": "2026-10-16T03:51:10Z",
   "status": "source_and_evaluator_contracts_checked; datasets_not_downloaded_or_scored",
+  "protocol_freeze_status": "research_protocol_v1 is an engineering candidate, not formal freeze; research review required before real scoring",
   "is_real_test_scoring_authorized": false,
   "paths_on_g1": {
     "root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/real",
@@ -36,6 +37,14 @@
         "Enumerate and verify all 14 sequence folders and event/frame timestamp arrays before any real inference.",
         "Run the candidate E2VID checkpoint through an EVREAL-compatible method adapter; the stock E2VID+ method config points to its public checkpoint and is not itself the trained candidate."
       ],
+      "candidate_evaluation_protocol_from_research_baseline": {
+        "primary_metric": "LPIPS-Alex",
+        "secondary_metrics": ["SSIM", "PSNR", "MSE"],
+        "evaluation_entrypoint": "pinned EVREAL eval.py, between_frames protocol",
+        "sequence_execution": "continuous recurrent inference per sequence, reset only at sequence start; no RGB seed image",
+        "aggregation": "frame to sequence to dataset, equal sequence weight",
+        "status": "candidate protocol; real files and candidate method adapter not yet exercised"
+      },
       "download_size_estimate": "19.4 GB compressed / 94 GB uncompressed per the event_flow source README; estimate only",
       "real_scores_or_model_selection": "none"
     },
@@ -70,6 +79,14 @@
         "total": "33.2 GB; source-page sizes summed, estimate only"
       },
       "metric_freeze_item": "The pinned flow_error_dense excludes zero-magnitude GT and restricts support to event pixels. Preserve its output as a reference reproduction; the primary valid-pixel EPE mask/support must be frozen with research review before real testing.",
+      "candidate_evaluation_protocol_from_research_baseline": {
+        "primary_endpoint": "dt1 AEE/EPE; four candidate sequences equally weighted",
+        "primary_support": "official nonzero valid flow GT intersected with raw real event support; one shared mask for both candidate models",
+        "secondary_endpoints": ["dt4 AEE/EPE", "Outlier-3px-and-5-percent", "legacy STE EPE>=3px", "all-valid-GT AEE"],
+        "aggregation": "mean per frame, then equal sequence weight, then equal weight across four sequences",
+        "empty_support": "undefined frame retained in a common exclusion manifest; never score as zero",
+        "status": "candidate protocol; support-mask details still require research freeze and data-level verification"
+      },
       "real_scores_or_model_selection": "none"
     },
     "E-POSE": {
@@ -101,7 +118,14 @@
         "forbidden": ["GT mask", "GT crop", "GT box", "segmented events", "RGB composite", "GT pose at inference"],
         "candidate_model_contract": "SingleShotPose Darknet input is 3-channel full-frame; its bundled training loader uses image compositing and its validation loader uses RGB. A new event-only full-frame dataset adapter and evaluation wrapper are required."
       },
+      "candidate_evaluation_protocol_from_research_baseline": {
+        "primary_metric": "ADD / ADD-S success at 0.1 times object diameter",
+        "supporting_metrics": ["ADD-S AUC at 0-0.1 m", "2D reprojection error", "translation error", "rotation error"],
+        "aggregation": "all instances; per-object then equal-weight across 13 classes; report single/multi-object strata",
+        "status": "candidate protocol; no event-only evaluation adapter or sample coordinate audit run"
+      },
       "source_vs_sample_boundary": "The fields above are from the publication, not a parsed archive sample. The pinned E-POSE README says the scripts still require adaptation to consume the released H5 files directly. The checked MATLAB annotation source contains hardcoded camera intrinsics in its RGB utility; do not treat those values as the released sample calibration without verification.",
+      "metadata_access_attempt": "One local read-only request to https://api.figshare.com/v2/articles/28106717 returned HTTP 403. The publisher landing page and paper still identify the public record; this response is not evidence that the dataset is unavailable. No automated retry or bulk download was run.",
       "blocker": "The raw archive/sample has not been downloaded, and the current shared pilot bank contains a generic box rather than a matched E-POSE CAD object. Per-sample K, coordinate origin, units, synchronization, and a YCB-matched synthetic train/validation pair remain unverified.",
       "real_scores_or_model_selection": "none"
     }

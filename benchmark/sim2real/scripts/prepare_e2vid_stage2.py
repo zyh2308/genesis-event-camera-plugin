@@ -15,6 +15,8 @@ from pathlib import Path
 import h5py
 import numpy as np
 
+from event_window_audit import audit_capture_partition
+
 
 def array_sha256(value: np.ndarray) -> str:
     arr = np.ascontiguousarray(value)
@@ -85,10 +87,12 @@ def export_episode(
     interval_ends = event_ends[:-1]
     interval_counts = interval_ends - interval_starts
 
+    capture_partition_audit = None
     if generator == "eventgenesis":
         expected = np.asarray(episode["eventgenesis_interval_event_counts"], dtype=np.int64)
-        if not np.array_equal(interval_counts, expected):
-            raise ValueError(f"EventGenesis interval counts differ: {interval_counts.tolist()} != {expected.tolist()}")
+        capture_partition_audit = audit_capture_partition(
+            events[:, 0], endpoint_times, interval_counts, expected
+        )
 
     label_hash = array_sha256(flow) + array_sha256(valid)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -107,6 +111,8 @@ def export_episode(
         out.attrs["flow_label_hash"] = label_hash
         out.attrs["flow_validity_contract"] = str(episode.attrs["flow_valid_contract"])
         out.attrs["event_source_metadata"] = json.dumps(event_metadata, sort_keys=True)
+        if capture_partition_audit is not None:
+            out.attrs["capture_partition_audit"] = json.dumps(capture_partition_audit, sort_keys=True)
 
         event_group = out.create_group("events")
         event_group.create_dataset("xs", data=events[:, 1].astype(np.uint16), compression="gzip", compression_opts=1)
@@ -143,6 +149,7 @@ def export_episode(
         "flow_label_sha256": label_hash,
         "valid_pixels_per_interval": valid.reshape(len(valid), -1).sum(axis=1).astype(int).tolist(),
         "resolution_hw": [height, width],
+        "capture_partition_audit": capture_partition_audit,
     }
 
 

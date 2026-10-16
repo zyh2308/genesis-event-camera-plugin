@@ -11,6 +11,7 @@ import h5py
 import numpy as np
 
 from prepare_steflow_stage0 import gaussian_count_representation, pad_center, read_events
+from event_window_audit import audit_capture_partition
 
 
 SIZE = 256
@@ -57,6 +58,12 @@ def convert_episode(source: h5py.File, generator: str, episode_id: str, v2e_root
         start = end
     if start != len(raw):
         raise ValueError(f"unassigned events: {len(raw) - start} in {generator}/{episode_id}")
+    capture_partition_audit = None
+    if generator == "eventgenesis":
+        capture_counts = np.asarray(episode["eventgenesis_interval_event_counts"], dtype=np.int64)
+        capture_partition_audit = audit_capture_partition(
+            raw[:, 0], times, np.asarray(interval_counts, dtype=np.int64), capture_counts
+        )
 
     event_dt1 = np.stack(reps, axis=0)
     if len(reps) >= 4:
@@ -115,6 +122,7 @@ def convert_episode(source: h5py.File, generator: str, episode_id: str, v2e_root
         "valid_pixels_dt1": valid1_padded.reshape(len(valid1_padded), -1).sum(axis=1).astype(int).tolist(),
         "valid_pixels_dt4": valid4_padded.reshape(len(valid4_padded), -1).sum(axis=1).astype(int).tolist(),
         "camera_intrinsics_K_px": np.asarray(episode["camera_intrinsics_K_px"]).tolist(),
+        "capture_partition_audit": capture_partition_audit,
     }
 
 
