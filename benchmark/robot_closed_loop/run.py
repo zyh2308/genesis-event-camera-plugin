@@ -464,6 +464,7 @@ def run_oracle_trial(
     legacy_success = False
     legacy_bilateral_at_stop = False
     legacy_clearance_at_stop = None
+    legacy_true_bottom_min_at_stop = None
     bilateral_seen = False
     previous_contacts = (False, False, False, False)
     tcp_velocity = np.zeros(3, dtype=np.float64)
