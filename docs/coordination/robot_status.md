@@ -219,6 +219,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 新 R0.5 候选配置将 GT oracle、Direct-HDR 与自由滑动校准统一到 0.5 ms 物理步；控制仍为 100 Hz，预测器/闭合调度/机器人任务候选不变。因物理时间步改变，需要先重做无手减速度拟合，再运行 oracle。
 - 同一 oracle 控制与评分循环可接 GT 当前状态或因果事件状态。事件源只接收相机、固定针孔标定与直接 HDR 生成的 `[t_s,x_px,y_px,p]`；不读目标 GT、GT segmentation、depth 或未来状态。GT 误差评估和 segmentation 可见性审计在控制循环的独立输出侧进行。
 - 新 reference 每物理步 direct-render 线性 HDR，在同一条闭环物理轨迹中并行产生 1/2 kHz 事件流；日志计划覆盖 event-time 对齐误差、10 ms voxel 一致性、事件状态误差、动态目标遮挡率及完整 episode wall time。此时的 centroid/regression 仅用于状态接线 smoke，不构成可用 estimator 的精度结论。
+- 跨会话诊断输入（研究会话提供，R0 代码 `e70ba12`）：三个单种子重跑在旧停止窗口的真实底面最低净空为 `79.406/79.090/78.935 mm`；原命令各延续 50 ms 后都通过严格检查。此证据指向停止窗口/底面测量缺陷，而非需要立即改控制参数；R0.5 本轮据此修复评分与计时，未重调机器人机械控制。
 
 ### 尚未运行 / 不可声称
 
