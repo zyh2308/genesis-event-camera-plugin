@@ -1,6 +1,6 @@
 # Stage 4 训练实时状态
 
-最近刷新：工程入口实现中；尚未在服务器创建 Stage 4 运行进程。
+最近刷新：2026-10-16 UTC。首个启动尝试已失败并保留；第二次 campaign 将使用新的 run ID，尚未重新启动。
 
 ## 固定配置
 
@@ -13,6 +13,10 @@
 
 - 状态：尚未启动。计划写入服务器 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_32x2s/`。
 - 标签按同一物理端点直接投影，flow 窗口 `(t_i,t_i+3]`，30 ms；common validity 由投影几何、目标画幅和目标深度可见性共同确定。
+
+## 失败尝试记录
+
+- `20261016-stage4-flowdt1-seed0-v1`：campaign exit code 90，2026-10-16T10:40:17Z 结束。配置哈希检查通过，未创建 bank、V2E 事件或训练进程。根因是启动器引用了不存在的 `miniconda3/etc/profile.d/conda.sh`；启动器已改为项目约定的 `miniconda3/bin/activate Eventbased_WAM`。完整预检与错误日志保存在 g1 的 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v1/` 和 `/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。
 
 ## V2E 25 μs 导出
 

@@ -8,7 +8,7 @@ SIM="$REPO/benchmark/sim2real"
 COMMIT=$(git -C "$REPO" rev-parse HEAD)
 CONFIG="$SIM/configs/stage4_training_launch_v1.json"
 CONFIG_SHA=$(sha256sum "$CONFIG" | awk '{print $1}')
-RUN_ID=20261016-stage4-flowdt1-seed0-v1
+RUN_ID=${STAGE4_RUN_ID:-20261016-stage4-flowdt1-seed0-v2}
 RUN_ROOT="$PROJECT/runs/sim2real/$RUN_ID"
 BANK_ROOT="$PROJECT/data/sim2real/stage4/training_bank_v1_32x2s"
 V2E_ROOT="$RUN_ROOT/v2e_events"
@@ -55,8 +55,7 @@ check_idle_gpu() {
 
 for gpu in 1 2 4 5; do check_idle_gpu "$gpu" || exit 3; done
 
-source "$PROJECT/miniconda3/etc/profile.d/conda.sh" || exit 90
-conda activate Eventbased_WAM || exit 91
+source "$PROJECT/miniconda3/bin/activate" Eventbased_WAM || exit 90
 export PYTHONUNBUFFERED=1 OMP_NUM_THREADS=4
 export XDG_CACHE_HOME="$RUN_ROOT/cache/xdg" GS_CACHE_FILE_PATH="$RUN_ROOT/cache/genesis"
 export TI_OFFLINE_CACHE=1 TI_OFFLINE_CACHE_FILE_PATH="$RUN_ROOT/cache/taichi"

@@ -25,6 +25,20 @@ def render(args) -> str:
     arms = {name: read_json(args.run_root / "flow_dt1_seed0" / name / "live_status.json")
             for name in ("eventgenesis", "v2e")}
     now = datetime.now(timezone.utc).isoformat()
+    prior_attempts = []
+    for prior in sorted(args.run_root.parent.glob("20261016-stage4-flowdt1-seed0-v*")):
+        if prior.resolve() == args.run_root.resolve():
+            continue
+        exit_path = prior / "exit_code.txt"
+        if not exit_path.is_file():
+            continue
+        try:
+            exit_code = exit_path.read_text().strip()
+        except OSError:
+            exit_code = "unreadable"
+        finished_path = prior / "finished_utc.txt"
+        finished = finished_path.read_text().strip() if finished_path.is_file() else "running/unknown"
+        prior_attempts.append((prior, exit_code, finished))
     def progress_line():
         if bank_progress is None:
             return "未开始。"
@@ -40,6 +54,10 @@ def render(args) -> str:
         "- 真实数据评分/反馈：关闭。两组只用各自合成事件输入和共享合成灰度/标签。",
         "", "## 共享物理 bank", "", f"- 进度：{progress_line()}.",
     ]
+    if prior_attempts:
+        lines.extend(["", "## Previous attempts", ""])
+        for prior, exit_code, finished in prior_attempts:
+            lines.append(f"- `{prior}`：campaign exit code `{exit_code}`，结束/更新时间 `{finished}`；启动器和标准错误见 `/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。")
     if bank_progress and bank_progress.get("latest_rollout"):
         lines.append(f"- 最近 rollout：`{bank_progress['latest_rollout']}`；已完成数由 `generation_progress.json` 记录。")
     if bank_progress and bank_progress.get("active_rollout"):
