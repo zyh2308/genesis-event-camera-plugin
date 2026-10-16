@@ -189,6 +189,8 @@ def run_static_trial(
     legacy_success = False
     legacy_bilateral_at_stop = False
     legacy_clearance_at_stop = None
+    legacy_true_bottom_min_at_stop = None
+    legacy_window_true_bottom_min_m = float("inf")
     bilateral_seen = False
     max_true_clearance = -float("inf")
 
@@ -619,15 +621,21 @@ def run_oracle_trial(
         # historical result remains interpretable alongside the strict score.
         legacy_center_bottom = float(obj_position[2] - target_size[2] / 2)
         if legacy_center_bottom >= float(cfg["success"]["target_bottom_clearance_m"]):
+            if legacy_hold_steps == 0:
+                legacy_window_true_bottom_min_m = exact_clearance
+            else:
+                legacy_window_true_bottom_min_m = min(legacy_window_true_bottom_min_m, exact_clearance)
             legacy_hold_steps += 1
         else:
             legacy_hold_steps = 0
+            legacy_window_true_bottom_min_m = float("inf")
         if legacy_stop_s is None and legacy_hold_steps * env.dt_s + 1e-12 >= float(cfg["success"]["continuous_hold_s"]):
             legacy_stop_s = next_rel_t
             legacy_hold_at_stop_s = legacy_hold_steps * env.dt_s
             legacy_success = bool(next_rel_t <= 2.5 + 1e-9 and bilateral_seen and legacy_center_bottom >= float(cfg["success"]["target_bottom_clearance_m"]))
             legacy_bilateral_at_stop = bool(bilateral_seen)
             legacy_clearance_at_stop = legacy_center_bottom
+            legacy_true_bottom_min_at_stop = legacy_window_true_bottom_min_m
 
         contact_changed = contact_tuple != previous_contacts
         should_log = step % sample_steps == 0 or contact_changed or (lift_q is not None and step % control_steps == 0)
@@ -638,6 +646,13 @@ def run_oracle_trial(
                 last_command, contacts=c,
             )
             frame["score"] = strict_score
+            frame["legacy_score"] = {
+                "score_version": LEGACY_SCORE_VERSION,
+                "center_based_bottom_clearance_m": legacy_center_bottom,
+                "current_center_clearance_hold_s": legacy_hold_steps * env.dt_s,
+                "minimum_true_bottom_clearance_in_current_center_hold_m": None
+                if not np.isfinite(legacy_window_true_bottom_min_m) else legacy_window_true_bottom_min_m,
+            }
             frame["tcp_velocity_m_s"] = tcp_velocity.tolist()
             frame["state_source"] = "direct_hdr_events" if event_source is not None else "current_gt_delayed"
             if event_source is not None:
@@ -747,10 +762,12 @@ def run_oracle_trial(
         "success_legacy_r0": legacy_success,
         "legacy_first_stop_s": legacy_stop_s,
         "legacy_hold_at_stop_s": legacy_hold_at_stop_s,
+        "legacy_minimum_true_bottom_clearance_during_hold_m": legacy_true_bottom_min_at_stop,
         "legacy_score": {
             "score_version": LEGACY_SCORE_VERSION, "success": legacy_success,
             "first_stop_s": legacy_stop_s, "continuous_center_clearance_hold_s": legacy_hold_at_stop_s,
             "center_based_bottom_clearance_at_stop_m": legacy_clearance_at_stop,
+            "minimum_true_bottom_clearance_during_center_hold_m": legacy_true_bottom_min_at_stop,
             "historical_bilateral_contact_by_stop": legacy_bilateral_at_stop,
         },
         "failure_primary": primary, "final_object_position_m": final_state["position_m"].tolist(),
