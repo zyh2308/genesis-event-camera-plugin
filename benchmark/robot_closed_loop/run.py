@@ -1404,6 +1404,8 @@ def run_batch(args: argparse.Namespace) -> None:
             rerun, _, frames = run_static_trial(env, eid, int(row["seed"]), capture=True)
             save_gif(videos_dir / f"static_episode_{eid:04d}_{rerun['failure_primary']}.gif", frames)
     elif args.mode == "slide":
+        if args.split == "holdout" and args.a_eff is None:
+            raise ValueError("slide holdout requires the fixed a_eff fitted from a separate calibration split")
         for speed in args.speeds:
             local_ids = range(len(results), len(results) + args.episodes)
             for i in local_ids:
@@ -1427,6 +1429,46 @@ def run_batch(args: argparse.Namespace) -> None:
                 "warning": "This is a shared pilot motion model, not per-episode future-GT fitting.",
             }
             (out / "r0_slide_calibration.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        elif args.split == "holdout":
+            def finite_values(group: Sequence[Dict[str, Any]], key: str) -> np.ndarray:
+                values = np.asarray([r[key] for r in group if r.get(key) is not None], dtype=np.float64)
+                return values[np.isfinite(values)]
+
+            by_speed = {}
+            for speed in args.speeds:
+                group = [r for r in results if abs(float(r["launch_speed_m_s"]) - float(speed)) < 1e-9]
+                crossed = [r for r in group if r["crossing_t_s"] is not None]
+                t_error = finite_values(group, "prediction_ttc_error_s")
+                y_error = finite_values(group, "prediction_y_error_m")
+                drift = np.asarray([
+                    float(r["crossing_y_m"]) - float(r["start_y_m"])
+                    for r in crossed
+                ], dtype=np.float64)
+                crossing_t = finite_values(crossed, "crossing_t_s")
+                crossing_speed = finite_values(crossed, "crossing_speed_m_s")
+                episode_a = finite_values(group, "a_eff_episode_m_s2")
+                by_speed[str(speed)] = {
+                    "n": len(group), "crossed_intercept_n": len(crossed),
+                    "crossing_rate": None if not group else float(len(crossed) / len(group)),
+                    "crossing_time_median_s": None if not len(crossing_t) else float(np.median(crossing_t)),
+                    "crossing_speed_median_m_s": None if not len(crossing_speed) else float(np.median(crossing_speed)),
+                    "fixed_model_ttc_error_median_ms": None if not len(t_error) else float(np.median(t_error) * 1000.0),
+                    "fixed_model_ttc_abs_error_p95_ms": None if not len(t_error) else float(np.percentile(np.abs(t_error), 95) * 1000.0),
+                    "fixed_model_lateral_error_median_mm": None if not len(y_error) else float(np.median(y_error) * 1000.0),
+                    "fixed_model_lateral_abs_error_p95_mm": None if not len(y_error) else float(np.percentile(np.abs(y_error), 95) * 1000.0),
+                    "crossing_lateral_drift_median_mm": None if not len(drift) else float(np.median(drift) * 1000.0),
+                    "crossing_lateral_drift_mean_abs_mm": None if not len(drift) else float(np.mean(np.abs(drift)) * 1000.0),
+                    "episode_deceleration_fit_median_m_s2": None if not len(episode_a) else float(np.median(episode_a)),
+                    "episode_deceleration_fit_iqr_m_s2": None if not len(episode_a) else [float(np.percentile(episode_a, 25)), float(np.percentile(episode_a, 75))],
+                }
+            holdout_summary = {
+                "mode": "fixed_deceleration_no_hand_holdout",
+                "fixed_a_eff_m_s2": float(args.a_eff),
+                "episodes": len(results), "episodes_by_speed": by_speed,
+                "model_refit_on_holdout": False,
+                "prediction_boundary": "each arrival prediction uses the fixed no-hand fit and the episode's initial measured state; held-out future crossing is only used by the evaluator",
+            }
+            (out / "r0_slide_holdout_summary.json").write_text(json.dumps(holdout_summary, indent=2), encoding="utf-8")
         for row in results:
             write_trace(traces_dir / f"slide_episode_{int(row['episode_id']):04d}.jsonl", trace_by_id[int(row["episode_id"])])
     elif args.mode in {"oracle", "sensitivity"}:
