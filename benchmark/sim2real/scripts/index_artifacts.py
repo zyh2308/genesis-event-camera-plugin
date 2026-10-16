@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 
@@ -34,7 +35,16 @@ def main() -> None:
     except ValueError as exc:
         raise SystemExit(f"run directory must be under {sim2real_root}") from exc
 
-    paths = {p.resolve() for p in run_dir.rglob("*") if p.is_file() and p.name != "artifact_index.json"}
+    listed = subprocess.check_output(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "benchmark/sim2real"],
+        cwd=repo_root,
+    )
+    eligible = {(repo_root / item.decode()).resolve() for item in listed.split(b"\0") if item}
+    paths = {
+        p.resolve()
+        for p in run_dir.rglob("*")
+        if p.is_file() and p.name != "artifact_index.json" and p.resolve() in eligible
+    }
     for item in args.include:
         candidate = (repo_root / item).resolve()
         if not candidate.is_file():
@@ -44,7 +54,7 @@ def main() -> None:
         tree = (repo_root / item).resolve()
         if not tree.is_dir():
             raise SystemExit(f"additional artifact directory does not exist: {item}")
-        paths.update(p.resolve() for p in tree.rglob("*") if p.is_file())
+        paths.update(p for p in eligible if p.is_relative_to(tree))
 
     entries = []
     for path in sorted(paths, key=lambda p: p.as_posix()):
