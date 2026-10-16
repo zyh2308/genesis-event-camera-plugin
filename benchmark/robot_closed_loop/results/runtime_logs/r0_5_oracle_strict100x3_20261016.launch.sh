@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-WORKTREE="$HOME/Eventbased_WAM/repositories/gec-robot-r0_5-3c60932"
+WORKTREE="$HOME/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc"
 PYTHON="$HOME/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
 TAG="$WORKTREE/benchmark/robot_closed_loop/results/runtime_logs/r0_5_oracle_strict100x3_20261016"
 OUT="$WORKTREE/benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3_20261016"
