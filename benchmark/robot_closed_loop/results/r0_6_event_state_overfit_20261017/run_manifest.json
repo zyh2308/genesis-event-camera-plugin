@@ -1,0 +1,92 @@
+{
+  "phase": "R0.6 tiny supervised overfit diagnosis; not a generalization or ranking result",
+  "code_commit": "1e2ddc98907138b21225306cdea3c4b5882111a2",
+  "config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "source_sha256sums_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+  "raw_event_inputs_verified_against_source_manifest": true,
+  "input_hashes": {
+    "episodes/episode_000/direct_hdr_events_1khz_2khz.npz": "1427e38cea39dde2baa581dd8b2809abe7b5c6e99422ad38ab48c0ce2074ca54",
+    "episodes/episode_000/state_control_trace.jsonl": "b96dfa22b12c65b6856c423704fc9a3d84e3b2f200e81b4aba53b9753fc511cc",
+    "episodes/episode_000/episode.csv": "cd3e32901d7f78568a6b7489a7a1133ce5ad0daf0d7393334f266fbb18ff3205",
+    "episodes/episode_004/direct_hdr_events_1khz_2khz.npz": "354b13c1b13c1ca9e085ae2768a53fecb606ad410d9cc5d9b529393ab93132a6",
+    "episodes/episode_004/state_control_trace.jsonl": "caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947",
+    "episodes/episode_004/episode.csv": "fe5dbc822e073929234ce2953ce3b34775f3f0b451b1497dd3f22b9da16d308a",
+    "episodes/episode_008/direct_hdr_events_1khz_2khz.npz": "e5207aa6d7d678bea2ad55d28c840956e4e40987bb6ef86287c96d53ffb02dca",
+    "episodes/episode_008/state_control_trace.jsonl": "6fcec82d04b77e18a97f4a2720cf5f9692af70841253356a518289f122a40107",
+    "episodes/episode_008/episode.csv": "158501a30d62403631cda97dfdbeb4e8a1439666788253d3bb2373743d4ca159"
+  },
+  "episodes_fit_and_scored": [
+    0,
+    4,
+    8
+  ],
+  "split": "none; all listed episodes are used for fitting and in-sample scoring",
+  "training_labels": "simulator object pose/velocity at each causal observation cutoff",
+  "network_inputs": "only five-bin Direct-HDR event counts; no GT, segmentation, depth, RGB, or future state is passed to the model",
+  "input_shape_per_sample": [
+    10,
+    64,
+    64
+  ],
+  "sample_count": 417,
+  "sample_count_by_phase": {
+    "pre_contact": 197,
+    "contact_to_lift": 21,
+    "post_lift": 199
+  },
+  "model_parameters": 16758,
+  "epochs": 120,
+  "batch_size": 64,
+  "seed": 606,
+  "device": "cpu",
+  "training_wall_s": 30.025703873485327,
+  "final_normalized_mse": 0.04336306877988134,
+  "initial_normalized_mse": 0.9971795805352484,
+  "in_sample_errors": {
+    "position_3d_error_m": {
+      "rmse": 0.012960334396186534,
+      "p95": 0.025275113061070442
+    },
+    "position_xy_error_m": {
+      "rmse": 0.011948778294026852,
+      "p95": 0.022396115586161613
+    },
+    "velocity_xyz_error_m_s": {
+      "rmse": 0.02571805939078331,
+      "p95": 0.04534464329481125
+    },
+    "velocity_xy_error_m_s": {
+      "rmse": 0.019126582890748978,
+      "p95": 0.032650575041770935
+    }
+  },
+  "in_sample_errors_by_phase": {
+    "pre_contact": {
+      "n": 197,
+      "position_xy_rmse_m": 0.012201768346130848,
+      "position_xy_p95_m": 0.025594348087906837,
+      "velocity_xy_rmse_m_s": 0.012611671350896358,
+      "velocity_xy_p95_m_s": 0.02677060477435589
+    },
+    "contact_to_lift": {
+      "n": 21,
+      "position_xy_rmse_m": 0.018899505957961082,
+      "position_xy_p95_m": 0.032943084836006165,
+      "velocity_xy_rmse_m_s": 0.051742229610681534,
+      "velocity_xy_p95_m_s": 0.10012088716030121
+    },
+    "post_lift": {
+      "n": 199,
+      "position_xy_rmse_m": 0.010681658051908016,
+      "position_xy_p95_m": 0.018359143286943436,
+      "velocity_xy_rmse_m_s": 0.018072079867124557,
+      "velocity_xy_p95_m_s": 0.028601717203855515
+    }
+  },
+  "model_only_latency_ms": {
+    "mean": 0.8571168733760715,
+    "p50": 0.5314028821885586,
+    "p95": 0.7158472202718161
+  },
+  "latency_boundary": "batch-1 network only; excludes event binning, Direct-HDR render, DVS, physics, and I/O"
+}
