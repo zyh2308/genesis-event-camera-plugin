@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_7-learned
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../" && pwd)
 PYTHON=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
 SOURCE=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
 OUT=$REPO/benchmark/robot_closed_loop/results/r0_7_heatmap_event_state_development_20261017
