@@ -64,5 +64,25 @@ Charbonnier, warp, scale aggregation, and smoothness formulas are unchanged.
 The same device adaptation was applied to the dt4 objective helper.
 
 The retry runner archives the two no-update attempts and restarts both arms
-from the same seed-0 initialization. Its execution is pending synchronization
-to g1.
+from the same seed-0 initialization. The first retry exited `1` before any
+optimizer update; its failure and the next shape correction are recorded below.
+
+## Pinned loss grayscale-shape mismatch
+
+The detached retry (`training_retry2`) reached the first loss call but both
+arms exited `1` before an optimizer update. In addition to detaching the gray
+frames to CPU, the adapter had retained a singleton channel dimension:
+`[B,1,H,W]`. The pinned loss indexes each batch item as `[H,W]` before calling
+OpenCV; with the extra channel, OpenCV 5 received `[1,H,W]` and raised
+`(-215:Assertion failed) m->dims <= 2`. The exact paired traceback is preserved
+in each arm's `train.stderr.log` under the run root.
+
+`_gray_batch_for_pinned_loss()` now explicitly accepts `[B,H,W]` or `[B,1,H,W]`,
+validates nonempty finite images, removes only the singleton channel, and
+returns contiguous detached CPU tensors. Both dt1 and dt4 objectives use this
+adapter; the GPU flow output and its autograd graph are unchanged. The corrected
+rerun is launched by `scripts/start_stage4_training_after_shape_fix_tmux.sh`,
+which first archives both no-update attempts under
+`flow_dt1_seed0/failed_attempt02_pinned_loss_channel_shape/`. The result remains
+pending until real optimizer updates and checkpoint-reload verification are
+observed.

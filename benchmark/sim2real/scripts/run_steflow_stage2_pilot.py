@@ -166,16 +166,35 @@ def verify_correlation(device: torch.device) -> dict:
     return result
 
 
+def _gray_batch_for_pinned_loss(image: torch.Tensor) -> torch.Tensor:
+    """Convert padded grayscale images from [B,1,H,W] to the pinned loss's [B,H,W].
+
+    STE-FlowNet's official multiscale loss indexes each sample as a 2-D OpenCV
+    image. Passing the model-style singleton channel through would yield
+    [1,H,W] per sample, which OpenCV 5 rejects. Keep this adapter explicit so
+    malformed layouts fail before entering the upstream NumPy/OpenCV code.
+    """
+    if image.ndim == 4 and image.shape[1] == 1:
+        image = image[:, 0]
+    elif image.ndim != 3:
+        raise ValueError(f"pinned STE photometric loss expects [B,H,W] or [B,1,H,W], got {tuple(image.shape)}")
+    if image.shape[0] < 1 or image.shape[-2] < 1 or image.shape[-1] < 1:
+        raise ValueError(f"empty grayscale image batch: {tuple(image.shape)}")
+    if not torch.isfinite(image).all():
+        raise ValueError("grayscale photometric targets contain non-finite values")
+    return image.detach().cpu().contiguous()
+
+
 def objective_dt1(output, gray_prev, gray_next, event_tensor, loss_module):
     # STEFlow returns a tuple of four scales in train mode but only the final
     # full-resolution tensor in eval mode. The pinned objective accepts a
     # sequence of scale tensors in both cases.
     if torch.is_tensor(output):
         output = (output,)
-    # The pinned STE loss converts endpoint images to NumPy for cv2 resizing.
-    # Keep image targets detached on CPU while preserving the CUDA flow graph.
-    gray_prev_cpu = gray_prev.detach().cpu()
-    gray_next_cpu = gray_next.detach().cpu()
+    # The pinned STE loss converts [B,H,W] endpoint images to NumPy for cv2
+    # resizing. Flow predictions remain on CUDA and retain their autograd graph.
+    gray_prev_cpu = _gray_batch_for_pinned_loss(gray_prev)
+    gray_next_cpu = _gray_batch_for_pinned_loss(gray_next)
     photo = loss_module.compute_photometric_loss(
         gray_prev_cpu, gray_next_cpu, torch.sum(event_tensor, dim=4), output, weights=WEIGHTS
     )
@@ -187,7 +206,7 @@ def objective_dt4(output, gray_frames, event_tensor, loss_module):
     flow1_list, flow2_list, flow3_list, flow4_list = output
     photos, smooths = [], []
     event_image = torch.sum(event_tensor, dim=4)
-    gray_frames_cpu = [frame.detach().cpu() for frame in gray_frames]
+    gray_frames_cpu = [_gray_batch_for_pinned_loss(frame) for frame in gray_frames]
     for k in range(4):
         current = (flow1_list[k], flow2_list[k], flow3_list[k], flow4_list[k])
         photos.append(loss_module.compute_photometric_loss(
