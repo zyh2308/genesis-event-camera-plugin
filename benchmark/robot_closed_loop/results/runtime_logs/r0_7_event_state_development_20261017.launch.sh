@@ -13,6 +13,7 @@ EXIT_FILE=$LOG_DIR/$NAME.exit
 RUNTIME_FILE=$LOG_DIR/$NAME.runtime
 
 mkdir -p "$LOG_DIR"
+rm -f "$EXIT_FILE" "$RUNTIME_FILE"
 printf '%s\n' "$$" > "$PID_FILE"
 cd "$REPO"
 set +e
