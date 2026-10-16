@@ -208,6 +208,23 @@ The explicit y list gives each speed the left edge, center, and right edge in
 that order, so the view/estimator check does not confound speed with lateral
 position.
 
+For a sensor-only reference over a complete successful task trajectory, use
+`--reference-controller-source gt_current`. This keeps the fixed controller,
+but feeds it only the same 10 ms delayed current-GT observations used by the
+oracle; the paired event streams are shadow measurements and are not read by
+that controller. Do not treat this mode as an event-estimator result. Example
+server command:
+
+```bash
+EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
+  --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --speeds 0.3,0.4,0.5 --reference-episodes 3 \
+  --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 \
+  --event-controller-hz 2000 --reference-controller-source gt_current \
+  --visibility-hz 50 --seed 2026103420 \
+  --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
+```
+
 `reference_metrics.json` reports paired event matching, 10 ms voxel agreement,
 1/2 kHz event-state errors against evaluator-only GT, dynamic target visibility,
 and task rollout wall time. The summary's `episode_loop_artifact_wall_s` also

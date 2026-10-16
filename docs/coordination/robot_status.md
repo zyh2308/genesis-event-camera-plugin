@@ -1,12 +1,12 @@
 # Genesis Event Camera：Robot R0 / R0.5 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0 已验收；R0.5 严格评分和统一 0.5 ms 时间步已实现，服务器严格 GT oracle 已完成 300/300，无手 holdout 完成 30/30；strict +10 mm 横向偏差 sensitivity 已在修复后完成（0/5、4/5、0/5）；完整 Direct-HDR/event-state reference 已在服务器 GPU2 启动；协议尚未冻结。
+**阶段：** R0.5 GT oracle feasibility 已完成（0.30/0.40/0.50 m/s 各 100/100 strict success），无手 holdout 30/30；+10 mm 横向误差 sensitivity 显示明显退化。九集 Direct-HDR/event-state smoke 已完成但 0/9 抬升，边缘轨迹动态遮挡严重，不能冻结相机或 reference/event adapter；正在补独立 delayed-GT shadow sensor-reference 路径以覆盖真实接触和抬升窗口。协议尚未冻结。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
 
-R0.5 静态 smoke、0.5 ms 无手校准与 holdout、严格评分先导和独立严格 oracle 100×3 已在 g1 服务器完成。R0 的旧评分 300/300 与历史 0.2 s Direct-HDR pilot 均不作为本阶段验收证据。新批次实际运行 commit、配置/数据哈希、日志和复跑命令在下方登记。
+R0.5 静态 smoke、0.5 ms 无手校准与 holdout、严格评分先导和独立严格 oracle 100×3 已在 g1 服务器完成。R0 的旧评分 300/300 与历史 0.2 s Direct-HDR pilot 均不作为本阶段验收证据。Direct-HDR event-controller 九集已完成并核验；严格成功 0/9、接触 3/9、抬升 0/9。为区分事件感知失败与 reference 采样本身，当前增加独立 shadow sensor-reference 路径；该路径只用延迟当前 GT 驱动物理轨迹，事件流只用于评估，不属于事件控制实验。新批次实际运行 commit、配置/数据哈希、日志和复跑命令在下方登记。
 
 ### 已完成并有证据
 
@@ -156,14 +156,14 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - Camera render 返回值与 preflight 遮挡测量均已修正。旧高位负 y 机位在合法 home 姿态遮挡 98.31%，拒绝；修正同步后的 top-down 候选在拦截中心遮挡 100%，拒绝；正 x 侧候选 `[1.15,0,0.22]` 静态 home 视角通过，0–6.7% 遮挡、30–55 px 短边。单次动态录像检查的 9 个均匀抽样帧中，方块始终有可见区域，接触时被夹爪部分遮挡；此观察是定性 smoke，不是跨随机轨迹的遮挡率统计。
 - no-hand calibration 与独立 holdout 均已完成；单因子 timing 扫描成功时序点已记录。
 - 新 seed oracle 独立 holdout 三档均 100/100，Wilson 95% CI 下界 96.3%；仅支持当前物理场景、固定预测器与固定控制器的 oracle 可行性，不代表视觉估计器成功率。10 mm 横向位置偏差敏感性显著；总观测延迟增至 30 ms 的小样本仍 15/15。
-- 正 x 侧机位已更新为当前候选；9 点 preflight 静态采样保持 Panda 在 pre-grasp home。代表性动态录像显示接触附近有部分遮挡但目标未完全消失；多 seed 动态遮挡率仍未量化。Direct-HDR 在显式 V100S EGL device 下完成短 pilot：1/2 kHz 事件数量相差 17.18%，较早未显式钉住 EGL device 的探索运行差 18.16%；两者均提示不得宣称时间采样已收敛，正式使用前应做较长窗口采样率收敛核验。
+- 正 x 侧机位 `[1.15,0,0.22]` 的九集动态审计显示横向依赖：中心 y=0 三集最小可见比例 99.57%、中位数 100%；y=±55 mm 六集最小可见比例均为 0%，合并中位数约 22–23%，目标在 0.58–1.16 s 后开始被机器人完全遮挡。此前单条动态录像抽样不能代表边缘轨迹，故相机尚不能冻结。
 - Top-down 相机的首次 launcher 误指向旧 preflight worktree；由本会话启动的 PID `1609155` 已经 `tmux` 定向中断，未生成完整相机结果且不计数。launcher 根路径已修正后重跑。
 - 新种子 oracle 独立 holdout 已完成：服务器 tmux `r0_oracle_holdout100x3_20261016`，PID `1594166`、exit `0`；实际代码 commit `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`、配置 SHA256 `9b313bfc634e4eb39fa7591593bc808e6543f4a8a78f9dd15a332fb6be106439`、seed `2026102800`，每档 100/100，Wilson 95% CI 下界 96.3%。
 - 正式 Ours/V2E 比较、大规模数据生成和训练均未开始。
 
-## 冻结建议与研究会话需决策事项
+## R0.5 冻结建议与研究会话需决策事项
 
-建议研究会话冻结 R0 场景候选：40 mm、80 g 方块，Plane 低摩擦参数，1 ms 物理步；发射速度 0.30/0.40/0.50 m/s；固定相机 `[1.15,0,0.22]` 看向 `[0.65,0,0.02]`、320×240、垂直 FOV 30°；100 Hz 控制、10 ms GT observation latency；固定 `a_eff=0.09804843035177806 m/s²`；闭合 lead=`clip(0.08 - 0.10·(v0-0.30), 0.05, 0.10)` 秒，`v0` 为首次延迟补偿的因果速度估计。当前配置文件 SHA256 `124d87188e9a383a054fb7e6e6eaf106c6d331ad0abfaf2a8a959364eafdc549`。物理与控制候选的独立新 seed oracle holdout 使用前一版相机配置 `9b313bfc...`，每档 100/100，Wilson 95% 下界约 96.3%；新机位配置下另有 0.40 m/s 1/1 dynamic smoke 成功。相机只改变观察渲染，不进入 GT oracle 决策，因此 holdout 支持任务物理/控制可行性而不构成新机位视觉成功率。Direct-HDR 短 pilot 已在显式 V100S EGL 设备下运行，按 render-only 540×0.2 s 外推约 0.233 h@1 kHz、0.466 h@2 kHz；事件计数差异 17.18%，早期未固定 EGL 的探索运行差 18.16%，采样收敛未确定。建议冻结任务和相机候选，后续 reference 正式比较前先决定是否要求较长的 1/2 kHz 收敛试验；不把共享像素模型或理想阈值响应称为真实 EVK4 标定。主分支合并留待验收。
+建议仅将物理任务、固定控制器结构与 strict scorer 列为正式冻结候选：40 mm、80 g 方块，Plane 低摩擦参数，统一 0.5 ms physics；0.30/0.40/0.50 m/s；100 Hz 控制、10 ms 因果观测延迟；固定 `a_eff=0.09803606718731761 m/s²` 和现有 speed-conditioned closure schedule；成功定义为真实双侧接触、无支撑、真实底面净空 ≥80 mm、相对滑移 ≤10 mm、连续保持 0.5 s。配置 `scene_pilot_r0_5_candidate.json` SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`。strict oracle 300/300 的各档 Wilson 95% 下界为 96.3%，支持 GT-current feasibility；10 mm 横向偏差 retry 仅 4/15，证明感知误差会影响控制。暂不冻结最终相机、事件状态 adapter 或 1/2 kHz reference 采样率：九集边缘动态遮挡和 event-controller 失败证据与此前单次机位 smoke 不一致；Direct-HDR 事件数及 downstream 状态也未达标。建议研究会话决定保留 ±55 mm 横向范围并重新选择机位，或正式缩小横向工作区；之后再确定 1/2 kHz reference 采样率和无 GT 因果事件状态估计。pixel response 复用插件 `DvsEmulator` 的 ideal threshold 0.2、无噪声、无限带宽，不是 EVK4 标定。主分支合并留待验收。
 
 ### 最终机位动态 smoke 与 Direct-HDR reference（显式 EGL 设备）
 
@@ -248,10 +248,10 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 修复后独立 retry 使用新 seed 2026103515、同一配置和严格评分，15 集（每档 5）。0.30/0.40/0.50 m/s strict success 分别 0/5、4/5、0/5，失败均为 unstable_grasp（11/15）。这是证明任务对 10 mm 横向感知偏差敏感的单因子小样本，不用于估计总体成功率或冻结控制参数。运行 commit fcf567f7485e590b075b378c4ff726079e0a287a，完整 Python wall 276.26 s、CPU user 302.23 s、max RSS 1,683,192 KB、exit 0，launcher PID 1995457。逐集 CSV SHA256 97182cd66067bbe6f08b48769958e26f709312c3544befa9262392b02be10dc0；summary da6362fd6613743d681771d13df5ad8e5858b5950d6683be29d5936e75dcfb69；manifest 37acea4a37be9bb5999148e8ed12fb0f5a5875bf3294bcdd61d1804ec39fb794；SHA256SUMS beb3e517e78d82a491ae7d4d4e249d00c55e812281e5994852f5999dfdf27012，服务器和本地逐项通过。成功/失败代表 trace 与 GIF 在 retry 结果目录中；log SHA256 06320ef6d176486654351415f43e794445857097d89366141132100392be2b68，runtime 14facb9cc8038a1e01bab87b498ae89f1efaa4e59d576acec3db0f29b40abc68。
 - Direct-HDR 首次启动仅在 argparse 失败，仿真未创建、没有占用 GPU：服务器代码 commit fcf567f7485e590b075b378c4ff726079e0a287a，配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd；负号开头的 y 列表作为独立参数触发 expected one argument，exit 2，wall 0.17 s，PID 2002116。日志 SHA256 706ec89d59905711a7d7f78105495f4e8fc1e505d50b52e49cf9866dd52fdcd5；runtime 85cdc13684c35f1f7d0a96efbdfe0ea00b8a460d44c5e99a33f9b4cfc41ff553。失败日志保存在 runtime_logs 的 launch_argparse_failed 文件中。
 - 已把 y 列表改为 --reference-y-values=...，并同步 README；本地 parser 解析检查和 Python compileall 通过，修复提交 4a23458266508c902df545e66f82a2ea396012d6。
-- 完整 Direct-HDR/reference/event-state 批次目前在服务器 detached tmux r0_5_direct_hdr_event_smoke_20261016 运行：代码 commit 4a23458266508c902df545e66f82a2ea396012d6、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103400；9 集覆盖 3 档速度 × 左/中/右横向位置，同一 0.5 ms 物理轨迹配对生成 1/2 kHz event streams，2 kHz 因果事件状态接入控制器，visibility 采样 50 Hz。launcher PID 2004113；EGL_DEVICE_ID=2，GPU2 V100S 在启动前空闲，GPU3 的 CARLA job 未触碰。输出目录 r0_5_direct_hdr_event_smoke_20261016/ 尚无最终结果，端到端成本、动态可见性和采样率精度待完整运行后报告。
-- 服务器到 GitHub HTTPS 的一次 git ls-remote 超时，已通过 SHA256 校验的本地 Git bundle 更新隔离 worktree；SSH 正常，未触碰其他项目或进程。
-- reference 评估将报告接触/抬升窗口的动态可见性、事件时间戳与 voxel 采样差异、事件估计对接触后 lift gate 所需位置/速度的因果支持、实际端到端 wall/CPU/GPU 时间。centroid tracker 当前只是可接线基线，不能宣称完成学习型 estimator 或采样率收敛结论。
-- freeze 候选仍为同一平面滑块/Panda/侧面相机、三档速度、固定 a_eff 与控制器；strict scorer 的 80 mm/0.5 s/双侧接触/无支撑/10 mm 相对滑移作为建议正式成功定义。等待 Direct-HDR/event-state 验证完成后，再提出正式冻结建议；现阶段不启动规模数据、训练或 Ours/V2E 排名。
+- Direct-HDR/event-controller smoke 已完成：代码 commit `4a23458266508c902df545e66f82a2ea396012d6`、配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`、seed 2026103400；9 集覆盖三档速度 × 左/中/右位置，统一 0.5 ms 物理步、50 Hz 动态可见性审计，同一物理/HDR 轨迹配对生成 1/2 kHz event streams；2 kHz 因果事件态接入同一固定预测器、横向控制器与 lift gate。strict success 0/9、首次接触 3/9、抬升 0/9，接触只在中心轨迹。事件数相对差均值 16.12%；同像素同极性 0.5 ms 匹配比例均值 90.12%/75.60%；10 ms voxel cosine 均值 0.980、voxel event-count 差均值 11.35%。post-contact controller state 有 7,110 个样本，但位置 P95 误差 1.15–3.15 m、速度 P95 误差 0.62–1.61 m/s；lift gate eligible 350/7,110，状态有陈旧/错误复用，不能声称事件闭环可用或采样率足够。
+- 完整 Direct-HDR/event-controller 进程 wall 1,791.35 s、CPU user 54,971.47 s、system 263.84 s、max RSS 1,926,592 KB、exit 0；launcher PID 2004113 / Python PID 2004117。每个 3 s rollout wall 平均 184.11 s（RTF 0.0163）。Genesis physics backend 为 CPU，HDR EGL renderer 绑定 V100S GPU2；未用 GPU-time profiler，不能报告专属 GPU 累计时间。结果归档 [`r0_5_direct_hdr_event_smoke_20261016/`](../../benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke_20261016/)（131 MiB；本地清单逐项校验通过），服务器原始地址 `g1:/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc/benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke_20261016/`。逐集 CSV SHA256 `36a7ed3d93c3a93e8052f1128b37baf72d74551396679e2a884a75d29f84da2a`；summary `5ebcfb0bb83828a93c37cb76c2a30dce83f4c1e20e2af8aac8420bab08e8d02c`；visibility `7a6489894ae4bb83cf019cb4c0674590c3cbfc717e6a5966c403a44d887a1fa2`；manifest `ec4258689526a6e74ecaf09366371ca3c0848c8b260e5db92d87604993239913`；SHA256SUMS 文件 `fed1383d62c14d243753f43ccd6ef9ca0c5e8bf526fc0d87960fb86076f654c9`。log `947ddf9311eacc6448cf67e447122fc3de3e93f9d4d98acab82277d958623f6b`；runtime `3984be6812e8a255a4c7964f79181ed9d25e66c14362768355bf96ee1af34d7a`；launcher `fc1447215944cbb2617fe113ab494740db14fbd120c953abb25e1f5f2b8163b5`；exit file 内容 0。pixel response 是共享 `DvsEmulator` ideal threshold 0.2、无噪声、无限带宽；Direct-HDR 绕开 Ours 时间重建和 V2E 插帧，不是 EVK4 标定。
+- `EventKinematicsTracker` 仅为因果 wiring smoke，不是训练或验证过的 estimator；p95 age 达约 2.1 s 的样本说明 stale state 未被拒绝。正在把 Direct-HDR 采样质量评估与事件控制能力分开：增加 delayed-current-GT shadow 轨迹模式以覆盖成功接触/抬升，事件输入只进 sensor stream 和 evaluator-only 误差，不进入 shadow 控制。
+- 冻结建议：物理任务、0.5 ms 时间轴、速度档、100 Hz/10 ms 固定控制结构和 strict scorer 可进入正式候选；相机机位、事件状态 adapter、1/2 kHz 采样暂缓冻结，待 GT shadow sensor-reference 和研究会话对动态边缘遮挡方案作决定。现阶段不启动规模数据生成、训练或 Ours/V2E 排名。
 
 ### 复跑命令与运行约定
 
@@ -265,6 +265,13 @@ Direct-HDR/reference 复跑入口（服务器 tmux launcher 会记录 PID、日�
 
 ~~~bash
 EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --speeds 0.3,0.4,0.5 --reference-episodes 3 --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 --event-controller-hz 2000 --visibility-hz 50 --seed 2026103400 --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke_20261016
+~~~
+
+
+GT shadow sensor-reference 复跑命令（事件流只用于采样/状态评估，delayed current-GT 只驱动完整参考轨迹）：
+
+~~~bash
+EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=.venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --speeds 0.3,0.4,0.5 --reference-episodes 3 --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 --event-controller-hz 2000 --reference-controller-source gt_current --visibility-hz 50 --seed 2026103420 --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
 ~~~
 
 Frozen core 仍与基线 e79e656ac00f7847b98db9e12bf43b093f3afff1 一致；主分支未合并。

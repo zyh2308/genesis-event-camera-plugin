@@ -395,6 +395,7 @@ def run_oracle_trial(
     event_source: Optional[Any] = None,
     initial_y_m: Optional[float] = None,
     visibility_evaluator: Optional[Any] = None,
+    use_event_observation: bool = True,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
@@ -489,11 +490,15 @@ def run_oracle_trial(
         prev_obj = state
 
         if step % control_steps == 0 and rel_t + 1e-9 >= float(controller_cfg["event_burn_in_s"]):
-            obs = event_source.observe(rel_t - latency) if event_source is not None else _delayed_observation(history, rel_t - latency)
+            obs = (
+                event_source.observe(rel_t - latency)
+                if event_source is not None and use_event_observation
+                else _delayed_observation(history, rel_t - latency)
+            )
             if obs is not None:
                 last_obs = MotionState(obs.time_s, obs.position_m.copy(), obs.velocity_m_s.copy())
                 last_obs.position_m[1] += float(position_bias_y_m)
-                observation_age = max(0.0, rel_t - last_obs.time_s) if event_source is not None else latency
+                observation_age = max(0.0, rel_t - last_obs.time_s) if event_source is not None and use_event_observation else latency
                 prediction = predictor.predict(last_obs, observation_age)
                 last_prediction = prediction
                 estimated_current_state = prediction.propagated_state
@@ -655,7 +660,11 @@ def run_oracle_trial(
                 if not np.isfinite(legacy_window_true_bottom_min_m) else legacy_window_true_bottom_min_m,
             }
             frame["tcp_velocity_m_s"] = tcp_velocity.tolist()
-            frame["state_source"] = "direct_hdr_events" if event_source is not None else "current_gt_delayed"
+            frame["state_source"] = (
+                "direct_hdr_events_controller" if event_source is not None and use_event_observation
+                else "delayed_current_gt_shadow_reference" if event_source is not None
+                else "current_gt_delayed"
+            )
             if event_source is not None:
                 frame["event_state_by_rate"] = {}
                 for rate_hz in (1000, 2000):
@@ -847,10 +856,14 @@ def run_reference(
     y_values: Optional[Sequence[float]] = None,
     controller_hz: int = 2000,
     visibility_hz: float = 50.0,
+    controller_source: str = "events",
 ) -> Dict[str, Any]:
     from benchmark.robot_closed_loop.event_state import DirectHdrEventSource, voxel_convergence_summary
 
     cfg = env.config
+    if controller_source not in {"events", "gt_current"}:
+        raise ValueError("reference controller source must be events or gt_current")
+    use_event_observation = controller_source == "events"
     speed_grid = [float(v) for v in (speeds or [speed])]
     y_grid = list(float(v) for v in y_values) if y_values is not None else []
     if y_grid and len(y_grid) != len(speed_grid) * int(episodes_per_speed):
@@ -876,14 +889,16 @@ def run_reference(
                 float(cfg["controller"]["initial_deceleration_assumption_m_s2"]),
                 capture=True, event_source=source, initial_y_m=launch_y,
                 visibility_evaluator=visibility,
+                use_event_observation=use_event_observation,
             )
             episode_wall_s = time.perf_counter() - episode_started
             row.update({
-                "phase": "direct_hdr_event_state_smoke",
+                "phase": "direct_hdr_event_state_smoke" if use_event_observation else "direct_hdr_gt_controlled_sensor_reference",
                 "task_rollout_wall_s": episode_wall_s,
                 "task_rollout_wall_boundary": "complete physics and control rollout, including per-step HDR rendering, both DVS streams, event tracking, dynamic visibility sampling, and video frame capture; excludes output serialization and simulator initialization",
                 "reference_requested_duration_s_ignored_until_task_end": float(duration_s),
-                "reference_controller_sampling_hz": int(controller_hz),
+                "reference_controller_state_source": "causal_event_state" if use_event_observation else "delayed_current_gt_shadow_reference",
+                "event_controller_sampling_hz": int(controller_hz) if use_event_observation else None,
             })
             write_csv(episode_out / "episode.csv", [row])
             write_trace(episode_out / "state_control_trace.jsonl", trace)
@@ -1000,7 +1015,12 @@ def run_reference(
                 "event_state_accuracy_evaluator_only": errors_by_rate,
                 "post_contact_event_state_accuracy_evaluator_only": post_contact_event_errors_by_rate,
                 "post_contact_controller_state_accuracy_evaluator_only": post_contact_controller_summary,
-                "post_contact_controller_state_boundary": "scores the actual causal event-derived observation propagated by the fixed predictor and used by the lift gate; evaluator GT aligns position/velocity after the episode and never enters the controller",
+                "post_contact_controller_state_boundary": (
+                    "scores the actual causal event-derived observation propagated by the fixed predictor and used by the lift gate; evaluator GT aligns position/velocity after the episode and never enters the controller"
+                    if use_event_observation else
+                    "delayed current-GT state drives the fixed controller only to produce a complete sensor-reference trajectory; event estimates are evaluator-only and GT does not enter the Direct-HDR event source"
+                ),
+                "reference_controller_state_source": "causal_event_state" if use_event_observation else "delayed_current_gt_shadow_reference",
                 "dynamic_visibility_evaluator_only": visibility_summary,
                 "reference_duration_setting_s": duration_s,
             }), indent=2), encoding="utf-8")
@@ -1021,10 +1041,14 @@ def run_reference(
     total_wall_s = time.perf_counter() - reference_started
     write_csv(out / "r0_5_reference_episodes.csv", episode_rows)
     summary = {
-        "mode": "r0_5_direct_hdr_reference_and_event_state_smoke",
+        "mode": "r0_5_direct_hdr_reference_and_event_state_smoke" if use_event_observation else "r0_5_direct_hdr_gt_shadow_sensor_reference",
         "code_scope": "robot benchmark; frozen simulator core unchanged",
         "physics_dt_s": env.dt_s, "paired_event_rates_hz": [1000, 2000],
-        "controller_state_source": "2 kHz causal event tracker" if controller_hz == 2000 else "1 kHz causal event tracker",
+        "controller_state_source": (
+            ("2 kHz" if controller_hz == 2000 else "1 kHz") + " causal event tracker"
+            if use_event_observation else "delayed current-GT controller; event streams are shadow sensor reference only"
+        ),
+        "reference_controller_source": controller_source,
         "episodes": episode_rows,
         "strict_success_by_speed": {
             str(s): {"n": sum(1 for r in episode_rows if r["speed_m_s"] == s),
@@ -1388,6 +1412,7 @@ def run_batch(args: argparse.Namespace) -> None:
             speeds=args.speeds, episodes_per_speed=args.reference_episodes,
             y_values=args.reference_y_values,
             controller_hz=args.event_controller_hz, visibility_hz=args.visibility_hz,
+            controller_source=args.reference_controller_source,
         )
     elif args.mode == "static":
         for i in range(args.episodes):
@@ -1562,6 +1587,10 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--reference-episodes", type=int, default=1, help="episodes per speed for complete reference rollouts")
     parser.add_argument("--reference-y-values", type=lambda s: [float(v) for v in s.split(",")], help="explicit launch y values, one per reference episode")
     parser.add_argument("--event-controller-hz", type=int, choices=[1000, 2000], default=2000)
+    parser.add_argument(
+        "--reference-controller-source", choices=["events", "gt_current"], default="events",
+        help="use causal event estimates for control, or delayed current-GT control for a sensor-only shadow reference",
+    )
     parser.add_argument("--visibility-hz", type=float, default=50.0)
     parser.add_argument("--physics-dt-us", type=float, help="override configured physical timestep in microseconds")
     return parser
