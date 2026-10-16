@@ -46,7 +46,7 @@ Use a new output directory for every run. The runner refuses to mix results in
 an existing non-empty directory.
 
 ```bash
-PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
+CUDA_VISIBLE_DEVICES= PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
   --mode static --episodes 20 --seed 2026101600 \
   --out benchmark/robot_closed_loop/results/r0_static_dev
 
@@ -174,13 +174,26 @@ PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_clo
   --out benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3
 ```
 
+For this closeout, the 60-episode fit is `a_eff=0.09803606718731761 m/s²`.
+Validate its arrival-time and lateral-drift prediction on an independent
+0.5 ms no-hand block before interpreting `planned_free_slide_arrival_t_s`:
+
+```bash
+CUDA_VISIBLE_DEVICES= PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
+  --mode slide --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --split holdout --episodes 10 --speeds 0.3,0.4,0.5 \
+  --a-eff 0.09803606718731761 --seed 2026103600 \
+  --out benchmark/robot_closed_loop/results/r0_5_slide_holdout_30
+```
+
 The Direct-HDR command below renders every 0.5 ms from the same physical rollout,
 feeds paired 1/2 kHz DVS streams, and closes the loop using the causal 2 kHz
-event state adapter. The three default speeds use center and opposite lateral
-edge launch positions. Segmentation is used only by an evaluator that compares
-the live target mask with a matched-pose target-only rendering; that audit is
-not connected to the controller or event source. The event centroid tracker is
-only a causal plumbing smoke, not an estimator quality claim.
+event state adapter. The prescribed nine-episode sweep covers left edge,
+center, and right edge at each of the three speeds. Segmentation is used only by
+an evaluator that compares the live target mask with a matched-pose target-only
+rendering; that audit is not connected to the controller or event source. The
+event centroid tracker is only a causal plumbing smoke, not an estimator quality
+claim.
 
 ```bash
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
