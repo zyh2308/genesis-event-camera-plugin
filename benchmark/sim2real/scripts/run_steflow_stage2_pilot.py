@@ -43,17 +43,63 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
+class _MemoryEfficientSpatialCorrelation(torch.autograd.Function):
+    """Exact 1x1/9x9 correlation with an input-sized autograd context."""
+
+    @staticmethod
+    def forward(ctx, input1: torch.Tensor, input2: torch.Tensor):
+        if input1.shape != input2.shape or input1.ndim != 4:
+            raise ValueError(f"correlation inputs must share [B,C,H,W], got {input1.shape}, {input2.shape}")
+        ctx.save_for_backward(input1, input2)
+        batch, _, height, width = input1.shape
+        radius = 4
+        output = input1.new_zeros((batch, 81, height, width))
+        channel = 0
+        for dy in range(9):
+            shift_y = dy - radius
+            y0, y1 = max(0, -shift_y), min(height, height - shift_y)
+            for dx in range(9):
+                shift_x = dx - radius
+                x0, x1 = max(0, -shift_x), min(width, width - shift_x)
+                if y0 < y1 and x0 < x1:
+                    output[:, channel, y0:y1, x0:x1] = (
+                        input1[:, :, y0:y1, x0:x1]
+                        * input2[:, :, y0 + shift_y:y1 + shift_y, x0 + shift_x:x1 + shift_x]
+                    ).sum(dim=1)
+                channel += 1
+        return output.view(batch, 9, 9, height, width)
+
+    @staticmethod
+    def backward(ctx, grad_output: torch.Tensor):
+        input1, input2 = ctx.saved_tensors
+        batch, _, height, width = input1.shape
+        grad1 = torch.zeros_like(input1) if ctx.needs_input_grad[0] else None
+        grad2 = torch.zeros_like(input2) if ctx.needs_input_grad[1] else None
+        channel = 0
+        for dy in range(9):
+            shift_y = dy - 4
+            y0, y1 = max(0, -shift_y), min(height, height - shift_y)
+            for dx in range(9):
+                shift_x = dx - 4
+                x0, x1 = max(0, -shift_x), min(width, width - shift_x)
+                if y0 < y1 and x0 < x1:
+                    grad = grad_output[:, dy, dx, y0:y1, x0:x1].unsqueeze(1)
+                    input1_region = input1[:, :, y0:y1, x0:x1]
+                    input2_region = input2[:, :, y0 + shift_y:y1 + shift_y, x0 + shift_x:x1 + shift_x]
+                    if grad1 is not None:
+                        grad1[:, :, y0:y1, x0:x1] += grad * input2_region
+                    if grad2 is not None:
+                        grad2[:, :, y0 + shift_y:y1 + shift_y, x0 + shift_x:x1 + shift_x] += grad * input1_region
+                channel += 1
+        return grad1, grad2
+
+
 def pure_torch_spatial_correlation(input1, input2, kernel_size=1, patch_size=9,
                                    stride=1, padding=0, dilation_patch=1):
-    """F.unfold implementation of the pinned extension's 1x1/9x9 call."""
+    """Memory-bounded equivalent of the pinned 1x1-kernel/9x9-patch call."""
     if kernel_size != 1 or patch_size != 9 or stride != 1 or padding != 0 or dilation_patch != 1:
         raise ValueError("pilot fallback only implements the official 1x1 kernel, 9x9 patch call")
-    batch, channels, height, width = input1.shape
-    radius = patch_size // 2
-    patches = F.unfold(input2, kernel_size=patch_size, padding=radius, stride=1)
-    patches = patches.view(batch, channels, patch_size, patch_size, height, width)
-    center = input1[:, :, None, None, :, :]
-    return (center * patches).sum(dim=1).contiguous()
+    return _MemoryEfficientSpatialCorrelation.apply(input1, input2).contiguous()
 
 
 def explicit_spatial_correlation(input1: torch.Tensor, input2: torch.Tensor) -> torch.Tensor:
@@ -73,12 +119,16 @@ def verify_correlation(device: torch.device) -> dict:
     target_shape = (1, 64, SIZE // 2, SIZE // 2)
     x1 = torch.randn(target_shape, device=device, dtype=torch.float32)
     x2 = torch.randn(target_shape, device=device, dtype=torch.float32)
+    baseline_allocated = torch.cuda.memory_allocated(device)
+    baseline_reserved = torch.cuda.memory_reserved(device)
     torch.cuda.reset_peak_memory_stats(device)
     torch.cuda.synchronize(device)
     start = time.perf_counter()
     actual = pure_torch_spatial_correlation(x1, x2)
     torch.cuda.synchronize(device)
     elapsed = time.perf_counter() - start
+    target_peak_allocated = int(torch.cuda.max_memory_allocated(device) - baseline_allocated)
+    target_peak_reserved = int(torch.cuda.max_memory_reserved(device) - baseline_reserved)
     expected = explicit_spatial_correlation(x1, x2)
     max_abs = float((actual - expected).abs().max().cpu())
     if actual.shape != (1, 9, 9, SIZE // 2, SIZE // 2) or max_abs > 1e-5:
@@ -98,7 +148,7 @@ def verify_correlation(device: torch.device) -> dict:
     if grad_error > 1e-5:
         raise RuntimeError(f"STE correlation gradient mismatch {grad_error}")
     result = {
-        "implementation": "benchmark-local pure PyTorch F.unfold",
+        "implementation": "benchmark-local memory-efficient pure PyTorch autograd function (81 spatial shifts)",
         "upstream_extension_installed": False,
         "target_shape": list(target_shape),
         "batch_size": 1,
@@ -106,7 +156,8 @@ def verify_correlation(device: torch.device) -> dict:
         "target_forward_max_abs_error": max_abs,
         "small_forward_backward_max_gradient_error": grad_error,
         "target_forward_seconds": elapsed,
-        "target_peak_allocated_gpu_bytes": int(torch.cuda.max_memory_allocated(device)),
+        "target_peak_allocated_gpu_bytes": target_peak_allocated,
+        "target_peak_reserved_gpu_bytes_above_baseline": target_peak_reserved,
         "output_shape": list(actual.shape),
     }
     del actual, expected, x1, x2, a, b, a_ref, b_ref
