@@ -16,13 +16,47 @@ def read_json(path: Path):
         return None
 
 
+def read_last_update(path: Path):
+    """Read the newest optimizer record without loading the full run log."""
+    try:
+        size = path.stat().st_size
+        with path.open("rb") as stream:
+            stream.seek(max(0, size - 65536))
+            lines = stream.readlines()
+    except OSError:
+        return None
+    for line in reversed(lines):
+        try:
+            record = json.loads(line)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if isinstance(record, dict) and "optimizer_update" in record:
+            return record
+    return None
+
+
+def read_arm_status(run_root: Path, name: str):
+    arm_root = run_root / "flow_dt1_seed0" / name
+    checkpoint_status = read_json(arm_root / "live_status.json") or {}
+    update = read_last_update(arm_root / "training_metrics.jsonl")
+    if update is None:
+        return checkpoint_status or None
+    # Per-update metrics are fresher than the checkpoint sidecar, which is
+    # intentionally written only at update 20 and each 100 updates.
+    status = {**checkpoint_status, **update}
+    status["completed_updates"] = update["optimizer_update"]
+    status["status"] = checkpoint_status.get("status", "training")
+    status["updated_utc"] = update.get("updated_utc", checkpoint_status.get("updated_utc"))
+    return status
+
+
 def render(args) -> str:
     bank_progress = read_json(args.bank_root / "generation_progress.json")
     v2e_root = args.run_root / "v2e_events"
     shard_progress = [read_json(v2e_root / f"gpu{gpu}" / "shard_progress.json") for gpu in (1, 2, 4, 5)]
     v2e_manifest = read_json(v2e_root / "v2e_complete_manifest.json")
     adapter_manifest = read_json(args.adapter_root / "training_bank_manifest.json")
-    arms = {name: read_json(args.run_root / "flow_dt1_seed0" / name / "live_status.json")
+    arms = {name: read_arm_status(args.run_root, name)
             for name in ("eventgenesis", "v2e")}
     now = datetime.now(timezone.utc).isoformat()
     prior_attempts = []
