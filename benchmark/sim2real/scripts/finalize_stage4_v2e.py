@@ -10,6 +10,7 @@ from pathlib import Path
 
 import h5py
 import numpy as np
+from stage4_v2e_artifacts import locate_shard_artifacts
 
 
 def sha256(path: Path) -> str:
@@ -18,28 +19,6 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: f.read(1024 * 1024), b""):
             h.update(block)
     return h.hexdigest()
-
-
-def locate_shard_artifacts(root: Path, rollout: str) -> tuple[Path, Path]:
-    """Find one immutable output in the four registered GPU shard folders.
-
-    The worker writes ``gpu{1,2,4,5}/{rollout}.{h5,status.json}``; older
-    single-directory runs used the root directly. Accept either layout, but
-    fail closed on missing or duplicate rollout artifacts.
-    """
-    candidates = [root / f"gpu{gpu}" / f"{rollout}.h5" for gpu in (1, 2, 4, 5)]
-    candidates.append(root / f"{rollout}.h5")
-    matches = [path for path in candidates if path.is_file()]
-    if len(matches) != 1:
-        raise RuntimeError(
-            f"expected exactly one V2E HDF5 for {rollout}, found {len(matches)}: "
-            f"{[str(path) for path in matches]}"
-        )
-    event_path = matches[0]
-    status_path = event_path.with_name(f"{rollout}.status.json")
-    if not status_path.is_file():
-        raise RuntimeError(f"missing V2E status record for {rollout}: {status_path}")
-    return event_path, status_path
 
 
 def main() -> None:

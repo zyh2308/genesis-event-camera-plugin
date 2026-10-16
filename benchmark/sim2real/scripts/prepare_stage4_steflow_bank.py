@@ -11,6 +11,7 @@ import h5py
 import numpy as np
 
 from prepare_steflow_stage0 import gaussian_count_representation
+from stage4_v2e_artifacts import locate_shard_artifacts
 
 
 def sha256(path: Path) -> str:
@@ -25,11 +26,23 @@ def array_hash(array: np.ndarray) -> str:
     return hashlib.sha256(np.ascontiguousarray(array).view(np.uint8)).hexdigest()
 
 
-def load_raw_events(generator: str, group: h5py.Group, v2e_root: Path, rollout: str) -> np.ndarray:
+def load_raw_events(generator: str, group: h5py.Group, v2e_root: Path, rollout: str,
+                    v2e_manifest_rows: dict[str, dict]) -> np.ndarray:
     if generator == "eventgenesis":
         raw = np.asarray(group["eventgenesis_events_txyp"], dtype=np.float64)
         return raw.reshape(-1, 4)
-    path = v2e_root / f"{rollout}.h5"
+    path, status_path = locate_shard_artifacts(v2e_root, rollout)
+    status = json.loads(status_path.read_text())
+    manifest_row = v2e_manifest_rows.get(rollout)
+    if manifest_row is None:
+        raise RuntimeError(f"V2E complete manifest is missing {rollout}")
+    raw_sha = sha256(path)
+    if (status.get("rollout") != rollout or status.get("exit_code") != 0
+            or Path(status.get("raw_h5", "")).resolve() != path.resolve()
+            or status.get("raw_h5_sha256") != raw_sha
+            or Path(manifest_row.get("raw_events_path", "")).resolve() != path.resolve()
+            or manifest_row.get("raw_events_sha256") != raw_sha):
+        raise RuntimeError(f"V2E path/status/manifest hash contract failed for {rollout}")
     with h5py.File(path, "r") as source:
         raw = np.asarray(source["events"], dtype=np.uint32)
     if raw.ndim != 2 or raw.shape[1] != 4:
@@ -39,12 +52,13 @@ def load_raw_events(generator: str, group: h5py.Group, v2e_root: Path, rollout: 
                      np.where(raw[:, 3] > 0, 1.0, -1.0)), axis=1)
 
 
-def convert_rollout(generator: str, rollout: str, shared: h5py.File, v2e_root: Path, out: Path) -> dict:
+def convert_rollout(generator: str, rollout: str, shared: h5py.File, v2e_root: Path,
+                    out: Path, v2e_manifest_rows: dict[str, dict]) -> dict:
     group = shared[f"episodes/{rollout}"]
     times = np.asarray(group["frame_timestamps_s"], dtype=np.float64)
     if times.shape != (201,) or not np.allclose(np.diff(times), .01, atol=1e-7, rtol=0):
         raise ValueError(f"{rollout}: expected 201 uniform 100 Hz endpoints")
-    events = load_raw_events(generator, group, v2e_root, rollout)
+    events = load_raw_events(generator, group, v2e_root, rollout, v2e_manifest_rows)
     if len(events) and (not np.isfinite(events).all() or not np.all(np.diff(events[:, 0]) >= 0)):
         raise ValueError(f"{generator}/{rollout}: raw events are nonfinite or unsorted")
     height, width = np.asarray(group["v2e_display_luma_u8"]).shape[1:]
@@ -125,6 +139,15 @@ def main() -> None:
     bank, v2e, out = args.bank_root.resolve(), args.v2e_root.resolve(), args.output_root.resolve()
     if not (bank / "bank_manifest.json").is_file() or not (bank / "shared_trajectory.h5").is_file():
         raise RuntimeError("refusing adapter preparation before complete immutable shared bank manifest")
+    manifest_path = v2e / "v2e_complete_manifest.json"
+    if not manifest_path.is_file():
+        raise RuntimeError("refusing adapter preparation before V2E complete manifest")
+    v2e_manifest = json.loads(manifest_path.read_text())
+    if v2e_manifest.get("schema") != "stage4_v2e_raw_events_v1" or len(v2e_manifest.get("episodes", [])) != 32:
+        raise RuntimeError("V2E complete manifest schema/rollout count mismatch")
+    v2e_manifest_rows = {row["rollout_id"]: row for row in v2e_manifest["episodes"]}
+    if len(v2e_manifest_rows) != 32:
+        raise RuntimeError("V2E complete manifest contains duplicate rollout rows")
     out.mkdir(parents=True, exist_ok=False)
     entries = []
     with h5py.File(bank / "shared_trajectory.h5", "r") as shared:
@@ -135,7 +158,7 @@ def main() -> None:
             for rollout in episode_ids:
                 split = str(shared[f"episodes/{rollout}"].attrs["split"])
                 path = out / generator / split / f"{rollout}.npz"
-                entries.append(convert_rollout(generator, rollout, shared, v2e, path))
+                entries.append(convert_rollout(generator, rollout, shared, v2e, path, v2e_manifest_rows))
     lookup = {(e["generator"], e["rollout_id"]): e for e in entries}
     for rollout in sorted({e["rollout_id"] for e in entries}):
         left, right = lookup[("eventgenesis", rollout)], lookup[("v2e", rollout)]
