@@ -1,6 +1,6 @@
 # Stage 4 训练实时状态
 
-最近刷新：2026-10-16 UTC。前两次启动尝试已失败并保留；修正 V2E 源码 pin 校验后，第三次 campaign 尚未重新启动。
+最近刷新：2026-10-16 UTC。保留 v1、v2 启动失败记录；v3 已通过环境和源码核验并启动共享 bank，但首个物理区间未完成，campaign 已结束。当前仍无有效训练 bank，两个模型均为 0 optimizer updates。
 
 ## 固定配置
 
@@ -11,8 +11,14 @@
 
 ## 共享物理 bank
 
-- 状态：尚未启动。计划写入服务器 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_32x2s/`。
+- 状态：v3 曾启动，首帧 endpoint 0 成功；约 8 分钟未完成首个 10 ms 区间，后退出（run 中记录 campaign exit code 4）。未写成任何 rollout；只留下不完整 `.partial` HDF5 和首帧 PNG 输入，均保留。计划目标路径 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_32x2s/` 当前不能作为有效 bank 使用。
 - 标签按同一物理端点直接投影，flow 窗口 `(t_i,t_i+3]`，30 ms；common validity 由投影几何、目标画幅和目标深度可见性共同确定。
+
+### 吞吐诊断
+
+- 服务器检查时间 `2026-10-16T11:07:03Z`：GPU 1、2、4、5 空闲；GPU 3 有其他用户作业，未触碰。v3 的 EventGenesis 使用 GPU 1 做 Genesis 渲染，CPU NumPy 做 warp；环境、配置 SHA 和 V2E 源码 pin 均已通过。
+- 代码推导：300 Hz cutoff 的 `tau=1/(2π·300)`，10 ms 窗、`sensor_eps_target=0.05` 要求 `ceil(dt/tau/0.05)=377` 个采样，sampler 上限截到 300。NumPy 路径对 300 个中间时刻逐项投影并执行双向遮挡 splat。实际 v3 在首个区间未产生下一 endpoint，因此不能把它写成一个已测吞吐值。
+- 新增 target-size bounded diagnostic：在 346×260、同一 10 ms/300-sample sampler 下计时已有 Torch batch 后端和 DVS 累积，并在选定 alpha 上与 NumPy 参考投影/warp 比较。诊断不生成训练 bank，也不改事件模型参数。需要根据其速度、误差和显存记录，再决定是否采用并将实际运行后端锁入配置/manifest。
 
 ## 失败尝试记录
 
@@ -34,4 +40,5 @@
 
 - 运行入口：`benchmark/sim2real/scripts/run_stage4_campaign_server.sh`（通过 tmux 启动）。
 - 首个交付点：两组各自真实完成至少 20 个 optimizer updates，并保存可恢复的 update-20 checkpoint、逐更新 loss/gradient 日志与恢复核验。
-- 当前文件是启动前状态；不得将代码准备或进程创建描述为训练已开始。
+- v3 run root：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v3/`；银行目标及残留位置：`/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_32x2s/`；外层日志：`/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。所有 partial 产物保留，不作为训练数据。
+- 训练状态：EventGenesis 0/8910；V2E 0/8910。此处只报告真实已完成更新；代码准备、bank 生成进程和 endpoint 0 均不算训练开始。
