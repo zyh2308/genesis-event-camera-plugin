@@ -6,11 +6,11 @@ PROJECT=/home/zhaoyuhan/Eventbased_WAM
 REPO="$PROJECT/repositories/gec-sim2real"
 SIM="$REPO/benchmark/sim2real"
 COMMIT=$(git -C "$REPO" rev-parse HEAD)
-CONFIG="$SIM/configs/stage4_training_launch_v1.json"
+CONFIG=${STAGE4_CONFIG_PATH:-$SIM/configs/stage4_training_launch_v1.json}
 CONFIG_SHA=$(sha256sum "$CONFIG" | awk '{print $1}')
-RUN_ID=${STAGE4_RUN_ID:-20261016-stage4-flowdt1-seed0-v3}
+RUN_ID=${STAGE4_RUN_ID:-20261016-stage4-flowdt1-seed0-v4}
 RUN_ROOT="$PROJECT/runs/sim2real/$RUN_ID"
-BANK_ROOT="$PROJECT/data/sim2real/stage4/training_bank_v1_32x2s"
+BANK_ROOT=${STAGE4_BANK_ROOT:-$PROJECT/data/sim2real/stage4/training_bank_v1_32x2s}
 V2E_ROOT="$RUN_ROOT/v2e_events"
 ADAPTER_ROOT="$PROJECT/data/sim2real/stage4/$RUN_ID/steflow_30ms"
 MODEL_ROOT="$PROJECT/external/sources/downstream/STE-FlowNet"
@@ -40,7 +40,7 @@ cd "$REPO" || exit 2
   df -h /home
 } > "$RUN_ROOT/preflight.txt" 2>&1
 
-(cd "$SIM" && sha256sum -c protocol/training_launch_v1.sha256) \
+(cd "$SIM" && sha256sum -c "protocol/${STAGE4_CONFIG_CHECKSUM:-training_launch_v1.sha256}") \
   > "$RUN_ROOT/registered_config_verification.txt" 2>&1 || exit 4
 
 check_idle_gpu() {
@@ -79,6 +79,9 @@ PY
     "$SIM/scripts/prepare_stage4_steflow_bank.py" "$SIM/scripts/train_steflow_stage4.py" \
     "$SIM/scripts/verify_v2e_source.py" "$SIM/scripts/watch_stage4_training_status.py" \
     "$SIM/scripts/run_stage4_campaign_server.sh" "$SIM/scripts/start_stage4_campaign_tmux.sh" \
+    "$SIM/scripts/diagnose_stage4_eventgenesis_backend.py" \
+    "$SIM/STAGE4_TORCH_CUDA_RUNTIME_AMENDMENT.md" \
+    "$SIM/protocol/${STAGE4_CONFIG_CHECKSUM:-training_launch_v1.sha256}" \
     "$SIM/manifests/v2e_source_pin.json" \
     "$PROJECT/external/sources/v2e-cac6384445/v2e-pinned/v2e.py" \
     "$PROJECT/external/sources/v2e-cac6384445/input/SuperSloMo39.ckpt"

@@ -126,7 +126,8 @@ def camera_pose(t: float, episode: dict):
     return base, look
 
 
-def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: int) -> dict:
+def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: int,
+                event_cfg: dict) -> dict:
     from genesis_event_plugin.adaptive_sampler import AdaptiveSamplingConfig
     from genesis_event_plugin.genesis_adapter import camera_to_world_cv, link_to_world_cv
     from genesis_event_plugin.noise_model import DvsNoiseConfig
@@ -191,7 +192,8 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     plugin = GenesisPhysicsEventPlugin(
         input_space="linear", response_mode="physical_log", radiometric_calibration_status="uncalibrated",
         noise_config=sensor, sampler_config=AdaptiveSamplingConfig(), frame_provider=frame_provider,
-        motion_state_provider=state_provider, device="cpu", warp_backend="numpy",
+        motion_state_provider=state_provider, device=event_cfg["device"],
+        warp_backend=event_cfg["warp_backend"],
     )
     plugin.attach(scene, camera).start_episode()
 
@@ -330,12 +332,15 @@ def main() -> None:
         raise RuntimeError("Stage4 resolution/window contract mismatch")
     event_cfg = launch["generators"]["eventgenesis"]
     required_event = {"input_space": "linear", "response_mode": "physical_log", "radiometric_calibration_status": "uncalibrated",
-                      "warp_backend": "numpy", "device": "cpu", "pos_thres": .2, "neg_thres": .2,
+                      "pos_thres": .2, "neg_thres": .2,
                       "sigma_thres": .03, "cutoff_hz": 300., "leak_rate_hz": .01,
                       "leak_jitter_fraction": .1, "noise_rate_cov_decades": .1,
                       "shot_noise_rate_hz": .001, "refractory_period_s": .0005, "seed": 42}
     if any(event_cfg.get(k) != value for k, value in required_event.items()):
         raise RuntimeError("EventGenesis generator settings differ from the locked Stage4 config")
+    backend_device = (event_cfg.get("warp_backend"), event_cfg.get("device"))
+    if backend_device not in (("numpy", "cpu"), ("torch", "cuda:0")):
+        raise RuntimeError(f"unsupported locked EventGenesis backend/device pair: {backend_device}")
     if launch["generators"]["v2e"]["timestamp_resolution_s"] != 2.5e-5 or launch["generators"]["forbid_V2E_1ms_fallback"] is not True:
         raise RuntimeError("V2E timestamp configuration is not the registered 25-us mode")
     root = args.output_root.resolve(); root.mkdir(parents=True, exist_ok=False)
@@ -367,7 +372,7 @@ def main() -> None:
             h5.create_group("episodes")
             for idx, episode in enumerate(episodes, 1):
                 start = time.monotonic()
-                manifest["episodes"].append(run_episode(gs, episode, root, h5, idx - 1))
+                manifest["episodes"].append(run_episode(gs, episode, root, h5, idx - 1, event_cfg))
                 atomic_json(root / "generation_progress.json", {
                     "completed_rollouts": idx, "total_rollouts": len(episodes),
                     "latest_rollout": episode["id"], "elapsed_s": round(time.monotonic() - start, 2),
