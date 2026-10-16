@@ -1,0 +1,95 @@
+{
+  "schema_version": 2,
+  "purpose": "small synthetic-only multi-rollout pipeline pilot; not a sensor calibration or performance comparison",
+  "simulation": {
+    "backend": "genesis.gpu",
+    "genesis_version": "1.2.2",
+    "physics_dt_s": 0.001,
+    "endpoint_rate_hz": 100,
+    "duration_s": 0.3,
+    "image_size_wh": [160, 128],
+    "gravity_m_s2": [0.0, 0.0, -9.81],
+    "camera": {
+      "position_m": [0.8, 0.8, 0.65],
+      "look_at_m": [0.0, 0.0, 0.35],
+      "vertical_fov_deg": 50.0,
+      "near_m": 0.05,
+      "far_m": 10.0
+    },
+    "target_box": {
+      "size_m": [0.16, 0.16, 0.16],
+      "initial_z_m": 0.8
+    },
+    "episodes": [
+      {"id": "train_00", "split": "train", "initial_x_m": -0.12, "initial_y_m": -0.04, "seed_offset": 0},
+      {"id": "train_01", "split": "train", "initial_x_m": -0.04, "initial_y_m": 0.04, "seed_offset": 1},
+      {"id": "train_02", "split": "train", "initial_x_m": 0.04, "initial_y_m": -0.04, "seed_offset": 2},
+      {"id": "train_03", "split": "train", "initial_x_m": 0.12, "initial_y_m": 0.04, "seed_offset": 3},
+      {"id": "validation_00", "split": "validation", "initial_x_m": -0.08, "initial_y_m": 0.08, "seed_offset": 4},
+      {"id": "validation_01", "split": "validation", "initial_x_m": 0.08, "initial_y_m": -0.08, "seed_offset": 5}
+    ]
+  },
+  "shared_labels": {
+    "split_unit": "whole physical rollout",
+    "frame_time_reference": "simulator scene.cur_t relative to rollout start; float64 seconds",
+    "event_window": "(t_i,t_i_plus_1]",
+    "pose_label_time": "right endpoint",
+    "pose_frame": "camera_to_world_cv uses OpenCV camera axes (x-right/y-down/z-forward); object_to_world uses Genesis world axes (z-up); translations are meters",
+    "camera_intrinsics": "actual Genesis camera.intrinsics matrix in pixel coordinates, stored per rollout",
+    "flow_dt1": "forward source-pixel displacement from endpoint i to i+1, pixels per endpoint interval",
+    "flow_dt4": "forward source-pixel displacement from endpoint i to i+4, pixels per four endpoint intervals",
+    "flow_validity": "shared source-depth and positive-target-depth geometry validity plus target-image bounds; no target-occlusion z-buffer in this pilot"
+  },
+  "eventgenesis": {
+    "entrypoint": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+    "input_space": "linear",
+    "response_mode": "physical_log",
+    "radiometric_calibration_status": "uncalibrated",
+    "warp_backend": "numpy",
+    "device": "cpu",
+    "sensor_eps_target": 0.05,
+    "pos_thres": 0.2,
+    "neg_thres": 0.2,
+    "sigma_thres": 0.03,
+    "cutoff_hz": 300.0,
+    "leak_rate_hz": 0.01,
+    "leak_jitter_fraction": 0.1,
+    "noise_rate_cov_decades": 0.1,
+    "shot_noise_rate_hz": 0.001,
+    "refractory_period_s": 0.0005,
+    "seed": 42
+  },
+  "v2e": {
+    "repository": "https://github.com/SensorsINI/v2e",
+    "commit": "cac638444557a224ba6ee5c29260916f152c00bd",
+    "input_rate_hz": 100,
+    "auto_timestamp_resolution": false,
+    "timestamp_resolution_s": 0.000025,
+    "slomo_checkpoint_name": "SuperSloMo39.ckpt",
+    "thresholds_log_e": {"positive": 0.2, "negative": 0.2, "sigma": 0.03},
+    "cutoff_hz": 300.0,
+    "leak_rate_hz": 0.01,
+    "leak_jitter_fraction": 0.1,
+    "noise_rate_cov_decades": 0.1,
+    "shot_noise_rate_hz": 0.001,
+    "refractory_period_s": 0.0005,
+    "seed": 42
+  },
+  "v2e_input_mapping": {
+    "input": "scene-linear RGB radiance from the same Genesis endpoint render",
+    "luminance": "Rec.709 linear Y",
+    "exposure": 1.0,
+    "display_transform": "Reinhard(Y) followed by sRGB transfer function",
+    "quantization": "uint8 round-to-nearest",
+    "per_frame_auto_exposure_or_normalization": false,
+    "status": "fixed engineering mapping for the pipeline pilot; not sensor calibrated"
+  },
+  "training_pilot": {
+    "seed": 71,
+    "train_rollouts": ["train_00", "train_01", "train_02", "train_03"],
+    "validation_rollouts": ["validation_00", "validation_01"],
+    "real_data_accessed": false,
+    "model_selection_data": "synthetic validation only",
+    "event_only_inference": true
+  }
+}

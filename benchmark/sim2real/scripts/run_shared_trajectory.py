@@ -39,6 +39,37 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_forward_flow_direction() -> dict:
+    """Check that positive object-x motion produces positive source-to-target u."""
+    from genesis_event_plugin.physics_warp import compute_se3_flow
+
+    depth = np.ones((3, 4), dtype=np.float32)
+    segmentation = np.ones((3, 4), dtype=np.int32)
+    intrinsics = np.asarray([[2.0, 0.0, 1.5], [0.0, 2.0, 1.0], [0.0, 0.0, 1.0]])
+    camera_to_world = np.eye(4, dtype=np.float64)
+    object_delta = np.eye(4, dtype=np.float64)
+    object_delta[0, 3] = 0.25
+    flow, valid = compute_se3_flow(
+        depth, segmentation, intrinsics, camera_to_world, camera_to_world,
+        object_world_deltas={1: object_delta},
+    )
+    center = (1, 1)
+    center_flow = flow[:, center[0], center[1]]
+    if not valid[center] or not np.isclose(center_flow[0], 0.5, atol=1e-6):
+        raise RuntimeError(f"forward flow sign/scale fixture failed: {center_flow}")
+    if not np.isclose(center_flow[1], 0.0, atol=1e-6):
+        raise RuntimeError(f"forward flow vertical component fixture failed: {center_flow}")
+    return {
+        "status": "pass",
+        "object_x_translation_m": 0.25,
+        "depth_m": 1.0,
+        "fx_px": 2.0,
+        "expected_forward_u_displacement_px": 0.5,
+        "observed_flow_xy_px": center_flow.astype(float).tolist(),
+        "valid": bool(valid[center]),
+    }
+
+
 def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.File) -> dict:
     from genesis_event_plugin.adaptive_sampler import AdaptiveSamplingConfig
     from genesis_event_plugin.genesis_adapter import camera_to_world_cv, link_to_world_cv
@@ -68,7 +99,11 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
     )
     box = scene.add_entity(
         gs.morphs.Box(
-            pos=(float(episode["initial_x_m"]), 0.0, float(sim["target_box"]["initial_z_m"])),
+            pos=(
+                float(episode["initial_x_m"]),
+                float(episode.get("initial_y_m", 0.0)),
+                float(episode.get("initial_z_m", sim["target_box"]["initial_z_m"])),
+            ),
             size=tuple(sim["target_box"]["size_m"]),
         ),
         surface=gs.surfaces.Default(color=(0.9, 0.16, 0.08, 1.0), emissive=(0.05, 0.0, 0.0)),
@@ -117,6 +152,7 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
         return state
 
     sensor = config["eventgenesis"]
+    episode_seed = int(sensor["seed"]) + int(episode.get("seed_offset", 0))
     noise = DvsNoiseConfig(
         pos_thres=float(sensor["pos_thres"]),
         neg_thres=float(sensor["neg_thres"]),
@@ -127,7 +163,7 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
         noise_rate_cov_decades=float(sensor["noise_rate_cov_decades"]),
         shot_noise_rate_hz=float(sensor["shot_noise_rate_hz"]),
         refractory_period_s=float(sensor["refractory_period_s"]),
-        seed=int(sensor["seed"]),
+        seed=episode_seed,
         radiance_input=True,
         response_mode=str(sensor["response_mode"]),
         radiometric_calibration_status=str(sensor["radiometric_calibration_status"]),
@@ -200,20 +236,38 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
     target_column = object_ids.index(target_seg_id)
     target_pose_array = object_pose_array[:, target_column]
 
-    flow_frames = []
-    flow_valid = []
-    for i in range(interval_count):
-        state0, state1 = object_poses[i], object_poses[i + 1]
+    def compute_interval_flow(i: int, j: int) -> tuple[np.ndarray, np.ndarray]:
+        state0, state1 = object_poses[i], object_poses[j]
         deltas = {
             seg_id: state1[seg_id] @ np.linalg.inv(state0[seg_id])
             for seg_id in object_ids
         }
         flow, valid = compute_se3_flow(
             depths[i], segmentations[i], as_numpy(camera.intrinsics),
-            camera_poses[i], camera_poses[i + 1], object_world_deltas=deltas,
+            camera_poses[i], camera_poses[j], object_world_deltas=deltas,
         )
-        flow_frames.append(np.asarray(flow, dtype=np.float32))
-        flow_valid.append(np.asarray(valid, dtype=np.uint8))
+        flow = np.asarray(flow, dtype=np.float32)
+        valid = np.asarray(valid, dtype=bool)
+        yy, xx = np.meshgrid(np.arange(height), np.arange(width), indexing="ij")
+        target_x = xx + flow[0]
+        target_y = yy + flow[1]
+        valid &= (
+            np.isfinite(flow).all(axis=0)
+            & (target_x >= 0.0) & (target_x <= width - 1.0)
+            & (target_y >= 0.0) & (target_y <= height - 1.0)
+        )
+        flow[:, ~valid] = 0.0
+        return flow, valid.astype(np.uint8)
+
+    flow_frames, flow_valid = zip(
+        *(compute_interval_flow(i, i + 1) for i in range(interval_count))
+    )
+    flow_dt4_frames, flow_dt4_valid = zip(
+        *(
+            compute_interval_flow(i, i + 4)
+            for i in range(max(0, interval_count - 3))
+        )
+    ) if interval_count >= 4 else ((), ())
 
     events = (
         np.concatenate([chunk for chunk in event_chunks if len(chunk)], axis=0)
@@ -237,6 +291,16 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
     group.attrs["split"] = episode["split"]
     group.attrs["event_window"] = "(t_i,t_i_plus_1]"
     group.attrs["pose_label_time"] = "right_endpoint"
+    group.attrs["camera_frame_convention"] = "OpenCV: x right, y down, z forward"
+    group.attrs["world_frame_convention"] = "Genesis world frame: z up; object_to_world translations are meters"
+    group.attrs["length_unit"] = "meter"
+    group.attrs["time_unit"] = "second"
+    group.attrs["flow_label_contract"] = "forward source-pixel displacement to target endpoint, pixels per interval; dt1=one endpoint, dt4=four endpoints"
+    group.attrs["flow_valid_contract"] = "shared source-depth and positive-target-depth geometry validity plus target-image bounds; generator independent; no target-occlusion z-buffer"
+    group.attrs["event_timestamp_unit"] = "second"
+    group.attrs["event_coordinate_order"] = "x,y"
+    group.attrs["event_polarity"] = "signed -1/+1"
+    group.create_dataset("camera_intrinsics_K_px", data=as_numpy(camera.intrinsics).astype(np.float64))
     group.attrs["target_segmentation_link_id"] = target_seg_id
     group.create_dataset("frame_timestamps_s", data=timestamps_a)
     group.create_dataset("radiance_linear_rgb", data=np.stack(radiance_frames).astype(np.float32), compression="gzip")
@@ -249,6 +313,8 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
     group.create_dataset("target_pose", data=target_pose_array)
     group.create_dataset("flow_forward_px_per_interval", data=np.stack(flow_frames), compression="gzip")
     group.create_dataset("flow_valid", data=np.stack(flow_valid), compression="gzip")
+    group.create_dataset("flow_forward_dt4_px_per_interval", data=np.stack(flow_dt4_frames), compression="gzip")
+    group.create_dataset("flow_valid_dt4", data=np.stack(flow_dt4_valid), compression="gzip")
     group.create_dataset("eventgenesis_events_txyp", data=events)
     group.create_dataset("eventgenesis_interval_offsets", data=event_offsets)
     group.create_dataset("eventgenesis_interval_event_counts", data=np.asarray(event_counts_per_interval, dtype=np.int64))
@@ -258,8 +324,14 @@ def run_episode(gs, config: dict, episode: dict, output_root: Path, h5: h5py.Fil
     return {
         "episode_id": episode["id"],
         "split": episode["split"],
+        "seed_offset": int(episode.get("seed_offset", 0)),
         "frame_count": len(timestamps_a),
         "interval_count": interval_count,
+        "camera_intrinsics_K_px": as_numpy(camera.intrinsics).astype(np.float64).tolist(),
+        "camera_frame_convention": "OpenCV x-right/y-down/z-forward; camera_to_world_cv translation in meters",
+        "world_frame_convention": "Genesis world z-up; object_to_world translation in meters",
+        "timestamp_unit": "seconds relative to rollout start",
+        "flow_label_contract": group.attrs["flow_label_contract"],
         "target_segmentation_link_id": target_seg_id,
         "target_visible_pixel_counts": [int((seg == target_seg_id).sum()) for seg in segmentations],
         "target_z_start_end_m": [float(target_z[0]), float(target_z[-1])],
@@ -304,6 +376,7 @@ def main() -> None:
         "config_path": str(config_path),
         "config_sha256": sha256(config_path),
         "endpoint_rate_hz": config["simulation"]["endpoint_rate_hz"],
+        "flow_direction_fixture": verify_forward_flow_direction(),
         "episodes": [],
     }
     (output_root / "config.json").write_text(json.dumps(config, indent=2) + "\n")
@@ -311,6 +384,10 @@ def main() -> None:
         with h5py.File(output_root / "shared_trajectory.h5", "w") as h5:
             h5.attrs["schema_version"] = 1
             h5.attrs["trajectory_config_sha256"] = summary["config_sha256"]
+            h5.attrs["frozen_simulator_core_commit"] = "e79e656ac00f7847b98db9e12bf43b093f3afff1"
+            h5.attrs["split_unit"] = "whole physical rollout"
+            h5.attrs["shared_time_unit"] = "seconds"
+            h5.attrs["flow_direction"] = "forward source endpoint to target endpoint"
             for episode in config["simulation"]["episodes"]:
                 summary["episodes"].append(run_episode(gs, config, episode, output_root, h5))
     finally:

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-10-16T03:32:31Z",
+  "status": "source_and_evaluator_contracts_checked; datasets_not_downloaded_or_scored",
+  "is_real_test_scoring_authorized": false,
+  "paths_on_g1": {
+    "root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/real",
+    "hqf": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/real/HQF",
+    "mvsec": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/real/MVSEC",
+    "e_pose": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/real/E-POSE"
+  },
+  "datasets": {
+    "HQF": {
+      "status": "public_route_and_pinned_loader_checked; no files inspected",
+      "canonical_sequences": 14,
+      "candidate_split": "all HQF sequences held out for final reconstruction evaluation",
+      "source": "https://timostoff.github.io/20ecnn",
+      "mature_source": {
+        "repository": "https://github.com/ercanburak/EVREAL.git",
+        "commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+        "dataset_config": "config/dataset/HQF.json",
+        "loader": "dataset.MemMapDataset",
+        "evaluation_entrypoint": "eval.py"
+      },
+      "expected_sequence_fields": [
+        "events_xy.npy",
+        "events_ts.npy",
+        "events_p.npy",
+        "images.npy",
+        "images_ts.npy",
+        "image_event_indices.npy",
+        "metadata.json"
+      ],
+      "preparation": [
+        "Use the pinned EVREAL tools/download_HQF.sh route and bag_to_npy.py converter.",
+        "Enumerate and verify all 14 sequence folders and event/frame timestamp arrays before any real inference.",
+        "Run the candidate E2VID checkpoint through an EVREAL-compatible method adapter; the stock E2VID+ method config points to its public checkpoint and is not itself the trained candidate."
+      ],
+      "download_size_estimate": "19.4 GB compressed / 94 GB uncompressed per the event_flow source README; estimate only",
+      "real_scores_or_model_selection": "none"
+    },
+    "MVSEC": {
+      "status": "official_data_and_GT_contracts_checked; no files inspected",
+      "candidate_sequences": [
+        "indoor_flying1",
+        "indoor_flying2",
+        "indoor_flying3",
+        "outdoor_day1"
+      ],
+      "protocol_semantics": {
+        "dt1": "one adjacent DAVIS left APS endpoint interval",
+        "dt4": "four adjacent DAVIS left APS endpoint intervals",
+        "time_alignment": "model input endpoints from davis/left/image_raw_ts; align official GT flow timestamps with the pinned STE-FlowNet estimate_corresponding_gt_flow function",
+        "flow_gt_npz_keys": ["timestamps", "x_flow_dist", "y_flow_dist"],
+        "raw_event_schema": "official DAVIS HDF5 left events, retaining timestamp, x, y, polarity; image_raw_event_inds maps image endpoints to event indices",
+        "official_camera_resolution": "346x260 DAVIS 346B; use supplied calibration and data orientation without resizing the GT before matching the pinned adapter"
+      },
+      "mature_source": {
+        "repository": "https://github.com/ruizhao26/STE-FlowNet.git",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "event_encoder": "encoding/split_encoding_torch.py",
+        "GT_alignment": "flow_gt_encoding.py and multiscaleloss.estimate_corresponding_gt_flow",
+        "reference_evaluator": "main_steflow_dt1.py / main_steflow_dt4.py"
+      },
+      "official_download_size_estimate": {
+        "indoor_flying1_data_plus_GT": "3.8 GB",
+        "indoor_flying2_data_plus_GT": "4.9 GB",
+        "indoor_flying3_data_plus_GT": "5.3 GB",
+        "outdoor_day1_data_plus_GT": "19.2 GB",
+        "total": "33.2 GB; source-page sizes summed, estimate only"
+      },
+      "metric_freeze_item": "The pinned flow_error_dense excludes zero-magnitude GT and restricts support to event pixels. Preserve its output as a reference reproduction; the primary valid-pixel EPE mask/support must be frozen with research review before real testing.",
+      "real_scores_or_model_selection": "none"
+    },
+    "E-POSE": {
+      "status": "paper_and_annotation_source_checked; raw sample not obtained",
+      "article_id": 28106717,
+      "publisher_record": "https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717",
+      "full_archive_size_listed": "27.72 GB; publisher record metadata, not downloaded or measured",
+      "paper_contract": {
+        "sequences": 306,
+        "object_classes": 13,
+        "sample_annotations": ["raw event HDF5", "MAT pose/intrinsic data", "CAD object geometry"],
+        "pose_convention": "object-to-camera homogeneous transform, to be confirmed against one MAT sample before use",
+        "camera_intrinsics": "per-sample IntrinsicMatrix is reported; exact calibration and matrix convention must be read from sample",
+        "event_window": "paper describes 10 ms / 100 Hz windows; timestamp synchronization must be verified from a raw sample"
+      },
+      "input_leakage_gate": {
+        "allowed": "full-frame event-only tensor from raw events; known class label during supervised training",
+        "forbidden": ["GT mask", "GT crop", "GT box", "segmented events", "RGB composite", "GT pose at inference"],
+        "candidate_model_contract": "SingleShotPose Darknet input is 3-channel full-frame; its bundled training loader uses image compositing and its validation loader uses RGB. A new event-only full-frame dataset adapter and evaluation wrapper are required."
+      },
+      "blocker": "The raw archive/sample has not been downloaded, and the current shared pilot bank contains a generic box rather than a matched E-POSE CAD object. Per-sample K, coordinate origin, units, synchronization, and a YCB-matched synthetic train/validation pair remain unverified.",
+      "real_scores_or_model_selection": "none"
+    }
+  },
+  "global_controls": {
+    "real_data_used_for_training": false,
+    "real_data_used_for_checkpoint_selection_or_tuning": false,
+    "real_data_used_to_adjust_generator": false,
+    "frozen_simulator_core_commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1"
+  }
+}
