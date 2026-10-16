@@ -1,0 +1,4939 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "corrected re-score of existing Stage 2 synthetic validation only; no retraining",
+  "old_stage2_epe": "INVALID: runner extracted only horizontal flow u and NumPy broadcast it across GT channels",
+  "prediction_target_mask_contract": "same [2,H,W], [2,H,W], [H,W]; px_per_interval; finite values; nonempty binary mask",
+  "data_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/steflow_inputs_v2",
+  "model_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet",
+  "steflow_source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+  "steflow_source_verification": {
+    "repository": "STE-FlowNet",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "verification": "manifest_file_sha256_and_tree_sha256",
+    "files_verified": 14,
+    "bytes_verified": 205744,
+    "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+  },
+  "checkpoint_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training",
+  "created_utc": "2026-10-16T07:15:08Z",
+  "deterministic_inference": {
+    "torch_deterministic_algorithms": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false
+  },
+  "results": [
+    {
+      "generator": "eventgenesis",
+      "dt": 1,
+      "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/eventgenesis_dt1_final.pt",
+      "checkpoint_bytes": 580025922,
+      "checkpoint_sha256": "95c4461afc03f748d5e41247f47a7a62ddcd1abca08a753d41dfeb2e0941f4ce",
+      "checkpoint_saved_state_sha256": "d0c8fab6e4cb1ccdae81dccb687db43b9e70afe95c4d4caa31ac31d0ba91884d",
+      "restored_state_sha256": "d0c8fab6e4cb1ccdae81dccb687db43b9e70afe95c4d4caa31ac31d0ba91884d",
+      "state_hash_equal": true,
+      "validation_rollouts": [
+        "validation_00",
+        "validation_01"
+      ],
+      "validation_interval_count": 60,
+      "epe_unit": "px_per_interval",
+      "corrected_synthetic_validation_epe_mean": 0.9423037156417967,
+      "corrected_synthetic_validation_epe_median": 0.9822109258692587,
+      "valid_pixel_count_total": 1205069,
+      "checkpoint_restore_probe": {
+        "rollout_id": "validation_00",
+        "interval_index": 0,
+        "full_two_channel_prediction_equal": true,
+        "prediction_max_abs_difference": 0.0,
+        "restored_epe_px_per_interval": 0.23318314147581942,
+        "valid_pixels": 20299
+      },
+      "elapsed_seconds": 29.42098076455295,
+      "peak_allocated_gpu_bytes": 449026048,
+      "intervals": [
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.23318314147581942,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20296,
+          "epe_px_per_interval": 0.1960320558482028,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20301,
+          "epe_px_per_interval": 0.2502536800620059,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20298,
+          "epe_px_per_interval": 0.3067711011945887,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.35864651280969834,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20303,
+          "epe_px_per_interval": 0.41178642762692824,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.4671117740909747,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20301,
+          "epe_px_per_interval": 0.5254309372075512,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20139,
+          "epe_px_per_interval": 0.5849060084987175,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20144,
+          "epe_px_per_interval": 0.6577294904717251,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20144,
+          "epe_px_per_interval": 0.7224546265812091,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.781528159758995,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8426283362724202,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8954058924711281,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.9569299796074934,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 1.0082599344911647,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.0536588877178505,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.110578671926108,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.1589865099332717,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2143687995472552,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2637336795316712,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.3090930923875697,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.3495653879543767,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.3963402257922546,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.4401791323080673,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.485724817653148,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.5149646623819284,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 27,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.5543190450040238,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 28,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.5908719724066298,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 29,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.6336896608849152,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.23542780367100918,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.19621961604656588,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.2501896407664518,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20301,
+          "epe_px_per_interval": 0.3056921589169689,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.3590133631539705,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20297,
+          "epe_px_per_interval": 0.41235243480108624,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20295,
+          "epe_px_per_interval": 0.4684359588491974,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.5234870224959421,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20141,
+          "epe_px_per_interval": 0.5866826312398356,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20138,
+          "epe_px_per_interval": 0.6546489833413345,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.721196150739181,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.7877394027289515,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8378613238780677,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8992372134637213,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.9576221023228768,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 1.0067997494156407,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.054866787905818,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.1118702874436952,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.162110623848054,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2078687779757267,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2623737964318738,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.3063027818235216,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.3484054162272048,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.396808955010293,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.4395233364058586,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.4860090833133714,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.5146185978384967,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 27,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.551400203445634,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 28,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.591042297880789,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 29,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.6272838332289674,
+          "epe_unit": "px_per_interval"
+        }
+      ]
+    },
+    {
+      "generator": "v2e",
+      "dt": 1,
+      "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/v2e_dt1_final.pt",
+      "checkpoint_bytes": 580023194,
+      "checkpoint_sha256": "465d1ed6071b980f605ae418c9c03fe8f95971056eb080dbb7f889a5d3ffd9c3",
+      "checkpoint_saved_state_sha256": "c9a51f058b9cea511211af44df4a1d961ca30c2751508cb682881c0f0f29ba59",
+      "restored_state_sha256": "c9a51f058b9cea511211af44df4a1d961ca30c2751508cb682881c0f0f29ba59",
+      "state_hash_equal": true,
+      "validation_rollouts": [
+        "validation_00",
+        "validation_01"
+      ],
+      "validation_interval_count": 60,
+      "epe_unit": "px_per_interval",
+      "corrected_synthetic_validation_epe_mean": 0.8244526216583465,
+      "corrected_synthetic_validation_epe_median": 0.8589643053415439,
+      "valid_pixel_count_total": 1205069,
+      "checkpoint_restore_probe": {
+        "rollout_id": "validation_00",
+        "interval_index": 0,
+        "full_two_channel_prediction_equal": true,
+        "prediction_max_abs_difference": 0.0,
+        "restored_epe_px_per_interval": 0.07062364507058147,
+        "valid_pixels": 20299
+      },
+      "elapsed_seconds": 26.10437939874828,
+      "peak_allocated_gpu_bytes": 450770944,
+      "intervals": [
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.07062364507058147,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20296,
+          "epe_px_per_interval": 0.09296020465558857,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20301,
+          "epe_px_per_interval": 0.13743323021210999,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20298,
+          "epe_px_per_interval": 0.1959032054259293,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.24397445847036925,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20303,
+          "epe_px_per_interval": 0.30565716623018424,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.3620753491189867,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20301,
+          "epe_px_per_interval": 0.4057940579041087,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20139,
+          "epe_px_per_interval": 0.4750006264125155,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20144,
+          "epe_px_per_interval": 0.5342804533303549,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20144,
+          "epe_px_per_interval": 0.603230471503219,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.663735564858371,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.7199478275989222,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.77690476100861,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8302465742539938,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8867468550096685,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 0.9327351255352746,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 0.9926447949886258,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.043868373561168,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.089132057443579,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.135417694783054,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.1812381491322408,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2249729021505695,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2731278368304229,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.3174677878018939,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.360869133069468,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.4012226815110929,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 27,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.4446941844397945,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 28,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.4848030212586085,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 29,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.5301185121089427,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.07359189287938074,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20299,
+          "epe_px_per_interval": 0.09190013809170147,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.13877407296312416,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20301,
+          "epe_px_per_interval": 0.20171973020450903,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.241110814137388,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20297,
+          "epe_px_per_interval": 0.3044266581980991,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20295,
+          "epe_px_per_interval": 0.3671430626616115,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20300,
+          "epe_px_per_interval": 0.4089799204094775,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20141,
+          "epe_px_per_interval": 0.4808113054287484,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20138,
+          "epe_px_per_interval": 0.5332571591718117,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.6094679880212451,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.6611735514935938,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.7212474587224256,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.7772998004790251,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.8333921602704099,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20145,
+          "epe_px_per_interval": 0.884536450412678,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 0.9314411409469322,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 0.9914313341808827,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.046277596802732,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.0877214337075023,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.140052300166555,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.1832605123032691,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2243487239057296,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.2721140615150117,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19985,
+          "epe_px_per_interval": 1.320927521364418,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.3603021261788553,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.403597384891535,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 27,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.4415562914816902,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 28,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.4883269800218841,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 29,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19825,
+          "epe_px_per_interval": 1.530141022810319,
+          "epe_unit": "px_per_interval"
+        }
+      ]
+    },
+    {
+      "generator": "eventgenesis",
+      "dt": 4,
+      "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/eventgenesis_dt4_final.pt",
+      "checkpoint_bytes": 580025922,
+      "checkpoint_sha256": "5ee3fa52850e0f0d1162f07fe0320c17c15b37cb87d4c65ca990d72efefea9a7",
+      "checkpoint_saved_state_sha256": "5c03dcfd3792c56a8c542dc91ff11b9433d19b1e9eedd938ecae806a6157f0f8",
+      "restored_state_sha256": "5c03dcfd3792c56a8c542dc91ff11b9433d19b1e9eedd938ecae806a6157f0f8",
+      "state_hash_equal": true,
+      "validation_rollouts": [
+        "validation_00",
+        "validation_01"
+      ],
+      "validation_interval_count": 54,
+      "epe_unit": "px_per_interval",
+      "corrected_synthetic_validation_epe_mean": 2.9637366673310304,
+      "corrected_synthetic_validation_epe_median": 3.146994939949364,
+      "valid_pixel_count_total": 1041639,
+      "checkpoint_restore_probe": {
+        "rollout_id": "validation_00",
+        "interval_index": 0,
+        "full_two_channel_prediction_equal": true,
+        "prediction_max_abs_difference": 0.0,
+        "restored_epe_px_per_interval": 0.4889358517156184,
+        "valid_pixels": 20139
+      },
+      "elapsed_seconds": 82.595723294653,
+      "peak_allocated_gpu_bytes": 593092096,
+      "intervals": [
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20139,
+          "epe_px_per_interval": 0.4889358517156184,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20136,
+          "epe_px_per_interval": 0.6967565624523644,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20141,
+          "epe_px_per_interval": 0.9051892982487862,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19978,
+          "epe_px_per_interval": 1.1030373290927877,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19979,
+          "epe_px_per_interval": 1.3168198248654406,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19823,
+          "epe_px_per_interval": 1.5194175688925122,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19819,
+          "epe_px_per_interval": 1.7481221397111748,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19661,
+          "epe_px_per_interval": 1.9499356011818318,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19659,
+          "epe_px_per_interval": 2.171302567375825,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19504,
+          "epe_px_per_interval": 2.3654527357265107,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19504,
+          "epe_px_per_interval": 2.565593220968161,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.7499978963538885,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.9568239353010535,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 3.1470792330550967,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.3168690509157197,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.4941763378061315,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.642442938802318,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.815656659158029,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 3.933891692183679,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 4.083495733687038,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 4.239594630656182,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.33659172900385,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.49998233351814,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.57409767842514,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.692527607013682,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.826819790840583,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18385,
+          "epe_px_per_interval": 4.895829486084481,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20140,
+          "epe_px_per_interval": 0.4890912565751463,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20139,
+          "epe_px_per_interval": 0.6987053439420352,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20140,
+          "epe_px_per_interval": 0.9061662670281313,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19981,
+          "epe_px_per_interval": 1.1060762772057384,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19980,
+          "epe_px_per_interval": 1.3133552121942993,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19817,
+          "epe_px_per_interval": 1.5199601557764595,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19815,
+          "epe_px_per_interval": 1.7429800164689597,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19660,
+          "epe_px_per_interval": 1.9511440580606667,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19661,
+          "epe_px_per_interval": 2.1769691006291296,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19498,
+          "epe_px_per_interval": 2.363731307219964,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19505,
+          "epe_px_per_interval": 2.5770718956456116,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.758862830207087,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.953699847932505,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 3.146910646843631,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.319371744126081,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.4988335688489123,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.6327643346559024,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.806207856639911,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 3.926133587224396,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 4.0795720040143655,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 4.244674414948637,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.336547523448905,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.4947236108600555,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.567667578054669,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.681984194521198,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.8230307050344985,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18385,
+          "epe_px_per_interval": 4.889105264732702,
+          "epe_unit": "px_per_interval"
+        }
+      ]
+    },
+    {
+      "generator": "v2e",
+      "dt": 4,
+      "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/v2e_dt4_final.pt",
+      "checkpoint_bytes": 580023194,
+      "checkpoint_sha256": "0fcb082a6eca1a90a1c4d5bbbcd2ead6833733bae0215adbabdbc3646d2c9bd8",
+      "checkpoint_saved_state_sha256": "1114bcd2a03f8a05d005905f944ea48344ca375be3942146d1d939bdf0e47066",
+      "restored_state_sha256": "1114bcd2a03f8a05d005905f944ea48344ca375be3942146d1d939bdf0e47066",
+      "state_hash_equal": true,
+      "validation_rollouts": [
+        "validation_00",
+        "validation_01"
+      ],
+      "validation_interval_count": 54,
+      "epe_unit": "px_per_interval",
+      "corrected_synthetic_validation_epe_mean": 2.8588164562449148,
+      "corrected_synthetic_validation_epe_median": 3.0145135991882617,
+      "valid_pixel_count_total": 1041639,
+      "checkpoint_restore_probe": {
+        "rollout_id": "validation_00",
+        "interval_index": 0,
+        "full_two_channel_prediction_equal": true,
+        "prediction_max_abs_difference": 0.0,
+        "restored_epe_px_per_interval": 0.44209230500039326,
+        "valid_pixels": 20139
+      },
+      "elapsed_seconds": 84.52691674046218,
+      "peak_allocated_gpu_bytes": 593092096,
+      "intervals": [
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20139,
+          "epe_px_per_interval": 0.44209230500039326,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20136,
+          "epe_px_per_interval": 0.6447959439721005,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20141,
+          "epe_px_per_interval": 0.857613949103726,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19978,
+          "epe_px_per_interval": 1.0609911522750801,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19979,
+          "epe_px_per_interval": 1.2524332247390229,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19823,
+          "epe_px_per_interval": 1.4620998442105242,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19819,
+          "epe_px_per_interval": 1.6679711383004863,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19661,
+          "epe_px_per_interval": 1.8633281013958687,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19659,
+          "epe_px_per_interval": 2.0744887356372104,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19504,
+          "epe_px_per_interval": 2.258673519660632,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19504,
+          "epe_px_per_interval": 2.4522925710557764,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.6231027123321264,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.8220486404528486,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 3.015109191784419,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.1721006141454993,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.355075194382909,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.490928457013153,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.660324116195787,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 3.778280814541715,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 3.9412848786047774,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 4.096511784005721,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.203179717558408,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.369141929072645,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.458700421816427,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.598904331320791,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.735772888395449,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_00",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18385,
+          "epe_px_per_interval": 4.832700985840912,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 0,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20140,
+          "epe_px_per_interval": 0.44928396423001016,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 1,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20139,
+          "epe_px_per_interval": 0.6435913950335791,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 2,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 20140,
+          "epe_px_per_interval": 0.8595836679291282,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 3,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19981,
+          "epe_px_per_interval": 1.0650672121387224,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 4,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19980,
+          "epe_px_per_interval": 1.2548457892685776,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 5,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19817,
+          "epe_px_per_interval": 1.464416696736374,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 6,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19815,
+          "epe_px_per_interval": 1.6675411328084393,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 7,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19660,
+          "epe_px_per_interval": 1.873357434633725,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 8,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19661,
+          "epe_px_per_interval": 2.07981894844626,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 9,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19498,
+          "epe_px_per_interval": 2.2565531351867376,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 10,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19505,
+          "epe_px_per_interval": 2.4589528488200267,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 11,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.619310437763973,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 12,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 2.819616639937387,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 13,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19345,
+          "epe_px_per_interval": 3.013918006592105,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 14,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.172611481255,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 15,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19185,
+          "epe_px_per_interval": 3.3556076132041412,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 16,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.4873410003161833,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 17,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 19025,
+          "epe_px_per_interval": 3.665725203231062,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 18,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 3.780269851850195,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 19,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 3.938048259678661,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 20,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18865,
+          "epe_px_per_interval": 4.094345803109841,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 21,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.204612903573322,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 22,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18705,
+          "epe_px_per_interval": 4.360897609595773,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 23,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.4519268559365255,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 24,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.58849297252008,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 25,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18545,
+          "epe_px_per_interval": 4.734962681296661,
+          "epe_unit": "px_per_interval"
+        },
+        {
+          "rollout_id": "validation_01",
+          "interval_index": 26,
+          "prediction_shape": [
+            2,
+            256,
+            256
+          ],
+          "gt_shape": [
+            2,
+            256,
+            256
+          ],
+          "valid_mask_shape": [
+            256,
+            256
+          ],
+          "valid_pixels": 18385,
+          "epe_px_per_interval": 4.825441929318492,
+          "epe_unit": "px_per_interval"
+        }
+      ]
+    }
+  ]
+}

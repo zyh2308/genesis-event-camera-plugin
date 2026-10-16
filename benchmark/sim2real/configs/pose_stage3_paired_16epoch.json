@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "scope": "corrected small synthetic-only paired event-only pose rerun; generic Genesis cuboid, not E-POSE real evaluation",
+  "purpose": "replay the repaired per-interval event windows and reach the pinned SingleShotPose confidence-loss phase after its 15-epoch coordinate pretrain",
+  "upstream_model": {
+    "repository": "https://github.com/microsoft/singleshotpose",
+    "commit": "2c282619101f9f31666dd18b42393375bea1600f",
+    "config": "cfg/yolo-pose.cfg",
+    "initialization": "random paired initialization; LINEMOD weights are not used"
+  },
+  "input": {
+    "source": "raw events from the paired EventGenesis or V2E stream",
+    "window": "(t_i,t_i+1], with the right endpoint exactly equal to the shared pose-label time",
+    "channels": ["ON log-count", "OFF log-count", "total log-count"],
+    "fixed_count_scale_per_channel": 8,
+    "normalization": "min(log1p(pixel_event_count)/log1p(8),1), no per-image maximum normalization",
+    "resize_hw": [416, 416],
+    "inference_inputs": "event-derived full-frame tensor only"
+  },
+  "labels": {
+    "source": "shared Genesis target pose, camera pose, actual camera K, and configured box dimensions",
+    "time_reference": "right endpoint of event window; persisted for every sample",
+    "single_shot_pose_format": "class, projected centroid, eight projected 3D cuboid corners, normalized x/y extent",
+    "training_only_supervision": true
+  },
+  "training": {
+    "seed": 71,
+    "epochs": 16,
+    "windows_per_physical_rollout": 2,
+    "batch_size": 1,
+    "optimizer": "SGD",
+    "learning_rate": 0.001,
+    "momentum": 0.9,
+    "weight_decay": 0.0005,
+    "loss": "pinned SingleShotPose RegionLoss coordinate pretraining; confidence term is enabled only in epoch 16",
+    "confidence_pretrain_epochs": 15,
+    "paired_initialization": true,
+    "validation": "synthetic validation rollouts only",
+    "budget_note": "With 8 train windows, this pilot performs 128 updates per generator; only the final 8 updates include confidence loss, so it is a diagnostic gate rather than a tuned final recipe."
+  },
+  "controls": {
+    "train_rollouts": ["train_00", "train_01", "train_02", "train_03"],
+    "validation_rollouts": ["validation_00", "validation_01"],
+    "forbidden_model_inputs": ["RGB", "GT mask", "GT crop", "GT box", "segmented events", "depth", "segmentation", "pose"],
+    "real_data_accessed": false
+  },
+  "diagnostics": {
+    "primary_validation": "standard model.eval() confidence-argmax decode",
+    "additional_synthetic_only_checks": [
+      "ground-truth centroid-cell decode to separate keypoint regression from confidence-cell selection",
+      "train-mode batch-stat decode with BN buffers restored after each diagnostic probe",
+      "record BN running-stat hashes and num_batches_tracked in checkpoint result metadata",
+      "record sample_id, rollout_id, event_start_s, event_end_s, label_time_s, and independently recountable event_count"
+    ]
+  }
+}

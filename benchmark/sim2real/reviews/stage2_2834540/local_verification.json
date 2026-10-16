@@ -1,0 +1,532 @@
+{
+  "repo": {
+    "head": "2834540c45c1b50c2d19d5fab078752f2350c3bf",
+    "status_before_review": "",
+    "core_diff": "",
+    "integration_diff": "integrations/genesis_renderer_hdr_v2_overlay/README.md"
+  },
+  "indexed_artifacts": 135,
+  "mismatches": [
+    "benchmark/sim2real/README.md"
+  ],
+  "results": {
+    "runs/20261016-s2-steflow-pilot-v3/training/result.json": [
+      {
+        "generator": "eventgenesis",
+        "dt": 1,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "seed": 71,
+        "initial_state_sha256": "c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4",
+        "final_state_sha256": "d0c8fab6e4cb1ccdae81dccb687db43b9e70afe95c4d4caa31ac31d0ba91884d",
+        "updates": 16,
+        "epochs": 2,
+        "selected_intervals_per_train_rollout": {
+          "train_00": [
+            0,
+            29
+          ],
+          "train_01": [
+            0,
+            29
+          ],
+          "train_02": [
+            0,
+            29
+          ],
+          "train_03": [
+            0,
+            29
+          ]
+        },
+        "train_objective": "official four-scale Charbonnier photometric loss + 10x second-order smoothness",
+        "validation_objective": "eval-mode final flow tensor; dt1 adjacent endpoints or dt4 first/last endpoints, official photometric/smoothness operators",
+        "flow_gt_use": "synthetic validation EPE only; never passed to the model or optimizer",
+        "train_wall_seconds": 16.3293184209615,
+        "train_loss_mean": 115.06167793273926,
+        "train_photometric_mean": 93.05149221420288,
+        "train_smoothness_mean": 2.201018698513508,
+        "gradient_l2_norm_min": 147.73634888975252,
+        "gradient_l2_norm_max": 2395.447458362553,
+        "finite_gradient_tensors_min": 70,
+        "validation_interval_count": 60,
+        "synthetic_validation_epe_mean_px_per_interval": 0.8301204380889734,
+        "synthetic_validation_objective_mean": 213.41021728515625,
+        "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/eventgenesis_dt1_final.pt",
+        "checkpoint_sha256": "95c4461afc03f748d5e41247f47a7a62ddcd1abca08a753d41dfeb2e0941f4ce",
+        "checkpoint_restore_state_hash_match": true,
+        "checkpoint_restore_synthetic_validation_epe": 0.12560991942882538,
+        "peak_allocated_gpu_bytes": 3633890304,
+        "observed_training_record_count": 16,
+        "train_rollouts_disjoint_validation": true
+      },
+      {
+        "generator": "v2e",
+        "dt": 1,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "seed": 71,
+        "initial_state_sha256": "c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4",
+        "final_state_sha256": "c9a51f058b9cea511211af44df4a1d961ca30c2751508cb682881c0f0f29ba59",
+        "updates": 16,
+        "epochs": 2,
+        "selected_intervals_per_train_rollout": {
+          "train_00": [
+            0,
+            29
+          ],
+          "train_01": [
+            0,
+            29
+          ],
+          "train_02": [
+            0,
+            29
+          ],
+          "train_03": [
+            0,
+            29
+          ]
+        },
+        "train_objective": "official four-scale Charbonnier photometric loss + 10x second-order smoothness",
+        "validation_objective": "eval-mode final flow tensor; dt1 adjacent endpoints or dt4 first/last endpoints, official photometric/smoothness operators",
+        "flow_gt_use": "synthetic validation EPE only; never passed to the model or optimizer",
+        "train_wall_seconds": 15.213036187924445,
+        "train_loss_mean": 109.79783487319946,
+        "train_photometric_mean": 91.59161758422852,
+        "train_smoothness_mean": 1.8206216413527727,
+        "gradient_l2_norm_min": 161.54532682007184,
+        "gradient_l2_norm_max": 2947.2019824872577,
+        "finite_gradient_tensors_min": 70,
+        "validation_interval_count": 60,
+        "synthetic_validation_epe_mean_px_per_interval": 0.8082449225708842,
+        "synthetic_validation_objective_mean": 217.00058466593424,
+        "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/v2e_dt1_final.pt",
+        "checkpoint_sha256": "465d1ed6071b980f605ae418c9c03fe8f95971056eb080dbb7f889a5d3ffd9c3",
+        "checkpoint_restore_state_hash_match": true,
+        "checkpoint_restore_synthetic_validation_epe": 0.054199110716581345,
+        "peak_allocated_gpu_bytes": 3633890304,
+        "observed_training_record_count": 16,
+        "train_rollouts_disjoint_validation": true
+      },
+      {
+        "generator": "eventgenesis",
+        "dt": 4,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "seed": 71,
+        "initial_state_sha256": "c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4",
+        "final_state_sha256": "5c03dcfd3792c56a8c542dc91ff11b9433d19b1e9eedd938ecae806a6157f0f8",
+        "updates": 16,
+        "epochs": 2,
+        "selected_intervals_per_train_rollout": {
+          "train_00": [
+            0,
+            26
+          ],
+          "train_01": [
+            0,
+            26
+          ],
+          "train_02": [
+            0,
+            26
+          ],
+          "train_03": [
+            0,
+            26
+          ]
+        },
+        "train_objective": "official four-scale Charbonnier photometric loss + 10x second-order smoothness",
+        "validation_objective": "eval-mode final flow tensor; dt1 adjacent endpoints or dt4 first/last endpoints, official photometric/smoothness operators",
+        "flow_gt_use": "synthetic validation EPE only; never passed to the model or optimizer",
+        "train_wall_seconds": 57.04376783873886,
+        "train_loss_mean": 115.8236575126648,
+        "train_photometric_mean": 100.6203203201294,
+        "train_smoothness_mean": 1.5203336589038372,
+        "gradient_l2_norm_min": 109.80084199076866,
+        "gradient_l2_norm_max": 1822.9986478989078,
+        "finite_gradient_tensors_min": 70,
+        "validation_interval_count": 54,
+        "synthetic_validation_epe_mean_px_per_interval": 2.853701624053496,
+        "synthetic_validation_objective_mean": 261.3829744127062,
+        "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/eventgenesis_dt4_final.pt",
+        "checkpoint_sha256": "5ee3fa52850e0f0d1162f07fe0320c17c15b37cb87d4c65ca990d72efefea9a7",
+        "checkpoint_restore_state_hash_match": true,
+        "checkpoint_restore_synthetic_validation_epe": 0.45753881335258484,
+        "peak_allocated_gpu_bytes": 12564541440,
+        "observed_training_record_count": 16,
+        "train_rollouts_disjoint_validation": true
+      },
+      {
+        "generator": "v2e",
+        "dt": 4,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "seed": 71,
+        "initial_state_sha256": "c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4",
+        "final_state_sha256": "1114bcd2a03f8a05d005905f944ea48344ca375be3942146d1d939bdf0e47066",
+        "updates": 16,
+        "epochs": 2,
+        "selected_intervals_per_train_rollout": {
+          "train_00": [
+            0,
+            26
+          ],
+          "train_01": [
+            0,
+            26
+          ],
+          "train_02": [
+            0,
+            26
+          ],
+          "train_03": [
+            0,
+            26
+          ]
+        },
+        "train_objective": "official four-scale Charbonnier photometric loss + 10x second-order smoothness",
+        "validation_objective": "eval-mode final flow tensor; dt1 adjacent endpoints or dt4 first/last endpoints, official photometric/smoothness operators",
+        "flow_gt_use": "synthetic validation EPE only; never passed to the model or optimizer",
+        "train_wall_seconds": 58.57843516021967,
+        "train_loss_mean": 113.68795824050903,
+        "train_photometric_mean": 101.09229898452759,
+        "train_smoothness_mean": 1.2595658414065838,
+        "gradient_l2_norm_min": 125.80845009353958,
+        "gradient_l2_norm_max": 1834.433070580815,
+        "finite_gradient_tensors_min": 70,
+        "validation_interval_count": 54,
+        "synthetic_validation_epe_mean_px_per_interval": 2.8379232033535287,
+        "synthetic_validation_objective_mean": 278.35166931152344,
+        "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/v2e_dt4_final.pt",
+        "checkpoint_sha256": "0fcb082a6eca1a90a1c4d5bbbcd2ead6833733bae0215adbabdbc3646d2c9bd8",
+        "checkpoint_restore_state_hash_match": true,
+        "checkpoint_restore_synthetic_validation_epe": 0.4534115791320801,
+        "peak_allocated_gpu_bytes": 12564541440,
+        "observed_training_record_count": 16,
+        "train_rollouts_disjoint_validation": true
+      }
+    ],
+    "runs/20261016-s2-e2vid-pilot-v1/training/result.json": [
+      {
+        "generator": "eventgenesis",
+        "seed": 71,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "train_sequences_per_epoch": 112,
+        "validation_sequences": 56,
+        "sequence_length": 3,
+        "epochs": 2,
+        "updates": 224,
+        "initial_state_sha256": "b07667dbbfe18c1432ee543501b2686fb026d0f02c3e69eb23ebd10e4a5cffb0",
+        "final_model_state_sha256": "72b404049fa0ceac6a2cb37a2d269afbf53697937dec7113f2ea4d8b0dec2ca6",
+        "temporal_consistency_loss": {
+          "weight": 2.0,
+          "L0": 2,
+          "train_valid_calls": 224,
+          "validation_valid_calls": 56,
+          "train_value_mean": 0.03700613091599995,
+          "validation_value_mean": 0.015323090649742101,
+          "train_value_count": 224,
+          "validation_value_count": 56
+        },
+        "recursive_state_tensor_count_after_sequence": 6,
+        "train_wall_seconds": 14.078661042265594,
+        "mean_train_components": {
+          "perceptual_loss/unknown": 0.34317024304930654,
+          "temporal_consistency_loss/unknown": 0.03700613091599995,
+          "loss": 0.3801763732252376,
+          "loss/unknown": 0.3801763732252376
+        },
+        "mean_validation_components": {
+          "perceptual_loss/unknown": 0.20687987974711827,
+          "temporal_consistency_loss/unknown": 0.015323090649742101,
+          "loss": 0.22220296944890702,
+          "loss/unknown": 0.22220296944890702
+        },
+        "backprop": {
+          "all_steps_finite_nonzero_gradient": true,
+          "gradient_l2_norm_min": 0.24381624481945496,
+          "gradient_l2_norm_max": 9.964882127636022,
+          "finite_gradient_tensors_min": 30
+        },
+        "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-e2vid-pilot-v1/training/eventgenesis_final.pt",
+        "checkpoint_sha256": "004e0baf4f4f95264cfa3642f69e7aa3a85ea2c501d8116d30f940676ad58828",
+        "checkpoint_restore_model_hash_match": true,
+        "checkpoint_restore_synthetic_validation_probe": {
+          "perceptual_loss/unknown": 0.2119680494070053,
+          "temporal_consistency_loss/unknown": 0.009762928821146488,
+          "loss": 0.22173097729682922,
+          "loss/unknown": 0.22173097729682922
+        },
+        "peak_allocated_gpu_bytes": 692508672,
+        "observed_training_record_count": 224,
+        "train_rollouts_disjoint_validation": true
+      },
+      {
+        "generator": "v2e",
+        "seed": 71,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "train_sequences_per_epoch": 112,
+        "validation_sequences": 56,
+        "sequence_length": 3,
+        "epochs": 2,
+        "updates": 224,
+        "initial_state_sha256": "b07667dbbfe18c1432ee543501b2686fb026d0f02c3e69eb23ebd10e4a5cffb0",
+        "final_model_state_sha256": "979fd0ab5a65beb4433f0442ae5c1e5d210c3558aa756673a939d26668f4ffae",
+        "temporal_consistency_loss": {
+          "weight": 2.0,
+          "L0": 2,
+          "train_valid_calls": 224,
+          "validation_valid_calls": 56,
+          "train_value_mean": 0.03842902004752042,
+          "validation_value_mean": 0.02315877135177808,
+          "train_value_count": 224,
+          "validation_value_count": 56
+        },
+        "recursive_state_tensor_count_after_sequence": 6,
+        "train_wall_seconds": 15.121351234614849,
+        "mean_train_components": {
+          "perceptual_loss/unknown": 0.44290346718792406,
+          "temporal_consistency_loss/unknown": 0.03842902004752042,
+          "loss": 0.48133248716060606,
+          "loss/unknown": 0.48133248716060606
+        },
+        "mean_validation_components": {
+          "perceptual_loss/unknown": 0.24009918022368634,
+          "temporal_consistency_loss/unknown": 0.02315877135177808,
+          "loss": 0.26325795081044945,
+          "loss/unknown": 0.26325795081044945
+        },
+        "backprop": {
+          "all_steps_finite_nonzero_gradient": true,
+          "gradient_l2_norm_min": 0.4295895732230849,
+          "gradient_l2_norm_max": 90.88919408641434,
+          "finite_gradient_tensors_min": 30
+        },
+        "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-e2vid-pilot-v1/training/v2e_final.pt",
+        "checkpoint_sha256": "5ba9199ea611207ee8e04607af9a262309699cec6c4348e0eabaf517d6363a19",
+        "checkpoint_restore_model_hash_match": true,
+        "checkpoint_restore_synthetic_validation_probe": {
+          "perceptual_loss/unknown": 0.2735828757286072,
+          "temporal_consistency_loss/unknown": 0.012288982979953289,
+          "loss": 0.28587186336517334,
+          "loss/unknown": 0.28587186336517334
+        },
+        "peak_allocated_gpu_bytes": 1081329152,
+        "observed_training_record_count": 224,
+        "train_rollouts_disjoint_validation": true
+      }
+    ],
+    "runs/20261016-s2-pose-pilot-v2/output/result.json": [
+      {
+        "generator": "eventgenesis",
+        "initial_state_sha256": "a47ecb230e60d205f5973b981e959c2226cc650d821ac1c4f126a1cf1fde4796",
+        "final_state_sha256": "1c38fcd841d402d3179c02ff091308647cebea2b4d247f333cae10e52f2f5313",
+        "checkpoint_sha256": "8e8280d594eb60e7001cd75b884c16c7f1b9188eb61d3546c44c9be708cc53b8",
+        "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-pose-pilot-v2/output/eventgenesis.pt",
+        "train_sample_count": 8,
+        "validation_sample_count": 4,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "train_wall_seconds": 1.0494630951434374,
+        "peak_allocated_gpu_mib": 781.85205078125,
+        "train_loss_mean": 28.39148359000683,
+        "train_gradient_norm_min_max": [
+          15.205883026123047,
+          3871.972900390625
+        ],
+        "validation_keypoint_mean_epe_px": 158580.50770568848,
+        "checkpoint_restore_hash_equal": true,
+        "objective": "pinned SingleShotPose RegionLoss coordinate pretraining phase; default first-15-epoch confidence exclusion retained",
+        "observed_training_record_count": 16,
+        "train_rollouts_disjoint_validation": true
+      },
+      {
+        "generator": "v2e",
+        "initial_state_sha256": "a47ecb230e60d205f5973b981e959c2226cc650d821ac1c4f126a1cf1fde4796",
+        "final_state_sha256": "7a01a2a658eb7a9a67bb870d611005d79bb4c25ea297d3186b3f2c152976e368",
+        "checkpoint_sha256": "1eaac0c46bec518a28e97dc6d17e953463833b70edb37fc2849d8e95ef5fafbc",
+        "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-pose-pilot-v2/output/v2e.pt",
+        "train_sample_count": 8,
+        "validation_sample_count": 4,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "train_wall_seconds": 0.45849351678043604,
+        "peak_allocated_gpu_mib": 781.91455078125,
+        "train_loss_mean": 48.64263781905174,
+        "train_gradient_norm_min_max": [
+          29.07294273376465,
+          4343.13134765625
+        ],
+        "validation_keypoint_mean_epe_px": 59140.50390625,
+        "checkpoint_restore_hash_equal": true,
+        "objective": "pinned SingleShotPose RegionLoss coordinate pretraining phase; default first-15-epoch confidence exclusion retained",
+        "observed_training_record_count": 16,
+        "train_rollouts_disjoint_validation": true
+      }
+    ],
+    "runs/20261016-s2-pose-pilot-v1/output/result.json": [
+      {
+        "generator": "eventgenesis",
+        "initial_state_sha256": "a47ecb230e60d205f5973b981e959c2226cc650d821ac1c4f126a1cf1fde4796",
+        "final_state_sha256": "54c85d1642862b3330a189c8bb9bcd11ffb76f6f3010f75c2a396d47762051e9",
+        "checkpoint_sha256": "d16742a46cc6b150dc098feba54890777d8eb578ec3a2f82d4c7e5bed3f21dcc",
+        "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-pose-pilot-v1/output/eventgenesis.pt",
+        "train_sample_count": 4,
+        "validation_sample_count": 2,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "train_wall_seconds": 1.7282815435901284,
+        "peak_allocated_gpu_mib": 781.85205078125,
+        "train_loss_mean": 36.35187917947769,
+        "train_gradient_norm_min_max": [
+          38.871761322021484,
+          6153.78125
+        ],
+        "validation_keypoint_mean_epe_px": 531106.578125,
+        "checkpoint_restore_hash_equal": true,
+        "objective": "pinned SingleShotPose RegionLoss coordinate pretraining phase; default first-15-epoch confidence exclusion retained",
+        "observed_training_record_count": 8,
+        "train_rollouts_disjoint_validation": true
+      },
+      {
+        "generator": "v2e",
+        "initial_state_sha256": "a47ecb230e60d205f5973b981e959c2226cc650d821ac1c4f126a1cf1fde4796",
+        "final_state_sha256": "4e68835fa49b92f32cc33e92b9666327bdb356481389b80f4d329ca7ab2f75ef",
+        "checkpoint_sha256": "af10f735ca6e91e4ade883a4475e8a774ddff6cb51e246cc5ee08d5c91efcb4b",
+        "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-pose-pilot-v1/output/v2e.pt",
+        "train_sample_count": 4,
+        "validation_sample_count": 2,
+        "train_rollouts": [
+          "train_00",
+          "train_01",
+          "train_02",
+          "train_03"
+        ],
+        "validation_rollouts": [
+          "validation_00",
+          "validation_01"
+        ],
+        "train_wall_seconds": 0.21894040890038013,
+        "peak_allocated_gpu_mib": 781.91455078125,
+        "train_loss_mean": 48.469984352588654,
+        "train_gradient_norm_min_max": [
+          28.316408157348633,
+          5931.87109375
+        ],
+        "validation_keypoint_mean_epe_px": 3106778.9375,
+        "checkpoint_restore_hash_equal": true,
+        "objective": "pinned SingleShotPose RegionLoss coordinate pretraining phase; default first-15-epoch confidence exclusion retained",
+        "observed_training_record_count": 8,
+        "train_rollouts_disjoint_validation": true
+      }
+    ]
+  },
+  "independent_CPU_correlation": [
+    {
+      "shape": [
+        2,
+        3,
+        6,
+        7
+      ],
+      "forward_max_error": 0.0,
+      "gradient_max_error": 7.105427357601002e-15
+    },
+    {
+      "shape": [
+        1,
+        2,
+        2,
+        3
+      ],
+      "forward_max_error": 0.0,
+      "gradient_max_error": 4.440892098500626e-16
+    },
+    {
+      "shape": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "forward_max_error": 0.0,
+      "gradient_max_error": 0.0
+    }
+  ]
+}

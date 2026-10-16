@@ -1,34 +1,44 @@
 # Object-pose route: SingleShotPose / YOLO-6D → E-POSE
 
-Status: full-frame event-only synthetic closure was executed on a generic shared Genesis cuboid. The E-POSE-specific sample/CAD contract and class-matched task remain blocked pending one accessible raw sample and matching CAD; this is not a claim that E-POSE is unavailable.
+Status: the pose-window bug is fixed and a corrected, paired event-only synthetic pilot completed. The E-POSE sample/CAD contract remains blocked by the publisher's current WAF responses. The generic Genesis cuboid is not an E-POSE class match.
 
-## Model/input audit
+## Model and event-only input contract
 
-- Pinned candidates are Microsoft SingleShotPose commit `2c282619101f9f31666dd18b42393375bea1600f` and E-POSE annotation source commit `b96ae783fcb6de84e1e9c602e91bce941cab0234`. The E-POSE repository is annotation tooling, not a ready downstream trainer. The pinned SingleShotPose implementation uses an RGB/LINEMOD loader and real-data validation path, so neither can be used for this protocol.
-- The benchmark pilot adapts the pinned SingleShotPose 416×416 full-frame Darknet input and RegionLoss target format. Inference input is only three raw-event-derived channels: ON log-count, OFF log-count and total log-count, with a fixed count scale of 8 over each 10 ms window. Supervision is shared Genesis pose/K projected centroid and eight cuboid corners.
-- No RGB, GT crop, GT mask, GT box, segmented events, depth, segmentation or pose enters inference. The generic cuboid class has no matched E-POSE/YCB CAD and does not establish compatibility with the 13 published object classes.
+- Pinned sources: SingleShotPose commit `2c282619101f9f31666dd18b42393375bea1600f`; E-POSE annotation tooling commit `b96ae783fcb6de84e1e9c602e91bce941cab0234`.
+- The adapted model is the pinned SingleShotPose 416×416 full-frame Darknet/RegionLoss model. Its input is only three event-derived channels (ON log-count, OFF log-count, total log-count); no RGB, GT crop, GT mask, GT box, segmented events, depth, segmentation, or pose enters inference.
+- Synthetic supervision uses shared Genesis pose, camera pose, actual K, and the configured 0.16 m generic cuboid to create normalized centroid plus eight 3D box-corner projections. This label is only a generic cuboid, with no E-POSE/YCB CAD/category match.
+- The output decoder was compared with pinned `utils.get_region_boxes`: for one class/one anchor, both select the globally highest objectness cell; both apply sigmoid to centroid offsets and raw offsets to the eight corners, then normalize by grid width/height. The adapter follows that behavior. The pinned validation code also consumes this single highest-confidence box.
 
-## Executed pilot and result
+## Corrected event window and timestamp audit
 
-- Both generators used the same six whole rollout bank, seed 71 paired initialization (initial state hash `a47ecb230e60d205f5973b981e959c2226cc650d821ac1c4f126a1cf1fde4796`), two epochs, 16 updates, eight train windows and four independent synthetic validation windows. Checkpoint save/restore state hashes matched. Peak allocation was about 782 MiB; the second pilot's train wall time was 1.05 s for EventGenesis and 0.46 s for V2E.
-- Pilot v1 selected too few useful visible windows and produced extremely large validation keypoint error. The selector was corrected to choose evenly spaced fully visible windows from each train rollout; pilot v2 completed with more windows. Its synthetic validation keypoint mean EPE remained `158,581 px` for EventGenesis and `59,141 px` for V2E. These enormous values indicate the generic short pilot has not produced a usable pose predictor. They are not a generator comparison and cannot be treated as an E-POSE score.
-- The interface/optimizer/gradient/checkpoint route executes, but task closure is incomplete: labels need a real E-POSE class and CAD match, and the current output behavior is poor. Do not scale this generic route or report the apparent difference as a performance result.
+Stage 2 had a stale loop-variable bug: selected samples reused the timestamp from the last visibility scan, so their event windows could extend to the rollout tail after the associated pose label. This made the Stage 2 pose EPE values invalid. The fix derives `event_end_s = label_time_s = times[interval_index + 1]` for every sample and persists sample ID, rollout ID, interval, event start/end, label time, and event count.
 
-## E-POSE sample contract and access evidence
+An independent fixture recounts the raw timestamps without using the adapter selector. For two distinct windows `(0.0,0.1]` and `(0.1,0.2]`, it verifies counts 3/3 for EventGenesis and 4/3 for V2E, including exact boundary events; the latest included event is at the label time and none is later.
 
-- The paper reports 306 sequences, 13 single-object classes plus four multi-object scenes, raw H5 events and per-window annotations including `T_dvs^obj`, `IntrinsicMatrix`, `T_base^dvs`, time, projected keypoints and class index. It describes 10 ms windows. These are publication facts only; the raw sample has not been parsed.
-- The publisher record lists a 27.72 GB full archive. On g1, the read-only Figshare API metadata route returned HTTP 403 and the publisher landing-page request returned HTTP 202 with an empty body. An earlier local API request also returned HTTP 403. These responses blocked sample retrieval in the current environment; they do not establish global data unavailability. No automated retries or bulk archive download were run.
-- The raw event timestamp unit/polarity/order, exact K matrix convention, object/camera transform direction, coordinate axes and units, timestamp synchronization, CAD mesh/model scale and class mapping remain to be checked against one released raw sample and its corresponding CAD.
-- Candidate real metric is ADD/ADD-S success at `0.1d` with supporting reprojection/translation/rotation metrics. That candidate is not frozen, and no real evaluation entry point was exercised.
+## Corrected paired synthetic pilot and diagnosis
 
-## Recommended next gate
+- Config: 16 epochs, 8 train windows from four whole physical rollouts, 4 validation windows from two held-out rollouts, 128 updates per generator, batch size 1. EventGenesis/V2E use the same labels, sample IDs, split and initial-state hash `a47ecb230e60d205f5973b981e959c2226cc650d821ac1c4f126a1cf1fde4796`.
+- The original confidence term is disabled for epochs 1–15 and enabled for only the final 8 updates. Both checkpoints saved and restored with exact state hashes. Training loss and gradients were finite; loss means were 4.95 (EventGenesis) and 30.32 (V2E), with gradient-norm maxima 5,454 and 7,249. Peak allocated GPU memory was about 783 MiB and training took about 3.8 s per generator on a TITAN RTX.
+- Standard eval-mode confidence decode gave synthetic validation mean keypoint EPE 35.79 px (EventGenesis) and 245.00 px (V2E). These are corrected-window pilot diagnostics only; they are not an E-POSE result or generator conclusion.
+- A separate GT-cell-only decode (not an allowed inference input) gave 12.77–26.44 px across EventGenesis validation windows and 7.40–18.09 px for V2E, while confidence-selected decoding was worse. This isolates confidence-cell selection as one source of error; the confidence head had only eight updates after its 15-epoch pretraining phase.
+- A one-sample 16-update overfit diagnostic reduced the coordinate loss from 10.58 to 0.19. In train mode, GT-cell decode was 14.85 px, but ordinary eval-mode GT-cell decode was 10,650 px with keypoints outside the unit square; after one train-mode BN update the next eval decode was still 1,262 px. The same diagnostic's confidence-selected eval output was 913,856 px. This is direct evidence of a severe batch-one BatchNorm running-stat/inference gap, in addition to the confidence-cell issue. It is not evidence that longer training alone will fix the route. Train-mode or GT-cell decoding is not substituted for real inference.
+- The corrected four-window pilot's PnP solve returned success on all windows, but this does not repair the projection-error and BN behavior. No real pose metric was computed.
 
-Obtain one original E-POSE raw H5 plus its matching CAD through an accessible route, then write a sample-level contract audit for raw events, timestamps, K, transforms, axes, units and CAD scale. Preserve the event-only full-frame inference rule. After that audit, decide whether a class-matched synthetic bank and the mature SingleShotPose output/loss are appropriate. If the paper's GT labels or CAD format do not match that output contract, ask the research session to approve a concrete model or task change before implementing it. Reconstruction and optical flow do not depend on this gate.
+## E-POSE sample and CAD access
 
-## Reproduction and evidence
+- DataCite resolved DOI `10.6084/m9.figshare.28106717` to the official [Springer Nature Figshare record](https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717), with a listed total of 29,759,153,475 bytes and CC-BY 4.0 metadata.
+- At `2026-10-16T06:53:22Z`, the official landing page returned HTTP 202 with an AWS WAF challenge and an empty body. The public Figshare article API returned HTTP 403. DataCite did not provide file-level IDs. No raw sample, matching CAD, class record, K, or pose annotation was obtained; therefore no E-POSE inference ran.
+- Raw timestamp unit/order/polarity, camera K convention, transform direction/axes/units, event/pose synchronization, CAD scale and object-class mapping remain unverified. Do not substitute a generic cuboid for the missing matched sample.
 
-- Candidate config: [`../configs/pose_stage2_pilot.json`](../configs/pose_stage2_pilot.json).
-- Pilot v1 and v2 commands, logs, selected windows and result JSONs: [`evidence/S2/20261016-stage2-pilot/runs/20261016-s2-pose-pilot-v1/`](../evidence/S2/20261016-stage2-pilot/runs/20261016-s2-pose-pilot-v1/) and [`evidence/S2/20261016-stage2-pilot/runs/20261016-s2-pose-pilot-v2/`](../evidence/S2/20261016-stage2-pilot/runs/20261016-s2-pose-pilot-v2/).
-- External checkpoint paths, sizes and hashes: [`evidence/S2/20261016-stage2-pilot/external_artifacts.json`](../evidence/S2/20261016-stage2-pilot/external_artifacts.json).
+## Research review gate
 
-No E-POSE sample, real model score, checkpoint selection, or real-data tuning was performed.
+Minimum data request: obtain one original E-POSE event/pose sample and its matched CAD through an authorized publisher route, author mirror, or direct sample handoff. Then run the raw event/K/pose/CAD contract audit before integration. Separately, the research session should decide whether the pinned SingleShotPose confidence/BatchNorm inference behavior can be addressed within the frozen model/training definition or whether a mature event-compatible full-frame pose model is required. Do not scale the current generic pilot; this gate does not block reconstruction or optical flow.
+
+## Evidence and reproduction
+
+- Stage 3 paired pilot and one-sample diagnostic commands, environments, outputs, checkpoint hashes and failures: [`evidence/S3/20261016-stage3/`](../evidence/S3/20261016-stage3/).
+- Independent raw-window recount and confidence decoder fixture: `evidence/S3/20261016-stage3/controlled_checks/pose_window_audit_latest.json`.
+- Config: [`../configs/pose_stage3_paired_16epoch.json`](../configs/pose_stage3_paired_16epoch.json); candidate program: [`../scripts/run_pose_stage2_pilot.py`](../scripts/run_pose_stage2_pilot.py).
+- Stage 2 keypoint values `158,581 / 59,141 px` are historical and invalid because the selected event windows were time-misaligned. The Stage 2 training/checkpoint logs remain archived.
+
+No E-POSE sample, matched CAD, real inference, real score, or real-data tuning is claimed.

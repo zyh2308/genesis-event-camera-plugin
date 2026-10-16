@@ -7,11 +7,13 @@ Frozen simulator core: `e79e656ac00f7847b98db9e12bf43b093f3afff1` (unchanged)
 
 This file is the compact handoff for the research review. It summarizes what the Stage 2 evidence supports and links to the full reports, configs, run logs, manifests, and external artifact hashes. It is not a real-data result report: no HQF, MVSEC, or E-POSE candidate model was scored on real data.
 
+> **Stage 3 correction:** the Stage 2 STE-FlowNet EPE values and “nearly tied” statement are invalid because the scorer extracted only `u` and broadcast it across both GT components. The Stage 2 pose EPE is also invalid because selected event windows ended at the rollout tail instead of their own label timestamps. Flow was re-scored from the same four checkpoints; pose was rerun with corrected windows. See [`STAGE3_RESEARCH_HANDOFF.md`](STAGE3_RESEARCH_HANDOFF.md).
+
 ## Decision summary
 
 - **Reconstruction (E2VID+ → HQF):** the synthetic training path and the Stage 1 R1/R2 fixes passed targeted checks. HQF data and the candidate real evaluator have not been exercised. Keep HQF as a protocol candidate pending review of its sequence inventory, license, adapter, and metric aggregation.
-- **Optical flow (STE-FlowNet → MVSEC):** paired synthetic pilots completed for dt=1 and dt=4, including checkpoint restoration and correlation-operator checks. The two generators' synthetic EPE values are nearly tied; this pilot gives no generator ranking. MVSEC data and the real support-mask protocol remain unchecked or unfrozen.
-- **Object pose (SingleShotPose → E-POSE):** the event-only training/checkpoint interface ran, but validation keypoint errors remain unusably large and the synthetic cuboid has no matched E-POSE CAD/class. Pause expansion at the raw-sample/CAD contract check. Current E-POSE retrieval responses blocked access in this environment; they do not establish global dataset unavailability.
+- **Optical flow (STE-FlowNet → MVSEC):** paired synthetic pilots and checkpoints remain valid, but Stage 2 EPE is invalid due to dropped `v`. Stage 3 corrected the synthetic EPE from the four saved checkpoints and ran event-only inference on a preregistered real `indoor_flying1` fragment. There is no real-data ranking; the evaluation support mask still needs research freeze.
+- **Object pose (SingleShotPose → E-POSE):** Stage 2 keypoint EPE is invalid due to time-misaligned event windows. Stage 3 reran a corrected paired synthetic pilot and found unresolved confidence-cell and BatchNorm inference behavior; no E-POSE sample or matched CAD was retrieved. Do not treat the generic cuboid results as an E-POSE result.
 - **Scientific conclusion:** engineering readiness improved for reconstruction and flow. There is no evidence yet for or against EventGenesis sim-to-real superiority. Pose is not a viable result at this stage.
 
 ## What was actually run
@@ -32,15 +34,15 @@ The bank is at `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-
 
 | Interval | EventGenesis synthetic validation EPE | V2E synthetic validation EPE | Peak allocated GPU |
 |---|---:|---:|---:|
-| dt=1 | 0.8301 px | 0.8082 px | 3.63 GB |
-| dt=4 | 2.8537 px | 2.8379 px | 12.56 GB |
+| dt=1 | **INVALID:** 0.8301 px | **INVALID:** 0.8082 px | 3.63 GB |
+| dt=4 | **INVALID:** 2.8537 px | **INVALID:** 2.8379 px | 12.56 GB |
 
-Each generator/task ran two epochs and 16 updates. Losses and gradients were finite; all four checkpoints restored to matching hashes. A benchmark-local pure-PyTorch correlation implementation matched an explicit 81-shift reference (max forward error `7.63e-6`, max gradient error `1.49e-8`). The EPE differences are small for this pilot and do not support ranking. dt=4 memory was measured at 160×128; MVSEC is 346×260, so target-resolution memory still needs a pilot.
+Each generator/task ran two epochs and 16 updates. Losses and gradients were finite; all four checkpoints restored to matching hashes. A benchmark-local pure-PyTorch correlation implementation matched an explicit 81-shift reference (max forward error `7.63e-6`, max gradient error `1.49e-8`). The table's EPE values are retained as historical output but are invalid. Stage 3 contains the corrected values and target-resolution real-input measurements.
 
 ### Object pose
 
 - Full-frame input used only three event-derived channels (ON, OFF, total log-count); no RGB, GT crop/mask/box, segmented events, depth, segmentation, or GT pose entered inference.
-- The generic cuboid pilot used paired initialization and 16 updates. Its validation keypoint EPE remained about 158,581 px for EventGenesis and 59,141 px for V2E. These values are unusable and are not an E-POSE score or generator comparison.
+- **INVALID historical values:** the generic cuboid pilot reported 158,581 px for EventGenesis and 59,141 px for V2E, but its selected event windows used the rollout-tail endpoint rather than the label time. Stage 3's corrected-window values and implementation diagnostics supersede these.
 - The E-POSE paper's annotation fields were source-checked, but no raw H5 or matching CAD was parsed. Timestamp unit/order/polarity, K convention, pose transform direction/axes/units, synchronization, CAD scale, and class mapping remain unverified. One sample plus its CAD is the next gate.
 
 ## Validity limits and protocol issues

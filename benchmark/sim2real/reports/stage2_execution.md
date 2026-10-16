@@ -1,5 +1,7 @@
 # Stage 2 — full synthetic training-chain validation and real-evaluation preparation
 
+> **Correctness corrections added in Stage 3:** (1) the Stage 2 STE-FlowNet EPE values retained below are invalid because the scorer extracted only horizontal flow `u` and NumPy broadcast it across both GT channels; the same four checkpoints were re-scored correctly without retraining. (2) the Stage 2 pose pilot reused the rollout-tail timestamp as the event-window end, misaligning selected windows and labels; its reported keypoint EPE is not a valid model diagnostic and was replaced by the corrected Stage 3 paired pilot. See [`STAGE3_RESEARCH_HANDOFF.md`](../STAGE3_RESEARCH_HANDOFF.md).
+
 Date: 2026-10-16 (Asia/Tokyo)
 Execution host: g1, Ubuntu 20.04.6, conda `Eventbased_WAM`, physical GPU 1 (RTX 3090, 24 GB).
 Repository branch: `exp/public-sim2real-v1`.
@@ -12,10 +14,10 @@ Stage 2 checked whether shared physical trajectories can pass through both event
 | Route | Source checked | Actually executed | Real data/evaluator status | Stage 2 result |
 |---|---|---|---|---|
 | E2VID+ → HQF | E2VID, EVREAL, HQF loader and evaluator entry points | Six-rollout paired conversion; 224 train updates and 56 validation sequences per generator; R1/R2 and edge fixtures | HQF manifest and candidate protocol only; no files downloaded or scored | Synthetic chain passes. HQF file/license and candidate adapter remain to be verified. |
-| STE-FlowNet → MVSEC | Pinned STE-FlowNet encoder, losses, GT association helper and dt1/dt4 references | Six-rollout paired conversion; dt1/dt4, 16 updates and synthetic validation per generator/task; checkpoint save/restore and correlation operator | MVSEC manifest and alignment source only; no files downloaded or scored; primary support mask is not frozen | Synthetic chain passes for both dt values. Real support/evaluator freeze remains. |
-| SingleShotPose → E-POSE | Pinned SingleShotPose and E-POSE annotation source/paper | Generic-cuboid event-only full-frame train/validation pilot, two paired short runs | Publisher metadata/sample retrieval attempted; no raw sample or CAD parsed; no real evaluation | Interface/optimizer/checkpoint closure passes, but predictions are unusable and E-POSE class/CAD contract is not established. Directional blocker is documented in the pose task file. |
+| STE-FlowNet → MVSEC | Pinned STE-FlowNet encoder, losses, GT association helper and dt1/dt4 references | Six-rollout paired conversion; dt1/dt4, 16 updates and synthetic validation per generator/task; checkpoint save/restore and correlation operator | Stage 2 had no real files; Stage 3 parsed a fixed public MVSEC slice and ran event-only candidate inference, with no formal ranking | Training/checkpoint interface passes. **Stage 2 EPE is invalid**; corrected rescore and real-input smoke are in Stage 3. |
+| SingleShotPose → E-POSE | Pinned SingleShotPose and E-POSE annotation source/paper | Generic-cuboid event-only full-frame pilot, two paired short runs; window-label timing was later found wrong | Publisher metadata/sample retrieval attempted; no raw sample or CAD parsed; no real evaluation | Stage 2 pose metrics are invalid due to time-misaligned event windows. Stage 3 reran corrected windows and documented remaining confidence/BatchNorm inference issues. E-POSE class/CAD contract remains blocked. |
 
-The synthetic validation numbers below are diagnostics for code/data-path verification only. They do not estimate real generalization, compare the generators, or justify choosing a checkpoint for public data.
+The reconstruction validation losses below are diagnostics for code/data-path verification only. They do not estimate real generalization. The Stage 2 optical-flow EPE table is invalid due to the component-extraction bug described above; corrected figures are recorded only in Stage 3.
 
 ## Shared bank and fairness controls
 
@@ -45,13 +47,12 @@ The pinned EVREAL commit is `398f03551b7f5d150ae10aa89e4e731557fce240`; the sour
 
 - Pinned STE-FlowNet commit `eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6`. dt1 and dt4 each ran two epochs and 16 updates per generator on the same four train/two validation rollouts and paired initialization `c4b49f1a152b32bc07e6fb61c7355be3a93f74eece65b8f4c490576834d8fee4`.
 - The official four-scale Charbonnier photometric objective and 10× second-order smoothness term were finite. At least 70 gradient tensors were finite on every update. Synthetic labels were used for validation EPE only. All four checkpoints were saved, restored and hash-checked.
-- dt1 synthetic validation: EventGenesis EPE `0.8301 px/interval`, V2E `0.8082`; train walls `16.33 / 15.21 s`; peak allocation `3.63 GB`.
-- dt4 synthetic validation: EventGenesis EPE `2.8537`, V2E `2.8379`; train walls `57.04 / 58.58 s`; peak allocation `12.56 GB` (on RTX 3090 24 GB). This suggests a full-res dt4 pilot fits the selected GPU with batch one, but leaves less headroom than dt1; it is not a formal resource guarantee.
+- **INVALID historical EPE** — Stage 2 dt1 numbers were EventGenesis `0.8301 px/interval` and V2E `0.8082`; dt4 numbers were `2.8537` and `2.8379`. The output conversion retained only `u`, then broadcasting duplicated it as `v`. Keep these values only to understand the earlier run; do not use them for comparison. The corrected values from the same checkpoints appear in Stage 3. Stage 2 train walls and peak training allocation remain valid: dt1 `16.33 / 15.21 s`, `3.63 GB`; dt4 `57.04 / 58.58 s`, `12.56 GB` on an RTX 3090.
 - The pinned optional correlation extension was not used. A benchmark-local pure-PyTorch custom-autograd 9×9 shift correlation was checked against an explicit 81-shift reference in float32 at input `(1,64,128,128)` / output `(1,9,9,128,128)`: maximum forward error `7.63e-6`, gradient error `1.49e-8`, 0.034 s forward and 9,568,256 additional allocated bytes. Small CPU checks also matched. This alternative is recorded and locked for the pilot; it does not alter the frozen core or upstream STE source.
 
-### MVSEC preparation (source checked, not run on data)
+### MVSEC preparation (historical Stage 2 state)
 
-The pinned source identifies DAVIS left event/timestamp and APS endpoint fields, `flow_gt` timestamp association, NPZ keys `timestamps`, `x_flow_dist`, `y_flow_dist`, and official dt1/dt4 entry points. Candidate sequences remain `indoor_flying1`, `indoor_flying2`, `indoor_flying3`, `outdoor_day1` at native 346×260. Candidate dt1 uses adjacent left APS endpoints; dt4 spans four adjacent endpoint intervals. No MVSEC file, calibration, or GT mask was parsed. The primary support rule is still a research freeze item. Retain the pinned `flow_error_dense` as a reference reproduction; freeze how zero-magnitude GT, raw-event support and empty-support frames are handled before opening any real model score. Candidate bundle estimate is 33.2 GB from source-page sizes, not a measured download.
+At the end of Stage 2 no MVSEC file, calibration, or GT mask had been parsed. Stage 3 subsequently downloaded and parsed a fixed one-second `indoor_flying1` fragment and ran candidate inference; see [`STAGE3_RESEARCH_HANDOFF.md`](../STAGE3_RESEARCH_HANDOFF.md). The real support rule remains a protocol-freeze item; the Stage 3 per-window mask is an inspection candidate, not the official metric.
 
 ### Failed implementation attempts retained
 
@@ -64,7 +65,7 @@ The pinned source identifies DAVIS left event/timestamp and APS endpoint fields,
 
 - The benchmark-local runner uses the pinned SingleShotPose 416×416 Darknet/RegionLoss interface with three fixed-scale full-frame event channels (ON, OFF, total counts). Only raw event-derived tensors enter inference. Shared Genesis pose and actual camera K produce centroid/cuboid-keypoint training targets.
 - Pilot v1 completed its optimizer/checkpoint interface but selected only one sample per rollout; validation keypoint EPE was 531,107 px (EventGenesis) and 3,106,779 px (V2E). The window selector was fixed to select evenly spaced fully visible windows from all train rollouts, and pilot v2 completed with 8 train / 4 validation windows per generator, 16 updates, same paired initialization, successful checkpoint restoration and 782 MiB peak allocation.
-- Pilot v2 synthetic validation keypoint EPE remained 158,581 px (EventGenesis) and 59,141 px (V2E). These values are numerically unusable and only show that the generic interface can optimize/save/restore. This model/data setup is not a viable E-POSE model result. No comparison or real score is inferred.
+- **INVALID historical metric:** pilot v2 printed 158,581 px (EventGenesis) and 59,141 px (V2E), but the selected sample's event window ended at the rollout tail rather than its own pose-label time. These values do not diagnose a correctly aligned model and are retained only as history. Stage 3 records the corrected pilot and its independent decoder/BatchNorm diagnostics. No E-POSE score or generator comparison is inferred.
 - The pilot object is a generic box, not one of the 13 E-POSE/YCB classes and has no class-matched CAD. The paper lists raw event, pose, K, camera transform, time and projected keypoint fields; these facts have not been confirmed against a downloaded raw sample. The stock model's RGB/LINEMOD loader and validation path were bypassed; no GT crop/mask/box, segmented events or RGB entered the benchmark runner.
 
 ### Directional blocker and access record

@@ -18,6 +18,7 @@ import torch.nn.functional as F
 
 SIZE = 256
 WEIGHTS = [1.0, 1.0, 1.0, 1.0]
+FLOW_UNIT = "px_per_interval"
 
 
 def sha256(path: Path) -> str:
@@ -222,12 +223,58 @@ def gray_window(episode: dict, index: int, dt: int):
     return frames
 
 
-def compute_epe(prediction: np.ndarray, gt: np.ndarray, valid: np.ndarray) -> tuple[float, int]:
-    epe = np.sqrt(np.sum((prediction.astype(np.float32) - gt.astype(np.float32)) ** 2, axis=0))
-    count = int(valid.astype(bool).sum())
+def model_output_to_flow_hw(output: torch.Tensor) -> np.ndarray:
+    """Extract one STE eval prediction while preserving both vector channels."""
+    if not torch.is_tensor(output):
+        raise TypeError(f"flow model output must be a torch.Tensor, got {type(output).__name__}")
+    if output.ndim != 4 or output.shape[0] != 1 or output.shape[1] != 2:
+        raise ValueError(f"flow model output must have shape [1,2,H,W], got {tuple(output.shape)}")
+    prediction = output.detach().cpu().numpy()[0]
+    if not np.issubdtype(prediction.dtype, np.number) or not np.isfinite(prediction).all():
+        raise ValueError("flow model output must contain only finite numeric values")
+    return prediction
+
+
+def compute_epe(
+    prediction: np.ndarray,
+    gt: np.ndarray,
+    valid: np.ndarray,
+    *,
+    prediction_unit: str,
+    gt_unit: str,
+) -> tuple[float, int]:
+    """Strict endpoint error for [u,v] pixel displacement per endpoint interval."""
+    prediction = np.asarray(prediction)
+    gt = np.asarray(gt)
+    valid = np.asarray(valid)
+    if prediction.shape != gt.shape or prediction.ndim != 3 or prediction.shape[0] != 2:
+        raise ValueError(
+            "prediction and GT must have the same [2,H,W] vector-flow shape; "
+            f"got prediction={prediction.shape}, GT={gt.shape}"
+        )
+    if valid.shape != prediction.shape[1:]:
+        raise ValueError(f"validity mask must have shape [H,W]={prediction.shape[1:]}, got {valid.shape}")
+    if prediction_unit != FLOW_UNIT or gt_unit != FLOW_UNIT:
+        raise ValueError(
+            f"EPE requires both prediction and GT in {FLOW_UNIT}; "
+            f"got prediction={prediction_unit!r}, GT={gt_unit!r}"
+        )
+    for name, value in (("prediction", prediction), ("GT", gt)):
+        if not np.issubdtype(value.dtype, np.number) or not np.isfinite(value).all():
+            raise ValueError(f"{name} must contain only finite numeric values")
+    if not (np.issubdtype(valid.dtype, np.bool_) or np.issubdtype(valid.dtype, np.number)):
+        raise ValueError("validity mask must be boolean or numeric 0/1")
+    if not np.isfinite(valid).all() or not np.isin(valid, (0, 1)).all():
+        raise ValueError("validity mask must contain only finite 0/1 values")
+    valid_mask = valid.astype(bool, copy=False)
+    count = int(valid_mask.sum())
     if count == 0:
         raise ValueError("synthetic validation interval has no valid flow pixels")
-    value = float(epe[valid.astype(bool)].mean())
+    # Cast only after shape/unit/finite checks so NumPy can never silently
+    # broadcast a missing vector channel during subtraction.
+    delta = prediction.astype(np.float64, copy=False) - gt.astype(np.float64, copy=False)
+    epe = np.hypot(delta[0], delta[1])
+    value = float(epe[valid_mask].mean())
     if not np.isfinite(value):
         raise RuntimeError("synthetic EPE is not finite")
     return value, count
@@ -316,6 +363,7 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
 
     model.eval()
     validation = []
+    first_validation_probe = None
     with torch.no_grad():
         for episode_id in sorted(val_data):
             sample = val_data[episode_id]
@@ -325,11 +373,13 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
                     pred = model(tensor, SIZE, use_dt4=False, flow_seq=False)
                 else:
                     pred = model(tensor, SIZE, use_dt4=True, flow_seq=False)
-                prediction = pred[0].detach().cpu().numpy()[0]
+                prediction = model_output_to_flow_hw(pred)
                 epe, valid_pixels = compute_epe(
                     prediction,
                     sample[flow_key][index],
                     sample[valid_key][index],
+                    prediction_unit=FLOW_UNIT,
+                    gt_unit=FLOW_UNIT,
                 )
                 gray = gray_window(sample, index, dt)
                 if dt == 1:
@@ -350,12 +400,22 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
                     "interval_index": int(index),
                     "valid_pixels": valid_pixels,
                     "epe_px_per_interval": epe,
+                    "epe_unit": FLOW_UNIT,
                     "objective": float(val_loss.detach().cpu()),
                     "photometric_loss": float(val_photo.detach().cpu()),
                     "smoothness_loss": float(val_smooth.detach().cpu()),
                 })
+                if len(validation) == 1:
+                    first_validation_probe = {
+                        "episode_id": episode_id,
+                        "interval_index": index,
+                        "prediction": prediction.copy(),
+                        "epe_px_per_interval": epe,
+                    }
 
     final_hash = state_sha256(model)
+    if first_validation_probe is None:
+        raise RuntimeError(f"{generator}/dt{dt}: no synthetic validation intervals were evaluated")
     checkpoint = output_root / f"{generator}_dt{dt}_final.pt"
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     torch.save({
@@ -380,15 +440,25 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
     if state_sha256(restored) != final_hash:
         raise RuntimeError(f"checkpoint restore hash mismatch {generator}/dt{dt}")
     restored.eval()
-    probe_sample = next(iter(val_data.values()))
-    probe = event_input(probe_sample, 0, dt, device)
+    probe_sample = val_data[first_validation_probe["episode_id"]]
+    probe_index = first_validation_probe["interval_index"]
+    probe = event_input(probe_sample, probe_index, dt, device)
     with torch.no_grad():
         restored_pred = restored(probe, SIZE, use_dt4=(dt == 4), flow_seq=False)
-    restored_first = restored_pred[0].detach().cpu().numpy()[0]
-    restored_epe, _ = compute_epe(restored_first, probe_sample[flow_key][0], probe_sample[valid_key][0])
-    if not np.isclose(restored_epe, validation[0]["epe_px_per_interval"], rtol=1e-5, atol=1e-6):
-        if validation[0]["episode_id"] == sorted(val_data)[0] and validation[0]["interval_index"] == 0:
-            raise RuntimeError(f"checkpoint restore prediction mismatch {generator}/dt{dt}")
+    restored_flow = model_output_to_flow_hw(restored_pred)
+    if restored_flow.shape != first_validation_probe["prediction"].shape:
+        raise RuntimeError(f"checkpoint restore flow shape mismatch {generator}/dt{dt}")
+    if not np.allclose(restored_flow, first_validation_probe["prediction"], rtol=1e-6, atol=1e-6):
+        raise RuntimeError(f"checkpoint restore prediction mismatch {generator}/dt{dt}")
+    restored_epe, _ = compute_epe(
+        restored_flow,
+        probe_sample[flow_key][probe_index],
+        probe_sample[valid_key][probe_index],
+        prediction_unit=FLOW_UNIT,
+        gt_unit=FLOW_UNIT,
+    )
+    if not np.isclose(restored_epe, first_validation_probe["epe_px_per_interval"], rtol=1e-6, atol=1e-6):
+        raise RuntimeError(f"checkpoint restore EPE mismatch {generator}/dt{dt}")
 
     return {
         "generator": generator,
@@ -404,6 +474,7 @@ def train_one(generator: str, dt: int, data_root: Path, model_root: Path,
         "train_objective": "official four-scale Charbonnier photometric loss + 10x second-order smoothness",
         "validation_objective": "eval-mode final flow tensor; dt1 adjacent endpoints or dt4 first/last endpoints, official photometric/smoothness operators",
         "flow_gt_use": "synthetic validation EPE only; never passed to the model or optimizer",
+        "flow_vector_unit": FLOW_UNIT,
         "train_wall_seconds": train_seconds,
         "train_loss_mean": float(np.mean([row["loss"] for row in records])),
         "train_photometric_mean": float(np.mean([row["photometric_loss"] for row in records])),

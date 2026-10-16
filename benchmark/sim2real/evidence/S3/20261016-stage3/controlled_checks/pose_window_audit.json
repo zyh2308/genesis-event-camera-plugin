@@ -1,0 +1,81 @@
+{
+  "status": "pass",
+  "scope": "independent raw timestamp recount and deterministic decoder fixture; no model training or real data",
+  "pose_event_windows": [
+    {
+      "generator": "eventgenesis",
+      "sample_id": "rollout_fixture/interval_000",
+      "interval_index": 0,
+      "event_start_s": 0.0,
+      "event_end_s": 0.1,
+      "label_time_s": 0.1,
+      "event_count_from_adapter": 3,
+      "event_count_independent_raw_recount": 3,
+      "max_selected_event_time_s": 0.1
+    },
+    {
+      "generator": "eventgenesis",
+      "sample_id": "rollout_fixture/interval_001",
+      "interval_index": 1,
+      "event_start_s": 0.1,
+      "event_end_s": 0.2,
+      "label_time_s": 0.2,
+      "event_count_from_adapter": 3,
+      "event_count_independent_raw_recount": 3,
+      "max_selected_event_time_s": 0.2
+    },
+    {
+      "generator": "v2e",
+      "sample_id": "rollout_fixture/interval_000",
+      "interval_index": 0,
+      "event_start_s": 0.0,
+      "event_end_s": 0.1,
+      "label_time_s": 0.1,
+      "event_count_from_adapter": 4,
+      "event_count_independent_raw_recount": 4,
+      "max_selected_event_time_s": 0.1
+    },
+    {
+      "generator": "v2e",
+      "sample_id": "rollout_fixture/interval_001",
+      "interval_index": 1,
+      "event_start_s": 0.1,
+      "event_end_s": 0.2,
+      "label_time_s": 0.2,
+      "event_count_from_adapter": 3,
+      "event_count_independent_raw_recount": 3,
+      "max_selected_event_time_s": 0.2
+    }
+  ],
+  "confidence_decode_fixture": {
+    "target_coordinate_shape": [
+      9,
+      2
+    ],
+    "target_coordinate_min_max": [
+      0.5,
+      0.75
+    ],
+    "target_coordinates_finite_and_in_unit_square": true,
+    "confidence_argmax_cell_yx": [
+      0,
+      0
+    ],
+    "confidence_argmax_cell_confidence": 0.9996646642684937,
+    "confidence_argmax_keypoint_mean_epe_px": 371.3363952636719,
+    "gt_centroid_cell_yx": [
+      2,
+      2
+    ],
+    "gt_centroid_cell_confidence": 0.00033535013790242374,
+    "gt_centroid_cell_keypoint_mean_epe_px": 0.0,
+    "interpretation": "deterministic decoder fixture only; does not assert the Stage-2 checkpoint selected these cells"
+  },
+  "stage2_confidence_supervision_source_check": {
+    "configured_epochs": 2,
+    "pinned_pretrain_num_epochs": 15,
+    "confidence_loss_included_condition": "epoch > pretrain_num_epochs",
+    "confidence_loss_included_in_stage2_epochs": false,
+    "implication": "confidence argmax cell was not directly supervised in the Stage-2 pilot"
+  }
+}

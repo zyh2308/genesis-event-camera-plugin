@@ -1,42 +1,36 @@
-# Sim-to-Real status — Stage 2 training-chain pilot
+# Public-data Sim-to-Real status — Stage 3
 
-Updated: 2026-10-16 (Asia/Tokyo). Branch: `exp/public-sim2real-v1`. The Stage 2 report and indexed evidence are the full record; this file is the handoff summary.
+Updated: 2026-10-16. Branch: `exp/public-sim2real-v1`. Server: `zhaoyuhan@g1.pkuml.org`, repository worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real`. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged.
 
-## Repository and execution
+Stage 3 repaired two independent correctness bugs, validated existing synthetic checkpoints, parsed preregistered public HQF/MVSEC samples, and ran event-only candidate inference. It did not select checkpoints or rank generators on real GT.
 
-- Upstream: `https://github.com/zyh2308/genesis-event-camera-plugin.git`.
-- Worktree: `/home/科研/Eventbased_WAM/repositories/gec-sim2real`; execution worktree on g1: `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real`.
-- Experiments ran on g1 in conda `Eventbased_WAM`; WSL `Ubuntu-22.04` was used for repository preparation, evidence review, and commits. Model pilots used physical GPU 1 (RTX 3090) sequentially after idle checks. GPU 3 was occupied by another user's CARLA job and was left untouched.
-- Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged and remains an ancestor of this branch.
-- No candidate model was trained, validated, selected, ranked, or tuned on HQF, MVSEC, or E-POSE real test data. No real scores exist.
+| Route | Actually completed | Current blocker / next gate |
+|---|---|---|
+| E2VID+ → HQF | Reused accepted Stage 2 synthetic checkpoints; converted public `bike_bay_hdr` bag; both candidates processed all 2,431 endpoints with one sequence-start reset and saved checkable reconstructions. No HQF target scoring. | Freeze HQF final-test sequence inventory, target/metric handling and aggregation. Review HQF as the main reconstruction candidate and HS-ERGB only as a separately aligned extension. |
+| STE-FlowNet → MVSEC | Repaired full `[u,v]` EPE; deterministically restored and re-scored all four existing checkpoints over 60 dt1 / 54 dt4 synthetic intervals. Parsed a fixed public `indoor_flying1` fragment and ran all four candidates at 352×352 padded input, cropping outputs to 346×260. | The real support mask and aggregation remain provisional. Freeze zero-GT, event-support, invalid-region and per-sequence aggregation rules before formal real scoring. |
+| SingleShotPose → E-POSE | Fixed pose event-window endpoints; independently recounted raw timestamps; ran a corrected paired synthetic pilot and a one-sample overfit/inference-state diagnostic. | The one-sample model/CAD contract remains generic. Confidence selection and batch-one BatchNorm running statistics are unstable. Official E-POSE landing/API currently return WAF HTTP 202/403; need one original sample plus matching CAD and a research decision on model/inference protocol. |
 
-## Route status
+## Corrections and verified results
 
-| Route | Source inspection | Actually executed in Stage 2 | Current state and next gate |
-|---|---|---|---|
-| E2VID+ → HQF | Pinned E2VID/EVREAL source, HQF native loader/evaluator route, 14-sequence inventory | Six-rollout paired adapters; two epochs / 224 updates per generator; independent synthetic validation; R1/R2 fixes and boundary/direction fixtures; checkpoint restore | Synthetic-only chain passes. HQF files/license and candidate E2VID evaluation adapter remain unchecked. HQF/HS-ERGB rationale and metric/aggregation remain protocol candidates for research freeze. |
-| STE-FlowNet → MVSEC | Pinned encoder/loss/GT timestamp association and dt1/dt4 reference entry points | Six-rollout paired adapters; dt1 and dt4, two epochs / 16 updates each per generator; synthetic validation EPE, correlation reference check and checkpoint restore; failed attempts retained | Synthetic-only chain passes for both dt values. MVSEC files and GT remain unchecked. Freeze primary mask/support and empty-frame rules before any real score. |
-| SingleShotPose → E-POSE | Pinned SingleShotPose and E-POSE annotation source/paper; bundled RGB/mask/crop path rejected for this protocol | Event-only full-frame generic-cuboid paired training/validation pilot, twice; second run uses corrected window selection | Interface/gradient/checkpoint closure passes, but validation EPE is extremely poor and object/CAD is unmatched. Raw E-POSE sample and CAD access/contracts are unresolved; do not scale or replace model without research review. |
+- Stage 2 optical-flow EPE values are invalid because only `u` was extracted and broadcast as `v`. Corrected synthetic means from the same checkpoints: dt1 EventGenesis `0.942304`, V2E `0.824453`; dt4 EventGenesis `2.963737`, V2E `2.858816` px per interval. The four restored full two-component outputs were bitwise equal under deterministic inference. No retraining.
+- Stage 2 pose EPE values are invalid because selected event windows ended at the rollout tail instead of their associated label time. The repaired collector now stores `sample_id`, `rollout_id`, start/end, label time and event count; independent recounts match two distinct windows and exact boundary timestamps.
+- The corrected pose pilot's standard eval-mode synthetic validation EPE was `35.79 px` (EventGenesis) and `245.00 px` (V2E). A one-sample diagnostic fit coordinate loss from `10.58` to `0.19`, but eval-mode decoding remained unstable while train-mode batch statistics changed outputs sharply. These small pilots are implementation diagnostics, not generator or E-POSE conclusions.
 
-## Shared data and contract
+## Data and evaluation state
 
-- Six 0.3 s rollouts, 31 frames / 30 intervals at 100 Hz; split by whole physical rollout: train `train_00`–`train_03`, validation `validation_00`–`validation_01`.
-- Shared bank: `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/shared_trajectory.h5`, 26,526,701 bytes, SHA-256 `68011b77d292ca5600fb10b3464af26c958c785d2258e8a8cfea0db35b15763d`.
-- Camera K at 160×128: `[[137.24844291261175,0,80],[0,137.24844291261175,64],[0,0,1]]`; timestamps are seconds from rollout start; world is Genesis z-up / meters; camera is OpenCV x-right/y-down/z-forward; pose labels use the right endpoint; flow is forward source-to-target displacement per endpoint interval. Common validity does not depend on event observations. The pilot lacks target-occlusion z-buffering.
-- Paired runs share physics labels, split, initialization, model, optimizer and budget. Inference is event-only; pose uses Genesis pose/K only for training targets. Sensor profiles and the V2E display mapping remain uncalibrated engineering settings.
+- HQF: actual `bike_bay_hdr` ROS bag parsed into EVREAL MemMap arrays: 19,763,043 events, 2,431 mono8 frames, 180×240, event polarity 0=OFF/1=ON. Both synthetic-only candidate checkpoints ran through the full sequence. Reference image pixels were not used as model input and no GT score was computed.
+- MVSEC: original `indoor_flying1` data/GT and calibration are retained in WSL with hashes. A lossless fixed one-second slice is on g1: 7,294 events, 41 APS endpoints, 21 GT flow maps at 346×260. The preregistered fragment has 31 dt1 windows (`i→i+1`, mean 31.859 ms) and 28 dt4 windows (`i→i+4`, mean 127.437 ms). Pinned STE GT timestamp propagation was used. Per-window EPE was emitted under a provisional, explicitly unfrozen inspection mask; no aggregate or model choice was made.
+- E-POSE: DOI metadata resolves to the 29,759,153,475-byte public record; the official landing page returned an AWS WAF challenge (HTTP 202), and the article API returned HTTP 403. No file-level manifest, raw sample, matching CAD, K, class record or pose annotation was obtained.
 
-## Data/evaluator readiness
+## Fairness and isolation
 
-- HQF: public route, pinned MemMapDataset and `eval.py` checked; no files opened. Candidate: all 14 sequences, continuous inference, no RGB seed, LPIPS-Alex primary with supporting reconstruction metrics. Public size estimates are 19.4 GB compressed / 94 GB uncompressed. License, data manifest and the candidate checkpoint adapter are still open.
-- MVSEC: pinned HDF5/GT fields and timestamp helper checked; no files opened. Candidate sequences are three indoor_flying and outdoor_day1 at 346×260, dt1 adjacent endpoints and dt4 four intervals; estimated data+GT total 33.2 GB. Primary support mask/zero-GT/empty-frame rules are not frozen.
-- E-POSE: paper fields and annotation source checked, but no raw sample/CAD parsed. Publisher lists 27.72 GB. g1 API returned HTTP 403; landing-page request returned HTTP 202 with empty body. This is an access limitation, not proof the dataset is unavailable. Event timestamp/polarity, K, transform, axes/units, sync, CAD scale and class mapping require one sample-level audit.
-- Dataset formats and evaluator entries in `manifests/public_real_data_stage2.json` are source-level inspection. No real evaluator has been exercised against downloaded files.
+EventGenesis and V2E use the same six physical rollouts, labels, rollout split, paired initialization, architecture and synthetic budgets within each task. Training and checkpoint selection remain synthetic-only. Candidate inference inputs are event-only. The real samples and sequence were registered before weights were loaded; no real score changed a generator or checkpoint choice. No frozen-core file was edited. GPU3's other-user CARLA workload was left untouched.
 
-## Evidence and recommendations
+## Handoff files
 
-- Full report: [`reports/stage2_execution.md`](reports/stage2_execution.md).
-- Stage 2 run logs, commands, environment, start/end times, exit codes, results, failed attempts and data manifests: [`evidence/S2/20261016-stage2-pilot/`](evidence/S2/20261016-stage2-pilot/).
-- External g1 data/checkpoint paths, sizes and hashes: [`evidence/S2/20261016-stage2-pilot/external_artifacts.json`](evidence/S2/20261016-stage2-pilot/external_artifacts.json); per-file evidence index: [`evidence/S2/20261016-stage2-pilot/artifact_index.json`](evidence/S2/20261016-stage2-pilot/artifact_index.json).
-- Stage 1 review and its audit files were preserved unchanged at [`reviews/stage1_88b0d14/`](reviews/stage1_88b0d14/). `REVIEW.md` SHA-256: `d8f739cf006b1ac2ca7924760868c85feb3267401174baf591468a2c6e974e78`.
+- Single-file research handoff: [`STAGE3_RESEARCH_HANDOFF.md`](STAGE3_RESEARCH_HANDOFF.md).
+- Detailed execution report: [`reports/stage3_execution.md`](reports/stage3_execution.md).
+- Stage 3 run/evidence index and external data/checkpoint paths: [`evidence/S3/20261016-stage3/`](evidence/S3/20261016-stage3/).
+- Stage 2 historical report and independent review: [`reports/stage2_execution.md`](reports/stage2_execution.md), [`reviews/stage2_2834540/REVIEW.md`](reviews/stage2_2834540/REVIEW.md). The old flow and pose EPE are clearly marked invalid and retained only as history.
 
-Recommended next step: have the research session freeze HQF and MVSEC evaluation manifests, then scale synthetic-only training for those two routes. Keep E-POSE at its raw-sample/CAD and model-contract gate. Do not run real model scoring until the candidate protocols are frozen.
+The formal real evaluation protocol remains a research-review decision. Do not interpret fixed-sample pipeline scores or the short synthetic pilots as sim-to-real performance evidence.

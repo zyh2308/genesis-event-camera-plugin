@@ -20,6 +20,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from verify_pinned_source import verify_pinned_source
+
 
 ROOT = Path(__file__).resolve().parents[3]
 POSE_SOURCE = ROOT.parent.parent / "external" / "sources" / "downstream" / "SingleShotPose"
@@ -28,6 +30,8 @@ NUM_CLASSES = 1
 NETWORK_SIZE = 416
 MAX_GT = 50
 LABEL_SIZE = 2 * NUM_KEYPOINTS + 3
+POSE_SOURCE_COMMIT = "2c282619101f9f31666dd18b42393375bea1600f"
+SOURCE_BUNDLE_MANIFEST = Path(__file__).resolve().parents[1] / "manifests" / "downstream_source_bundle.json"
 
 
 def sha256_file(path: Path) -> str:
@@ -44,6 +48,58 @@ def state_sha256(state: dict) -> str:
         digest.update(name.encode())
         digest.update(np.ascontiguousarray(value.detach().cpu().numpy()).view(np.uint8))
     return digest.hexdigest()
+
+
+def batchnorm_state_snapshot(model: torch.nn.Module) -> dict:
+    """Summarize the exact BN buffers retained in the model checkpoint."""
+    layers = []
+    total_batches = 0
+    for name, module in model.named_modules():
+        if not isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
+            continue
+        mean = module.running_mean.detach().cpu().contiguous().numpy()
+        variance = module.running_var.detach().cpu().contiguous().numpy()
+        tracked = int(module.num_batches_tracked.detach().cpu())
+        total_batches += tracked
+        layers.append({
+            "name": name,
+            "num_batches_tracked": tracked,
+            "running_mean_sha256": hashlib.sha256(mean.tobytes()).hexdigest(),
+            "running_var_sha256": hashlib.sha256(variance.tobytes()).hexdigest(),
+            "running_mean_min_max": [float(mean.min()), float(mean.max())],
+            "running_var_min_max": [float(variance.min()), float(variance.max())],
+        })
+    return {
+        "batchnorm_layer_count": len(layers),
+        "total_num_batches_tracked": total_batches,
+        "buffers_are_in_model_checkpoint": True,
+        "layers": layers,
+    }
+
+
+def clone_batchnorm_buffers(model: torch.nn.Module) -> dict[str, tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+    return {
+        name: (
+            module.running_mean.detach().clone(),
+            module.running_var.detach().clone(),
+            module.num_batches_tracked.detach().clone(),
+        )
+        for name, module in model.named_modules()
+        if isinstance(module, torch.nn.modules.batchnorm._BatchNorm)
+    }
+
+
+def restore_batchnorm_buffers(
+    model: torch.nn.Module,
+    buffers: dict[str, tuple[torch.Tensor, torch.Tensor, torch.Tensor]],
+) -> None:
+    modules = dict(model.named_modules())
+    with torch.no_grad():
+        for name, (running_mean, running_var, batches) in buffers.items():
+            module = modules[name]
+            module.running_mean.copy_(running_mean)
+            module.running_var.copy_(running_var)
+            module.num_batches_tracked.copy_(batches)
 
 
 def box_keypoints(size_xyz: list[float]) -> np.ndarray:
@@ -105,6 +161,8 @@ def encode_event_window(timestamp_s: np.ndarray, x: np.ndarray, y: np.ndarray,
                         polarity: np.ndarray, start_s: float, end_s: float,
                         width: int, height: int, count_scale: float) -> np.ndarray:
     selected = (timestamp_s > start_s) & (timestamp_s <= end_s)
+    if np.any(timestamp_s[selected] > end_s):
+        raise RuntimeError("event-window selector included an event after its endpoint")
     xs, ys, ps = x[selected], y[selected], polarity[selected]
     if len(xs) and (
         xs.min() < 0 or xs.max() >= width or ys.min() < 0 or ys.max() >= height
@@ -133,6 +191,10 @@ def encode_event_window(timestamp_s: np.ndarray, x: np.ndarray, y: np.ndarray,
 
 def build_label(uv: np.ndarray, width: int, height: int) -> np.ndarray:
     normalized = uv / np.asarray([width, height], dtype=np.float64)
+    if normalized.shape != (NUM_KEYPOINTS, 2) or not np.isfinite(normalized).all():
+        raise ValueError("pose target coordinates must be finite [9,2]")
+    if np.any(normalized < 0.0) or np.any(normalized >= 1.0):
+        raise ValueError("pose target coordinates must lie in [0,1)")
     if np.any(normalized[0] <= 0) or np.any(normalized[0] >= 1):
         raise ValueError("object centroid is outside the model image")
     corners = normalized[1:]
@@ -202,9 +264,22 @@ def collect_samples(generator: str, shared_path: Path, v2e_root: Path,
             )
             for interval_index in selected_intervals:
                 uv, xyz_cam, camera_from_object, label = visible_labels[interval_index]
+                # The supervision time is always the right endpoint of this
+                # sample's own interval. Do not reuse label_time_index from the
+                # preceding visibility scan, which ends at the rollout tail.
+                label_time_index = interval_index + 1
+                event_start_s = float(times[interval_index])
+                event_end_s = float(times[label_time_index])
+                label_time_s = float(times[label_time_index])
+                if event_end_s != label_time_s:
+                    raise RuntimeError("pose event-window endpoint differs from label time")
+                event_mask = (timestamp_s > event_start_s) & (timestamp_s <= event_end_s)
+                selected_event_times = timestamp_s[event_mask]
+                if len(selected_event_times) and np.any(selected_event_times > label_time_s):
+                    raise RuntimeError("pose sample contains an event after its label time")
                 image = encode_event_window(
                     timestamp_s, xs, ys, polarity,
-                    float(times[interval_index]), float(times[label_time_index]),
+                    event_start_s, event_end_s,
                     width, height, count_scale,
                 )
                 resize_K = np.diag([
@@ -213,8 +288,13 @@ def collect_samples(generator: str, shared_path: Path, v2e_root: Path,
                 rows.append({
                     "generator": generator,
                     "episode_id": episode_id,
+                    "rollout_id": episode_id,
+                    "sample_id": f"{episode_id}/interval_{interval_index:03d}",
                     "interval_index": interval_index,
-                    "event_count": int(((timestamp_s > times[interval_index]) & (timestamp_s <= times[label_time_index])).sum()),
+                    "event_start_s": event_start_s,
+                    "event_end_s": event_end_s,
+                    "label_time_s": label_time_s,
+                    "event_count": int(event_mask.sum()),
                     "event_schema": event_schema,
                     "image": image,
                     "label": label,
@@ -285,15 +365,24 @@ def patched_official_region_loss(output: torch.Tensor, target: torch.Tensor,
     }
 
 
-def predict_normalized_keypoints(model, image: np.ndarray, device: torch.device) -> tuple[np.ndarray, float]:
-    tensor = torch.from_numpy(image).unsqueeze(0).to(device)
-    with torch.no_grad():
-        output = model(tensor)
+def decode_normalized_keypoints(output: torch.Tensor,
+                                cell_yx: tuple[int, int] | None = None
+                                ) -> tuple[np.ndarray, float, tuple[int, int]]:
+    if output.ndim != 4 or output.shape[0] != 1 or output.shape[1] != 2 * NUM_KEYPOINTS + 2:
+        raise ValueError(f"pose output must have shape [1,20,H,W], got {tuple(output.shape)}")
+    if not torch.isfinite(output).all():
+        raise ValueError("pose model output contains non-finite logits")
     batch, _, height, width = output.shape
     view = output.view(batch, 1, 2 * NUM_KEYPOINTS + 2, height, width)
     confidence = torch.sigmoid(view[0, 0, 2 * NUM_KEYPOINTS])
-    index = int(confidence.reshape(-1).argmax().item())
-    grid_y, grid_x = divmod(index, width)
+    if cell_yx is None:
+        index = int(confidence.reshape(-1).argmax().item())
+        grid_y, grid_x = divmod(index, width)
+    else:
+        grid_y, grid_x = (int(cell_yx[0]), int(cell_yx[1]))
+        if not (0 <= grid_y < height and 0 <= grid_x < width):
+            raise ValueError(f"pose decode cell {(grid_y, grid_x)} is outside {(height, width)}")
+    chosen_confidence = float(confidence[grid_y, grid_x])
     result = np.zeros((NUM_KEYPOINTS, 2), dtype=np.float32)
     for point in range(NUM_KEYPOINTS):
         rx = view[0, 0, 2 * point, grid_y, grid_x]
@@ -302,7 +391,19 @@ def predict_normalized_keypoints(model, image: np.ndarray, device: torch.device)
         py = torch.sigmoid(ry) if point == 0 else ry
         result[point, 0] = float((px + grid_x) / width)
         result[point, 1] = float((py + grid_y) / height)
-    return result, float(confidence[grid_y, grid_x])
+    if not np.isfinite(result).all():
+        raise ValueError("decoded pose keypoints contain non-finite values")
+    return result, chosen_confidence, (grid_y, grid_x)
+
+
+def predict_normalized_keypoints(model, image: np.ndarray, device: torch.device,
+                                 cell_yx: tuple[int, int] | None = None
+                                 ) -> tuple[np.ndarray, float, tuple[int, int], tuple[int, int]]:
+    tensor = torch.from_numpy(image).unsqueeze(0).to(device)
+    with torch.no_grad():
+        output = model(tensor)
+    decoded = decode_normalized_keypoints(output, cell_yx)
+    return (*decoded, (int(output.shape[-2]), int(output.shape[-1])))
 
 
 def train_generator(generator: str, train_samples: list[dict], val_samples: list[dict],
@@ -323,6 +424,7 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         weight_decay=args.weight_decay,
     )
     records = []
+    bn_initial_snapshot = batchnorm_state_snapshot(model)
     torch.cuda.reset_peak_memory_stats(device)
     torch.cuda.synchronize(device)
     started = time.perf_counter()
@@ -331,6 +433,11 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         for sample_index, sample in enumerate(train_samples):
             inputs = torch.from_numpy(sample["image"]).unsqueeze(0).to(device)
             target = torch.from_numpy(sample["label"]).unsqueeze(0)
+            target_xy = sample["uv_normalized"]
+            if target_xy.shape != (NUM_KEYPOINTS, 2) or not np.isfinite(target_xy).all():
+                raise RuntimeError(f"{sample['sample_id']}: invalid normalized pose targets")
+            if np.any(target_xy < 0.0) or np.any(target_xy >= 1.0):
+                raise RuntimeError(f"{sample['sample_id']}: target coordinates outside [0,1)")
             optimizer.zero_grad(set_to_none=True)
             output = model(inputs)
             loss, losses = patched_official_region_loss(
@@ -352,9 +459,15 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
             records.append({
                 "epoch": epoch,
                 "sample_index": sample_index,
+                "sample_id": sample["sample_id"],
                 "episode_id": sample["episode_id"],
+                "rollout_id": sample["rollout_id"],
                 "interval_index": sample["interval_index"],
+                "event_start_s": sample["event_start_s"],
+                "event_end_s": sample["event_end_s"],
+                "label_time_s": sample["label_time_s"],
                 "event_count": sample["event_count"],
+                "confidence_supervision_included": epoch > loss_layer.pretrain_num_epochs,
                 "gradient_norm": float(grad_norm.detach().cpu()),
                 **losses,
             })
@@ -362,16 +475,49 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
     train_seconds = time.perf_counter() - started
     peak_memory_mib = torch.cuda.max_memory_allocated(device) / (1024.0 ** 2)
     final_hash = state_sha256(model.state_dict())
+    bn_after_training_snapshot = batchnorm_state_snapshot(model)
     if final_hash == init_hash:
         raise RuntimeError(f"{generator}: model parameters did not change")
 
     model.eval()
     validation = []
     for sample in val_samples:
-        predicted, confidence = predict_normalized_keypoints(model, sample["image"], device)
+        predicted, confidence, confidence_cell, output_grid_shape = predict_normalized_keypoints(
+            model, sample["image"], device
+        )
         gt = sample["uv_normalized"]
         scale = np.asarray([NETWORK_SIZE, NETWORK_SIZE], dtype=np.float32)
         keypoint_epe = float(np.linalg.norm((predicted[1:] - gt[1:]) * scale, axis=1).mean())
+        centroid_cell = (
+            min(output_grid_shape[0] - 1, int(np.floor(float(gt[0, 1]) * output_grid_shape[0]))),
+            min(output_grid_shape[1] - 1, int(np.floor(float(gt[0, 0]) * output_grid_shape[1]))),
+        )
+        centroid_cell_prediction, centroid_cell_confidence, decoded_cell, forced_grid_shape = predict_normalized_keypoints(
+            model, sample["image"], device, cell_yx=centroid_cell
+        )
+        if decoded_cell != centroid_cell or forced_grid_shape != output_grid_shape:
+            raise RuntimeError("forced centroid-cell decoder returned a different cell")
+        centroid_cell_epe = float(
+            np.linalg.norm((centroid_cell_prediction[1:] - gt[1:]) * scale, axis=1).mean()
+        )
+        # Keep ordinary model.eval() inference as the primary validation path.
+        # The train-mode decode below is an explicit BN-state diagnostic only;
+        # restore running buffers immediately so validation inputs cannot alter
+        # the checkpoint or its reported BN snapshot.
+        bn_before_train_mode_probe = clone_batchnorm_buffers(model)
+        model.train()
+        with torch.no_grad():
+            train_mode_output = model(torch.from_numpy(sample["image"]).unsqueeze(0).to(device))
+        train_mode_gt_cell, train_mode_gt_cell_confidence, _ = decode_normalized_keypoints(
+            train_mode_output, cell_yx=centroid_cell
+        )
+        train_mode_gt_cell_epe = float(
+            np.linalg.norm((train_mode_gt_cell[1:] - gt[1:]) * scale, axis=1).mean()
+        )
+        restore_batchnorm_buffers(model, bn_before_train_mode_probe)
+        model.eval()
+        if batchnorm_state_snapshot(model) != bn_after_training_snapshot:
+            raise RuntimeError("train-mode BN diagnostic changed the saved running-stat snapshot")
         pnp_metrics = {"pnp_succeeded": False}
         try:
             pnp_ok, rotation_vector, translation = cv2.solvePnP(
@@ -395,10 +541,25 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
                 "translation_error_m": float(np.linalg.norm(translation.reshape(3) - gt_transform[:3, 3])),
             })
         validation.append({
+            "sample_id": sample["sample_id"],
             "episode_id": sample["episode_id"],
+            "rollout_id": sample["rollout_id"],
             "interval_index": sample["interval_index"],
+            "event_start_s": sample["event_start_s"],
+            "event_end_s": sample["event_end_s"],
+            "label_time_s": sample["label_time_s"],
             "event_count": sample["event_count"],
             "keypoint_mean_epe_px": keypoint_epe,
+            "confidence_argmax_cell_yx": list(confidence_cell),
+            "gt_centroid_cell_yx": list(centroid_cell),
+            "output_grid_shape_hw": list(output_grid_shape),
+            "gt_centroid_cell_decode_keypoint_mean_epe_px": centroid_cell_epe,
+            "gt_centroid_cell_confidence": centroid_cell_confidence,
+            "standard_eval_mode": True,
+            "train_mode_bn_diagnostic_gt_centroid_cell_keypoint_mean_epe_px": train_mode_gt_cell_epe,
+            "train_mode_bn_diagnostic_gt_centroid_cell_confidence": train_mode_gt_cell_confidence,
+            "prediction_xy_min_max": [float(predicted.min()), float(predicted.max())],
+            "prediction_outside_unit_square_count": int(np.count_nonzero((predicted < 0.0) | (predicted >= 1.0))),
             "confidence": confidence,
             **pnp_metrics,
         })
@@ -412,6 +573,16 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         "epochs": args.epochs,
         "train_rollouts": sorted({row["episode_id"] for row in train_samples}),
         "validation_rollouts": sorted({row["episode_id"] for row in val_samples}),
+        "sample_metadata": [
+            {
+                key: sample[key]
+                for key in (
+                    "sample_id", "rollout_id", "event_start_s", "event_end_s",
+                    "label_time_s", "event_count", "episode_id", "interval_index",
+                )
+            }
+            for sample in train_samples + val_samples
+        ],
         "input_contract": "three fixed-scale full-frame channels: log-count ON, log-count OFF, log-count total",
         "upstream_source_commit": "2c282619101f9f31666dd18b42393375bea1600f",
     }, checkpoint)
@@ -422,7 +593,7 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
     restored_hash = state_sha256(restored.state_dict())
     if restored_hash != final_hash:
         raise RuntimeError(f"{generator}: pose checkpoint restore hash mismatch")
-    restored_first, _ = predict_normalized_keypoints(restored, val_samples[0]["image"], device)
+    restored_first, _, _, _ = predict_normalized_keypoints(restored, val_samples[0]["image"], device)
     if not np.allclose(restored_first, predict_normalized_keypoints(model, val_samples[0]["image"], device)[0], atol=1e-6):
         raise RuntimeError(f"{generator}: restored pose validation output differs")
 
@@ -438,6 +609,9 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         "validation_rollouts": sorted({row["episode_id"] for row in val_samples}),
         "train_wall_seconds": train_seconds,
         "peak_allocated_gpu_mib": peak_memory_mib,
+        "batchnorm_initial_state": bn_initial_snapshot,
+        "batchnorm_after_training_state": bn_after_training_snapshot,
+        "batchnorm_after_validation_diagnostics_state": batchnorm_state_snapshot(model),
         "train_loss_mean": float(np.mean([row["loss_total"] for row in records])),
         "train_gradient_norm_min_max": [
             float(min(row["gradient_norm"] for row in records)),
@@ -464,6 +638,9 @@ def main() -> None:
     if not POSE_SOURCE.is_dir():
         raise FileNotFoundError(f"pinned SingleShotPose source missing: {POSE_SOURCE}")
     args.output_root.mkdir(parents=True, exist_ok=False)
+    source_verification = verify_pinned_source(
+        POSE_SOURCE, "SingleShotPose", POSE_SOURCE_COMMIT, SOURCE_BUNDLE_MANIFEST
+    )
 
     sys.path.insert(0, str(POSE_SOURCE))
     from region_loss import build_targets
@@ -509,6 +686,12 @@ def main() -> None:
     for sample_ev, sample_v2e in zip(ev_rows["train"] + ev_rows["validation"], v2e_rows["train"] + v2e_rows["validation"]):
         if not np.array_equal(sample_ev["label"], sample_v2e["label"]):
             raise RuntimeError("pose labels differ between paired generator inputs")
+        for field in ("sample_id", "rollout_id", "event_start_s", "event_end_s", "label_time_s"):
+            if sample_ev[field] != sample_v2e[field]:
+                raise RuntimeError(f"paired pose sample metadata differs in {field}")
+        for sample in (sample_ev, sample_v2e):
+            if sample["event_end_s"] != sample["label_time_s"]:
+                raise RuntimeError(f"{sample['sample_id']}: event end and label time differ")
 
     results = []
     for generator in ("eventgenesis", "v2e"):
@@ -526,7 +709,8 @@ def main() -> None:
         "schema_version": 1,
         "scope": "short synthetic-only event-only SingleShotPose pilot; not E-POSE real evaluation",
         "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "source_commit": "2c282619101f9f31666dd18b42393375bea1600f",
+        "source_commit": POSE_SOURCE_COMMIT,
+        "source_verification": source_verification,
         "shared_h5": str(args.shared_h5.resolve()),
         "shared_h5_sha256": sha256_file(args.shared_h5),
         "v2e_root": str(args.v2e_root.resolve()),

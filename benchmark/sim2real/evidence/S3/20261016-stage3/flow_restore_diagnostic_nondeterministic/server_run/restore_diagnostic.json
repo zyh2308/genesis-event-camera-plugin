@@ -1,0 +1,59 @@
+{
+  "status": "completed_diagnostic",
+  "scope": "one fixed synthetic validation input; same-model repeats and a separate state_dict restore",
+  "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/eventgenesis_dt1_final.pt",
+  "checkpoint_sha256": "95c4461afc03f748d5e41247f47a7a62ddcd1abca08a753d41dfeb2e0941f4ce",
+  "checkpoint_state_sha256": "d0c8fab6e4cb1ccdae81dccb687db43b9e70afe95c4d4caa31ac31d0ba91884d",
+  "restored_state_sha256": "d0c8fab6e4cb1ccdae81dccb687db43b9e70afe95c4d4caa31ac31d0ba91884d",
+  "state_hash_equal": true,
+  "generator": "eventgenesis",
+  "dt": 1,
+  "rollout_id": "validation_00",
+  "interval_index": 0,
+  "input_shape": [
+    1,
+    2,
+    256,
+    256,
+    5
+  ],
+  "input_unchanged": true,
+  "same_model_repeat_1_vs_2": {
+    "shape_equal": true,
+    "max_abs": 0.00018087029457092285,
+    "mean_abs": 1.5618488786728335e-06,
+    "allclose_at_1e-6": false,
+    "allclose_at_1e-4": false,
+    "finite": true
+  },
+  "same_model_repeat_2_vs_3": {
+    "shape_equal": true,
+    "max_abs": 0.0001800060272216797,
+    "mean_abs": 1.559771628301121e-06,
+    "allclose_at_1e-6": false,
+    "allclose_at_1e-4": false,
+    "finite": true
+  },
+  "same_model_vs_independent_restore": {
+    "shape_equal": true,
+    "max_abs": 0.00018087029457092285,
+    "mean_abs": 1.524445484069048e-06,
+    "allclose_at_1e-6": false,
+    "allclose_at_1e-4": false,
+    "finite": true
+  },
+  "epe_px_per_interval_repeats_then_restore": [
+    0.23318312294432805,
+    0.23318313093995127,
+    0.23318313654535844,
+    0.2331830785132024
+  ],
+  "source_verification": {
+    "repository": "STE-FlowNet",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "verification": "manifest_file_sha256_and_tree_sha256",
+    "files_verified": 14,
+    "bytes_verified": 205744,
+    "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+  }
+}

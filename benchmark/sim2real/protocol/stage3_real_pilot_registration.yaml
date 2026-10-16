@@ -1,0 +1,62 @@
+schema_version: 1
+stage: 3
+registered_at_utc: 2026-10-16T06:30:11Z
+registration_note: >-
+  This fixed-sample manifest is created before any Stage 3 candidate model is
+  run on real data. Real files may be parsed to resolve timestamps and row
+  indices, but no sample may be replaced based on model output or GT score.
+  These are engineering/interface pilots only; no aggregate ranking or model
+  selection is permitted.
+frozen_simulator_core: e79e656ac00f7847b98db9e12bf43b093f3afff1
+training_and_checkpoint_selection: synthetic_train_and_validation_only
+inference_inputs: event_only
+real_data_use: fixed_sample_io_alignment_numerical_smoke_only
+routes:
+  reconstruction_hqf:
+    dataset: HQF
+    source: https://timostoff.github.io/20ecnn
+    sequence: bike_bay_hdr
+    sequence_selection: first alphabetic sequence from the official 14-sequence inventory
+    candidate_checkpoints:
+      - EventGenesis E2VID+ synthetic-only Stage 2 checkpoint
+      - V2E E2VID+ synthetic-only Stage 2 checkpoint
+    inference_selection: entire sequence in chronological order; reset recurrent state at sequence start
+    saved_outputs: every 100th model output plus final model output, indices fixed by sequence order
+    allowed_checks:
+      - event/image timestamps and their interval association
+      - raw event encoding, polarity conversion, and resolution
+      - candidate checkpoint loading and recurrent-state reset
+      - output shape, finite values, and image dimensions
+    forbidden_use: no GT scoring, checkpoint selection, sequence substitution, or normalization tuning
+  optical_flow_mvsec:
+    dataset: MVSEC
+    source: https://daniilidis-group.github.io/mvsec/download/
+    sequence: indoor_flying1
+    sequence_selection: first alphabetical indoor_flying sequence in official HDF5 inventory
+    sensor: DAVIS left
+    candidate_checkpoints:
+      - EventGenesis STE-FlowNet synthetic-only Stage 2 checkpoint for each dt
+      - V2E STE-FlowNet synthetic-only Stage 2 checkpoint for each dt
+    fixed_fragment_rule: >-
+      From the first APS endpoint that lies in both the event and published flow-GT
+      timestamp ranges, process every eligible endpoint through the first 1.0 s
+      of common time. Resolve and record exact timestamps and indices before
+      loading any candidate model weights.
+    dt_semantics:
+      dt1: adjacent APS endpoints i -> i+1; GT displacement in pixels over that interval
+      dt4: APS endpoints i -> i+4; GT displacement in pixels over that interval
+    inference_input: event voxels between selected APS endpoints; no APS intensity input
+    allowed_checks:
+      - native event, APS, timestamp, GT, calibration, and support-mask parsing
+      - event-window boundary and dt endpoint association
+      - original-resolution padding/cropping, output shape, finite values, and GPU memory
+      - per-sample metric implementation against controlled synthetic vectors
+      - candidate prediction/output alignment on the fixed fragment
+    forbidden_use: no aggregate ranking, protocol tuning from real score, or checkpoint selection
+  object_pose_epose:
+    dataset: E-POSE
+    source: https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717
+    sample_selection: first raw sequence/sample in the official published file manifest
+    planned_contract_audit: raw events, pose, matched CAD, class, K, synchronization, axes, units, and transform direction
+    inference_status: do not run until a raw sample and class-matched CAD are both verified
+    forbidden_use: no generic cuboid as a matched-class result; no GT crop/mask/box/segmented events at inference

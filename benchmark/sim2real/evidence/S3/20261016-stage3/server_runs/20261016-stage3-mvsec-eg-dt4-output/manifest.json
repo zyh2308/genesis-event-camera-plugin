@@ -1,0 +1,3691 @@
+{
+  "status": "pass",
+  "scope": "fixed-window event-only STE-FlowNet real-data inference and candidate per-window metric inspection",
+  "real_scores_for_model_selection": false,
+  "real_scores_used_for_checkpoint_or_generator_selection": false,
+  "sequence": "indoor_flying1",
+  "registered_aps_start_indices": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36
+  ],
+  "dt": 4,
+  "dt_definition": "dt=1: APS endpoint i to i+1; dt=4: APS endpoint i to i+4",
+  "flow_unit": "px_per_interval",
+  "time_unit": "seconds",
+  "event_window_convention": "(APS timestamp[i], APS timestamp[i+dt]]",
+  "data_h5": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage3/real/MVSEC/indoor_flying/indoor_flying1_registered_1s_data.hdf5",
+  "data_h5_size_bytes": 2572455,
+  "data_h5_sha256": "c5b94aec2ff4cdeb8abb301e683c7a83c1697f382d79f2b5df77fa7dccad5ee4",
+  "data_source_full_file": "/home/\u79d1\u7814/Eventbased_WAM/data/sim2real/stage3/real/MVSEC/indoor_flying/indoor_flying1_data.hdf5",
+  "data_source_full_file_sha256": "9e8315403758cf000c80e4884c0d1d898b4362d6026cdcf2ae668971c5160eab",
+  "data_registration_json_sha256": "557b073876ff6455a47b0cfa625325580581545328ae1844d06127fb4202e486",
+  "gt_h5": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage3/real/MVSEC/indoor_flying/indoor_flying1_registered_1s_gt.hdf5",
+  "gt_h5_size_bytes": 7926712,
+  "gt_h5_sha256": "808ed90e10da7d221a1f61b06c685d06698d88f6d10f7bfb0a73667b1a0ff771",
+  "gt_source_full_file": "/home/\u79d1\u7814/Eventbased_WAM/data/sim2real/stage3/real/MVSEC/indoor_flying/indoor_flying1_gt.hdf5",
+  "gt_source_full_file_sha256": "cc3c6bc8fe6b99b944dcb867ca0dca3b143998b2c694d18ce8819ddcadd7015d",
+  "gt_registration_json_sha256": "557b073876ff6455a47b0cfa625325580581545328ae1844d06127fb4202e486",
+  "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-s2-steflow-pilot-v3/training/eventgenesis_dt4_final.pt",
+  "checkpoint_size_bytes": 580025922,
+  "checkpoint_sha256": "5ee3fa52850e0f0d1162f07fe0320c17c15b37cb87d4c65ca990d72efefea9a7",
+  "checkpoint_generator": "eventgenesis",
+  "model_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet",
+  "steflow_source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+  "steflow_source_verification": {
+    "repository": "STE-FlowNet",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "verification": "manifest_file_sha256_and_tree_sha256",
+    "files_verified": 14,
+    "bytes_verified": 205744,
+    "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+  },
+  "device": "cuda:0",
+  "deterministic_inference": {
+    "torch_deterministic_algorithms": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false
+  },
+  "sensor_hw": [
+    260,
+    346
+  ],
+  "model_size": 352,
+  "representation": "official STE equal-event-count Gaussian weighted ON/OFF event slices; 5 bins per APS interval",
+  "inference_inputs": [
+    "MVSEC events only"
+  ],
+  "ground_truth_association": "pinned STE multiscaleloss.estimate_corresponding_gt_flow propagation semantics",
+  "candidate_mask_protocol_frozen": false,
+  "candidate_metric_mask": "finite nonzero GT vector and at least one event-supported pixel at the same location; full sensor raster",
+  "windows": [
+    {
+      "sample_index": 9,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.7358222,
+      "label_time_s": 1504645177.8632593,
+      "end_time_s": 1504645177.8632593,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 726,
+      "intervals": [
+        {
+          "aps_interval_index": 9,
+          "start_time_s": 1504645177.7358222,
+          "end_time_s": 1504645177.7676814,
+          "event_start_index": 1739,
+          "event_stop_index_exclusive": 1922,
+          "event_count": 183
+        },
+        {
+          "aps_interval_index": 10,
+          "start_time_s": 1504645177.7676814,
+          "end_time_s": 1504645177.7995403,
+          "event_start_index": 1922,
+          "event_stop_index_exclusive": 2096,
+          "event_count": 174
+        },
+        {
+          "aps_interval_index": 11,
+          "start_time_s": 1504645177.7995403,
+          "end_time_s": 1504645177.8314004,
+          "event_start_index": 2096,
+          "event_stop_index_exclusive": 2287,
+          "event_count": 191
+        },
+        {
+          "aps_interval_index": 12,
+          "start_time_s": 1504645177.8314004,
+          "end_time_s": 1504645177.8632593,
+          "event_start_index": 2287,
+          "event_stop_index_exclusive": 2465,
+          "event_count": 178
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 1739,
+          "official_image_raw_event_index": 1738,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 2465,
+          "official_image_raw_event_index": 2464,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          0,
+          3
+        ],
+        "gt_interval_start_index": 0,
+        "gt_timestamps_used_s": [
+          1504645177.711321,
+          1504645177.7612512,
+          1504645177.8112652,
+          1504645177.8611858,
+          1504645177.9110975
+        ],
+        "start_time_s": 1504645177.7358222,
+        "end_time_s": 1504645177.8632593,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 21693,
+        "event_supported_pixels": 344,
+        "candidate_valid_pixels": 76
+      },
+      "candidate_epe_px_per_interval": 2.5440661977319903,
+      "candidate_epe_valid_pixels": 76,
+      "inference_seconds": 1.7457138653844595,
+      "peak_allocated_gpu_bytes": 1526180352,
+      "event_input_sha256": "cbb28983b6172be3871121f32509c7cb64a33240f4b924b336712db75ebd3da1",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000009.npz",
+      "prediction_artifact_sha256": "25435635ec99af4211186a0679dc8ba02d9bd99e029febf52cbd373663f22ad2",
+      "prediction_artifact_size_bytes": 1724046
+    },
+    {
+      "sample_index": 10,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.7676814,
+      "label_time_s": 1504645177.8951192,
+      "end_time_s": 1504645177.8951192,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 718,
+      "intervals": [
+        {
+          "aps_interval_index": 10,
+          "start_time_s": 1504645177.7676814,
+          "end_time_s": 1504645177.7995403,
+          "event_start_index": 1922,
+          "event_stop_index_exclusive": 2096,
+          "event_count": 174
+        },
+        {
+          "aps_interval_index": 11,
+          "start_time_s": 1504645177.7995403,
+          "end_time_s": 1504645177.8314004,
+          "event_start_index": 2096,
+          "event_stop_index_exclusive": 2287,
+          "event_count": 191
+        },
+        {
+          "aps_interval_index": 12,
+          "start_time_s": 1504645177.8314004,
+          "end_time_s": 1504645177.8632593,
+          "event_start_index": 2287,
+          "event_stop_index_exclusive": 2465,
+          "event_count": 178
+        },
+        {
+          "aps_interval_index": 13,
+          "start_time_s": 1504645177.8632593,
+          "end_time_s": 1504645177.8951192,
+          "event_start_index": 2465,
+          "event_stop_index_exclusive": 2640,
+          "event_count": 175
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 1922,
+          "official_image_raw_event_index": 1921,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 2640,
+          "official_image_raw_event_index": 2639,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          1,
+          3
+        ],
+        "gt_interval_start_index": 1,
+        "gt_timestamps_used_s": [
+          1504645177.7612512,
+          1504645177.8112652,
+          1504645177.8611858,
+          1504645177.9110975
+        ],
+        "start_time_s": 1504645177.7676814,
+        "end_time_s": 1504645177.8951192,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 22046,
+        "event_supported_pixels": 347,
+        "candidate_valid_pixels": 83
+      },
+      "candidate_epe_px_per_interval": 2.4378178003839603,
+      "candidate_epe_valid_pixels": 83,
+      "inference_seconds": 1.4691838743165135,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "3285c67e736963c25f0d69b6837e891a75238fd7c99dbe806c23c9b0265e744f",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000010.npz",
+      "prediction_artifact_sha256": "c63cf9b6b2c6b017c5a66309f58a0cbf1ee7d167e794259c8ae5ec4957bf745e",
+      "prediction_artifact_size_bytes": 1726610
+    },
+    {
+      "sample_index": 11,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.7995403,
+      "label_time_s": 1504645177.9269783,
+      "end_time_s": 1504645177.9269783,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 733,
+      "intervals": [
+        {
+          "aps_interval_index": 11,
+          "start_time_s": 1504645177.7995403,
+          "end_time_s": 1504645177.8314004,
+          "event_start_index": 2096,
+          "event_stop_index_exclusive": 2287,
+          "event_count": 191
+        },
+        {
+          "aps_interval_index": 12,
+          "start_time_s": 1504645177.8314004,
+          "end_time_s": 1504645177.8632593,
+          "event_start_index": 2287,
+          "event_stop_index_exclusive": 2465,
+          "event_count": 178
+        },
+        {
+          "aps_interval_index": 13,
+          "start_time_s": 1504645177.8632593,
+          "end_time_s": 1504645177.8951192,
+          "event_start_index": 2465,
+          "event_stop_index_exclusive": 2640,
+          "event_count": 175
+        },
+        {
+          "aps_interval_index": 14,
+          "start_time_s": 1504645177.8951192,
+          "end_time_s": 1504645177.9269783,
+          "event_start_index": 2640,
+          "event_stop_index_exclusive": 2829,
+          "event_count": 189
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 2096,
+          "official_image_raw_event_index": 2095,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 2829,
+          "official_image_raw_event_index": 2828,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          1,
+          4
+        ],
+        "gt_interval_start_index": 1,
+        "gt_timestamps_used_s": [
+          1504645177.7612512,
+          1504645177.8112652,
+          1504645177.8611858,
+          1504645177.9110975,
+          1504645177.96108
+        ],
+        "start_time_s": 1504645177.7995403,
+        "end_time_s": 1504645177.9269783,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 21711,
+        "event_supported_pixels": 358,
+        "candidate_valid_pixels": 86
+      },
+      "candidate_epe_px_per_interval": 2.28690119852116,
+      "candidate_epe_valid_pixels": 86,
+      "inference_seconds": 1.4349835170432925,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "2de414db3e7803c8d00ab29846129d390698655b8c2bddfc546c872aa0c1f673",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000011.npz",
+      "prediction_artifact_sha256": "a472523d47028c3fbd23152d7aad36157821ed8f3101df28fcd96e03bb097f01",
+      "prediction_artifact_size_bytes": 1723728
+    },
+    {
+      "sample_index": 12,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.8314004,
+      "label_time_s": 1504645177.9588373,
+      "end_time_s": 1504645177.9588373,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 715,
+      "intervals": [
+        {
+          "aps_interval_index": 12,
+          "start_time_s": 1504645177.8314004,
+          "end_time_s": 1504645177.8632593,
+          "event_start_index": 2287,
+          "event_stop_index_exclusive": 2465,
+          "event_count": 178
+        },
+        {
+          "aps_interval_index": 13,
+          "start_time_s": 1504645177.8632593,
+          "end_time_s": 1504645177.8951192,
+          "event_start_index": 2465,
+          "event_stop_index_exclusive": 2640,
+          "event_count": 175
+        },
+        {
+          "aps_interval_index": 14,
+          "start_time_s": 1504645177.8951192,
+          "end_time_s": 1504645177.9269783,
+          "event_start_index": 2640,
+          "event_stop_index_exclusive": 2829,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 15,
+          "start_time_s": 1504645177.9269783,
+          "end_time_s": 1504645177.9588373,
+          "event_start_index": 2829,
+          "event_stop_index_exclusive": 3002,
+          "event_count": 173
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 2287,
+          "official_image_raw_event_index": 2286,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 3002,
+          "official_image_raw_event_index": 3001,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          2,
+          4
+        ],
+        "gt_interval_start_index": 2,
+        "gt_timestamps_used_s": [
+          1504645177.8112652,
+          1504645177.8611858,
+          1504645177.9110975,
+          1504645177.96108
+        ],
+        "start_time_s": 1504645177.8314004,
+        "end_time_s": 1504645177.9588373,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 22422,
+        "event_supported_pixels": 338,
+        "candidate_valid_pixels": 93
+      },
+      "candidate_epe_px_per_interval": 2.0041573184695722,
+      "candidate_epe_valid_pixels": 93,
+      "inference_seconds": 1.4396073864772916,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "3318b0c443d57a702231071f983bea8027bfadf5c9ea5e0cd4648db9975f419d",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000012.npz",
+      "prediction_artifact_sha256": "d68d156161d9683668175eb554b449c3f46bb08ff8d2fe99801049ce55f4c5e3",
+      "prediction_artifact_size_bytes": 1726777
+    },
+    {
+      "sample_index": 13,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.8632593,
+      "label_time_s": 1504645177.9906974,
+      "end_time_s": 1504645177.9906974,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 712,
+      "intervals": [
+        {
+          "aps_interval_index": 13,
+          "start_time_s": 1504645177.8632593,
+          "end_time_s": 1504645177.8951192,
+          "event_start_index": 2465,
+          "event_stop_index_exclusive": 2640,
+          "event_count": 175
+        },
+        {
+          "aps_interval_index": 14,
+          "start_time_s": 1504645177.8951192,
+          "end_time_s": 1504645177.9269783,
+          "event_start_index": 2640,
+          "event_stop_index_exclusive": 2829,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 15,
+          "start_time_s": 1504645177.9269783,
+          "end_time_s": 1504645177.9588373,
+          "event_start_index": 2829,
+          "event_stop_index_exclusive": 3002,
+          "event_count": 173
+        },
+        {
+          "aps_interval_index": 16,
+          "start_time_s": 1504645177.9588373,
+          "end_time_s": 1504645177.9906974,
+          "event_start_index": 3002,
+          "event_stop_index_exclusive": 3177,
+          "event_count": 175
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 2465,
+          "official_image_raw_event_index": 2464,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 3177,
+          "official_image_raw_event_index": 3176,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          3,
+          5
+        ],
+        "gt_interval_start_index": 3,
+        "gt_timestamps_used_s": [
+          1504645177.8611858,
+          1504645177.9110975,
+          1504645177.96108,
+          1504645178.011014
+        ],
+        "start_time_s": 1504645177.8632593,
+        "end_time_s": 1504645177.9906974,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 22687,
+        "event_supported_pixels": 332,
+        "candidate_valid_pixels": 92
+      },
+      "candidate_epe_px_per_interval": 1.9204705992445856,
+      "candidate_epe_valid_pixels": 92,
+      "inference_seconds": 1.439570875838399,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "b42d81e955310e49d942bd6319eaede43cdef359935be66e7182d2f80d20605f",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000013.npz",
+      "prediction_artifact_sha256": "0b612cfe20f503d2ba802a0a8bb59c10a846b546f5fa0ade0bbc59b444325ac3",
+      "prediction_artifact_size_bytes": 1727703
+    },
+    {
+      "sample_index": 14,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.8951192,
+      "label_time_s": 1504645178.0225563,
+      "end_time_s": 1504645178.0225563,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 722,
+      "intervals": [
+        {
+          "aps_interval_index": 14,
+          "start_time_s": 1504645177.8951192,
+          "end_time_s": 1504645177.9269783,
+          "event_start_index": 2640,
+          "event_stop_index_exclusive": 2829,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 15,
+          "start_time_s": 1504645177.9269783,
+          "end_time_s": 1504645177.9588373,
+          "event_start_index": 2829,
+          "event_stop_index_exclusive": 3002,
+          "event_count": 173
+        },
+        {
+          "aps_interval_index": 16,
+          "start_time_s": 1504645177.9588373,
+          "end_time_s": 1504645177.9906974,
+          "event_start_index": 3002,
+          "event_stop_index_exclusive": 3177,
+          "event_count": 175
+        },
+        {
+          "aps_interval_index": 17,
+          "start_time_s": 1504645177.9906974,
+          "end_time_s": 1504645178.0225563,
+          "event_start_index": 3177,
+          "event_stop_index_exclusive": 3362,
+          "event_count": 185
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 2640,
+          "official_image_raw_event_index": 2639,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 3362,
+          "official_image_raw_event_index": 3361,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          3,
+          6
+        ],
+        "gt_interval_start_index": 3,
+        "gt_timestamps_used_s": [
+          1504645177.8611858,
+          1504645177.9110975,
+          1504645177.96108,
+          1504645178.011014,
+          1504645178.0609286
+        ],
+        "start_time_s": 1504645177.8951192,
+        "end_time_s": 1504645178.0225563,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 22230,
+        "event_supported_pixels": 327,
+        "candidate_valid_pixels": 94
+      },
+      "candidate_epe_px_per_interval": 1.9005846151136079,
+      "candidate_epe_valid_pixels": 94,
+      "inference_seconds": 1.4515292011201382,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "7c61dc8a462300931121ae58c845b47d203efac573853b50c206211417e63b82",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000014.npz",
+      "prediction_artifact_sha256": "f2daf2a11d068a4dfb873d287e5b372872583855b76501934cc0f669fb9d742f",
+      "prediction_artifact_size_bytes": 1724667
+    },
+    {
+      "sample_index": 15,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.9269783,
+      "label_time_s": 1504645178.0544152,
+      "end_time_s": 1504645178.0544152,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 707,
+      "intervals": [
+        {
+          "aps_interval_index": 15,
+          "start_time_s": 1504645177.9269783,
+          "end_time_s": 1504645177.9588373,
+          "event_start_index": 2829,
+          "event_stop_index_exclusive": 3002,
+          "event_count": 173
+        },
+        {
+          "aps_interval_index": 16,
+          "start_time_s": 1504645177.9588373,
+          "end_time_s": 1504645177.9906974,
+          "event_start_index": 3002,
+          "event_stop_index_exclusive": 3177,
+          "event_count": 175
+        },
+        {
+          "aps_interval_index": 17,
+          "start_time_s": 1504645177.9906974,
+          "end_time_s": 1504645178.0225563,
+          "event_start_index": 3177,
+          "event_stop_index_exclusive": 3362,
+          "event_count": 185
+        },
+        {
+          "aps_interval_index": 18,
+          "start_time_s": 1504645178.0225563,
+          "end_time_s": 1504645178.0544152,
+          "event_start_index": 3362,
+          "event_stop_index_exclusive": 3536,
+          "event_count": 174
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 2829,
+          "official_image_raw_event_index": 2828,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 3536,
+          "official_image_raw_event_index": 3535,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          4,
+          6
+        ],
+        "gt_interval_start_index": 4,
+        "gt_timestamps_used_s": [
+          1504645177.9110975,
+          1504645177.96108,
+          1504645178.011014,
+          1504645178.0609286
+        ],
+        "start_time_s": 1504645177.9269783,
+        "end_time_s": 1504645178.0544152,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23255,
+        "event_supported_pixels": 317,
+        "candidate_valid_pixels": 97
+      },
+      "candidate_epe_px_per_interval": 1.7200861955368876,
+      "candidate_epe_valid_pixels": 97,
+      "inference_seconds": 1.4533939696848392,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "13bf0fa31b4da834e6fd5b04c7ceb16031f6454aabcd6c03b6d7a5db4f6ae5c6",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000015.npz",
+      "prediction_artifact_sha256": "62e41e1262b79e7cec8b91f82e95cca1334f43725fec4a0a128905660d09b597",
+      "prediction_artifact_size_bytes": 1729616
+    },
+    {
+      "sample_index": 16,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.9588373,
+      "label_time_s": 1504645178.0862753,
+      "end_time_s": 1504645178.0862753,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 702,
+      "intervals": [
+        {
+          "aps_interval_index": 16,
+          "start_time_s": 1504645177.9588373,
+          "end_time_s": 1504645177.9906974,
+          "event_start_index": 3002,
+          "event_stop_index_exclusive": 3177,
+          "event_count": 175
+        },
+        {
+          "aps_interval_index": 17,
+          "start_time_s": 1504645177.9906974,
+          "end_time_s": 1504645178.0225563,
+          "event_start_index": 3177,
+          "event_stop_index_exclusive": 3362,
+          "event_count": 185
+        },
+        {
+          "aps_interval_index": 18,
+          "start_time_s": 1504645178.0225563,
+          "end_time_s": 1504645178.0544152,
+          "event_start_index": 3362,
+          "event_stop_index_exclusive": 3536,
+          "event_count": 174
+        },
+        {
+          "aps_interval_index": 19,
+          "start_time_s": 1504645178.0544152,
+          "end_time_s": 1504645178.0862753,
+          "event_start_index": 3536,
+          "event_stop_index_exclusive": 3704,
+          "event_count": 168
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 3002,
+          "official_image_raw_event_index": 3001,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 3704,
+          "official_image_raw_event_index": 3703,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          4,
+          7
+        ],
+        "gt_interval_start_index": 4,
+        "gt_timestamps_used_s": [
+          1504645177.9110975,
+          1504645177.96108,
+          1504645178.011014,
+          1504645178.0609286,
+          1504645178.1108832
+        ],
+        "start_time_s": 1504645177.9588373,
+        "end_time_s": 1504645178.0862753,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 22707,
+        "event_supported_pixels": 319,
+        "candidate_valid_pixels": 85
+      },
+      "candidate_epe_px_per_interval": 1.8530850403465158,
+      "candidate_epe_valid_pixels": 85,
+      "inference_seconds": 1.4532066443935037,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "6564031feb4c6ff20ece700b89727f9c0394a7c4fc4991c26ad736429395c4a8",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000016.npz",
+      "prediction_artifact_sha256": "9d988788a0a25777ff22a0bfb1fc7628668605b118fb146f577db1fa0d2d7be5",
+      "prediction_artifact_size_bytes": 1723977
+    },
+    {
+      "sample_index": 17,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645177.9906974,
+      "label_time_s": 1504645178.1181343,
+      "end_time_s": 1504645178.1181343,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 687,
+      "intervals": [
+        {
+          "aps_interval_index": 17,
+          "start_time_s": 1504645177.9906974,
+          "end_time_s": 1504645178.0225563,
+          "event_start_index": 3177,
+          "event_stop_index_exclusive": 3362,
+          "event_count": 185
+        },
+        {
+          "aps_interval_index": 18,
+          "start_time_s": 1504645178.0225563,
+          "end_time_s": 1504645178.0544152,
+          "event_start_index": 3362,
+          "event_stop_index_exclusive": 3536,
+          "event_count": 174
+        },
+        {
+          "aps_interval_index": 19,
+          "start_time_s": 1504645178.0544152,
+          "end_time_s": 1504645178.0862753,
+          "event_start_index": 3536,
+          "event_stop_index_exclusive": 3704,
+          "event_count": 168
+        },
+        {
+          "aps_interval_index": 20,
+          "start_time_s": 1504645178.0862753,
+          "end_time_s": 1504645178.1181343,
+          "event_start_index": 3704,
+          "event_stop_index_exclusive": 3864,
+          "event_count": 160
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 3177,
+          "official_image_raw_event_index": 3176,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 3864,
+          "official_image_raw_event_index": 3863,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          5,
+          8
+        ],
+        "gt_interval_start_index": 5,
+        "gt_timestamps_used_s": [
+          1504645177.96108,
+          1504645178.011014,
+          1504645178.0609286,
+          1504645178.1108832,
+          1504645178.160897
+        ],
+        "start_time_s": 1504645177.9906974,
+        "end_time_s": 1504645178.1181343,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 22742,
+        "event_supported_pixels": 324,
+        "candidate_valid_pixels": 85
+      },
+      "candidate_epe_px_per_interval": 1.6630451366785761,
+      "candidate_epe_valid_pixels": 85,
+      "inference_seconds": 1.452529731206596,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "108179ee052d4d948e00fc66b1cee542e2d8eb42bf808c3b074a1a04687af89d",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000017.npz",
+      "prediction_artifact_sha256": "3b3b95de760eff792147f92cf065132fbe724895bdeb4a61b789b8616fc9aae0",
+      "prediction_artifact_size_bytes": 1723155
+    },
+    {
+      "sample_index": 18,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.0225563,
+      "label_time_s": 1504645178.1499934,
+      "end_time_s": 1504645178.1499934,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 696,
+      "intervals": [
+        {
+          "aps_interval_index": 18,
+          "start_time_s": 1504645178.0225563,
+          "end_time_s": 1504645178.0544152,
+          "event_start_index": 3362,
+          "event_stop_index_exclusive": 3536,
+          "event_count": 174
+        },
+        {
+          "aps_interval_index": 19,
+          "start_time_s": 1504645178.0544152,
+          "end_time_s": 1504645178.0862753,
+          "event_start_index": 3536,
+          "event_stop_index_exclusive": 3704,
+          "event_count": 168
+        },
+        {
+          "aps_interval_index": 20,
+          "start_time_s": 1504645178.0862753,
+          "end_time_s": 1504645178.1181343,
+          "event_start_index": 3704,
+          "event_stop_index_exclusive": 3864,
+          "event_count": 160
+        },
+        {
+          "aps_interval_index": 21,
+          "start_time_s": 1504645178.1181343,
+          "end_time_s": 1504645178.1499934,
+          "event_start_index": 3864,
+          "event_stop_index_exclusive": 4058,
+          "event_count": 194
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 3362,
+          "official_image_raw_event_index": 3361,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 4058,
+          "official_image_raw_event_index": 4057,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          6,
+          8
+        ],
+        "gt_interval_start_index": 6,
+        "gt_timestamps_used_s": [
+          1504645178.011014,
+          1504645178.0609286,
+          1504645178.1108832,
+          1504645178.160897
+        ],
+        "start_time_s": 1504645178.0225563,
+        "end_time_s": 1504645178.1499934,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23533,
+        "event_supported_pixels": 321,
+        "candidate_valid_pixels": 79
+      },
+      "candidate_epe_px_per_interval": 1.487452215135914,
+      "candidate_epe_valid_pixels": 79,
+      "inference_seconds": 1.4519945979118347,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "d6193a54f928460128d05cf75a2f786a074c05890af8edc431054f316e2b0782",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000018.npz",
+      "prediction_artifact_sha256": "7485a89a679b80e276602bf525bc22b94e7e442bf0c0c5e73ee100f03dca45e6",
+      "prediction_artifact_size_bytes": 1728962
+    },
+    {
+      "sample_index": 19,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.0544152,
+      "label_time_s": 1504645178.1818523,
+      "end_time_s": 1504645178.1818523,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 714,
+      "intervals": [
+        {
+          "aps_interval_index": 19,
+          "start_time_s": 1504645178.0544152,
+          "end_time_s": 1504645178.0862753,
+          "event_start_index": 3536,
+          "event_stop_index_exclusive": 3704,
+          "event_count": 168
+        },
+        {
+          "aps_interval_index": 20,
+          "start_time_s": 1504645178.0862753,
+          "end_time_s": 1504645178.1181343,
+          "event_start_index": 3704,
+          "event_stop_index_exclusive": 3864,
+          "event_count": 160
+        },
+        {
+          "aps_interval_index": 21,
+          "start_time_s": 1504645178.1181343,
+          "end_time_s": 1504645178.1499934,
+          "event_start_index": 3864,
+          "event_stop_index_exclusive": 4058,
+          "event_count": 194
+        },
+        {
+          "aps_interval_index": 22,
+          "start_time_s": 1504645178.1499934,
+          "end_time_s": 1504645178.1818523,
+          "event_start_index": 4058,
+          "event_stop_index_exclusive": 4250,
+          "event_count": 192
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 3536,
+          "official_image_raw_event_index": 3535,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 4250,
+          "official_image_raw_event_index": 4249,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          6,
+          9
+        ],
+        "gt_interval_start_index": 6,
+        "gt_timestamps_used_s": [
+          1504645178.011014,
+          1504645178.0609286,
+          1504645178.1108832,
+          1504645178.160897,
+          1504645178.210798
+        ],
+        "start_time_s": 1504645178.0544152,
+        "end_time_s": 1504645178.1818523,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23002,
+        "event_supported_pixels": 334,
+        "candidate_valid_pixels": 75
+      },
+      "candidate_epe_px_per_interval": 1.5347559886230777,
+      "candidate_epe_valid_pixels": 75,
+      "inference_seconds": 1.4452017825096846,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "0b441250770a62ca453b172a1b280c788b31b69ed1e771d21ed8c3fe5479bb26",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000019.npz",
+      "prediction_artifact_sha256": "e9a22a8cac11da86b6060a994cb190f051a8116714741028e37b2fd8cac1015a",
+      "prediction_artifact_size_bytes": 1726670
+    },
+    {
+      "sample_index": 20,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.0862753,
+      "label_time_s": 1504645178.2137122,
+      "end_time_s": 1504645178.2137122,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 716,
+      "intervals": [
+        {
+          "aps_interval_index": 20,
+          "start_time_s": 1504645178.0862753,
+          "end_time_s": 1504645178.1181343,
+          "event_start_index": 3704,
+          "event_stop_index_exclusive": 3864,
+          "event_count": 160
+        },
+        {
+          "aps_interval_index": 21,
+          "start_time_s": 1504645178.1181343,
+          "end_time_s": 1504645178.1499934,
+          "event_start_index": 3864,
+          "event_stop_index_exclusive": 4058,
+          "event_count": 194
+        },
+        {
+          "aps_interval_index": 22,
+          "start_time_s": 1504645178.1499934,
+          "end_time_s": 1504645178.1818523,
+          "event_start_index": 4058,
+          "event_stop_index_exclusive": 4250,
+          "event_count": 192
+        },
+        {
+          "aps_interval_index": 23,
+          "start_time_s": 1504645178.1818523,
+          "end_time_s": 1504645178.2137122,
+          "event_start_index": 4250,
+          "event_stop_index_exclusive": 4420,
+          "event_count": 170
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 3704,
+          "official_image_raw_event_index": 3703,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 4420,
+          "official_image_raw_event_index": 4419,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          7,
+          10
+        ],
+        "gt_interval_start_index": 7,
+        "gt_timestamps_used_s": [
+          1504645178.0609286,
+          1504645178.1108832,
+          1504645178.160897,
+          1504645178.210798,
+          1504645178.2607284
+        ],
+        "start_time_s": 1504645178.0862753,
+        "end_time_s": 1504645178.2137122,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23106,
+        "event_supported_pixels": 342,
+        "candidate_valid_pixels": 83
+      },
+      "candidate_epe_px_per_interval": 1.48385266643108,
+      "candidate_epe_valid_pixels": 83,
+      "inference_seconds": 1.454310423694551,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "cff37873bb7c5b0617468cb270348928543b8219edb8c9a8bb95d0ed5c9a4060",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000020.npz",
+      "prediction_artifact_sha256": "33c45ec647c922677f14fc0ac18853d28d6b71be7a1e5832521aa10e6d5a99bf",
+      "prediction_artifact_size_bytes": 1726689
+    },
+    {
+      "sample_index": 21,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.1181343,
+      "label_time_s": 1504645178.2455714,
+      "end_time_s": 1504645178.2455714,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 727,
+      "intervals": [
+        {
+          "aps_interval_index": 21,
+          "start_time_s": 1504645178.1181343,
+          "end_time_s": 1504645178.1499934,
+          "event_start_index": 3864,
+          "event_stop_index_exclusive": 4058,
+          "event_count": 194
+        },
+        {
+          "aps_interval_index": 22,
+          "start_time_s": 1504645178.1499934,
+          "end_time_s": 1504645178.1818523,
+          "event_start_index": 4058,
+          "event_stop_index_exclusive": 4250,
+          "event_count": 192
+        },
+        {
+          "aps_interval_index": 23,
+          "start_time_s": 1504645178.1818523,
+          "end_time_s": 1504645178.2137122,
+          "event_start_index": 4250,
+          "event_stop_index_exclusive": 4420,
+          "event_count": 170
+        },
+        {
+          "aps_interval_index": 24,
+          "start_time_s": 1504645178.2137122,
+          "end_time_s": 1504645178.2455714,
+          "event_start_index": 4420,
+          "event_stop_index_exclusive": 4591,
+          "event_count": 171
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 3864,
+          "official_image_raw_event_index": 3863,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 4591,
+          "official_image_raw_event_index": 4590,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          8,
+          10
+        ],
+        "gt_interval_start_index": 8,
+        "gt_timestamps_used_s": [
+          1504645178.1108832,
+          1504645178.160897,
+          1504645178.210798,
+          1504645178.2607284
+        ],
+        "start_time_s": 1504645178.1181343,
+        "end_time_s": 1504645178.2455714,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23611,
+        "event_supported_pixels": 337,
+        "candidate_valid_pixels": 79
+      },
+      "candidate_epe_px_per_interval": 1.439771825375963,
+      "candidate_epe_valid_pixels": 79,
+      "inference_seconds": 1.48766278475523,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "81e0ba7c18dd8a06d74b0a0e4cd1f524963870ee661408781e31730787f300e7",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000021.npz",
+      "prediction_artifact_sha256": "fa7c98230312f062aa511ad74f1bf16ae5d1fe5ae5c6096610cd94fa92946a11",
+      "prediction_artifact_size_bytes": 1727996
+    },
+    {
+      "sample_index": 22,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.1499934,
+      "label_time_s": 1504645178.2774312,
+      "end_time_s": 1504645178.2774312,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 726,
+      "intervals": [
+        {
+          "aps_interval_index": 22,
+          "start_time_s": 1504645178.1499934,
+          "end_time_s": 1504645178.1818523,
+          "event_start_index": 4058,
+          "event_stop_index_exclusive": 4250,
+          "event_count": 192
+        },
+        {
+          "aps_interval_index": 23,
+          "start_time_s": 1504645178.1818523,
+          "end_time_s": 1504645178.2137122,
+          "event_start_index": 4250,
+          "event_stop_index_exclusive": 4420,
+          "event_count": 170
+        },
+        {
+          "aps_interval_index": 24,
+          "start_time_s": 1504645178.2137122,
+          "end_time_s": 1504645178.2455714,
+          "event_start_index": 4420,
+          "event_stop_index_exclusive": 4591,
+          "event_count": 171
+        },
+        {
+          "aps_interval_index": 25,
+          "start_time_s": 1504645178.2455714,
+          "end_time_s": 1504645178.2774312,
+          "event_start_index": 4591,
+          "event_stop_index_exclusive": 4784,
+          "event_count": 193
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 4058,
+          "official_image_raw_event_index": 4057,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 4784,
+          "official_image_raw_event_index": 4783,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          8,
+          11
+        ],
+        "gt_interval_start_index": 8,
+        "gt_timestamps_used_s": [
+          1504645178.1108832,
+          1504645178.160897,
+          1504645178.210798,
+          1504645178.2607284,
+          1504645178.3107226
+        ],
+        "start_time_s": 1504645178.1499934,
+        "end_time_s": 1504645178.2774312,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23083,
+        "event_supported_pixels": 343,
+        "candidate_valid_pixels": 76
+      },
+      "candidate_epe_px_per_interval": 1.3742185538986358,
+      "candidate_epe_valid_pixels": 76,
+      "inference_seconds": 1.484727025963366,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "d1307bb972d383cb048249b6b713e1f2fc61ea89f0558dcf1e072a1f059f6ab4",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000022.npz",
+      "prediction_artifact_sha256": "d2a7ae21ff08dd091023fd4f29386e0a8269a1842676b86c86e887d9c81cebc7",
+      "prediction_artifact_size_bytes": 1723683
+    },
+    {
+      "sample_index": 23,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.1818523,
+      "label_time_s": 1504645178.3092904,
+      "end_time_s": 1504645178.3092904,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 723,
+      "intervals": [
+        {
+          "aps_interval_index": 23,
+          "start_time_s": 1504645178.1818523,
+          "end_time_s": 1504645178.2137122,
+          "event_start_index": 4250,
+          "event_stop_index_exclusive": 4420,
+          "event_count": 170
+        },
+        {
+          "aps_interval_index": 24,
+          "start_time_s": 1504645178.2137122,
+          "end_time_s": 1504645178.2455714,
+          "event_start_index": 4420,
+          "event_stop_index_exclusive": 4591,
+          "event_count": 171
+        },
+        {
+          "aps_interval_index": 25,
+          "start_time_s": 1504645178.2455714,
+          "end_time_s": 1504645178.2774312,
+          "event_start_index": 4591,
+          "event_stop_index_exclusive": 4784,
+          "event_count": 193
+        },
+        {
+          "aps_interval_index": 26,
+          "start_time_s": 1504645178.2774312,
+          "end_time_s": 1504645178.3092904,
+          "event_start_index": 4784,
+          "event_stop_index_exclusive": 4973,
+          "event_count": 189
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 4250,
+          "official_image_raw_event_index": 4249,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 4973,
+          "official_image_raw_event_index": 4972,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          9,
+          11
+        ],
+        "gt_interval_start_index": 9,
+        "gt_timestamps_used_s": [
+          1504645178.160897,
+          1504645178.210798,
+          1504645178.2607284,
+          1504645178.3107226
+        ],
+        "start_time_s": 1504645178.1818523,
+        "end_time_s": 1504645178.3092904,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23934,
+        "event_supported_pixels": 339,
+        "candidate_valid_pixels": 86
+      },
+      "candidate_epe_px_per_interval": 1.3844087405651433,
+      "candidate_epe_valid_pixels": 86,
+      "inference_seconds": 1.465229518711567,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "a83737d8f9d21adda27187ed170e51497003f34136babfc5780e78b7ee9a15a6",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000023.npz",
+      "prediction_artifact_sha256": "15986e980169397a55ef2b35f62e47d56a66b05b3ee73bffa3633f4b9a93bd5b",
+      "prediction_artifact_size_bytes": 1728222
+    },
+    {
+      "sample_index": 24,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.2137122,
+      "label_time_s": 1504645178.3411493,
+      "end_time_s": 1504645178.3411493,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 714,
+      "intervals": [
+        {
+          "aps_interval_index": 24,
+          "start_time_s": 1504645178.2137122,
+          "end_time_s": 1504645178.2455714,
+          "event_start_index": 4420,
+          "event_stop_index_exclusive": 4591,
+          "event_count": 171
+        },
+        {
+          "aps_interval_index": 25,
+          "start_time_s": 1504645178.2455714,
+          "end_time_s": 1504645178.2774312,
+          "event_start_index": 4591,
+          "event_stop_index_exclusive": 4784,
+          "event_count": 193
+        },
+        {
+          "aps_interval_index": 26,
+          "start_time_s": 1504645178.2774312,
+          "end_time_s": 1504645178.3092904,
+          "event_start_index": 4784,
+          "event_stop_index_exclusive": 4973,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 27,
+          "start_time_s": 1504645178.3092904,
+          "end_time_s": 1504645178.3411493,
+          "event_start_index": 4973,
+          "event_stop_index_exclusive": 5134,
+          "event_count": 161
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 4420,
+          "official_image_raw_event_index": 4419,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 5134,
+          "official_image_raw_event_index": 5133,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          10,
+          12
+        ],
+        "gt_interval_start_index": 10,
+        "gt_timestamps_used_s": [
+          1504645178.210798,
+          1504645178.2607284,
+          1504645178.3107226,
+          1504645178.3606677
+        ],
+        "start_time_s": 1504645178.2137122,
+        "end_time_s": 1504645178.3411493,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24172,
+        "event_supported_pixels": 323,
+        "candidate_valid_pixels": 76
+      },
+      "candidate_epe_px_per_interval": 1.3779622399712266,
+      "candidate_epe_valid_pixels": 76,
+      "inference_seconds": 1.4502618936821818,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "f360fa35f99e882a505c6eab2c12d9efd678e07de03f2024b74f1b51e0b957c8",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000024.npz",
+      "prediction_artifact_sha256": "563ea8b47f8c8ea4a4a04288651ec524765db22c69e97d029c72e6d3d4183db9",
+      "prediction_artifact_size_bytes": 1728157
+    },
+    {
+      "sample_index": 25,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.2455714,
+      "label_time_s": 1504645178.3730092,
+      "end_time_s": 1504645178.3730092,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 716,
+      "intervals": [
+        {
+          "aps_interval_index": 25,
+          "start_time_s": 1504645178.2455714,
+          "end_time_s": 1504645178.2774312,
+          "event_start_index": 4591,
+          "event_stop_index_exclusive": 4784,
+          "event_count": 193
+        },
+        {
+          "aps_interval_index": 26,
+          "start_time_s": 1504645178.2774312,
+          "end_time_s": 1504645178.3092904,
+          "event_start_index": 4784,
+          "event_stop_index_exclusive": 4973,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 27,
+          "start_time_s": 1504645178.3092904,
+          "end_time_s": 1504645178.3411493,
+          "event_start_index": 4973,
+          "event_stop_index_exclusive": 5134,
+          "event_count": 161
+        },
+        {
+          "aps_interval_index": 28,
+          "start_time_s": 1504645178.3411493,
+          "end_time_s": 1504645178.3730092,
+          "event_start_index": 5134,
+          "event_stop_index_exclusive": 5307,
+          "event_count": 173
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 4591,
+          "official_image_raw_event_index": 4590,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 5307,
+          "official_image_raw_event_index": 5306,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          10,
+          13
+        ],
+        "gt_interval_start_index": 10,
+        "gt_timestamps_used_s": [
+          1504645178.210798,
+          1504645178.2607284,
+          1504645178.3107226,
+          1504645178.3606677,
+          1504645178.410576
+        ],
+        "start_time_s": 1504645178.2455714,
+        "end_time_s": 1504645178.3730092,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 23684,
+        "event_supported_pixels": 319,
+        "candidate_valid_pixels": 72
+      },
+      "candidate_epe_px_per_interval": 1.3988317726446928,
+      "candidate_epe_valid_pixels": 72,
+      "inference_seconds": 1.452295133844018,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "d41be3cb5ebde7e26e9cb2e9ceca07acd4384d896241e00b0d06a7dd3d24f0ff",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000025.npz",
+      "prediction_artifact_sha256": "ef38d7a1d92b68b93ce81cb9031c3de5113164015eb826d249d2913ef6de4a93",
+      "prediction_artifact_size_bytes": 1725530
+    },
+    {
+      "sample_index": 26,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.2774312,
+      "label_time_s": 1504645178.4048684,
+      "end_time_s": 1504645178.4048684,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 719,
+      "intervals": [
+        {
+          "aps_interval_index": 26,
+          "start_time_s": 1504645178.2774312,
+          "end_time_s": 1504645178.3092904,
+          "event_start_index": 4784,
+          "event_stop_index_exclusive": 4973,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 27,
+          "start_time_s": 1504645178.3092904,
+          "end_time_s": 1504645178.3411493,
+          "event_start_index": 4973,
+          "event_stop_index_exclusive": 5134,
+          "event_count": 161
+        },
+        {
+          "aps_interval_index": 28,
+          "start_time_s": 1504645178.3411493,
+          "end_time_s": 1504645178.3730092,
+          "event_start_index": 5134,
+          "event_stop_index_exclusive": 5307,
+          "event_count": 173
+        },
+        {
+          "aps_interval_index": 29,
+          "start_time_s": 1504645178.3730092,
+          "end_time_s": 1504645178.4048684,
+          "event_start_index": 5307,
+          "event_stop_index_exclusive": 5503,
+          "event_count": 196
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 4784,
+          "official_image_raw_event_index": 4783,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 5503,
+          "official_image_raw_event_index": 5502,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          11,
+          13
+        ],
+        "gt_interval_start_index": 11,
+        "gt_timestamps_used_s": [
+          1504645178.2607284,
+          1504645178.3107226,
+          1504645178.3606677,
+          1504645178.410576
+        ],
+        "start_time_s": 1504645178.2774312,
+        "end_time_s": 1504645178.4048684,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24514,
+        "event_supported_pixels": 333,
+        "candidate_valid_pixels": 76
+      },
+      "candidate_epe_px_per_interval": 1.3957378920253936,
+      "candidate_epe_valid_pixels": 76,
+      "inference_seconds": 1.4531656308099627,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "6472f4e5d5ffada6e692017cc4ce19c81fcc614f99c08c0e6aec49fc7d6d501b",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000026.npz",
+      "prediction_artifact_sha256": "7cbf411523327a15959116755c6c40a550884510de113aff4cb61ef0710eaf13",
+      "prediction_artifact_size_bytes": 1730429
+    },
+    {
+      "sample_index": 27,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.3092904,
+      "label_time_s": 1504645178.4367273,
+      "end_time_s": 1504645178.4367273,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 728,
+      "intervals": [
+        {
+          "aps_interval_index": 27,
+          "start_time_s": 1504645178.3092904,
+          "end_time_s": 1504645178.3411493,
+          "event_start_index": 4973,
+          "event_stop_index_exclusive": 5134,
+          "event_count": 161
+        },
+        {
+          "aps_interval_index": 28,
+          "start_time_s": 1504645178.3411493,
+          "end_time_s": 1504645178.3730092,
+          "event_start_index": 5134,
+          "event_stop_index_exclusive": 5307,
+          "event_count": 173
+        },
+        {
+          "aps_interval_index": 29,
+          "start_time_s": 1504645178.3730092,
+          "end_time_s": 1504645178.4048684,
+          "event_start_index": 5307,
+          "event_stop_index_exclusive": 5503,
+          "event_count": 196
+        },
+        {
+          "aps_interval_index": 30,
+          "start_time_s": 1504645178.4048684,
+          "end_time_s": 1504645178.4367273,
+          "event_start_index": 5503,
+          "event_stop_index_exclusive": 5701,
+          "event_count": 198
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 4973,
+          "official_image_raw_event_index": 4972,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 5701,
+          "official_image_raw_event_index": 5700,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          11,
+          14
+        ],
+        "gt_interval_start_index": 11,
+        "gt_timestamps_used_s": [
+          1504645178.2607284,
+          1504645178.3107226,
+          1504645178.3606677,
+          1504645178.410576,
+          1504645178.4606225
+        ],
+        "start_time_s": 1504645178.3092904,
+        "end_time_s": 1504645178.4367273,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24037,
+        "event_supported_pixels": 343,
+        "candidate_valid_pixels": 79
+      },
+      "candidate_epe_px_per_interval": 1.2584762835505943,
+      "candidate_epe_valid_pixels": 79,
+      "inference_seconds": 1.4546048045158386,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "acf7e3d7f564b7fc57a123cbe9fc3d12e088d77d9a1cd6e82e193841e3107a7a",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000027.npz",
+      "prediction_artifact_sha256": "e497e4da4971d590479c9ff2bed82738cf98b72a0ba20ac87ef24a64f19068a0",
+      "prediction_artifact_size_bytes": 1727351
+    },
+    {
+      "sample_index": 28,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.3411493,
+      "label_time_s": 1504645178.4685874,
+      "end_time_s": 1504645178.4685874,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 733,
+      "intervals": [
+        {
+          "aps_interval_index": 28,
+          "start_time_s": 1504645178.3411493,
+          "end_time_s": 1504645178.3730092,
+          "event_start_index": 5134,
+          "event_stop_index_exclusive": 5307,
+          "event_count": 173
+        },
+        {
+          "aps_interval_index": 29,
+          "start_time_s": 1504645178.3730092,
+          "end_time_s": 1504645178.4048684,
+          "event_start_index": 5307,
+          "event_stop_index_exclusive": 5503,
+          "event_count": 196
+        },
+        {
+          "aps_interval_index": 30,
+          "start_time_s": 1504645178.4048684,
+          "end_time_s": 1504645178.4367273,
+          "event_start_index": 5503,
+          "event_stop_index_exclusive": 5701,
+          "event_count": 198
+        },
+        {
+          "aps_interval_index": 31,
+          "start_time_s": 1504645178.4367273,
+          "end_time_s": 1504645178.4685874,
+          "event_start_index": 5701,
+          "event_stop_index_exclusive": 5867,
+          "event_count": 166
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 5134,
+          "official_image_raw_event_index": 5133,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 5867,
+          "official_image_raw_event_index": 5866,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          12,
+          15
+        ],
+        "gt_interval_start_index": 12,
+        "gt_timestamps_used_s": [
+          1504645178.3107226,
+          1504645178.3606677,
+          1504645178.410576,
+          1504645178.4606225,
+          1504645178.5104551
+        ],
+        "start_time_s": 1504645178.3411493,
+        "end_time_s": 1504645178.4685874,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24128,
+        "event_supported_pixels": 357,
+        "candidate_valid_pixels": 90
+      },
+      "candidate_epe_px_per_interval": 1.1885690973493939,
+      "candidate_epe_valid_pixels": 90,
+      "inference_seconds": 1.4744489714503288,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "a106903a0e2671e48d8eb00be09791fd426eae68c5738880a1967b4b594c2d51",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000028.npz",
+      "prediction_artifact_sha256": "6c341acfb08e89eda5fe74e72cdf609e1ce4effca322b5e821e12ce8ffc91a9b",
+      "prediction_artifact_size_bytes": 1724424
+    },
+    {
+      "sample_index": 29,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.3730092,
+      "label_time_s": 1504645178.5004463,
+      "end_time_s": 1504645178.5004463,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 746,
+      "intervals": [
+        {
+          "aps_interval_index": 29,
+          "start_time_s": 1504645178.3730092,
+          "end_time_s": 1504645178.4048684,
+          "event_start_index": 5307,
+          "event_stop_index_exclusive": 5503,
+          "event_count": 196
+        },
+        {
+          "aps_interval_index": 30,
+          "start_time_s": 1504645178.4048684,
+          "end_time_s": 1504645178.4367273,
+          "event_start_index": 5503,
+          "event_stop_index_exclusive": 5701,
+          "event_count": 198
+        },
+        {
+          "aps_interval_index": 31,
+          "start_time_s": 1504645178.4367273,
+          "end_time_s": 1504645178.4685874,
+          "event_start_index": 5701,
+          "event_stop_index_exclusive": 5867,
+          "event_count": 166
+        },
+        {
+          "aps_interval_index": 32,
+          "start_time_s": 1504645178.4685874,
+          "end_time_s": 1504645178.5004463,
+          "event_start_index": 5867,
+          "event_stop_index_exclusive": 6053,
+          "event_count": 186
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 5307,
+          "official_image_raw_event_index": 5306,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 6053,
+          "official_image_raw_event_index": 6052,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          13,
+          15
+        ],
+        "gt_interval_start_index": 13,
+        "gt_timestamps_used_s": [
+          1504645178.3606677,
+          1504645178.410576,
+          1504645178.4606225,
+          1504645178.5104551
+        ],
+        "start_time_s": 1504645178.3730092,
+        "end_time_s": 1504645178.5004463,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24778,
+        "event_supported_pixels": 359,
+        "candidate_valid_pixels": 92
+      },
+      "candidate_epe_px_per_interval": 1.1007357267770563,
+      "candidate_epe_valid_pixels": 92,
+      "inference_seconds": 1.4590118303894997,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "1d5f80f91ebd6abb74877867ab19065de512e8ecb55b3362702ed329e0f37525",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000029.npz",
+      "prediction_artifact_sha256": "d226543e53e13532e31930b8a01816b5b7af9c7ec9099a9be634c225420a19d9",
+      "prediction_artifact_size_bytes": 1727208
+    },
+    {
+      "sample_index": 30,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.4048684,
+      "label_time_s": 1504645178.5323062,
+      "end_time_s": 1504645178.5323062,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 737,
+      "intervals": [
+        {
+          "aps_interval_index": 30,
+          "start_time_s": 1504645178.4048684,
+          "end_time_s": 1504645178.4367273,
+          "event_start_index": 5503,
+          "event_stop_index_exclusive": 5701,
+          "event_count": 198
+        },
+        {
+          "aps_interval_index": 31,
+          "start_time_s": 1504645178.4367273,
+          "end_time_s": 1504645178.4685874,
+          "event_start_index": 5701,
+          "event_stop_index_exclusive": 5867,
+          "event_count": 166
+        },
+        {
+          "aps_interval_index": 32,
+          "start_time_s": 1504645178.4685874,
+          "end_time_s": 1504645178.5004463,
+          "event_start_index": 5867,
+          "event_stop_index_exclusive": 6053,
+          "event_count": 186
+        },
+        {
+          "aps_interval_index": 33,
+          "start_time_s": 1504645178.5004463,
+          "end_time_s": 1504645178.5323062,
+          "event_start_index": 6053,
+          "event_stop_index_exclusive": 6240,
+          "event_count": 187
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 5503,
+          "official_image_raw_event_index": 5502,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 6240,
+          "official_image_raw_event_index": 6239,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          13,
+          16
+        ],
+        "gt_interval_start_index": 13,
+        "gt_timestamps_used_s": [
+          1504645178.3606677,
+          1504645178.410576,
+          1504645178.4606225,
+          1504645178.5104551,
+          1504645178.5605812
+        ],
+        "start_time_s": 1504645178.4048684,
+        "end_time_s": 1504645178.5323062,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24400,
+        "event_supported_pixels": 341,
+        "candidate_valid_pixels": 92
+      },
+      "candidate_epe_px_per_interval": 1.091916417811607,
+      "candidate_epe_valid_pixels": 92,
+      "inference_seconds": 1.4615435088053346,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "aa300b7e587b11919acac2fb75527ce6cda76765ac650b4e8b894eea833b3afe",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000030.npz",
+      "prediction_artifact_sha256": "9f9d85cfd46cd618ca1adda3e62af10e2e12380e8ebe65df9ac74371f28f8e40",
+      "prediction_artifact_size_bytes": 1724889
+    },
+    {
+      "sample_index": 31,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.4367273,
+      "label_time_s": 1504645178.5641654,
+      "end_time_s": 1504645178.5641654,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 706,
+      "intervals": [
+        {
+          "aps_interval_index": 31,
+          "start_time_s": 1504645178.4367273,
+          "end_time_s": 1504645178.4685874,
+          "event_start_index": 5701,
+          "event_stop_index_exclusive": 5867,
+          "event_count": 166
+        },
+        {
+          "aps_interval_index": 32,
+          "start_time_s": 1504645178.4685874,
+          "end_time_s": 1504645178.5004463,
+          "event_start_index": 5867,
+          "event_stop_index_exclusive": 6053,
+          "event_count": 186
+        },
+        {
+          "aps_interval_index": 33,
+          "start_time_s": 1504645178.5004463,
+          "end_time_s": 1504645178.5323062,
+          "event_start_index": 6053,
+          "event_stop_index_exclusive": 6240,
+          "event_count": 187
+        },
+        {
+          "aps_interval_index": 34,
+          "start_time_s": 1504645178.5323062,
+          "end_time_s": 1504645178.5641654,
+          "event_start_index": 6240,
+          "event_stop_index_exclusive": 6407,
+          "event_count": 167
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 5701,
+          "official_image_raw_event_index": 5700,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 6407,
+          "official_image_raw_event_index": 6406,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          14,
+          17
+        ],
+        "gt_interval_start_index": 14,
+        "gt_timestamps_used_s": [
+          1504645178.410576,
+          1504645178.4606225,
+          1504645178.5104551,
+          1504645178.5605812,
+          1504645178.6104648
+        ],
+        "start_time_s": 1504645178.4367273,
+        "end_time_s": 1504645178.5641654,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24523,
+        "event_supported_pixels": 332,
+        "candidate_valid_pixels": 77
+      },
+      "candidate_epe_px_per_interval": 0.9852390390786858,
+      "candidate_epe_valid_pixels": 77,
+      "inference_seconds": 1.4655372072011232,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "e7d6c5f48e2ff44a6a2138e97b01fdf02825e5da641a7603c9fe90c420558db0",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000031.npz",
+      "prediction_artifact_sha256": "07d370f532d095e7868bbb97606542db782ac47c60e809c108110bb08b854722",
+      "prediction_artifact_size_bytes": 1725684
+    },
+    {
+      "sample_index": 32,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.4685874,
+      "label_time_s": 1504645178.5960252,
+      "end_time_s": 1504645178.5960252,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 729,
+      "intervals": [
+        {
+          "aps_interval_index": 32,
+          "start_time_s": 1504645178.4685874,
+          "end_time_s": 1504645178.5004463,
+          "event_start_index": 5867,
+          "event_stop_index_exclusive": 6053,
+          "event_count": 186
+        },
+        {
+          "aps_interval_index": 33,
+          "start_time_s": 1504645178.5004463,
+          "end_time_s": 1504645178.5323062,
+          "event_start_index": 6053,
+          "event_stop_index_exclusive": 6240,
+          "event_count": 187
+        },
+        {
+          "aps_interval_index": 34,
+          "start_time_s": 1504645178.5323062,
+          "end_time_s": 1504645178.5641654,
+          "event_start_index": 6240,
+          "event_stop_index_exclusive": 6407,
+          "event_count": 167
+        },
+        {
+          "aps_interval_index": 35,
+          "start_time_s": 1504645178.5641654,
+          "end_time_s": 1504645178.5960252,
+          "event_start_index": 6407,
+          "event_stop_index_exclusive": 6596,
+          "event_count": 189
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 5867,
+          "official_image_raw_event_index": 5866,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 6596,
+          "official_image_raw_event_index": 6595,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          15,
+          17
+        ],
+        "gt_interval_start_index": 15,
+        "gt_timestamps_used_s": [
+          1504645178.4606225,
+          1504645178.5104551,
+          1504645178.5605812,
+          1504645178.6104648
+        ],
+        "start_time_s": 1504645178.4685874,
+        "end_time_s": 1504645178.5960252,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 25318,
+        "event_supported_pixels": 351,
+        "candidate_valid_pixels": 87
+      },
+      "candidate_epe_px_per_interval": 1.0132162780787826,
+      "candidate_epe_valid_pixels": 87,
+      "inference_seconds": 1.4754352970048785,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "4e38f998b49949ada85c39d70285c265af687eed4f56ffd03357f13ab7e58fd3",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000032.npz",
+      "prediction_artifact_sha256": "738b85cc56f8c77f157c0d6471305ace0e3b929d90479c32abde431d9465aaa0",
+      "prediction_artifact_size_bytes": 1732812
+    },
+    {
+      "sample_index": 33,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.5004463,
+      "label_time_s": 1504645178.6278844,
+      "end_time_s": 1504645178.6278844,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 697,
+      "intervals": [
+        {
+          "aps_interval_index": 33,
+          "start_time_s": 1504645178.5004463,
+          "end_time_s": 1504645178.5323062,
+          "event_start_index": 6053,
+          "event_stop_index_exclusive": 6240,
+          "event_count": 187
+        },
+        {
+          "aps_interval_index": 34,
+          "start_time_s": 1504645178.5323062,
+          "end_time_s": 1504645178.5641654,
+          "event_start_index": 6240,
+          "event_stop_index_exclusive": 6407,
+          "event_count": 167
+        },
+        {
+          "aps_interval_index": 35,
+          "start_time_s": 1504645178.5641654,
+          "end_time_s": 1504645178.5960252,
+          "event_start_index": 6407,
+          "event_stop_index_exclusive": 6596,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 36,
+          "start_time_s": 1504645178.5960252,
+          "end_time_s": 1504645178.6278844,
+          "event_start_index": 6596,
+          "event_stop_index_exclusive": 6750,
+          "event_count": 154
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 6053,
+          "official_image_raw_event_index": 6052,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 6750,
+          "official_image_raw_event_index": 6749,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          15,
+          18
+        ],
+        "gt_interval_start_index": 15,
+        "gt_timestamps_used_s": [
+          1504645178.4606225,
+          1504645178.5104551,
+          1504645178.5605812,
+          1504645178.6104648,
+          1504645178.660397
+        ],
+        "start_time_s": 1504645178.5004463,
+        "end_time_s": 1504645178.6278844,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24771,
+        "event_supported_pixels": 340,
+        "candidate_valid_pixels": 79
+      },
+      "candidate_epe_px_per_interval": 0.8888750604622419,
+      "candidate_epe_valid_pixels": 79,
+      "inference_seconds": 1.475261983461678,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "51aa4f978c1aedb42d3db4e43f076e5dc5a70b8b00ea97c20dbcc989365d766f",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000033.npz",
+      "prediction_artifact_sha256": "c3fdb99d8b19b6927cae3e7c422ab05a145876bd0aef482e248c7456e6c02e9c",
+      "prediction_artifact_size_bytes": 1728307
+    },
+    {
+      "sample_index": 34,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.5323062,
+      "label_time_s": 1504645178.6597433,
+      "end_time_s": 1504645178.6597433,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 678,
+      "intervals": [
+        {
+          "aps_interval_index": 34,
+          "start_time_s": 1504645178.5323062,
+          "end_time_s": 1504645178.5641654,
+          "event_start_index": 6240,
+          "event_stop_index_exclusive": 6407,
+          "event_count": 167
+        },
+        {
+          "aps_interval_index": 35,
+          "start_time_s": 1504645178.5641654,
+          "end_time_s": 1504645178.5960252,
+          "event_start_index": 6407,
+          "event_stop_index_exclusive": 6596,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 36,
+          "start_time_s": 1504645178.5960252,
+          "end_time_s": 1504645178.6278844,
+          "event_start_index": 6596,
+          "event_stop_index_exclusive": 6750,
+          "event_count": 154
+        },
+        {
+          "aps_interval_index": 37,
+          "start_time_s": 1504645178.6278844,
+          "end_time_s": 1504645178.6597433,
+          "event_start_index": 6750,
+          "event_stop_index_exclusive": 6918,
+          "event_count": 168
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 6240,
+          "official_image_raw_event_index": 6239,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 6918,
+          "official_image_raw_event_index": 6917,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          16,
+          18
+        ],
+        "gt_interval_start_index": 16,
+        "gt_timestamps_used_s": [
+          1504645178.5104551,
+          1504645178.5605812,
+          1504645178.6104648,
+          1504645178.660397
+        ],
+        "start_time_s": 1504645178.5323062,
+        "end_time_s": 1504645178.6597433,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 25615,
+        "event_supported_pixels": 325,
+        "candidate_valid_pixels": 77
+      },
+      "candidate_epe_px_per_interval": 0.9794883084728933,
+      "candidate_epe_valid_pixels": 77,
+      "inference_seconds": 1.4780978225171566,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "407934a0de165870a683e8bd4c8161c9fcdd56c9f09e174d4f2e224de44df6e3",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000034.npz",
+      "prediction_artifact_sha256": "6fdb103d9b4266d90d8e63a71eb2df7daafe5aa49d80315277bcf018bdfa59ce",
+      "prediction_artifact_size_bytes": 1733900
+    },
+    {
+      "sample_index": 35,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.5641654,
+      "label_time_s": 1504645178.6916034,
+      "end_time_s": 1504645178.6916034,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 702,
+      "intervals": [
+        {
+          "aps_interval_index": 35,
+          "start_time_s": 1504645178.5641654,
+          "end_time_s": 1504645178.5960252,
+          "event_start_index": 6407,
+          "event_stop_index_exclusive": 6596,
+          "event_count": 189
+        },
+        {
+          "aps_interval_index": 36,
+          "start_time_s": 1504645178.5960252,
+          "end_time_s": 1504645178.6278844,
+          "event_start_index": 6596,
+          "event_stop_index_exclusive": 6750,
+          "event_count": 154
+        },
+        {
+          "aps_interval_index": 37,
+          "start_time_s": 1504645178.6278844,
+          "end_time_s": 1504645178.6597433,
+          "event_start_index": 6750,
+          "event_stop_index_exclusive": 6918,
+          "event_count": 168
+        },
+        {
+          "aps_interval_index": 38,
+          "start_time_s": 1504645178.6597433,
+          "end_time_s": 1504645178.6916034,
+          "event_start_index": 6918,
+          "event_stop_index_exclusive": 7109,
+          "event_count": 191
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 6407,
+          "official_image_raw_event_index": 6406,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 7109,
+          "official_image_raw_event_index": 7108,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          17,
+          19
+        ],
+        "gt_interval_start_index": 17,
+        "gt_timestamps_used_s": [
+          1504645178.5605812,
+          1504645178.6104648,
+          1504645178.660397,
+          1504645178.7103727
+        ],
+        "start_time_s": 1504645178.5641654,
+        "end_time_s": 1504645178.6916034,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 25498,
+        "event_supported_pixels": 330,
+        "candidate_valid_pixels": 72
+      },
+      "candidate_epe_px_per_interval": 0.9517375581130528,
+      "candidate_epe_valid_pixels": 72,
+      "inference_seconds": 1.4764913069084287,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "97d46595c97e5203f9553101b55e773eb8a08b1b024a3dea4959b183be069551",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000035.npz",
+      "prediction_artifact_sha256": "efa3073d3077f51216eb142eda3cfa6abde2950df00f994ae4635b9d665ff04e",
+      "prediction_artifact_size_bytes": 1736045
+    },
+    {
+      "sample_index": 36,
+      "rollout_id": "MVSEC_sequence",
+      "dt": 4,
+      "start_time_s": 1504645178.5960252,
+      "label_time_s": 1504645178.7234623,
+      "end_time_s": 1504645178.7234623,
+      "event_window_convention": "(start_time_s, end_time_s]",
+      "event_count": 698,
+      "intervals": [
+        {
+          "aps_interval_index": 36,
+          "start_time_s": 1504645178.5960252,
+          "end_time_s": 1504645178.6278844,
+          "event_start_index": 6596,
+          "event_stop_index_exclusive": 6750,
+          "event_count": 154
+        },
+        {
+          "aps_interval_index": 37,
+          "start_time_s": 1504645178.6278844,
+          "end_time_s": 1504645178.6597433,
+          "event_start_index": 6750,
+          "event_stop_index_exclusive": 6918,
+          "event_count": 168
+        },
+        {
+          "aps_interval_index": 38,
+          "start_time_s": 1504645178.6597433,
+          "end_time_s": 1504645178.6916034,
+          "event_start_index": 6918,
+          "event_stop_index_exclusive": 7109,
+          "event_count": 191
+        },
+        {
+          "aps_interval_index": 39,
+          "start_time_s": 1504645178.6916034,
+          "end_time_s": 1504645178.7234623,
+          "event_start_index": 7109,
+          "event_stop_index_exclusive": 7294,
+          "event_count": 185
+        }
+      ],
+      "event_index_boundary_checks": [
+        {
+          "timestamp_right_search_index": 6596,
+          "official_image_raw_event_index": 6595,
+          "absolute_difference": 1
+        },
+        {
+          "timestamp_right_search_index": 7294,
+          "official_image_raw_event_index": 7293,
+          "absolute_difference": 1
+        }
+      ],
+      "sensor_hw": [
+        260,
+        346
+      ],
+      "model_input_shape": [
+        1,
+        2,
+        352,
+        352,
+        20
+      ],
+      "model_input_padding_yx": [
+        46,
+        3
+      ],
+      "model_input_padding_mode": "centered zero pad to square multiple of 16",
+      "model_input_square_size": 352,
+      "output_crop": {
+        "y_start": 46,
+        "x_start": 3,
+        "height": 260,
+        "width": 346
+      },
+      "prediction_shape": [
+        2,
+        260,
+        346
+      ],
+      "ground_truth_shape": [
+        2,
+        260,
+        346
+      ],
+      "flow_unit": "px_per_interval",
+      "gt_association": {
+        "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
+        "gt_map_indices_inclusive": [
+          17,
+          20
+        ],
+        "gt_interval_start_index": 17,
+        "gt_timestamps_used_s": [
+          1504645178.5605812,
+          1504645178.6104648,
+          1504645178.660397,
+          1504645178.7103727,
+          1504645178.7603958
+        ],
+        "start_time_s": 1504645178.5960252,
+        "end_time_s": 1504645178.7234623,
+        "flow_unit": "px_per_interval"
+      },
+      "candidate_mask": {
+        "rule": "finite GT vector AND nonzero GT magnitude AND any event support at that pixel",
+        "paper_protocol_frozen": false,
+        "finite_gt_pixels": 89960,
+        "nonzero_gt_pixels": 24844,
+        "event_supported_pixels": 311,
+        "candidate_valid_pixels": 67
+      },
+      "candidate_epe_px_per_interval": 1.0341379748095727,
+      "candidate_epe_valid_pixels": 67,
+      "inference_seconds": 1.4813796635717154,
+      "peak_allocated_gpu_bytes": 1523463680,
+      "event_input_sha256": "a3adaa86fc404633a8278cf212bfd10db8ba68ca48723cf7308a0743dc102395",
+      "event_input_representation": "STE equal-event-count Gaussian weighted ON/OFF slices, 5 per APS interval",
+      "inference_inputs": [
+        "event representation only"
+      ],
+      "sequence": "indoor_flying1",
+      "prediction_artifact": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage3-mvsec-eg-dt4-output/dt4_aps000036.npz",
+      "prediction_artifact_sha256": "3586f4548def2e6b227c5392ff13c0adab867611bcf50d647cd4588f7f98ac0d",
+      "prediction_artifact_size_bytes": 1732711
+    }
+  ],
+  "resource_summary": {
+    "inference_seconds_sum": 41.18638025317341,
+    "peak_allocated_gpu_bytes_max": 1526180352
+  }
+}

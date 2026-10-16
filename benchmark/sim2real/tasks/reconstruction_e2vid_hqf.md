@@ -1,6 +1,17 @@
 # Reconstruction route: E2VID+ → HQF
 
-Status: Stage 2 synthetic training and validation closed on g1. HQF source/evaluator preparation is static; no HQF files were downloaded, parsed, or scored.
+Status: Stage 3 parsed the preregistered public HQF `bike_bay_hdr` bag and ran both candidate E2VID checkpoints across all 2,431 image/event endpoints. Outputs are event-only, have a single sequence-start state reset, and were not scored against HQF images. Formal HQF metrics and sequence aggregation remain for research freeze.
+
+## Stage 3 real-file and candidate-inference smoke
+
+- Source bag: `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage3/real/HQF/bike_bay_hdr.bag`, 362,570,693 bytes, SHA-256 `02797ab6240587bf6ccc352f6efc8325f8b9a49d4f69e5dba7f8a8d9ec452935`. The actual ROS bag contains `/dvs/events` (`dvs_msgs/EventArray`, 2,972 messages) and `/dvs/image_raw` (`sensor_msgs/Image`, 2,431 messages); image encoding is mono8 and sensor size is 180×240.
+- Converted according to pinned EVREAL MemMap conventions: 19,763,043 raw events, `uint8` polarity 0=OFF/1=ON, event/frame timestamps in seconds, monotone time, and image endpoints associated to the latest event timestamp not later than the image. The conversion manifest lists each output array size/hash. The full converted data remain on g1.
+- EventGenesis checkpoint `eventgenesis_final.pt` SHA-256 `004e0baf4f4f95264cfa3642f69e7aa3a85ea2c501d8116d30f940676ad58828`; V2E checkpoint `v2e_final.pt` SHA-256 `5ba9199ea611207ee8e04607af9a262309699cec6c4348e0eabaf517d6363a19`. Both are the Stage 2 trained candidates; public EVREAL pretrained weights were not loaded.
+- Each event-only `[1,5,180,240]` input was padded to `[1,5,184,240]` for the recurrent network and cropped back to `[1,1,180,240]`. Each complete chronological sequence processed 2,431 endpoints; recurrent state reset once at sequence start and persisted thereafter. Reference frame pixels were not supplied to the network and no real GT scoring was performed.
+- Checkable reconstructions were saved at endpoint 0, every 100 frames, and endpoint 2,430. This verifies file reading, endpoint correspondence, model loading, recurrent-state handling and image sizing; it is not reconstruction-quality evidence. The first endpoint's window is empty due to the EVREAL first-reference convention and is retained as part of the sequence.
+- The data, per-run manifest, full command/environment/exit record, and saved frames are in [`evidence/S3/20261016-stage3/`](../evidence/S3/20261016-stage3/). The checkpoint candidates and their synthetic-only selection remain from Stage 2.
+
+Stage 2 synthetic-training facts below remain historical and valid. Its statement that HQF had not yet been downloaded is superseded by this Stage 3 section.
 
 ## Executed
 
