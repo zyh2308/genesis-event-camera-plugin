@@ -243,4 +243,4 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 配置起点：[`scene_pilot_r0_5_candidate.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json)。命令、评分边界和事件接入说明见 [`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md) 的 R0.5 小节。服务器只在新的 branch worktree 执行，保留服务器原 `main` 工作区；启动前检查 GPU PID/归属，EGL 仅选空闲的 GPU 2。
 
-代码 commit `b757a83` 与配置/校准记录 commit `6cd7c70` 已推送。严格 oracle 3×3 先导结果已入本地工作区；下一步运行新种子独立样本并继续 Direct-HDR/event-state smoke。最终在本节追加逐 episode 结果、关键成功/失败 trace 与录像入口、数据 SHA256SUMS、服务器日志与进程 wall-time 哈希，并提出冻结协议候选。
+代码/证据 commits `3c60932`、`02b1afc`、`8f22be2`、`841ef98` 均已推送。严格 oracle 新种子 100×3 批次正在服务器隔离 worktree `~/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc` 上运行，实际 benchmark code commit `8f22be28c7f334062de3e9a34b6c10352a2524f9`、配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`、seed `2026103300`、Python PID `1939038`、tmux `r0_5_oracle_strict100x3_20261016`。该命令 `CUDA_VISIBLE_DEVICES=`，无 GPU 占用；launcher 使用 `/usr/bin/time` 记录完整 Python 进程 wall/CPU 时间。批次完成后再运行完整 Direct-HDR/event-state smoke，并在本节补录逐集结果、轨迹/录像、数据与日志哈希及协议建议。
