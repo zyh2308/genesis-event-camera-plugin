@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0 已验收；R0.5 严格评分和统一 0.5 ms 时间步已实现，服务器严格 GT oracle 已完成 300/300，无手 holdout 完成 30/30；strict +10 mm 横向偏差 sensitivity 已在修复后完成（0/5、4/5、0/5）；完整 Direct-HDR/event-state 复验待运行；协议尚未冻结。
+**阶段：** R0 已验收；R0.5 严格评分和统一 0.5 ms 时间步已实现，服务器严格 GT oracle 已完成 300/300，无手 holdout 完成 30/30；strict +10 mm 横向偏差 sensitivity 已在修复后完成（0/5、4/5、0/5）；完整 Direct-HDR/event-state reference 已在服务器 GPU2 启动；协议尚未冻结。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
@@ -246,9 +246,12 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 固定减速度 no-hand holdout 已完成：30 集、0.5 ms、0.30/0.40/0.50 m/s 各 10 集，使用 calibration 固定 a_eff=0.09803606718731761 m/s²，未在 holdout 重拟合；30/30 到达拦截平面。各档 TTC 误差绝对值 P95 为 1.004/0.669/0.569 ms，横向预测误差绝对值 P95 为 2.150/1.120/0.571 mm。holdout 预测只使用固定模型与每集初始测量状态，未来 crossing 只供 evaluator 计分。代码 commit 8573279936d40102efeabf00286e34b6c99e7681、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103600；CSV 3093e28c4fab340904f9592540114d6418cd0ad24dd9ddabc08ae76b00edfc39，summary 0eb3bec1c54e5eee975a9e6fd1251bad8b60c5a760b72b39bef668248ed7a013，manifest 2e0c22aaf0c792cfe23f6073f5215b183a7a030c5662a0e3dfd311d91bca839c，SHA256SUMS dc637f2aad7acc0af9bf0b3e28b6ebcc4fc3cc2e7930ca362458582585eea004；服务器和本地逐项校验通过。完整进程 wall 88.06 s、CPU user 60.52 s、max RSS 848,140 KB，exit 0，launcher PID 1990576 / Python PID 1990580；log SHA256 94c02ee2188976210a8eac6c9f65dc0b7141550482dfbb2914fd8cceeab2caf3，runtime f808314c50a732e9f77e6250657b40bf43aa92686a2f634c59c02b8f53b0d8ae。
 - strict 横向位置偏差 +10 mm sensitivity 首次运行未形成统计结果：commit 8573279936d40102efeabf00286e34b6c99e7681、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103500。首次物理仿真完成后，历史评分停止条件未触发，结果组装因 legacy_true_bottom_min_at_stop 未初始化而 exit 1；没有 CSV/summary，该次不计 episode 指标。目录 r0_5_sens_biasy10mm_strict15_20261016/ 留存 manifest 与 FAILURE_NOTE.md；log SHA256 9af60700ff7b7cade5b26183ee3856ac6d968d5ba982a68a123ed2c742739bd2，exit=1，Python wall 87.82 s。benchmark 层 fix 将未达到旧停止条件时的诊断记为 null，不改控制和评分；修复 commit fcf567f7485e590b075b378c4ff726079e0a287a。
 - 修复后独立 retry 使用新 seed 2026103515、同一配置和严格评分，15 集（每档 5）。0.30/0.40/0.50 m/s strict success 分别 0/5、4/5、0/5，失败均为 unstable_grasp（11/15）。这是证明任务对 10 mm 横向感知偏差敏感的单因子小样本，不用于估计总体成功率或冻结控制参数。运行 commit fcf567f7485e590b075b378c4ff726079e0a287a，完整 Python wall 276.26 s、CPU user 302.23 s、max RSS 1,683,192 KB、exit 0，launcher PID 1995457。逐集 CSV SHA256 97182cd66067bbe6f08b48769958e26f709312c3544befa9262392b02be10dc0；summary da6362fd6613743d681771d13df5ad8e5858b5950d6683be29d5936e75dcfb69；manifest 37acea4a37be9bb5999148e8ed12fb0f5a5875bf3294bcdd61d1804ec39fb794；SHA256SUMS beb3e517e78d82a491ae7d4d4e249d00c55e812281e5994852f5999dfdf27012，服务器和本地逐项通过。成功/失败代表 trace 与 GIF 在 retry 结果目录中；log SHA256 06320ef6d176486654351415f43e794445857097d89366141132100392be2b68，runtime 14facb9cc8038a1e01bab87b498ae89f1efaa4e59d576acec3db0f29b40abc68。
-- sensitivity 结束后运行完整 Direct-HDR/reference/event-state 批次（速度 × 横向边缘轨迹、同物理轨迹 paired 1/2 kHz、0.5 ms）。启动前检查 GPU 2 PID/归属与空闲状态，GPU 3 的 CARLA 进程保持不动。服务器到 GitHub HTTPS 的一次 git ls-remote 超时，已通过 SHA256 校验的本地 Git bundle 更新隔离 worktree；SSH 正常，未触碰其他项目或进程。
+- Direct-HDR 首次启动仅在 argparse 失败，仿真未创建、没有占用 GPU：服务器代码 commit fcf567f7485e590b075b378c4ff726079e0a287a，配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd；负号开头的 y 列表作为独立参数触发 expected one argument，exit 2，wall 0.17 s，PID 2002116。日志 SHA256 706ec89d59905711a7d7f78105495f4e8fc1e505d50b52e49cf9866dd52fdcd5；runtime 85cdc13684c35f1f7d0a96efbdfe0ea00b8a460d44c5e99a33f9b4cfc41ff553。失败日志保存在 runtime_logs 的 launch_argparse_failed 文件中。
+- 已把 y 列表改为 --reference-y-values=...，并同步 README；本地 parser 解析检查和 Python compileall 通过，修复提交 4a23458266508c902df545e66f82a2ea396012d6。
+- 完整 Direct-HDR/reference/event-state 批次目前在服务器 detached tmux r0_5_direct_hdr_event_smoke_20261016 运行：代码 commit 4a23458266508c902df545e66f82a2ea396012d6、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103400；9 集覆盖 3 档速度 × 左/中/右横向位置，同一 0.5 ms 物理轨迹配对生成 1/2 kHz event streams，2 kHz 因果事件状态接入控制器，visibility 采样 50 Hz。launcher PID 2004113；EGL_DEVICE_ID=2，GPU2 V100S 在启动前空闲，GPU3 的 CARLA job 未触碰。输出目录 r0_5_direct_hdr_event_smoke_20261016/ 尚无最终结果，端到端成本、动态可见性和采样率精度待完整运行后报告。
+- 服务器到 GitHub HTTPS 的一次 git ls-remote 超时，已通过 SHA256 校验的本地 Git bundle 更新隔离 worktree；SSH 正常，未触碰其他项目或进程。
 - reference 评估将报告接触/抬升窗口的动态可见性、事件时间戳与 voxel 采样差异、事件估计对接触后 lift gate 所需位置/速度的因果支持、实际端到端 wall/CPU/GPU 时间。centroid tracker 当前只是可接线基线，不能宣称完成学习型 estimator 或采样率收敛结论。
-- freeze 候选仍为同一平面滑块/Panda/侧面相机、三档速度、固定 a_eff 与控制器；strict scorer 的 80 mm/0.5 s/双侧接触/无支撑/10 mm 相对滑移作为建议正式成功定义。等待 holdout、敏感性和 Direct-HDR/event-state 验证完成后，再提出正式冻结建议；现阶段不启动规模数据、训练或 Ours/V2E 排名。
+- freeze 候选仍为同一平面滑块/Panda/侧面相机、三档速度、固定 a_eff 与控制器；strict scorer 的 80 mm/0.5 s/双侧接触/无支撑/10 mm 相对滑移作为建议正式成功定义。等待 Direct-HDR/event-state 验证完成后，再提出正式冻结建议；现阶段不启动规模数据、训练或 Ours/V2E 排名。
 
 ### 复跑命令与运行约定
 
@@ -256,6 +259,12 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ~~~bash
 CUDA_VISIBLE_DEVICES= PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode oracle --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --episodes 100 --speeds 0.3,0.4,0.5 --a-eff 0.09803606718731761 --seed 2026103300 --out benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3_20261016
+~~~
+
+Direct-HDR/reference 复跑入口（服务器 tmux launcher 会记录 PID、日志、exit 和完整 Python wall/CPU time；启动前核验 GPU2）：
+
+~~~bash
+EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --speeds 0.3,0.4,0.5 --reference-episodes 3 --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 --event-controller-hz 2000 --visibility-hz 50 --seed 2026103400 --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke_20261016
 ~~~
 
 Frozen core 仍与基线 e79e656ac00f7847b98db9e12bf43b093f3afff1 一致；主分支未合并。
