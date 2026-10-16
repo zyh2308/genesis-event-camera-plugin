@@ -18,8 +18,8 @@ export PYTHONPATH=.
   --mode reference \
   --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
   --speeds 0.3,0.4,0.5 \
-  --reference-episodes 1 \
-  --reference-y-values 0,-0.055,0.055 \
+  --reference-episodes 3 \
+  --reference-y-values -0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 \
   --event-controller-hz 2000 \
   --visibility-hz 50 \
   --seed 2026103400 \
