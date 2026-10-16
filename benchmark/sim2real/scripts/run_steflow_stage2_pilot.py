@@ -172,8 +172,12 @@ def objective_dt1(output, gray_prev, gray_next, event_tensor, loss_module):
     # sequence of scale tensors in both cases.
     if torch.is_tensor(output):
         output = (output,)
+    # The pinned STE loss converts endpoint images to NumPy for cv2 resizing.
+    # Keep image targets detached on CPU while preserving the CUDA flow graph.
+    gray_prev_cpu = gray_prev.detach().cpu()
+    gray_next_cpu = gray_next.detach().cpu()
     photo = loss_module.compute_photometric_loss(
-        gray_prev, gray_next, torch.sum(event_tensor, dim=4), output, weights=WEIGHTS
+        gray_prev_cpu, gray_next_cpu, torch.sum(event_tensor, dim=4), output, weights=WEIGHTS
     )
     smooth = loss_module.smooth_loss(output)
     return photo + 10.0 * smooth, photo, smooth
@@ -183,10 +187,11 @@ def objective_dt4(output, gray_frames, event_tensor, loss_module):
     flow1_list, flow2_list, flow3_list, flow4_list = output
     photos, smooths = [], []
     event_image = torch.sum(event_tensor, dim=4)
+    gray_frames_cpu = [frame.detach().cpu() for frame in gray_frames]
     for k in range(4):
         current = (flow1_list[k], flow2_list[k], flow3_list[k], flow4_list[k])
         photos.append(loss_module.compute_photometric_loss(
-            gray_frames[0], gray_frames[k + 1], event_image, current, weights=WEIGHTS
+            gray_frames_cpu[0], gray_frames_cpu[k + 1], event_image, current, weights=WEIGHTS
         ))
         smooths.append(loss_module.smooth_loss(current))
     photo = sum(photos) / 4.0
