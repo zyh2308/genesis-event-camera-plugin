@@ -1,0 +1,82 @@
+{
+  "phase": "R0.6 offline causal event-state diagnosis",
+  "source_g1_results": "~/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016/",
+  "episodes": [
+    0,
+    4,
+    8
+  ],
+  "code_commit": "30177915e0e260d6161feb48dddf087809268f73",
+  "command": [
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python",
+    "benchmark/robot_closed_loop/diagnostics/replay_event_state.py",
+    "--source-results",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016",
+    "--out",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d/benchmark/robot_closed_loop/results/r0_6_event_state_offline_20261016",
+    "--episodes",
+    "0,4,8"
+  ],
+  "config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "raw_event_sha256_manifest_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+  "raw_events_verified_against_server_manifest": true,
+  "estimator_inputs": "timestamped raw events and fixed config-derived pinhole calibration only",
+  "ground_truth_boundary": "GT traces/arrival time are read only after estimates exist, for offline evaluator alignment",
+  "controller_sampling_hz": 100,
+  "observation_latency_ms": 10.0,
+  "five_bin_comparison": "same causal 25 ms, five x 5 ms bins at 10 ms controller cadence; cutoff is 10 ms behind simulated now",
+  "replay_wall_s": 23.831618172116578,
+  "old_six_bin_slope_m_s": [
+    0.12727272727272732,
+    0.0
+  ],
+  "fixed_six_bin_slope_m_s": [
+    0.4,
+    0.0
+  ],
+  "calibration_reprojection": {
+    "method": "fixed-config Genesis look-at basis + Genesis Camera.intrinsics convention; fixed target-center plane",
+    "workspace_grid_points": 25,
+    "roundtrip_position_error_xy_mm_max": 2.2247786310271854e-13,
+    "old_half_pixel_center_bias_xy_mm_p50": 1.532950550074391,
+    "old_half_pixel_center_bias_xy_mm_max": 2.392956582856875,
+    "intrinsics_fx_fy_cx_cy": [
+      447.8460969082653,
+      447.8460969082653,
+      160.0,
+      120.0
+    ],
+    "camera_pose_source": "reconstructed offline from fixed scene position/lookat/up; old run did not serialize camera.transform",
+    "principal_point_source": "Genesis Camera.cx=W/2 and Camera.cy=H/2"
+  },
+  "freshness_contract_probe": {
+    "synthetic_interface_probe_only": true,
+    "initial_no_event": {
+      "state_status": "no_event",
+      "tracking_status": "no_event"
+    },
+    "events_without_minimum_track_support": {
+      "state_status": "tracking_lost",
+      "tracking_status": "tracking_lost",
+      "event_count_window": 6,
+      "time_bin_count_window": 0
+    },
+    "fresh_estimate": {
+      "state_status": "fresh",
+      "tracking_status": "tracking",
+      "age_ms": 2.4999999999999987,
+      "sample_generated_at_s": 0.02
+    },
+    "expired_estimate_after_silence": {
+      "state_status": "stale",
+      "tracking_status": "no_event",
+      "age_ms": 182.5
+    },
+    "controller_policy": "only fresh has a usable state; stale/unavailable never yields a MotionState"
+  },
+  "output_hashes": {
+    "per_episode.json": "0cbd5967da0ced9a8f83568fa5c5f3bf0f948650415ea5a16f3186d366152e75",
+    "causal_observation_polls.csv": "8b440b056c974d4d7a9a059ad683d37068df04aafd0e44cc4375bb2e73dac0bc",
+    "five_bin_sampling_comparison.json": "cf1d59f19c9b778e254373bcee06d7e689f19c5dd7fb14aa83275ec4e83330f0"
+  }
+}

@@ -1,12 +1,12 @@
-# Genesis Event Camera：Robot R0 / R0.5 状态
+# Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0.5 GT oracle feasibility 已完成（0.30/0.40/0.50 m/s 各 100/100 strict success），无手 holdout 30/30；+10 mm 横向误差 sensitivity 显示明显退化。Direct-HDR/event-state 控制 smoke 为 0/9 strict success（3 次接触、0 次抬升）；独立 delayed-current-GT shadow sensor-reference 已覆盖三档速度及左右边缘轨迹，9/9 GT-shadow 轨迹通过严格抓取评分，动态可见比例最低 98.86%。物理任务、控制器和 strict scorer 可提交为冻结候选；事件状态 adapter、采样率充分性及 EVK4 pixel-response 标定仍未闭环。本阶段未启动大规模数据生成、训练或 Ours/V2E 排名。
+**阶段：** R0.5 strict oracle 已核验三档各 100/100；GT-shadow 9/9 是延迟当前 GT 驱动的 sensor-reference，不是事件控制。R0.5 event-controller 旧 smoke 为 strict success 0/9、接触 3/9、抬升 0/9。R0.6 已修复因果速度回归与状态新鲜度策略，并在 g1 原始事件轨迹上完成三集离线回放；新的 2 kHz 事件控制三集 rollout 正在 g1 GPU3 运行，结果待核验。任务、相机、物理时钟与 strict scorer 保持不变。事件空间归因与 lift 状态仍未通过；尚未启动大规模配对数据、正式多 seed 训练或 Ours/V2E 排名。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
 
-R0.5 静态 smoke、0.5 ms 无手校准与 holdout、严格评分先导和独立严格 oracle 100×3 已在 g1 服务器完成。R0 的旧评分 300/300 与历史 0.2 s Direct-HDR pilot 均不作为本阶段验收证据。Direct-HDR event-controller 九集已完成并核验；严格成功 0/9、接触 3/9、抬升 0/9。独立 shadow sensor-reference 九集也已完成，用延迟当前 GT 只生成完整参考轨迹，事件流只用于评估，不属于事件控制实验。新批次实际运行 commit、配置/数据哈希、日志和复跑命令在下方登记。
+R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 在 g1 用保存的 raw events 做了三集离线回放；2 kHz event-controller 三集真实物理闭环正在运行。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
 
 ### 已完成并有证据
 
@@ -259,11 +259,40 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - 服务器原始结果：`g1:/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016/`，约 140 MiB；服务器原目录中 9 个 `direct_hdr_events_1khz_2khz.npz` 保留完整 1/2 kHz 原始 event arrays，共 93,553,247 bytes。原始 `SHA256SUMS` 文件 SHA256 为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`，g1 上已对全目录逐项 `sha256sum -c SHA256SUMS` 通过。因 raw arrays 体积较大，本地仓库保存其余 105 个逐集指标、状态/控制 JSONL、key HDR snapshots、成功 GIF 和副本说明；raw arrays 由上面的 g1 地址提供，校验值在原始清单中。仓库副本 [`r0_5_direct_hdr_gt_shadow_20261016/`](../../benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016/) 的 `SHA256SUMS.local-artifacts` SHA256 `379d60a1f6059bad628fd1764eca1a7860a0c684b821a939a47beee3c9f8302a`，本地 105 项均通过；它覆盖当前仓库副本，原始 `SHA256SUMS` 保留完整服务器数据清单。逐集 CSV SHA256 `26042f8d1b9d162a64400e94a002778e6ac464e7f85d8e1dd8f610abc7e210f1`；summary `cbff52f36467d92d2b23683af362c5164a76707d51186cf25cdc53dee7d45909`；dynamic visibility `4f281a2eb23651477149a5465e638d5632bddc87bd4efed083603f261e6b251e`；manifest `bb11951ece4c6dc0bf35c713fb6ed3b151c935c11db9613601a358fd228d0b8b`。
 - 实际运行代码 commit `2100645b0473c294760789bc4475b644f261d9cf`，配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`，seed `2026103420`–`2026103428`；0.30/0.40/0.50 m/s 各 3 集，launch y 为 -55/0/+55 mm，Physics/HDR 共用 0.5 ms 时间轴，控制 100 Hz、观测延迟 10 ms，visibility evaluator 50 Hz。每集 strict success 9/9；汇总 9/9 的 Wilson 95% CI 为 70.1–100%，每速度 3/3 的 Wilson 下界 43.9%，样本只支持路径 smoke 与遮挡复核，不替代各档 oracle 100/100。首次接触至抬升分别 67.5–77.5 ms。
 - 旧评分仍保留在逐集记录中，`legacy_success_at_legacy_stop` 为 true；新评分版本为 `r0_5_strict_continuous_contact_clearance_slip`。逐集严格合格窗口真实底面净空范围 80.002–80.110 mm、最大相对滑移 1.964–6.235 mm、连续保持各 0.500 s；每集窗口含 1000 个 qualified samples，9 集在合格净空期间累计支撑接触样本为 0。闭合启动相对校准 no-hand free-slide 预测到达时刻为 -76.2 至 -51.0 ms，首次接触为 -61.7 至 -40.5 ms；目标首次接触发生在拦截平面前 11.5–23.6 mm，目标/TCP 相对速度 0.189–0.425 m/s。目标多数被 Panda 截停，实际过线时差不作为参考；此处以“无机械臂 free-slide 预测到达时间”为清晰的时序基准。
-- 动态机位审计在 645 个样本中覆盖 launch、接触、抬升和保持；目标最小/中位 bbox 短边为 31/36 px（全范围 31–55 px），最小/中位可见比例为 98.86%/100%。target-only segmentation 只进入 evaluator，不进入事件源或控制器。证据支持当前正 x 侧相机候选在所测工作区有动态视野。
-- 相同物理/HDR 轨迹配对采样比较：0.5 ms 轨迹分别生成 1 kHz（每两步）和 2 kHz（每步）event streams。9 集事件数均值 539,185/572,429，2 kHz 比 1 kHz 多 6.38%；按同像素/极性、±0.5 ms 匹配，1/2 kHz 平均匹配比例 93.40%/87.81%；10 ms、2×64×64 voxel 的同 bin cosine 均值 0.988、p10 均值 0.968，voxel event-count 相对差均值 7.89%。这只能说明采样输出相似度；post-contact 区间在 9 集合计有 667 个 event-state 样本/采样率，先逐集计算 P95 后，1/2 kHz 的位置误差均值为 7.83/8.03 cm、速度误差为 0.682/0.671 m/s；两种采样率结果接近，均不足以支持抓取控制。估计状态使用秒时间戳的事件和固定针孔标定；没有目标 GT、GT segmentation/depth 或未来状态。shadow 路径中的延迟当前 GT 只供控制器驱动 sensor-reference 轨迹，事件仅用于测量和 evaluator。
+- 动态机位审计在 645 个样本中覆盖 launch、接触、抬升和保持。`visible_bbox_xyxy` 是半开区间 `[xmin,ymin,xmax+1,ymax+1]`；短边按 `min(xmax-xmin, ymax-ymin)` 计算，因此全样本短边最小/中位/P95/最大为 30/35/48/54 px。可见比例最小/中位为 98.86%/100%。target-only segmentation 只进入 evaluator，不进入事件源或控制器。证据支持当前正 x 侧相机候选在所测工作区有动态视野。
+- 相同物理/HDR 轨迹配对采样比较：0.5 ms 轨迹分别生成 1 kHz（每两步）和 2 kHz（每步）event streams。9 集事件数均值 539,185/572,429；2 kHz 相对 1 kHz 的增加量为 6.17%（分母为 1 kHz 总数），若以 2 kHz 总数为分母则相对差为 5.81%。按同像素/极性、±0.5 ms 匹配，1/2 kHz 平均匹配比例 93.40%/87.81%。旧 sanity check 使用 10 ms、2×64×64 voxel：同 bin cosine 均值 0.988、p10 均值 0.968；事件计数差按每个共同非空 10 ms 窗口的 `|n1-n2|/max(n1,n2)` 计算，9 集 episode-mean 的非加权均值为 7.89%，按 1,286 个共同窗口加权为 8.09%。它不是 R0.6 因果五时间 bin 表示的采样结论。post-contact 区间在 9 集合计有 667 个 event-state 样本/采样率，先逐集计算 P95 后，1/2 kHz 的位置误差均值为 7.83/8.03 cm、速度误差为 0.682/0.671 m/s；两种采样率结果接近，均不足以支持抓取控制。估计状态使用秒时间戳的事件和固定针孔标定；没有目标 GT、GT segmentation/depth 或未来状态。shadow 路径中的延迟当前 GT 只供控制器驱动 sensor-reference 轨迹，事件仅用于测量和 evaluator。
 - 同一因果 event-state 接口确实接入固定预测器、控制器、lift gate 和 strict scorer 的 Direct-HDR/event-controller smoke，但结果是 strict success 0/9、接触 3/9、抬升 0/9；因此接入链路通过 smoke，估计精度与任务性能没有通过。此结果和 GT-shadow 的 9/9 必须分开引用。
 - 完整端到端 Python 进程 wall 为 1911.25 s，CPU user 44907.19 s、system 141.00 s、最大 RSS 1,799,356 KB；episode loop 与产物写入为 1831.56 s，平均单 rollout wall 195.37 s，平均模拟时长 1.426 s，实测 rollout RTF 均值 0.00739。steady HDR render mean 为 7.48 ms/sample，DVS mean 为 14.09 ms/sample（1 kHz）和 11.96 ms/sample（2 kHz）。物理后端为 CPU、HDR EGL 使用 Tesla V100S GPU2；没有 GPU time profiler，因此不报告专属 GPU 累计时间。该实测成本用于本次九集完整轨迹，不外推规模数据。
 - provenance：PID launcher `2039840`、Python `2039844`、exit `0`；run log SHA256 `6914249cf4f7be183fdce7090dcb65bc05d3057dfa1151ee3c40c96c0269e620`，runtime `f981402e63ad754a97f155e85cdf7053d4883bb96bd5c1d97f0084a2dfeaa97c`，launcher `5cc7e643d5456b5d81f210149cc296bbe72a84490e26df84b4614ea361f56653`，exit file SHA256 `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。运行日志和 runtime/PID/exit 文件在 `benchmark/robot_closed_loop/results/runtime_logs/`；run manifest 保存精确命令、代码 commit、配置和输出地址。
+
+### R0.6 确定性缺陷修复与 g1 原始事件离线诊断
+
+- 修复代码 commit `b3dc69d6ec447e0272573b395c82ac56b5a02bff`；g1 回放在分支 HEAD `30177915e0e260d6161feb48dddf087809268f73` 执行。配置 `scene_pilot_r0_5_candidate.json` SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`。源 raw-event 清单 SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`，g1 复跑逐项校验成功。
+- 回归缺陷：原来时间向量用 `times-times[-1]`，位置却减去位置均值，导致六个 5 ms bin 的理想 0.4 m/s 运动被估成 0.1272727 m/s；统一中心化后为 0.4000000 m/s。状态位置时间戳改为最后有效 bin 的真实事件时间中位数；因果资格以回归生成时刻不晚于观测 cutoff 判定，避免把生成时已包含 cutoff 之后事件的状态拿来控制。
+- 状态策略：`fresh`（年龄 ≤30 ms 且有支持轨迹）才提供状态；`stale`、`no_event`、`tracking_lost`、`unavailable` 均不输出可用 MotionState。缺状态时保持横向命令、不启动闭合；已开始闭合则继续闭合；状态无效时 lift gate 不得触发。30 ms 是 fail-closed 工程阈值，尚未冻结。合成接口探针覆盖 no-event、tracking-lost、fresh 和静默后 stale。
+- 投影自检：以候选配置重建 Genesis look-at 相机基向量和 W/2,H/2 主点，25 点 workspace round-trip 最大误差为 `2.2e-13 mm`；旧半像素主点假设造成中位 `1.53 mm`、最大 `2.39 mm` 平面偏差。此前运行没有序列化 camera transform，因此该结果仅为配置自洽核验，不能称为 renderer 外参实测或 EVK4 标定。
+- 离线回放三个保存轨迹：episode 0（0.30 m/s，y=-55 mm）、episode 4（0.40 m/s，y=0）、episode 8（0.50 m/s，y=+55 mm），每档一个。输入为时间戳 raw events 与固定配置针孔参数；GT 只在估计形成后供离线对齐/误差评估。源轨迹由 GT-shadow 控制产生，严格成功 3/3 不属于事件控制成绩。逐集结果和 poll trace 在 [`r0_6_event_state_offline_20261016/`](../../benchmark/robot_closed_loop/results/r0_6_event_state_offline_20261016/)；完整输入 raw arrays 仍位于 g1 `~/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016/`，哈希见源 `SHA256SUMS`。
+- 分阶段误差以每集 P95 再对三集取均值，并附三集范围。1/2 kHz 接触前位置误差 P95 为 `18.4 cm (13.6–23.2)` / `20.0 cm (17.5–22.7)`，速度为 `3.36 m/s (2.75–4.51)` / `3.57 m/s (2.63–4.23)`。接触至 lift start 位置误差 P95 为 `7.93 cm (5.11–9.86)` / `8.46 cm (5.02–11.43)`，速度为 `1.77 m/s (1.57–1.91)` / `2.18 m/s (2.03–2.33)`。post-lift 位置/速度 P95 均值仍约 `21.7 cm / 4.70 m/s`（1 kHz）和 `21.4 cm / 4.48 m/s`（2 kHz）；固定滑面高度假设在升起后也不成立。
+- 到达误差参考采用独立 no-hand 标定的自由滑动到达时间，仅为 evaluator 对齐。接触前 194 个 poll/rate 中可预测到达比例为 1/2 kHz `51/194=26.3%` / `65/194=33.5%`；仅在可达预测子集，绝对到达时间误差 MAE 为 `0.296/0.288 s`、P95 为 `0.799/0.657 s`。它们离闭环时序需要的精度很远。
+- 新鲜度与状态可用性：接触前分别 194/194 polls fresh；contact-to-lift 分别 21/21 fresh。控制器观测 age 的 episode-P95 均值：接触前 `12.90/12.84 ms`，contact-to-lift `13.10/13.19 ms`；post-lift fresh 为 `194/202=96.0%` 和 `195/202=96.5%`，其余主要为 stale/tracking-lost。接触前所有 polls 都 fresh 但误差仍很大，因此 age/有效标记不能代替跟踪准确性；宽 ROI 里没有 no-event poll，也没有证明 tracker 定位到的是方块。
+- evaluator-only 事件空间归因将射线投到方块中心高度平面后，落在 GT 方块中心 80 mm 内的事件仅约 `13.8–17.6%`，且假设保留目标面视差。这支持当前宽 ROI centroid 受机械臂/背景事件和固定高度回投影影响；不把 GT 投影用于 estimator/controller。简单 centroid 仅为接线 smoke，未验证为感知器。
+- 采样率 sanity check 已改为拟用的因果输入：控制器每 10 ms 更新，观测 cutoff 落后 10 ms；输入为 5×5 ms 时间 bin、25 ms 历史、2 polarity、64×64。三个轨迹共 417 个窗口，1/2 kHz 窗口均非空；以每窗 `|n1-n2|/max(n1,n2)` 计算，窗口加权事件计数差均值 `8.43%`，加权 voxel cosine `0.98597`，各集 count-diff P95 为 `21.00%/26.96%/14.55%`。这比旧 10 ms 单 bin cosine sanity check 更贴近控制输入，但与状态误差一起看仍不能说明任一采样率可控。
+- g1 replay 命令：
+
+~~~bash
+cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d
+PYTHONPATH=. /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+  benchmark/robot_closed_loop/diagnostics/replay_event_state.py \
+  --source-results /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
+  --out benchmark/robot_closed_loop/results/r0_6_event_state_offline_20261016 \
+  --episodes 0,4,8
+~~~
+
+- 输出哈希（已从 g1 拉回并复核）：`per_episode.json` `0cbd5967da0ced9a8f83568fa5c5f3bf0f948650415ea5a16f3186d366152e75`；`causal_observation_polls.csv` `8b440b056c974d4d7a9a059ad683d37068df04aafd0e44cc4375bb2e73dac0bc`；`five_bin_sampling_comparison.json` `cf1d59f19c9b778e254373bcee06d7e689f19c5dd7fb14aa83275ec4e83330f0`；`run_manifest.json` `b7f3894498d9c5812655fc0c88da8bd0101f07b9cafd45e6f673543fb47f05ef`；结果 `SHA256SUMS` `c05742db048d4109397fdadac401c4ea0c4231d0f47e570eca609cc089260e3d`。
+
+### R0.6 小规模真实事件控制 rollout
+
+在 g1 branch worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d`、commit `30177915e0e260d6161feb48dddf087809268f73` 下，使用同一因果 centroid 状态接口、固定预测器/控制器、strict scorer 做 0.30/0.40/0.50 m/s 各一集，seed `2026103700`，事件状态 2 kHz、物理步 0.5 ms、GPU3 Direct-HDR。tmux session `r0_6_evt_20261016`、launcher PID `2445286`；run output `benchmark/robot_closed_loop/results/r0_6_event_controller_3sample_20261016/`；状态仍在运行，结果/日志哈希待补。执行 launcher：`benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_controller_3sample_20261016.launch.sh`。该小样本用于检查真实无 GT 接入、接触和 lift，不估计总体成功率。
 
 ### 复跑命令与运行约定
 
@@ -283,7 +312,15 @@ EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-
 GT shadow sensor-reference 复跑命令（事件流只用于采样/状态评估，delayed current-GT 只驱动完整参考轨迹）：
 
 ~~~bash
-EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=.venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --speeds 0.3,0.4,0.5 --reference-episodes 3 --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 --event-controller-hz 2000 --reference-controller-source gt_current --visibility-hz 50 --seed 2026103420 --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
+EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. \
+  /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.run --mode reference \
+  --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --speeds 0.3,0.4,0.5 --reference-episodes 3 \
+  --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 \
+  --event-controller-hz 2000 --reference-controller-source gt_current \
+  --visibility-hz 50 --seed 2026103420 \
+  --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
 ~~~
 
 Frozen core 仍与基线 e79e656ac00f7847b98db9e12bf43b093f3afff1 一致；主分支未合并。
