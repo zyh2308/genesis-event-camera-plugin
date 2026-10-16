@@ -1,12 +1,12 @@
 # Genesis Event Camera：Robot R0 / R0.5 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0 已由研究会话验收；正在完成 R0.5 strict scoring、0.5 ms 统一物理时间步和事件状态接入验证；协议尚未冻结。
+**阶段：** R0 已由研究会话验收；R0.5 strict scoring 与统一时间步已实现，服务器静态与无手校准通过；动态 oracle 与 Direct-HDR/event-state 验证进行中；协议尚未冻结。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
 
-R0.5 新实现已完成静态代码/配置检查，尚未在服务器运行，不能视为实验通过。R0 的 300/300 旧评分结果及历史 0.2 s Direct-HDR pilot 均不作为 R0.5 验收证据。R0.5 的服务器样本、代码提交、配置哈希和结果清单将在下方追加。
+R0.5 strict static smoke 与 0.5 ms no-hand 校准已在服务器运行。R0 的 300/300 旧评分结果及历史 0.2 s Direct-HDR pilot 均不作为 R0.5 验收证据。R0.5 的逐集样本、代码提交、配置哈希和结果清单在下方单独登记。
 
 ### 已完成并有证据
 
@@ -212,7 +212,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ## R0.5 strict closeout（进行中）
 
-### 已落地、待服务器复核
+### 已落地并有初步服务器证据
 
 - 新增下游严格评分：每个物理步计算旋转后立方体 8 个角点相对 Plane 的真实最低净空；连续 0.5 s 同时要求双侧指接触、无 Plane 接触、真实净空 ≥80 mm，且从首次双侧接触起 object-to-TCP 相对位置漂移 ≤10 mm。逐集结果和 1 kHz 状态 trace 保存严格评分统计、接触/支撑样本数、滑移峰值及最小净空。
 - 保留 R0 旧规则 `r0_v1_legacy_center_clearance_historical_contact`，在旧规则首次满足停止条件时单独复算并记录；新正式 `success` 字段采用 `r0_5_strict_continuous_contact_clearance_slip`。历史归档文件不改写。
@@ -222,13 +222,18 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ### 尚未运行 / 不可声称
 
-- 服务器代码 commit、0.5 ms no-hand 减速度及其配置 hash 尚未产生；旧 `a_eff=0.09804843 m/s²` 暂不视为新配置校准值。
 - strict oracle 试跑与统计、旧/新评分差异、误差注入 strict 复测尚未运行。旧 R0 的 300/300 不能引用为新成功率。
 - 完整拦截/接触/抬升 Direct-HDR 的 paired 1/2 kHz、横向边缘轨迹动态可见性、事件状态接管控制和实际成本均待服务器验证。
-- 本地只做了 Python 编译、JSON 解析、diff whitespace 与 frozen-core 差异检查；没有在本地执行物理实验。
+- 本地只做了 Python 编译、JSON 解析、diff whitespace 与 frozen-core 差异检查；物理实验均在服务器执行。
+
+### strict static smoke 与 0.5 ms no-hand 校准
+
+- 运行代码 commit：`b757a83a7b8a391bb7553e4ee05d5fbce2cbbb94`。实验在隔离 worktree `~/Eventbased_WAM/repositories/gec-robot-r0_5-b757a83`（detached 于机器人分支提交）；服务器原 `main` 与旧 R0 worktree 未修改。
+- strict static smoke：1/1 success；最长连续严格保持窗 0.500 s，窗内最小真实底面净空 `0.08008784 m`，双侧接触 1000/1000 样本、支撑面接触 0/1000，object-to-TCP 最大漂移 `0.001288 m`。旧评分在 0.807 s 独立复算成功；严格评分于 0.808 s 完成。source config SHA256 `4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`；逐集 CSV `09a4cf4c795a4ddb19c8f692a5d8678fabdd151cce0addb356c2ebbaeea8b954`；trace `fde20ca377a445f0117a17b84a66ff851fda3721ab14e59dd407bd47be31ec2b`；GIF `682315c67458610cb6f443dd49af70da3793b5998463f74614ecd697fcbdbb9e`；目录 SHA256SUMS `b3e4290c2b5b897929b1c9840f4ddd879fbcf24c5c4362e8b9c2e4f42b6097d1`。仅验证 strict 测量链，不代表动态成功率。
+- no-hand 校准：同一代码 commit、0.5 ms physics，60 集（0.30/0.40/0.50 m/s 各20），60/60 均通过拦截平面。联合拟合 `a_eff=0.09803606718731761 m/s²`；单集拟合中位数 `0.0980347534`，IQR `[0.0979928904, 0.0980804825]`。各速度档中位到达时间 `0.99112/0.66988/0.52403 s`，中位到达速度 `0.20285/0.33438/0.44863 m/s`。校准运行用的 source config hash `4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`；拟合后更新的候选配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`。结果目录 `r0_5_slide_calibration_20261016/` 的 SHA256SUMS `f7ac352ffb2fd75475dd3c85c53f185bb188c886873b1133f6c4bb9f20939059`；log `f2834f979f4f0ebca968e893c6c11010692a08a2bd1470f2e4b4be72e2ace0a6`；launcher `b53243fb50f47f1fadf26c1e103d5781274913465a102915c919ec7ac7cccc0a`；exit 文件内容 `0`、SHA256 `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。结果清单校验通过。
 
 ### 当前复跑入口
 
 配置起点：[`scene_pilot_r0_5_candidate.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json)。命令、评分边界和事件接入说明见 [`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md) 的 R0.5 小节。服务器只在新的 branch worktree 执行，保留服务器原 `main` 工作区；启动前检查 GPU PID/归属，EGL 仅选空闲的 GPU 2。
 
-R0.5 代码当前尚未提交，因此不能附运行 commit/hash。完成重标定和 smoke 后，将在本节追加逐 episode 结果、关键成功/失败 trace 与录像入口、代码 commit、配置 SHA256、数据 SHA256SUMS、服务器日志与 exit 文件哈希，并提出冻结协议候选。
+代码 commit `b757a83` 已推送；拟合减速度后的配置修改待 commit/push。完成 oracle 与 reference smoke 后，将在本节继续追加逐 episode 结果、关键成功/失败 trace 与录像入口、数据 SHA256SUMS、服务器日志与 exit 文件哈希，并提出冻结协议候选。

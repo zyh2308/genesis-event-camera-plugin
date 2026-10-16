@@ -15,7 +15,19 @@
     ],
     "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
     "genesis_version": "1.2.2",
-    "genesis_source_commit": "72bdd98b8d77d249e9c5296e4a6746ff680416a2"
+    "genesis_source_commit": "72bdd98b8d77d249e9c5296e4a6746ff680416a2",
+    "r0_5_deceleration_calibration": {
+      "code_commit": "b757a83a7b8a391bb7553e4ee05d5fbce2cbbb94",
+      "source_config_sha256": "4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517",
+      "results_path": "benchmark/robot_closed_loop/results/r0_5_slide_calibration_20261016",
+      "results_sha256sums_sha256": "f7ac352ffb2fd75475dd3c85c53f185bb188c886873b1133f6c4bb9f20939059",
+      "episodes": 60,
+      "a_eff_m_s2": 0.09803606718731761,
+      "episode_fit_iqr_m_s2": [
+        0.0979928904049446,
+        0.09808048249310539
+      ]
+    }
   },
   "physics": {
     "backend": "cpu",
@@ -185,8 +197,8 @@
       "y_tolerance_m": 0.035,
       "planar_speed_max_m_s": 0.12
     },
-    "initial_deceleration_assumption_m_s2": 0.09804843035177806,
-    "deceleration_status": "fitted_from_no_hand_calibration_and_supported_by_independent_holdout",
+    "initial_deceleration_assumption_m_s2": 0.09803606718731761,
+    "deceleration_status": "fit from 60 no-hand trajectories on the unified 0.5 ms R0.5 physics timestep; 20 episodes per 0.30/0.40/0.50 m/s; all 60 crossed the intercept plane",
     "gt_future_arrival_or_per_episode_speed_input": false,
     "lift_trigger": "gripper joint stall sustained 30ms while current estimated target position is within intercept gate and estimated planar speed is below threshold; evaluator contact GT is not read"
   },

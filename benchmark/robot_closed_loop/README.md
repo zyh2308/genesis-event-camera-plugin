@@ -160,6 +160,13 @@ After fitting, update the candidate's single shared deceleration value from the
 calibration summary, record the new config hash, and run strict oracle episodes
 with new seeds. Use 100 trials per speed for the closeout gate:
 
+The server R0.5 calibration currently gives `a_eff=0.09803606718731761 m/s²`
+from 60 no-hand trajectories (20 per speed), all 60 crossing the intercept
+plane. The source calibration config hash is
+`4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`; its
+results `SHA256SUMS` hash is
+`f7ac352ffb2fd75475dd3c85c53f185bb188c886873b1133f6c4bb9f20939059`.
+
 ```bash
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
   --mode oracle --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
