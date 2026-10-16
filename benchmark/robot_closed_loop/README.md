@@ -199,8 +199,8 @@ claim.
 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run \
   --mode reference --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
   --speeds 0.3,0.4,0.5 --reference-episodes 3 \
-  --reference-y-values -0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 \
-  --event-controller-hz 2000 --visibility-hz 50 --seed 2026102700 \
+  --reference-y-values=-0.055,0,0.055,-0.055,0,0.055,-0.055,0,0.055 \
+  --event-controller-hz 2000 --visibility-hz 50 --seed 2026103400 \
   --out benchmark/robot_closed_loop/results/r0_5_direct_hdr_event_smoke
 ```
 
