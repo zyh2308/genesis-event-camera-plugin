@@ -8,6 +8,7 @@ Its centroid tracker is a plumbing smoke estimator, not a trained estimator.
 from __future__ import annotations
 
 from collections import deque
+from bisect import bisect_right
 from dataclasses import dataclass
 import math
 import time
@@ -23,6 +24,20 @@ class EventTrackerSample:
     state: MotionState
     event_count: int
     time_bin_count: int
+    generated_at_s: float
+
+
+@dataclass(frozen=True)
+class EventObservation:
+    """A timestamped estimate plus explicit freshness and tracking health."""
+
+    state_status: str
+    tracking_status: str
+    state: Optional[MotionState]
+    age_s: Optional[float]
+    sample_generated_at_s: Optional[float]
+    event_count_window: int
+    time_bin_count_window: int
 
 
 class EventKinematicsTracker:
@@ -39,6 +54,7 @@ class EventKinematicsTracker:
         *,
         window_s: float = 0.030,
         bin_s: float = 0.005,
+        max_state_age_s: float = 0.030,
     ):
         self.camera_to_world = np.asarray(camera_to_world_cv, dtype=np.float64).reshape(4, 4)
         self.world_to_camera = np.linalg.inv(self.camera_to_world)
@@ -46,11 +62,15 @@ class EventKinematicsTracker:
         fy = self.height / (2.0 * math.tan(math.radians(float(vertical_fov_deg)) / 2.0))
         self.fx = fy
         self.fy = fy
-        self.cx = (self.width - 1) / 2.0
-        self.cy = (self.height - 1) / 2.0
+        # Genesis Camera.intrinsics uses the continuous image center (W/2,H/2),
+        # matching its rasterizer projection. Pixel indices are integer
+        # centers only after adding the half-pixel offset during rasterization.
+        self.cx = self.width / 2.0
+        self.cy = self.height / 2.0
         self.target_center_z_m = float(target_center_z_m)
         self.window_s = float(window_s)
         self.bin_s = float(bin_s)
+        self.max_state_age_s = float(max_state_age_s)
         corners = []
         for x in workspace_x_m:
             for y in workspace_y_m:
@@ -65,7 +85,21 @@ class EventKinematicsTracker:
         )
         self._events: deque[Tuple[float, float, float, int]] = deque()
         self.samples: List[EventTrackerSample] = []
+        self._sample_generated_times: List[float] = []
+        self._confidence_times: List[float] = []
+        self._confidence_values: List[Tuple[int, int]] = []
         self.last_confidence = {"event_count": 0, "time_bin_count": 0}
+
+    def _record_confidence(self, now_s: float, event_count: int, time_bin_count: int) -> None:
+        self.last_confidence = {
+            "event_count": int(event_count), "time_bin_count": int(time_bin_count),
+        }
+        now = float(now_s)
+        if not self._confidence_times or now > self._confidence_times[-1] + 1e-12:
+            self._confidence_times.append(now)
+            self._confidence_values.append((int(event_count), int(time_bin_count)))
+        else:
+            self._confidence_values[-1] = (int(event_count), int(time_bin_count))
 
     def _project_world(self, point_world: np.ndarray) -> np.ndarray:
         point_camera = self.world_to_camera @ np.append(point_world, 1.0)
@@ -96,6 +130,9 @@ class EventKinematicsTracker:
         arr = np.asarray(events, dtype=np.float64).reshape(-1, 4)
         x0, x1, y0, y1 = self.roi
         if len(arr):
+            # DvsEmulator currently emits sorted timestamps. Sorting here also
+            # keeps deque expiry correct for other causal event sources.
+            arr = arr[np.argsort(arr[:, 0], kind="stable")]
             valid = (
                 (arr[:, 1] >= x0) & (arr[:, 1] < x1)
                 & (arr[:, 2] >= y0) & (arr[:, 2] < y1)
@@ -106,47 +143,107 @@ class EventKinematicsTracker:
         while self._events and self._events[0][0] < cutoff:
             self._events.popleft()
         if len(self._events) < 12:
-            self.last_confidence = {"event_count": len(self._events), "time_bin_count": 0}
+            self._record_confidence(now_s, len(self._events), 0)
             return None
 
-        bins: Dict[int, List[np.ndarray]] = {}
+        bins: Dict[int, List[Tuple[float, np.ndarray]]] = {}
         for t, x, y, _polarity in self._events:
             point = self._event_to_world(x, y)
             if point is None:
                 continue
             key = int(math.floor(t / self.bin_s))
-            bins.setdefault(key, []).append(point[:2])
+            bins.setdefault(key, []).append((t, point[:2]))
         valid_bins = sorted(key for key, points in bins.items() if len(points) >= 3)
-        self.last_confidence = {"event_count": len(self._events), "time_bin_count": len(valid_bins)}
+        self._record_confidence(now_s, len(self._events), len(valid_bins))
         if len(valid_bins) < 3:
             return None
-        times = np.asarray([(key + 0.5) * self.bin_s for key in valid_bins], dtype=np.float64)
-        centers = np.asarray([np.median(np.stack(bins[key]), axis=0) for key in valid_bins], dtype=np.float64)
-        t_ref = float(times[-1])
-        centered_t = times - t_ref
+
+        # Use each bin's actual event-time median. The position is also a
+        # median over that bin, so assigning the bin's right edge made the
+        # state timestamp up to one full bin newer than its measurements.
+        times = np.asarray([
+            np.median([sample[0] for sample in bins[key]]) for key in valid_bins
+        ], dtype=np.float64)
+        centers = np.asarray([
+            np.median(np.stack([sample[1] for sample in bins[key]]), axis=0)
+            for key in valid_bins
+        ], dtype=np.float64)
+
+        # Least-squares slope requires time and position to use the same
+        # centering. Subtracting the last timestamp while centering positions
+        # on their mean inflated the denominator and returned 0.12727 m/s for
+        # a six-bin 0.4 m/s linear trajectory.
+        centered_t = times - times.mean()
         denom = float(np.dot(centered_t, centered_t))
-        velocity_xy = np.zeros(2, dtype=np.float64) if denom < 1e-12 else centered_t @ (centers - centers.mean(axis=0)) / denom
-        latest_t = min(float(now_s), float(valid_bins[-1] * self.bin_s + self.bin_s))
+        velocity_xy = np.zeros(2, dtype=np.float64) if denom < 1e-12 else centered_t @ centers / denom
+        latest_t = min(float(now_s), float(times[-1]))
         state = MotionState(
             latest_t,
             np.asarray([centers[-1, 0], centers[-1, 1], self.target_center_z_m], dtype=np.float64),
             np.asarray([velocity_xy[0], velocity_xy[1], 0.0], dtype=np.float64),
         )
-        sample = EventTrackerSample(state, len(self._events), len(valid_bins))
-        if not self.samples or state.time_s > self.samples[-1].state.time_s + 1e-9:
+        sample = EventTrackerSample(
+            state, len(self._events), len(valid_bins), float(now_s),
+        )
+        if not self.samples or float(now_s) > self.samples[-1].generated_at_s + 1e-9:
             self.samples.append(sample)
+            self._sample_generated_times.append(float(now_s))
         return sample
 
-    def observe(self, cutoff_s: float) -> Optional[MotionState]:
-        selected = None
-        for sample in self.samples:
-            if sample.state.time_s <= float(cutoff_s) + 1e-12:
-                selected = sample.state
-            else:
-                break
+    def observe(self, cutoff_s: float, now_s: Optional[float] = None) -> EventObservation:
+        # Causality is determined by when this regression was computed, not
+        # only by the median timestamp attached to its position.
+        sample_index = bisect_right(
+            self._sample_generated_times, float(cutoff_s) + 1e-12,
+        ) - 1
+        selected = None if sample_index < 0 else self.samples[sample_index]
+
+        now = float(cutoff_s if now_s is None else now_s)
+        confidence_index = bisect_right(
+            self._confidence_times, float(cutoff_s) + 1e-12,
+        ) - 1
+        if confidence_index < 0:
+            event_count, time_bin_count = 0, 0
+        else:
+            event_count, time_bin_count = self._confidence_values[confidence_index]
+        event_count = int(event_count)
+        time_bin_count = int(time_bin_count)
+        if event_count == 0:
+            tracking_status = "no_event"
+        elif event_count < 12 or time_bin_count < 3:
+            tracking_status = "tracking_lost"
+        else:
+            tracking_status = "tracking"
+
+        age = None if selected is None else max(0.0, now - selected.state.time_s)
+        if selected is not None and age > self.max_state_age_s:
+            return EventObservation(
+                "stale", tracking_status, None, age, selected.generated_at_s,
+                event_count, time_bin_count,
+            )
+        if tracking_status == "no_event":
+            return EventObservation(
+                "no_event", tracking_status, None, age,
+                None if selected is None else selected.generated_at_s,
+                event_count, time_bin_count,
+            )
+        if tracking_status == "tracking_lost":
+            return EventObservation(
+                "tracking_lost", tracking_status, None, age,
+                None if selected is None else selected.generated_at_s,
+                event_count, time_bin_count,
+            )
         if selected is None:
-            return None
-        return MotionState(selected.time_s, selected.position_m.copy(), selected.velocity_m_s.copy())
+            return EventObservation(
+                "unavailable", tracking_status, None, None, None,
+                event_count, time_bin_count,
+            )
+        state = selected.state
+        return EventObservation(
+            "fresh", tracking_status,
+            MotionState(state.time_s, state.position_m.copy(), state.velocity_m_s.copy()),
+            age, selected.generated_at_s, event_count, time_bin_count,
+        )
 
     def latest(self) -> Optional[MotionState]:
         if not self.samples:
@@ -191,6 +288,8 @@ class DirectHdrEventSource:
         self.frames_processed = 0
         self.last_hdr = None
         self.snapshots: Dict[str, Tuple[float, np.ndarray]] = {}
+        self.camera_to_world_cv = None
+        self.camera_intrinsics = None
 
     def initialize(self, camera: object, t_s: float = 0.0) -> None:
         from genesis_event_plugin.genesis_adapter import camera_to_world_cv
@@ -206,7 +305,13 @@ class DirectHdrEventSource:
         for emulator in self.emulators.values():
             emulator.initialize(log_gray, t=float(t_s))
         camera_pose = camera_to_world_cv(camera)
+        self.camera_to_world_cv = np.asarray(camera_pose, dtype=np.float64).copy()
         cfg = self.config
+        width, height = (int(v) for v in cfg["camera"]["resolution_wh"])
+        focal = height / (2.0 * math.tan(math.radians(float(cfg["camera"]["vertical_fov_deg"])) / 2.0))
+        self.camera_intrinsics = {
+            "fx": focal, "fy": focal, "cx": width / 2.0, "cy": height / 2.0,
+        }
         x_range = cfg["target"]["launch_x_range_m"]
         x_min = float(cfg["controller"]["intercept_x_m"]) - 0.10
         x_max = float(x_range[1]) + 0.04
@@ -215,7 +320,11 @@ class DirectHdrEventSource:
             camera_pose, cfg["camera"]["resolution_wh"], cfg["camera"]["vertical_fov_deg"],
             (x_min, x_max), (-y_limit, y_limit), float(cfg["target"]["size_m"][2]) / 2,
         )
-        self.trackers = {hz: EventKinematicsTracker(*common) for hz in (1000, 2000)}
+        maximum_age = float(cfg["controller"].get("maximum_event_state_age_s", 0.030))
+        self.trackers = {
+            hz: EventKinematicsTracker(*common, max_state_age_s=maximum_age)
+            for hz in (1000, 2000)
+        }
         self.initialized = True
 
     def advance(self, camera: object, t_s: float) -> None:
@@ -245,8 +354,8 @@ class DirectHdrEventSource:
                 self.events[1000].append(events_1k)
             self.trackers[1000].push(events_1k, float(t_s))
 
-    def observe(self, cutoff_s: float) -> Optional[MotionState]:
-        return self.trackers[self.controller_hz].observe(cutoff_s)
+    def observe(self, cutoff_s: float, now_s: Optional[float] = None) -> EventObservation:
+        return self.trackers[self.controller_hz].observe(cutoff_s, now_s)
 
     def latest(self, rate_hz: int) -> Optional[MotionState]:
         return self.trackers[int(rate_hz)].latest()
@@ -302,6 +411,19 @@ class DirectHdrEventSource:
             },
             "estimator_boundary": "events plus fixed pinhole calibration only; no GT pose, target mask, depth, or future state",
             "estimator_status": "causal centroid/regression plumbing smoke; not a trained or validated perception model",
+            "state_freshness_policy": {
+                "maximum_age_s": self.trackers[self.controller_hz].max_state_age_s,
+                "no_event": "return no usable state and hold current lateral command",
+                "tracking_lost": "return no usable state and hold current lateral command",
+                "stale": "return no usable state and hold current lateral command",
+                "closure": "do not initiate without a fresh state; if already started, keep fingers closed",
+                "lift_gate": "requires a fresh state at the last high-level control update",
+            },
+            "camera_to_world_cv": None if self.camera_to_world_cv is None else self.camera_to_world_cv.tolist(),
+            "camera_intrinsics_fx_fy_cx_cy": None if self.camera_intrinsics is None else [
+                self.camera_intrinsics["fx"], self.camera_intrinsics["fy"],
+                self.camera_intrinsics["cx"], self.camera_intrinsics["cy"],
+            ],
         }
 
 

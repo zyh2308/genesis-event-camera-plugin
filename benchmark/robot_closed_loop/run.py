@@ -448,7 +448,8 @@ def run_oracle_trial(
     estimated_current_state = None
     closure_speed_reference_m_s = None
     closure_lead_used_s = None
-    last_obs = history[-1]
+    event_observation_status = None
+    last_obs = None if event_source is not None and use_event_observation else history[-1]
     last_command = {"y_command_m": 0.0, "closing": False, "lifting": False}
     crossing_actual = None
     object_history: List[Dict[str, Any]] = []
@@ -490,15 +491,29 @@ def run_oracle_trial(
         prev_obj = state
 
         if step % control_steps == 0 and rel_t + 1e-9 >= float(controller_cfg["event_burn_in_s"]):
-            obs = (
-                event_source.observe(rel_t - latency)
-                if event_source is not None and use_event_observation
-                else _delayed_observation(history, rel_t - latency)
-            )
+            if event_source is not None and use_event_observation:
+                event_observation = event_source.observe(rel_t - latency, rel_t)
+                event_observation_status = {
+                    "state_status": event_observation.state_status,
+                    "tracking_status": event_observation.tracking_status,
+                    "age_s": event_observation.age_s,
+                    "sample_generated_at_s": event_observation.sample_generated_at_s,
+                    "event_count_window": event_observation.event_count_window,
+                    "time_bin_count_window": event_observation.time_bin_count_window,
+                    "max_state_age_s": event_source.trackers[event_source.controller_hz].max_state_age_s,
+                }
+                obs = event_observation.state
+            else:
+                obs = _delayed_observation(history, rel_t - latency)
+                event_observation_status = None
             if obs is not None:
                 last_obs = MotionState(obs.time_s, obs.position_m.copy(), obs.velocity_m_s.copy())
                 last_obs.position_m[1] += float(position_bias_y_m)
-                observation_age = max(0.0, rel_t - last_obs.time_s) if event_source is not None and use_event_observation else latency
+                observation_age = (
+                    float(event_observation_status["age_s"])
+                    if event_source is not None and use_event_observation
+                    else latency
+                )
                 prediction = predictor.predict(last_obs, observation_age)
                 last_prediction = prediction
                 estimated_current_state = prediction.propagated_state
@@ -557,6 +572,32 @@ def run_oracle_trial(
                         "observation_age_s": observation_age,
                         "closing": close_started_s is not None, "lifting": False,
                     }
+            elif event_source is not None and use_event_observation:
+                # Fail closed on missing, stale, or lost event state. Hold the
+                # current lateral command, do not initiate closure, and clear
+                # the estimate used by the lift gate. If closure already
+                # started, keep the fingers closed while the target is inside.
+                estimated_current_state = None
+                last_prediction = None
+                stall_time = 0.0
+                if lift_q is None:
+                    env.command_hand(np.asarray([
+                        float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2],
+                    ]))
+                    if close_started_s is None:
+                        env.command_fingers_open()
+                    else:
+                        env.command_fingers_close()
+                last_command = {
+                    "state_status": event_observation_status["state_status"],
+                    "tracking_status": event_observation_status["tracking_status"],
+                    "observation_age_s": event_observation_status["age_s"],
+                    "event_count_window": event_observation_status["event_count_window"],
+                    "time_bins_window": event_observation_status["time_bin_count_window"],
+                    "y_command_m": command.position_m,
+                    "closing": close_started_s is not None,
+                    "lifting": False,
+                }
 
         if close_started_s is not None and lift_q is None and rel_t - close_started_s >= 0.05:
             lift_gate = _lift_gate(
@@ -666,6 +707,7 @@ def run_oracle_trial(
                 else "current_gt_delayed"
             )
             if event_source is not None:
+                frame["event_observation"] = event_observation_status
                 frame["event_state_by_rate"] = {}
                 for rate_hz in (1000, 2000):
                     estimate = event_source.latest(rate_hz)
