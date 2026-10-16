@@ -23,14 +23,17 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from benchmark.robot_closed_loop.diagnostics.replay_event_state import (
+    _camera_to_world_cv,
     _phase,
     _read_trace,
     _sha256,
     _truth_at,
 )
 from benchmark.robot_closed_loop.event_state_model import (
+    HeatmapEventStateNet,
     INPUT_CONTRACT,
     SpatialEventStateNet,
+    decode_heatmap_state,
     five_bin_tensor,
 )
 from benchmark.robot_closed_loop.predictor import FixedDecelerationPredictor, MotionState
@@ -42,7 +45,29 @@ DEFAULT_TRAIN_EPISODES = "0,2,3,4,7,8"
 DEFAULT_VALIDATION_EPISODES = "1,5,6"
 
 
-def _build_dataset(source_root: Path, episode_ids: Sequence[int], config: Dict[str, Any]):
+def _camera_geometry(config: Dict[str, Any]) -> Dict[str, Any]:
+    width, height = (int(v) for v in config["camera"]["resolution_wh"])
+    focal = height / (2.0 * np.tan(np.deg2rad(float(config["camera"]["vertical_fov_deg"])) / 2.0))
+    camera_to_world = _camera_to_world_cv(config)
+    return {
+        "camera_to_world_cv_np": camera_to_world,
+        "camera_to_world_cv": torch.as_tensor(camera_to_world, dtype=torch.float32),
+        "world_to_camera_cv": np.linalg.inv(camera_to_world),
+        "intrinsics": torch.tensor([focal, focal, width / 2.0, height / 2.0], dtype=torch.float32),
+        "resolution_wh": (width, height),
+        "target_center_z_m": float(config["target"]["size_m"][2]) / 2.0,
+    }
+
+
+def _project_world_to_pixel(position: np.ndarray, geometry: Dict[str, Any]) -> np.ndarray:
+    point_camera = geometry["world_to_camera_cv"] @ np.append(position, 1.0)
+    width, height = geometry["resolution_wh"]
+    fx, fy, cx, cy = geometry["intrinsics"].numpy().astype(np.float64)
+    depth = float(point_camera[2])
+    return np.asarray([fx * point_camera[0] / depth + cx, fy * point_camera[1] / depth + cy])
+
+
+def _build_dataset(source_root: Path, episode_ids: Sequence[int], config: Dict[str, Any], geometry):
     tensors: List[np.ndarray] = []
     labels: List[np.ndarray] = []
     metadata: List[Dict[str, Any]] = []
@@ -92,6 +117,8 @@ def _build_dataset(source_root: Path, episode_ids: Sequence[int], config: Dict[s
                 "input_event_count": int(voxel.sum()),
                 "input_time_bin_count": int(np.count_nonzero(bin_counts)),
                 "input_state_age_ms": latency_s * 1000.0,
+                "target_u_px": float(_project_world_to_pixel(position, geometry)[0]),
+                "target_v_px": float(_project_world_to_pixel(position, geometry)[1]),
             })
 
     if not tensors:
@@ -111,10 +138,55 @@ def _weighted_loss(prediction: torch.Tensor, target: torch.Tensor, weights: torc
     return torch.sum(per_sample * weights) / torch.clamp(weights.sum(), min=1e-9)
 
 
-def _predict(model, x: torch.Tensor, mean: torch.Tensor, scale: torch.Tensor) -> np.ndarray:
+def _heatmap_targets(metadata, resolution_wh, device):
+    width, height = resolution_wh
+    yy, xx = torch.meshgrid(
+        torch.arange(64, dtype=torch.float32, device=device),
+        torch.arange(64, dtype=torch.float32, device=device),
+        indexing="ij",
+    )
+    centers = torch.tensor([
+        [float(row["target_u_px"]) * 64.0 / width - 0.5,
+         float(row["target_v_px"]) * 64.0 / height - 0.5]
+        for row in metadata
+    ], dtype=torch.float32, device=device)
+    dx = xx[None] - centers[:, 0, None, None]
+    dy = yy[None] - centers[:, 1, None, None]
+    target = torch.exp(-(dx.square() + dy.square()) / (2.0 * 1.15**2))
+    return target.flatten(1) / target.flatten(1).sum(dim=1, keepdim=True).clamp_min(1e-12)
+
+
+def _model_state(model, x, mean, scale, architecture, geometry):
+    if architecture == HeatmapEventStateNet.architecture:
+        return decode_heatmap_state(
+            model(x), mean, scale, geometry["camera_to_world_cv"],
+            geometry["intrinsics"], geometry["resolution_wh"],
+        )
+    return model(x) * scale + mean
+
+
+def _loss(model, x, target_normalized, weights, mean, scale, architecture, geometry, heatmap_targets=None):
+    if architecture != HeatmapEventStateNet.architecture:
+        return _weighted_loss(model(x), target_normalized, weights)
+    raw_output = model(x)
+    heatmap_logits, _ = raw_output
+    predicted_state = decode_heatmap_state(
+        raw_output,
+        mean, scale, geometry["camera_to_world_cv"], geometry["intrinsics"], geometry["resolution_wh"],
+    )
+    state_loss = _weighted_loss((predicted_state - mean) / scale, target_normalized, weights)
+    per_sample_heatmap_ce = -(
+        heatmap_targets * torch.log_softmax(heatmap_logits.flatten(1), dim=1)
+    ).sum(dim=1)
+    heatmap_loss = torch.sum(per_sample_heatmap_ce * weights) / weights.sum().clamp_min(1e-9)
+    return state_loss + 0.05 * heatmap_loss
+
+
+def _predict(model, x: torch.Tensor, mean: torch.Tensor, scale: torch.Tensor,
+             architecture: str, geometry: Dict[str, Any]) -> np.ndarray:
     model.eval()
     with torch.no_grad():
-        return (model(x) * scale + mean).cpu().numpy()
+        return _model_state(model, x, mean, scale, architecture, geometry).cpu().numpy()
 
 
 def _percentiles(values: Iterable[float]) -> Dict[str, Any]:
@@ -236,6 +308,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--seed", type=int, default=606)
     parser.add_argument("--threads", type=int, default=4)
+    parser.add_argument("--architecture", choices=("spatial_mlp_v1", "heatmap_v2"), default="spatial_mlp_v1")
     args = parser.parse_args()
 
     train_ids = [int(value) for value in args.train_episodes.split(",")]
@@ -246,9 +319,15 @@ def main() -> None:
     np.random.seed(args.seed)
     torch.set_num_threads(args.threads)
     config = json.loads(args.config.read_text())
+    geometry = _camera_geometry(config)
+    architecture = (
+        HeatmapEventStateNet.architecture if args.architecture == "heatmap_v2"
+        else SpatialEventStateNet.architecture
+    )
+    model_type = HeatmapEventStateNet if architecture == HeatmapEventStateNet.architecture else SpatialEventStateNet
     source_root = args.source_results.resolve()
-    x_train_np, y_train_np, train_meta, train_hashes = _build_dataset(source_root, train_ids, config)
-    x_val_np, y_val_np, val_meta, val_hashes = _build_dataset(source_root, validation_ids, config)
+    x_train_np, y_train_np, train_meta, train_hashes = _build_dataset(source_root, train_ids, config, geometry)
+    x_val_np, y_val_np, val_meta, val_hashes = _build_dataset(source_root, validation_ids, config, geometry)
     device = torch.device("cpu")
     x_train = torch.from_numpy(x_train_np)
     y_train = torch.from_numpy(y_train_np)
@@ -260,13 +339,18 @@ def main() -> None:
     y_val_n = (y_val - label_mean) / label_scale
     train_weights = _phase_sample_weights(train_meta, device)
     val_weights = _phase_sample_weights(val_meta, device)
+    train_heatmap_targets = _heatmap_targets(train_meta, geometry["resolution_wh"], device) if args.architecture == "heatmap_v2" else None
+    val_heatmap_targets = _heatmap_targets(val_meta, geometry["resolution_wh"], device) if args.architecture == "heatmap_v2" else None
     # Keep phase weights aligned with samples while DataLoader shuffles.
-    dataset = TensorDataset(x_train, y_train_n, train_weights)
+    dataset = TensorDataset(
+        x_train, y_train_n, train_weights,
+        torch.arange(len(x_train), dtype=torch.long),
+    )
     loader = DataLoader(
         dataset, batch_size=args.batch_size, shuffle=True,
         generator=torch.Generator().manual_seed(args.seed),
     )
-    model = SpatialEventStateNet().to(device)
+    model = model_type().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=8e-4)
 
     started = time.perf_counter()
@@ -277,17 +361,26 @@ def main() -> None:
     stale_epochs = 0
     for epoch in range(args.epochs):
         model.train()
-        for batch_x, batch_y, batch_weights in loader:
+        for batch_x, batch_y, batch_weights, batch_indices in loader:
             optimizer.zero_grad(set_to_none=True)
-            loss = _weighted_loss(model(batch_x), batch_y, batch_weights)
+            if train_heatmap_targets is None:
+                batch_heatmap_targets = None
+            else:
+                batch_heatmap_targets = train_heatmap_targets[batch_indices]
+            loss = _loss(model, batch_x, batch_y, batch_weights, label_mean, label_scale,
+                         architecture, geometry, batch_heatmap_targets)
             loss.backward()
             optimizer.step()
         model.eval()
         with torch.no_grad():
-            train_loss = float(_weighted_loss(model(x_train), y_train_n, train_weights).item())
-            validation_loss = float(_weighted_loss(model(x_val), y_val_n, val_weights).item())
-        history.append({"epoch": epoch + 1, "train_phase_balanced_normalized_mse": train_loss,
-                        "validation_phase_balanced_normalized_mse": validation_loss})
+            train_loss = float(_loss(model, x_train, y_train_n, train_weights, label_mean,
+                                     label_scale, architecture, geometry,
+                                     train_heatmap_targets).item())
+            validation_loss = float(_loss(model, x_val, y_val_n, val_weights, label_mean,
+                                           label_scale, architecture, geometry,
+                                           val_heatmap_targets).item())
+        history.append({"epoch": epoch + 1, "train_phase_balanced_objective": train_loss,
+                        "validation_phase_balanced_objective": validation_loss})
         if validation_loss < best_loss - 1e-6:
             best_loss = validation_loss
             best_epoch = epoch + 1
@@ -302,8 +395,8 @@ def main() -> None:
         raise RuntimeError("training did not produce a checkpoint")
     model.load_state_dict(best_state)
     model.eval()
-    train_predictions = _predict(model, x_train, label_mean, label_scale)
-    val_predictions = _predict(model, x_val, label_mean, label_scale)
+    train_predictions = _predict(model, x_train, label_mean, label_scale, architecture, geometry)
+    val_predictions = _predict(model, x_val, label_mean, label_scale, architecture, geometry)
     train_metrics = _score_rows(train_predictions, y_train_np, train_meta, config)
     val_metrics = _score_rows(val_predictions, y_val_np, val_meta, config)
 
@@ -313,7 +406,7 @@ def main() -> None:
     torch.save({
         "state_dict": best_state,
         "label_mean": label_mean.cpu(), "label_scale": label_scale.cpu(),
-        "architecture": SpatialEventStateNet.architecture,
+        "architecture": architecture,
         "input_contract": INPUT_CONTRACT,
         "training_episodes": train_ids,
         "validation_episodes": validation_ids,
@@ -324,6 +417,12 @@ def main() -> None:
         "best_epoch": best_epoch,
         "config_sha256": _sha256(args.config),
         "training_code_commit": _git_value("rev-parse", "HEAD"),
+        "spatial_calibration": {
+            "camera_to_world_cv": geometry["camera_to_world_cv_np"].tolist(),
+            "intrinsics_fx_fy_cx_cy": geometry["intrinsics"].tolist(),
+            "resolution_wh": list(geometry["resolution_wh"]),
+            "target_height_head_status": "predicted z used to backproject pixel heatmap to world xyz" if args.architecture == "heatmap_v2" else "direct xyz regression",
+        },
     }, checkpoint_path)
     _write_predictions(out / "train_predictions.csv", train_meta, y_train_np, train_predictions)
     _write_predictions(out / "validation_predictions.csv", val_meta, y_val_np, val_predictions)
@@ -343,7 +442,7 @@ def main() -> None:
         "episode_level_split_only": True,
         "split_rationale": "both splits contain every launch speed and every lateral position; distinct speed-position combinations are held out",
         "all_nine_episodes_are_development_material": True,
-        "model_architecture": SpatialEventStateNet.architecture,
+        "model_architecture": architecture,
         "model_parameter_count": sum(parameter.numel() for parameter in model.parameters()),
         "input_contract": INPUT_CONTRACT,
         "training_labels": "simulator object position and velocity at each causal observation cutoff",
@@ -354,7 +453,7 @@ def main() -> None:
         "training": {"device": str(device), "threads": args.threads, "seed": args.seed,
                      "max_epochs": args.epochs, "best_epoch": best_epoch, "patience": args.patience,
                      "batch_size": args.batch_size, "training_wall_s": training_wall_s,
-                     "best_validation_phase_balanced_normalized_mse": best_loss,
+                     "best_validation_phase_balanced_objective": best_loss,
                      "phase_reweighting": "equal aggregate weight per episode-phase group within each split"},
         "validity_policy": {"minimum_events": 12, "minimum_nonempty_5ms_bins": 3,
                             "maximum_state_age_s": float(config["controller"].get("maximum_event_state_age_s", 0.03)),
@@ -362,6 +461,7 @@ def main() -> None:
         "train_metrics": train_metrics,
         "validation_metrics": val_metrics,
         "metric_boundary": "position/velocity and same-fixed-predictor arrival/intercept metrics use GT only after inference as evaluator; arrival is compared at the causal cutoff and does not use future GT arrival",
+        "spatial_output_head": "explicit 64x64 image-coordinate target heatmap with softargmax, calibrated ray-plane backprojection using predicted height, and separate normalized height/velocity head" if args.architecture == "heatmap_v2" else "flattened 8x8 spatial feature map and direct six-value world-state MLP",
         "checkpoint_sha256": _sha256(checkpoint_path),
     }
     (out / "development_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")

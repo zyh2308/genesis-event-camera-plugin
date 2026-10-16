@@ -263,9 +263,15 @@ class LearnedEventStateEstimator:
         resolution_wh: Sequence[int],
         *,
         max_state_age_s: float = 0.030,
+        camera_to_world_cv: Optional[np.ndarray] = None,
+        intrinsics_fx_fy_cx_cy: Optional[Sequence[float]] = None,
     ):
         import torch
-        from benchmark.robot_closed_loop.event_state_model import load_checkpoint
+        from benchmark.robot_closed_loop.event_state_model import (
+            HeatmapEventStateNet,
+            decode_heatmap_state,
+            load_checkpoint,
+        )
 
         self.checkpoint_path = Path(checkpoint_path).resolve()
         if not self.checkpoint_path.is_file():
@@ -279,6 +285,23 @@ class LearnedEventStateEstimator:
         )
         self.torch = torch
         self.architecture = str(checkpoint["architecture"])
+        self._decode_heatmap_state = decode_heatmap_state
+        self._heatmap_architecture = HeatmapEventStateNet.architecture
+        if camera_to_world_cv is not None:
+            self.camera_to_world_cv = torch.as_tensor(
+                np.asarray(camera_to_world_cv, dtype=np.float32), dtype=torch.float32,
+            )
+        else:
+            self.camera_to_world_cv = None
+        if intrinsics_fx_fy_cx_cy is not None:
+            self.intrinsics = torch.as_tensor(intrinsics_fx_fy_cx_cy, dtype=torch.float32)
+        else:
+            self.intrinsics = None
+        if self.architecture == self._heatmap_architecture and (
+            self.camera_to_world_cv is None or self.intrinsics is None
+        ):
+            raise ValueError("heatmap event-state checkpoint requires fixed camera extrinsics and intrinsics")
+        self._check_spatial_calibration(checkpoint)
         self.input_contract = str(checkpoint.get("input_contract", "unknown"))
         self.minimum_events = int(checkpoint.get("validity_policy", {}).get("minimum_events", 12))
         self.minimum_time_bins = int(checkpoint.get("validity_policy", {}).get("minimum_nonempty_5ms_bins", 3))
@@ -288,6 +311,24 @@ class LearnedEventStateEstimator:
         self.last_confidence = {"event_count": 0, "time_bin_count": 0}
         self.inference_ms: List[float] = []
         self.status_counts: Dict[str, int] = {}
+
+    def _check_spatial_calibration(self, checkpoint: Dict[str, object]) -> None:
+        calibration = checkpoint.get("spatial_calibration")
+        if not isinstance(calibration, dict):
+            return
+        expected_resolution = calibration.get("resolution_wh")
+        if expected_resolution and list(expected_resolution) != [self.width, self.height]:
+            raise ValueError("event-state checkpoint camera resolution does not match the fixed runtime camera")
+        if self.camera_to_world_cv is not None and calibration.get("camera_to_world_cv") is not None:
+            expected = np.asarray(calibration["camera_to_world_cv"], dtype=np.float64)
+            actual = self.camera_to_world_cv.cpu().numpy().astype(np.float64)
+            if not np.allclose(actual, expected, atol=1e-5, rtol=0):
+                raise ValueError("event-state checkpoint camera extrinsics do not match the fixed runtime camera")
+        if self.intrinsics is not None and calibration.get("intrinsics_fx_fy_cx_cy") is not None:
+            expected = np.asarray(calibration["intrinsics_fx_fy_cx_cy"], dtype=np.float64)
+            actual = self.intrinsics.cpu().numpy().astype(np.float64)
+            if not np.allclose(actual, expected, atol=1e-4, rtol=0):
+                raise ValueError("event-state checkpoint intrinsics do not match the fixed runtime camera")
 
     def push(self, events: np.ndarray, now_s: float) -> None:
         arr = np.asarray(events, dtype=np.float64).reshape(-1, 4)
@@ -336,7 +377,13 @@ class LearnedEventStateEstimator:
         input_tensor = self.torch.as_tensor(np.log1p(voxel).reshape(1, 10, 64, 64), dtype=self.torch.float32)
         started = time.perf_counter()
         with self.torch.no_grad():
-            output = self.model(input_tensor)[0] * self.label_scale + self.label_mean
+            if self.architecture == self._heatmap_architecture:
+                output = self._decode_heatmap_state(
+                    self.model(input_tensor), self.label_mean, self.label_scale,
+                    self.camera_to_world_cv, self.intrinsics, (self.width, self.height),
+                )[0]
+            else:
+                output = self.model(input_tensor)[0] * self.label_scale + self.label_mean
         self.inference_ms.append((time.perf_counter() - started) * 1000.0)
         values = output.cpu().numpy().astype(np.float64)
         if not np.all(np.isfinite(values)):
@@ -466,6 +513,11 @@ class DirectHdrEventSource:
             self.learned_estimator = LearnedEventStateEstimator(
                 self.model_checkpoint, cfg["camera"]["resolution_wh"],
                 max_state_age_s=maximum_age,
+                camera_to_world_cv=self.camera_to_world_cv,
+                intrinsics_fx_fy_cx_cy=(
+                    self.camera_intrinsics["fx"], self.camera_intrinsics["fy"],
+                    self.camera_intrinsics["cx"], self.camera_intrinsics["cy"],
+                ),
             )
         self.initialized = True
 

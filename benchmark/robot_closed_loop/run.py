@@ -1111,7 +1111,7 @@ def run_reference(
     write_csv(out / "r0_5_reference_episodes.csv", episode_rows)
     summary = {
         "mode": (
-            "r0_6_direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
+            "r0_7_direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
             "r0_5_direct_hdr_reference_and_event_state_smoke" if use_event_observation else
             "r0_5_direct_hdr_gt_shadow_sensor_reference"
         ),
