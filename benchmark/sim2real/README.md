@@ -18,4 +18,6 @@ E2VID+ completed paired multi-rollout synthetic training and independent validat
 
 Read [`sim2real_status.md`](sim2real_status.md) for the handoff summary and [`reports/stage2_execution.md`](reports/stage2_execution.md) for results, resource costs, protocol candidates and open decisions. All successful and failed Stage 2 commands, logs, environments, exit codes and small manifests are indexed under [`evidence/S2/20261016-stage2-pilot/`](evidence/S2/20261016-stage2-pilot/). External g1 data and checkpoint paths/sizes/hashes are in its `external_artifacts.json`.
 
+For a single-file research handoff with conclusions, key metrics, limits, next gates and evidence links, start at [`STAGE2_RESEARCH_HANDOFF.md`](STAGE2_RESEARCH_HANDOFF.md).
+
 Research inputs and their original paths are versioned under `research/input_2026-10-16/`. Every report distinguishes source inspection, executed work and estimates. Short synthetic pilot values do not establish generator performance or real generalization.
