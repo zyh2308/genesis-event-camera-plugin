@@ -47,6 +47,7 @@ def main() -> None:
     device = torch.device(args.device)
     if device.type != "cuda":
         raise ValueError("diagnostic device must be CUDA")
+    torch.cuda.set_device(device)
 
     width, height = 346, 260
     fps, interval_s = 100, 0.01
