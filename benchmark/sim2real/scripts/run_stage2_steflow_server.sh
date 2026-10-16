@@ -5,7 +5,7 @@ PROJECT_DIR=/home/zhaoyuhan/Eventbased_WAM
 REPO_DIR="$PROJECT_DIR/repositories/gec-sim2real"
 RUN_ID="${1:-20261016-s2-steflow-v1}"
 RUN_DIR="$PROJECT_DIR/runs/sim2real/$RUN_ID"
-DATA_ROOT="$PROJECT_DIR/data/sim2real/stage2/20261016-s2-pilot-v1/steflow_inputs"
+DATA_ROOT="$PROJECT_DIR/data/sim2real/stage2/20261016-s2-pilot-v1/steflow_inputs_v2"
 MODEL_ROOT="$PROJECT_DIR/external/sources/downstream/STE-FlowNet"
 
 if [[ -e "$RUN_DIR" ]]; then echo "refusing existing run directory: $RUN_DIR" >&2; exit 2; fi

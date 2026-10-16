@@ -17,7 +17,7 @@ if [[ -e "$RUN_DIR" ]]; then
   exit 2
 fi
 mkdir -p "$RUN_DIR"
-printf '%s\n' "$" > "$RUN_DIR/pid.txt"
+printf '%s\n' "$$" > "$RUN_DIR/pid.txt"
 trap 'rc=$?; echo "$rc" > "$RUN_DIR/exit_code.txt"; date -u +%FT%TZ > "$RUN_DIR/finished_utc.txt"' EXIT
 date -u +%FT%TZ > "$RUN_DIR/started_utc.txt"
 cd "$REPO_DIR" || exit 2
