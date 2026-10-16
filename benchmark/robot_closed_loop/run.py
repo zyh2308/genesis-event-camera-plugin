@@ -664,6 +664,8 @@ def run_oracle_trial(
                         "position_m": estimate.position_m.tolist(),
                         "velocity_m_s": estimate.velocity_m_s.tolist(),
                         "age_s": float(next_rel_t - estimate.time_s),
+                        "event_count_window": int(event_source.trackers[rate_hz].last_confidence["event_count"]),
+                        "time_bins_window": int(event_source.trackers[rate_hz].last_confidence["time_bin_count"]),
                     }
             if last_prediction is not None:
                 frame["observation_cutoff_s"] = last_obs.time_s
@@ -921,7 +923,6 @@ def run_reference(
                         aligned_object = aligned["object"]
                         gt_position = np.asarray(aligned_object["position_m"], dtype=np.float64)
                         gt_velocity = np.asarray(aligned_object["velocity_m_s"], dtype=np.float64)
-                        tracker = source.trackers[hz]
                         error_row = {
                             "position_error_xy_m": float(np.linalg.norm(np.asarray(estimate["position_m"][:2]) - gt_position[:2])),
                             "velocity_error_xy_m_s": float(np.linalg.norm(np.asarray(estimate["velocity_m_s"][:2]) - gt_velocity[:2])),
@@ -932,8 +933,8 @@ def run_reference(
                             "estimate_time_s": float(estimate["time_s"]), "sampling_hz": hz,
                             **error_row,
                             "nearest_gt_sample_time_error_ms": float(abs(float(aligned["time_s"]) - float(estimate["time_s"])) * 1000.0),
-                            "event_count_window": int(tracker.last_confidence["event_count"]),
-                            "time_bins_window": int(tracker.last_confidence["time_bin_count"]),
+                            "event_count_window": int(estimate["event_count_window"]),
+                            "time_bins_window": int(estimate["time_bins_window"]),
                         })
                         if in_post_contact_window:
                             post_contact_event_errors[hz].append(error_row)
