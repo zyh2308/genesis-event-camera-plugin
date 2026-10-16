@@ -1,0 +1,91 @@
+{
+  "mode": "r0_5_direct_hdr_reference_and_event_state_smoke",
+  "code_scope": "robot benchmark; frozen simulator core unchanged",
+  "physics_dt_s": 0.0005,
+  "paired_event_rates_hz": [
+    1000,
+    2000
+  ],
+  "controller_state_source": "2 kHz causal event tracker",
+  "reference_controller_source": "events",
+  "episodes": [
+    {
+      "episode_id": 0,
+      "seed": 2026103700,
+      "speed_m_s": 0.3,
+      "launch_y_m": -0.055,
+      "strict_success": false,
+      "success_legacy_r0": false,
+      "first_contact_s": null,
+      "lift_start_s": null,
+      "sim_duration_s": 3.0000000000000004,
+      "task_rollout_wall_s": 196.44332598987967,
+      "event_count_1khz": 156642,
+      "event_count_2khz": 186534,
+      "state_control_trace": "episodes/episode_000/state_control_trace.jsonl",
+      "raw_events": "episodes/episode_000/direct_hdr_events_1khz_2khz.npz",
+      "dynamic_visibility_min": 0.0,
+      "state_accuracy_1khz_p95_m": 0.10958754077198435,
+      "state_accuracy_2khz_p95_m": 0.16126841490931476
+    },
+    {
+      "episode_id": 1,
+      "seed": 2026103701,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "strict_success": false,
+      "success_legacy_r0": false,
+      "first_contact_s": 0.6285,
+      "lift_start_s": null,
+      "sim_duration_s": 3.0000000000000004,
+      "task_rollout_wall_s": 182.0776437278837,
+      "event_count_1khz": 133078,
+      "event_count_2khz": 162808,
+      "state_control_trace": "episodes/episode_001/state_control_trace.jsonl",
+      "raw_events": "episodes/episode_001/direct_hdr_events_1khz_2khz.npz",
+      "dynamic_visibility_min": 1.0,
+      "state_accuracy_1khz_p95_m": 0.21658177342819412,
+      "state_accuracy_2khz_p95_m": 0.21658177342819412
+    },
+    {
+      "episode_id": 2,
+      "seed": 2026103702,
+      "speed_m_s": 0.5,
+      "launch_y_m": 0.055,
+      "strict_success": false,
+      "success_legacy_r0": false,
+      "first_contact_s": null,
+      "lift_start_s": null,
+      "sim_duration_s": 3.0000000000000004,
+      "task_rollout_wall_s": 193.97983798664063,
+      "event_count_1khz": 159252,
+      "event_count_2khz": 186316,
+      "state_control_trace": "episodes/episode_002/state_control_trace.jsonl",
+      "raw_events": "episodes/episode_002/direct_hdr_events_1khz_2khz.npz",
+      "dynamic_visibility_min": 0.0,
+      "state_accuracy_1khz_p95_m": 0.4983710965067851,
+      "state_accuracy_2khz_p95_m": 0.5004605436958951
+    }
+  ],
+  "strict_success_by_speed": {
+    "0.3": {
+      "n": 1,
+      "successes": 0
+    },
+    "0.4": {
+      "n": 1,
+      "successes": 0
+    },
+    "0.5": {
+      "n": 1,
+      "successes": 0
+    }
+  },
+  "episode_loop_artifact_wall_s": 593.8242753213271,
+  "mean_task_rollout_wall_s": 190.83360256813467,
+  "cost_boundary": "episode_loop_artifact_wall_s includes complete rollouts and per-episode trace/video/event/CSV/JSON artifact generation, but excludes environment initialization and final run_manifest/SHA256SUMS finalization. The launch wrapper must record the full Python process wall time as the end-to-end cost.",
+  "no_rollout_scale_extrapolation": true,
+  "pixel_response_model_boundary": "Direct linear-HDR input and DvsEmulator are shared with the plugin; Ours temporal reconstruction and V2E frame interpolation are bypassed. This ideal synthetic threshold model is uncalibrated to EVK4.",
+  "visibility_evaluation_boundary": "uses evaluator-only segmentation and matched-pose target-only render; those data do not enter the event state source or controller",
+  "small_smoke_only": true
+}

@@ -1,12 +1,12 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0.5 strict oracle 已核验三档各 100/100；GT-shadow 9/9 是延迟当前 GT 驱动的 sensor-reference，不是事件控制。R0.5 event-controller 旧 smoke 为 strict success 0/9、接触 3/9、抬升 0/9。R0.6 已修复因果速度回归与状态新鲜度策略，并在 g1 原始事件轨迹上完成三集离线回放；新的 2 kHz 事件控制三集 rollout 正在 g1 GPU3 运行，结果待核验。任务、相机、物理时钟与 strict scorer 保持不变。事件空间归因与 lift 状态仍未通过；尚未启动大规模配对数据、正式多 seed 训练或 Ours/V2E 排名。
+**更新时间：** 2026-10-17（Asia/Tokyo）
+**阶段：** R0.5 strict oracle 已核验三档各 100/100；GT-shadow 9/9 是延迟当前 GT 驱动的 sensor-reference，不是事件控制。R0.5 event-controller smoke 为 strict success 0/9、接触 3/9、抬升 0/9。R0.6 已修复速度回归和状态新鲜度缺陷、完成三集 raw-event 离线回放，并在 g1 完成新一组三集 2 kHz event-controller rollout：strict success 0/3、接触 1/3、抬升 0/3。任务、相机、物理时钟与 strict scorer 保持不变。事件空间归因和 lift 状态仍未通过；尚未启动大规模配对数据、正式多 seed 训练或 Ours/V2E 排名。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
 
-R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 在 g1 用保存的 raw events 做了三集离线回放；2 kHz event-controller 三集真实物理闭环正在运行。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
+R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 已完成 raw-event 离线回放和三集 2 kHz 真实事件闭环；随后会用已保存 GT-shadow 事件做 tiny overfit 管线诊断，不新增 Direct-HDR 渲染轨迹。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
 
 ### 已完成并有证据
 
@@ -292,13 +292,39 @@ PYTHONPATH=. /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/b
 
 ### R0.6 小规模真实事件控制 rollout
 
-在 g1 branch worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d`、commit `30177915e0e260d6161feb48dddf087809268f73` 下，使用同一因果 centroid 状态接口、固定预测器/控制器、strict scorer 做 0.30/0.40/0.50 m/s 各一集，seed `2026103700`，事件状态 2 kHz、物理步 0.5 ms、GPU3 Direct-HDR。tmux session `r0_6_evt_20261016`、launcher PID `2445286`；run output `benchmark/robot_closed_loop/results/r0_6_event_controller_3sample_20261016/`；状态仍在运行，结果/日志哈希待补。命令：
+在 g1 上的 branch snapshot worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d`、detached HEAD commit `30177915e0e260d6161feb48dddf087809268f73` 下，使用同一因果 centroid 状态接口、固定预测器/控制器、strict scorer 做 0.30/0.40/0.50 m/s 各一集，seed `2026103700`–`2026103702`，事件状态 2 kHz、物理步 0.5 ms、GPU3 Direct-HDR。配置 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`；结果目录 [`r0_6_event_controller_3sample_20261016/`](../../benchmark/robot_closed_loop/results/r0_6_event_controller_3sample_20261016/)，g1 原始路径为 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-b3dc69d/benchmark/robot_closed_loop/results/r0_6_event_controller_3sample_20261016/`。完整 Python 进程 exit 0，wall/user CPU/system CPU/max RSS 为 `662.89/18618.97/79.01 s / 1,809,900 KB`；episode rollout wall `196.44/182.08/193.98 s`（每集模拟 3 s），平均 `190.83 s`。物理 CPU、Direct-HDR EGL GPU3；steady HDR render mean `7.47–7.51 ms/sample`，DVS mean `5.64–6.52 ms/sample`（1 kHz）、`5.14–5.99 ms/sample`（2 kHz）；无 GPU-time profiler。总进程 wall 才是本次三集端到端成本，不将 render/DVS 均值线性外推到大数据。
+
+| Episode | 速度 / 发射 y | 首次接触 | lift start | Strict success | 动态最小可见比例 | 全轨迹 2 kHz 状态位置 P95 |
+|---|---|---:|---:|---:|---:|---:|
+| 0 | 0.30 m/s / -55 mm | 无 | 无 | 否 | 0.0 | 161.3 mm |
+| 1 | 0.40 m/s / 0 mm | 0.6285 s | 无 | 否 | 1.0 | 216.6 mm |
+| 2 | 0.50 m/s / +55 mm | 无 | 无 | 否 | 0.0 | 500.5 mm |
+
+结果为 0/3 strict success、1/3 接触、0/3 lift；不估总体成功率。唯一接触样本（中心轨迹）接触后 2 kHz 状态可用 274/2,374 帧（11.54%），可用状态位置 P95 `275.5 mm`、速度 P95 `7.29 m/s`，状态 age P95 `9.5 ms`，lift gate eligible `0/2,374`。两条边缘轨迹没有接触且动态最小可见比例为 0；录像显示它们后段方块不在可见区域。需要保留因果限制：这是感知误差/视野受限的证据，但三集不足以分离 tracker 偏差与机器人事件/遮挡的贡献。逐集事件、状态控制 trace 和失败录像都已纳入仓库；本地与 g1 `sha256sum -c SHA256SUMS` 通过。结果清单 SHA256 `90c4823bf1dfb6dec0b42ec7ee97d5241b718d6fed55c06a3f9746ba68290a1f`，summary `40981bbf3541859550c62bef70a884a6227b35371a56998f13ffbfc2ba4255ba`，逐集 CSV `fe715a0773d9fed75bd08b6dc121b42bb400edf5f2a335c9b9c159fc0fe0f5ff`，manifest `df3fe104e044c39eab59898ce9b3c87b314167eb10d68d936b44b52cc5328c8a`。
+
+运行日志 provenance：tmux session `r0_6_evt_20261016`，launcher PID `2445286` / Python PID `2445290`，exit 0；log SHA256 `12f9585d909d27184ef87083204ba1c2179ab01dd9033849bb42de1f56455b8c`，runtime `109228a1fd87c4bcee0e10221e05ae59893c3c71d3acc141f92b3f4b3de954b8`，launcher `49973e333315859564f7f747918147ef2ef2b2a063e4f5ba1b1af88ff66b0c73`，exit 文件 SHA256 `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。
+
+命令：
 
 ~~~bash
 benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_controller_3sample_20261016.launch.sh
 ~~~
 
-该小样本用于检查真实无 GT 接入、接触和 lift，不估计总体成功率。
+该小样本用于检查真实无 GT 接入、接触和 lift，不估计总体成功率。像素响应共用插件 `DvsEmulator` 的 ideal threshold 0.2、无噪声、无限带宽；绕开 Ours 时间重建和 V2E 插帧，不是 EVK4 标定。可视化 segmentation 只用于 evaluator。
+
+### Tiny event-to-state overfit 诊断（小规模、尚未启动）
+
+质心诊断显示接触前位置 P95 为 18–50 cm、速度 P95 为 3.2–18.1 m/s，中心轨迹接触后 lift gate 无一次 eligible。下一步已增加简单 2D CNN 诊断脚本：输入固定五时间 bin 的 `10×64×64` log-count tensor，输出 observation cutoff 时刻的 world xyz 位置和速度；只用同三条已存 GT-shadow Direct-HDR raw-event 轨迹训练并做 in-sample overfit 检查。GT pose/velocity 只生成训练标签和离线评分，不进入模型输入或推理控制；没有 episode holdout，因此不报告泛化性能。此处不会重渲染或改 lift trigger。
+
+脚本 [`train_event_state_overfit.py`](../../benchmark/robot_closed_loop/diagnostics/train_event_state_overfit.py) 与 launcher [`r0_6_event_state_overfit_20261017.launch.sh`](../../benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_state_overfit_20261017.launch.sh) 已在分支；配置 SHA256 仍为 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，raw 输入复用上节 episode 0/4/8 及同一源清单 SHA。使用服务器项目 venv CPU PyTorch、4 CPU threads、120 epochs；run output 计划为 `results/r0_6_event_state_overfit_20261017/`，当前状态待启动/补充训练摘要、模型 latency 和 SHA256。
+
+### 建议的下一步配对训练 pilot（协议候选，未执行/未冻结）
+
+1. 保持场景、机器人、0.5 ms physics、固定相机、五-bin 输入、状态接口、predictor/controller/lift gate 和 strict scorer 不变。先复用已完成的 tiny overfit 轨迹确认标签、事件窗口和状态时间戳接线；过拟合只能说明 pipeline/capacity 可行，不作为性能证据。
+2. 若诊断可拟合，再生成 18 个固定场景 episode ID：`3 speeds × 3 lateral positions (-55/0/+55 mm) × 2 seeds`。每个 ID 由完全相同的初始条件分别驱动 Ours 和 V2E 输入路径；按 episode 划分 9 train / 9 heldout（每个 speed-position cell 一集一边），不能按相邻时间窗随机拆分。Direct-HDR 只做 sensor reference/标签时序校验，不馈入学习器或替代 Ours reconstruction/V2E interpolation。
+3. 训练相同的小型 temporal/event-to-state 网络、相同预算和标签，只让 Ours 与 V2E 各自看到自己的事件输入。训练监督使用 simulator object pose/velocity；验证/闭环推理只允许事件 tensor、时间戳和固定相机标定。模型输出必须携带 causal timestamp、置信度/有效性，并实现 `fresh/stale/no_event/tracking_lost/unavailable`；GT segmentation/depth 只可离线评分，不能进入 sensor、tracker 或 controller。
+4. 先看 heldout 每阶段 position/velocity/arrival error、状态可用率与年龄，达标后各做少量 live rollout；不从 18 集 pilot 排名。可讨论的工程入口门槛是：接触前和 contact-to-lift 状态有效率 ≥95%、age ≤30 ms、平面位置 P95 ≤5 mm、arrival P95 ≤10 ms；这些是根据 +10 mm sensitivity 和 100 Hz 控制周期提出的讨论值，不是已冻结阈值。最终成功必须由同一 strict scorer 的真实接触、无支撑抬升和 0.5 s 连续保持定义。
+5. 参考采用共享 `DvsEmulator` ideal threshold 0.2/no-noise/infinite-bandwidth 时，Ours/V2E/Direct-HDR 三者均明确记录该共享像素模型；两种 estimator 的输入差异只来自 Ours 时间重建与 V2E 插帧。端到端成本分别记 Direct-HDR render、Ours reconstruction、V2E interpolation、event generation/binning、network/controller、physics 与 I/O，不用早期单次 render 数值外推。
 
 ### 复跑命令与运行约定
 
