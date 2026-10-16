@@ -10,7 +10,9 @@ from __future__ import annotations
 from collections import deque
 from bisect import bisect_right
 from dataclasses import dataclass
+import hashlib
 import math
+from pathlib import Path
 import time
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -252,10 +254,143 @@ class EventKinematicsTracker:
         return MotionState(sample.time_s, sample.position_m.copy(), sample.velocity_m_s.copy())
 
 
+class LearnedEventStateEstimator:
+    """Causal five-bin inference adapter with the shared event-state contract."""
+
+    def __init__(
+        self,
+        checkpoint_path: str,
+        resolution_wh: Sequence[int],
+        *,
+        max_state_age_s: float = 0.030,
+    ):
+        import torch
+        from benchmark.robot_closed_loop.event_state_model import load_checkpoint
+
+        self.checkpoint_path = Path(checkpoint_path).resolve()
+        if not self.checkpoint_path.is_file():
+            raise FileNotFoundError(self.checkpoint_path)
+        self.checkpoint_sha256 = hashlib.sha256(self.checkpoint_path.read_bytes()).hexdigest()
+        self.width, self.height = (int(v) for v in resolution_wh)
+        self.max_state_age_s = float(max_state_age_s)
+        torch.set_num_threads(1)
+        self.model, self.label_mean, self.label_scale, checkpoint = load_checkpoint(
+            str(self.checkpoint_path), device="cpu",
+        )
+        self.torch = torch
+        self.architecture = str(checkpoint["architecture"])
+        self.input_contract = str(checkpoint.get("input_contract", "unknown"))
+        self.minimum_events = int(checkpoint.get("validity_policy", {}).get("minimum_events", 12))
+        self.minimum_time_bins = int(checkpoint.get("validity_policy", {}).get("minimum_nonempty_5ms_bins", 3))
+        self._event_chunks: deque[np.ndarray] = deque()
+        self.latest_state: Optional[MotionState] = None
+        self.latest_generated_at_s: Optional[float] = None
+        self.last_confidence = {"event_count": 0, "time_bin_count": 0}
+        self.inference_ms: List[float] = []
+        self.status_counts: Dict[str, int] = {}
+
+    def push(self, events: np.ndarray, now_s: float) -> None:
+        arr = np.asarray(events, dtype=np.float64).reshape(-1, 4)
+        if len(arr):
+            arr = arr[np.argsort(arr[:, 0], kind="stable")]
+            self._event_chunks.append(arr)
+        retain_from_s = float(now_s) - 0.150
+        while self._event_chunks and float(self._event_chunks[0][-1, 0]) < retain_from_s:
+            self._event_chunks.popleft()
+
+    def observe(self, cutoff_s: float, now_s: Optional[float] = None) -> EventObservation:
+        from benchmark.robot_closed_loop.event_state_model import five_bin_tensor
+        from benchmark.robot_closed_loop.predictor import MotionState
+
+        now = float(cutoff_s if now_s is None else now_s)
+        if float(cutoff_s) > now + 1e-12:
+            self.latest_state = None
+            return EventObservation("unavailable", "tracking_lost", None, None, None, 0, 0)
+        start_s = float(cutoff_s) - 0.025
+        chunks = [chunk for chunk in self._event_chunks if chunk[-1, 0] >= start_s and chunk[0, 0] < cutoff_s]
+        events = np.concatenate(chunks, axis=0) if chunks else np.empty((0, 4), dtype=np.float64)
+        voxel = five_bin_tensor(events, cutoff_s, self.width, self.height)
+        bin_counts = voxel.sum(axis=(1, 2, 3))
+        event_count = int(voxel.sum())
+        time_bin_count = int(np.count_nonzero(bin_counts))
+        self.last_confidence = {"event_count": event_count, "time_bin_count": time_bin_count}
+        if event_count == 0:
+            tracking_status = "no_event"
+        elif event_count < self.minimum_events or time_bin_count < self.minimum_time_bins:
+            tracking_status = "tracking_lost"
+        else:
+            tracking_status = "tracking"
+
+        age_s = max(0.0, now - float(cutoff_s))
+        if age_s > self.max_state_age_s:
+            self.latest_state = None
+            self.status_counts["stale"] = self.status_counts.get("stale", 0) + 1
+            return EventObservation("stale", tracking_status, None, age_s,
+                                    self.latest_generated_at_s, event_count, time_bin_count)
+        if tracking_status != "tracking":
+            self.latest_state = None
+            self.status_counts[tracking_status] = self.status_counts.get(tracking_status, 0) + 1
+            return EventObservation(tracking_status, tracking_status, None, age_s,
+                                    self.latest_generated_at_s, event_count, time_bin_count)
+
+        input_tensor = self.torch.as_tensor(np.log1p(voxel).reshape(1, 10, 64, 64), dtype=self.torch.float32)
+        started = time.perf_counter()
+        with self.torch.no_grad():
+            output = self.model(input_tensor)[0] * self.label_scale + self.label_mean
+        self.inference_ms.append((time.perf_counter() - started) * 1000.0)
+        values = output.cpu().numpy().astype(np.float64)
+        if not np.all(np.isfinite(values)):
+            self.latest_state = None
+            self.status_counts["tracking_lost"] = self.status_counts.get("tracking_lost", 0) + 1
+            return EventObservation("tracking_lost", "tracking_lost", None, age_s,
+                                    self.latest_generated_at_s, event_count, time_bin_count)
+        # Timestamp labels the input cutoff, not the inference completion time.
+        self.latest_state = MotionState(float(cutoff_s), values[:3], values[3:])
+        self.latest_generated_at_s = now
+        self.status_counts["fresh"] = self.status_counts.get("fresh", 0) + 1
+        return EventObservation("fresh", "tracking", self.latest_state, age_s, now,
+                                event_count, time_bin_count)
+
+    def latest(self) -> Optional[MotionState]:
+        if self.latest_state is None:
+            return None
+        return MotionState(
+            self.latest_state.time_s,
+            self.latest_state.position_m.copy(),
+            self.latest_state.velocity_m_s.copy(),
+        )
+
+    def summary(self) -> Dict[str, object]:
+        return {
+            "estimator": "spatial learned event-state model",
+            "checkpoint_path": str(self.checkpoint_path),
+            "checkpoint_sha256": self.checkpoint_sha256,
+            "architecture": self.architecture,
+            "input_contract": self.input_contract,
+            "causal_timestamp": "five-bin input cutoff; events satisfy t < cutoff; output state is timestamped at cutoff",
+            "validity_policy": {
+                "minimum_events": self.minimum_events,
+                "minimum_nonempty_5ms_bins": self.minimum_time_bins,
+                "maximum_state_age_s": self.max_state_age_s,
+                "invalid_state_behavior": "no_event/tracking_lost/stale returns no state and the existing controller holds lateral command and does not start closure",
+            },
+            "observation_status_counts": dict(self.status_counts),
+            "inference_model_only_ms": {
+                "n": len(self.inference_ms),
+                "mean": None if not self.inference_ms else float(np.mean(self.inference_ms)),
+                "p50": None if not self.inference_ms else float(np.percentile(self.inference_ms, 50)),
+                "p95": None if not self.inference_ms else float(np.percentile(self.inference_ms, 95)),
+            },
+        }
+
+
 class DirectHdrEventSource:
     """Render linear HDR at physics cadence and emit paired 1/2 kHz event streams."""
 
-    def __init__(self, config: Dict, physics_dt_s: float, controller_hz: int = 2000):
+    def __init__(
+        self, config: Dict, physics_dt_s: float, controller_hz: int = 2000,
+        model_checkpoint: Optional[str] = None,
+    ):
         self.config = config
         self.physics_dt_s = float(physics_dt_s)
         self.controller_hz = int(controller_hz)
@@ -290,6 +425,8 @@ class DirectHdrEventSource:
         self.snapshots: Dict[str, Tuple[float, np.ndarray]] = {}
         self.camera_to_world_cv = None
         self.camera_intrinsics = None
+        self.learned_estimator = None
+        self.model_checkpoint = model_checkpoint
 
     def initialize(self, camera: object, t_s: float = 0.0) -> None:
         from genesis_event_plugin.genesis_adapter import camera_to_world_cv
@@ -325,6 +462,11 @@ class DirectHdrEventSource:
             hz: EventKinematicsTracker(*common, max_state_age_s=maximum_age)
             for hz in (1000, 2000)
         }
+        if self.model_checkpoint is not None:
+            self.learned_estimator = LearnedEventStateEstimator(
+                self.model_checkpoint, cfg["camera"]["resolution_wh"],
+                max_state_age_s=maximum_age,
+            )
         self.initialized = True
 
     def advance(self, camera: object, t_s: float) -> None:
@@ -345,6 +487,8 @@ class DirectHdrEventSource:
         if len(events_2k):
             self.events[2000].append(events_2k)
         self.trackers[2000].push(events_2k, float(t_s))
+        if self.learned_estimator is not None:
+            self.learned_estimator.push(events_2k, float(t_s))
 
         if self.frames_processed % 2 == 0:
             start_dvs = time.perf_counter()
@@ -355,10 +499,19 @@ class DirectHdrEventSource:
             self.trackers[1000].push(events_1k, float(t_s))
 
     def observe(self, cutoff_s: float, now_s: Optional[float] = None) -> EventObservation:
+        if self.learned_estimator is not None:
+            return self.learned_estimator.observe(cutoff_s, now_s)
         return self.trackers[self.controller_hz].observe(cutoff_s, now_s)
 
     def latest(self, rate_hz: int) -> Optional[MotionState]:
+        if self.learned_estimator is not None and int(rate_hz) == self.controller_hz:
+            return self.learned_estimator.latest()
         return self.trackers[int(rate_hz)].latest()
+
+    def confidence(self, rate_hz: int) -> Dict[str, int]:
+        if self.learned_estimator is not None and int(rate_hz) == self.controller_hz:
+            return dict(self.learned_estimator.last_confidence)
+        return dict(self.trackers[int(rate_hz)].last_confidence)
 
     def capture_snapshot(self, label: str, time_s: float) -> None:
         if self.last_hdr is not None and label not in self.snapshots:
@@ -389,7 +542,7 @@ class DirectHdrEventSource:
                     Image.fromarray(np.asarray(rgb * 255.0, dtype=np.uint8)).save(out / f"direct_hdr_{label}.png")
             except ImportError:
                 pass
-        return {
+        summary = {
             "controller_sampling_hz": self.controller_hz,
             "sampling_hz": [1000, 2000],
             "physics_dt_s": self.physics_dt_s,
@@ -410,7 +563,11 @@ class DirectHdrEventSource:
                 "shared_pixel_response_model_with_plugin": True,
             },
             "estimator_boundary": "events plus fixed pinhole calibration only; no GT pose, target mask, depth, or future state",
-            "estimator_status": "causal centroid/regression plumbing smoke; not a trained or validated perception model",
+            "estimator_status": (
+                "causal spatial learned event-state development model; status validity is event-count/time-bin based and does not imply localization accuracy"
+                if self.learned_estimator is not None else
+                "causal centroid/regression plumbing smoke; not a trained or validated perception model"
+            ),
             "state_freshness_policy": {
                 "maximum_age_s": self.trackers[self.controller_hz].max_state_age_s,
                 "no_event": "return no usable state and hold current lateral command",
@@ -425,6 +582,14 @@ class DirectHdrEventSource:
                 self.camera_intrinsics["cx"], self.camera_intrinsics["cy"],
             ],
         }
+        if self.learned_estimator is not None:
+            summary["controller_estimator"] = self.learned_estimator.summary()
+        else:
+            summary["controller_estimator"] = {
+                "estimator": "EventKinematicsTracker centroid/regression plumbing smoke",
+                "status": "not a trained or validated perception model",
+            }
+        return summary
 
 
 def _hdr_to_log_gray(hdr: np.ndarray) -> np.ndarray:

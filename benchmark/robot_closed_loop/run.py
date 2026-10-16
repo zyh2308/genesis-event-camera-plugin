@@ -444,6 +444,7 @@ def run_oracle_trial(
     lift_stall_time = 0.0
     stall_time = 0.0
     terminal_commit = False
+    terminal_commit_s = None
     last_prediction = None
     estimated_current_state = None
     closure_speed_reference_m_s = None
@@ -497,10 +498,12 @@ def run_oracle_trial(
                     "state_status": event_observation.state_status,
                     "tracking_status": event_observation.tracking_status,
                     "age_s": event_observation.age_s,
+                    "state_time_s": None if event_observation.state is None else event_observation.state.time_s,
                     "sample_generated_at_s": event_observation.sample_generated_at_s,
                     "event_count_window": event_observation.event_count_window,
                     "time_bin_count_window": event_observation.time_bin_count_window,
                     "max_state_age_s": event_source.trackers[event_source.controller_hz].max_state_age_s,
+                    "estimator": "spatial_learned_event_state" if event_source.learned_estimator is not None else "centroid_regression_smoke",
                 }
                 obs = event_observation.state
             else:
@@ -536,6 +539,8 @@ def run_oracle_trial(
                         y_cmd, y_speed = command.step(target_y, control_steps * env.dt_s)
                         if prediction.ttc_s <= guard:
                             terminal_commit = True
+                            if terminal_commit_s is None:
+                                terminal_commit_s = rel_t
                     else:
                         y_cmd, y_speed = command.position_m, command.velocity_m_s
                     hand_goal = np.asarray([float(controller_cfg["intercept_x_m"]), y_cmd, home_hand[2]])
@@ -706,18 +711,24 @@ def run_oracle_trial(
                 else "delayed_current_gt_shadow_reference" if event_source is not None
                 else "current_gt_delayed"
             )
+            frame["controller_update"] = bool(
+                step % control_steps == 0
+                and rel_t + 1e-9 >= float(controller_cfg["event_burn_in_s"])
+            )
             if event_source is not None:
                 frame["event_observation"] = event_observation_status
                 frame["event_state_by_rate"] = {}
                 for rate_hz in (1000, 2000):
                     estimate = event_source.latest(rate_hz)
+                    confidence = event_source.confidence(rate_hz)
                     frame["event_state_by_rate"][str(rate_hz)] = None if estimate is None else {
                         "time_s": estimate.time_s,
                         "position_m": estimate.position_m.tolist(),
                         "velocity_m_s": estimate.velocity_m_s.tolist(),
                         "age_s": float(next_rel_t - estimate.time_s),
-                        "event_count_window": int(event_source.trackers[rate_hz].last_confidence["event_count"]),
-                        "time_bins_window": int(event_source.trackers[rate_hz].last_confidence["time_bin_count"]),
+                        "event_count_window": int(confidence["event_count"]),
+                        "time_bins_window": int(confidence["time_bin_count"]),
+                        "estimator": "spatial_learned_event_state" if event_source.learned_estimator is not None and rate_hz == event_source.controller_hz else "centroid_regression_smoke",
                     }
             if last_prediction is not None:
                 frame["observation_cutoff_s"] = last_obs.time_s
@@ -806,6 +817,7 @@ def run_oracle_trial(
         "first_contact_relative_speed_m_s": first_contact_relative_speed,
         "planned_free_slide_arrival_t_s": planned_arrival_s,
         "close_start_s": close_started_s,
+        "terminal_commit_s": terminal_commit_s,
         "close_start_minus_planned_arrival_s": close_to_planned_arrival,
         "first_contact_minus_planned_arrival_s": contact_to_planned_arrival,
         "first_contact_minus_close_start_s": contact_to_close_s,
@@ -899,12 +911,15 @@ def run_reference(
     controller_hz: int = 2000,
     visibility_hz: float = 50.0,
     controller_source: str = "events",
+    event_model_checkpoint: Optional[str] = None,
 ) -> Dict[str, Any]:
     from benchmark.robot_closed_loop.event_state import DirectHdrEventSource, voxel_convergence_summary
 
     cfg = env.config
     if controller_source not in {"events", "gt_current"}:
         raise ValueError("reference controller source must be events or gt_current")
+    if event_model_checkpoint is not None and controller_source != "events":
+        raise ValueError("a learned event-state checkpoint can only drive controller_source=events")
     use_event_observation = controller_source == "events"
     speed_grid = [float(v) for v in (speeds or [speed])]
     y_grid = list(float(v) for v in y_values) if y_values is not None else []
@@ -923,7 +938,10 @@ def run_reference(
             launch_y = y_grid[sample_index] if y_grid else default_y
             episode_out = out / "episodes" / f"episode_{episode_id:03d}"
             episode_out.mkdir(parents=True, exist_ok=False)
-            source = DirectHdrEventSource(cfg, env.dt_s, controller_hz=controller_hz)
+            source = DirectHdrEventSource(
+                cfg, env.dt_s, controller_hz=controller_hz,
+                model_checkpoint=event_model_checkpoint if use_event_observation else None,
+            )
             visibility_start = len(visibility.rows)
             episode_started = time.perf_counter()
             row, trace, frames = run_oracle_trial(
@@ -935,7 +953,11 @@ def run_reference(
             )
             episode_wall_s = time.perf_counter() - episode_started
             row.update({
-                "phase": "direct_hdr_event_state_smoke" if use_event_observation else "direct_hdr_gt_controlled_sensor_reference",
+                "phase": (
+                    "direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
+                    "direct_hdr_event_state_smoke" if use_event_observation else
+                    "direct_hdr_gt_controlled_sensor_reference"
+                ),
                 "task_rollout_wall_s": episode_wall_s,
                 "task_rollout_wall_boundary": "complete physics and control rollout, including per-step HDR rendering, both DVS streams, event tracking, dynamic visibility sampling, and video frame capture; excludes output serialization and simulator initialization",
                 "reference_requested_duration_s_ignored_until_task_end": float(duration_s),
@@ -966,14 +988,18 @@ def run_reference(
                     contact_t is not None and frame_t >= float(contact_t)
                     and (lift_t is None or frame_t <= float(lift_t))
                 )
-                if in_post_contact_window:
+                controller_update = bool(frame.get("controller_update", False))
+                if in_post_contact_window and (not use_event_observation or controller_update):
                     post_contact_frame_count += 1
+                if in_post_contact_window:
                     lift_gate = frame.get("command", {}).get("lift_gate")
                     if lift_gate is not None:
                         post_contact_gate_sample_count += 1
                         post_contact_gate_eligible_count += int(bool(lift_gate.get("eligible", False)))
                 if estimates and gt_trace:
                     for hz in (1000, 2000):
+                        if event_model_checkpoint is not None and hz == controller_hz and not controller_update:
+                            continue
                         estimate = estimates.get(str(hz))
                         if estimate is None:
                             continue
@@ -997,7 +1023,8 @@ def run_reference(
                         if in_post_contact_window:
                             post_contact_event_errors[hz].append(error_row)
                 controlled = frame.get("controller_estimated_current_state")
-                if in_post_contact_window and controlled and gt_trace:
+                if (in_post_contact_window and controlled and gt_trace
+                        and (not use_event_observation or controller_update)):
                     aligned_current = min(gt_trace, key=lambda item: abs(float(item["time_s"]) - frame_t))
                     gt_current = aligned_current["object"]
                     controlled_pos = np.asarray(controlled["position_m"], dtype=np.float64)
@@ -1031,7 +1058,7 @@ def run_reference(
                 }
             post_control = post_contact_controller_errors
             post_contact_controller_summary = {
-                "first_contact_to_lift_start_or_episode_end_frame_count": post_contact_frame_count,
+                "first_contact_to_lift_start_or_episode_end_controller_poll_count": post_contact_frame_count,
                 "controller_state_available_count": len(post_control),
                 "controller_state_available_fraction": None if not post_contact_frame_count else float(len(post_control) / post_contact_frame_count),
                 "lift_gate_evaluation_count": post_contact_gate_sample_count,
@@ -1083,14 +1110,25 @@ def run_reference(
     total_wall_s = time.perf_counter() - reference_started
     write_csv(out / "r0_5_reference_episodes.csv", episode_rows)
     summary = {
-        "mode": "r0_5_direct_hdr_reference_and_event_state_smoke" if use_event_observation else "r0_5_direct_hdr_gt_shadow_sensor_reference",
+        "mode": (
+            "r0_6_direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
+            "r0_5_direct_hdr_reference_and_event_state_smoke" if use_event_observation else
+            "r0_5_direct_hdr_gt_shadow_sensor_reference"
+        ),
         "code_scope": "robot benchmark; frozen simulator core unchanged",
         "physics_dt_s": env.dt_s, "paired_event_rates_hz": [1000, 2000],
         "controller_state_source": (
-            ("2 kHz" if controller_hz == 2000 else "1 kHz") + " causal event tracker"
+            ("2 kHz" if controller_hz == 2000 else "1 kHz") + (
+                " causal spatial learned event-state model" if event_model_checkpoint is not None else " causal centroid/regression event tracker"
+            )
             if use_event_observation else "delayed current-GT controller; event streams are shadow sensor reference only"
         ),
         "reference_controller_source": controller_source,
+        "event_model_checkpoint": event_model_checkpoint,
+        "event_estimator_boundary": (
+            "spatial learned model consumes causal five-bin event tensors only; GT is used for supervised training and offline evaluator metrics, not inference"
+            if event_model_checkpoint is not None else "centroid/regression smoke estimator"
+        ),
         "episodes": episode_rows,
         "strict_success_by_speed": {
             str(s): {"n": sum(1 for r in episode_rows if r["speed_m_s"] == s),
@@ -1414,6 +1452,8 @@ def write_run_manifest(args: argparse.Namespace, config: Dict[str, Any], out: Pa
             "panda_asset": str(asset), "panda_asset_sha256": sha256(asset),
             "contact_source": str(contact), "contact_source_sha256": sha256(contact),
             "material_source_sha256": sha256(material),
+            "event_model_checkpoint": None if not getattr(args, "event_model_checkpoint", None) else str(Path(args.event_model_checkpoint).resolve()),
+            "event_model_checkpoint_sha256": None if not getattr(args, "event_model_checkpoint", None) else sha256(Path(args.event_model_checkpoint).resolve()),
             "overlay_files": {str(p.relative_to(overlay)): sha256(p) for p in files},
         },
     }
@@ -1431,6 +1471,16 @@ def write_run_manifest(args: argparse.Namespace, config: Dict[str, Any], out: Pa
 def run_batch(args: argparse.Namespace) -> None:
     config_path = Path(args.config).resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
+    if args.event_model_checkpoint is not None:
+        if args.mode != "reference" or args.reference_controller_source != "events":
+            raise ValueError("--event-model-checkpoint is valid only for reference mode with event control")
+        checkpoint_path = Path(args.event_model_checkpoint).resolve()
+        if not checkpoint_path.is_file():
+            raise FileNotFoundError(checkpoint_path)
+        import torch
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+        if checkpoint.get("config_sha256") != sha256(config_path):
+            raise ValueError("checkpoint scene/config SHA256 does not match the selected config")
     out = Path(args.out).resolve()
     if out.exists() and any(out.iterdir()):
         raise FileExistsError(f"Refusing to mix/overwrite existing run artifacts: {out}")
@@ -1455,6 +1505,7 @@ def run_batch(args: argparse.Namespace) -> None:
             y_values=args.reference_y_values,
             controller_hz=args.event_controller_hz, visibility_hz=args.visibility_hz,
             controller_source=args.reference_controller_source,
+            event_model_checkpoint=args.event_model_checkpoint,
         )
     elif args.mode == "static":
         for i in range(args.episodes):
@@ -1632,6 +1683,10 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--reference-controller-source", choices=["events", "gt_current"], default="events",
         help="use causal event estimates for control, or delayed current-GT control for a sensor-only shadow reference",
+    )
+    parser.add_argument(
+        "--event-model-checkpoint", type=str,
+        help="optional learned causal event-to-state checkpoint for the reference-controller-source=events path",
     )
     parser.add_argument("--visibility-hz", type=float, default=50.0)
     parser.add_argument("--physics-dt-us", type=float, help="override configured physical timestep in microseconds")
