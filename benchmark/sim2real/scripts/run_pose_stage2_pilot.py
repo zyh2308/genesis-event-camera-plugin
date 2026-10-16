@@ -146,13 +146,18 @@ def build_label(uv: np.ndarray, width: int, height: int) -> np.ndarray:
     return row.reshape(-1)
 
 
-def select_intervals(interval_count: int, sample_count: int) -> list[int]:
-    if interval_count < 1:
-        return []
-    return sorted(set(np.linspace(
-        min(2, interval_count - 1), interval_count - 1,
-        num=min(sample_count, interval_count), dtype=int,
-    ).tolist()))
+def select_intervals(valid_indices: list[int], sample_count: int) -> list[int]:
+    """Choose evenly spaced, fully visible label windows within one rollout."""
+    candidates = np.asarray(sorted(set(int(index) for index in valid_indices)), dtype=np.int64)
+    if len(candidates) < sample_count:
+        raise RuntimeError(
+            f"only {len(candidates)} fully visible pose windows; need {sample_count}"
+        )
+    positions = np.rint(np.linspace(0, len(candidates) - 1, num=sample_count)).astype(int)
+    selected = candidates[positions].tolist()
+    if len(set(selected)) != sample_count:
+        raise RuntimeError(f"could not select {sample_count} unique pose windows from {candidates.tolist()}")
+    return [int(index) for index in selected]
 
 
 def collect_samples(generator: str, shared_path: Path, v2e_root: Path,
@@ -173,7 +178,8 @@ def collect_samples(generator: str, shared_path: Path, v2e_root: Path,
             timestamp_s, xs, ys, polarity, event_schema = read_event_table(
                 generator, episode_id, shared, v2e_root
             )
-            for interval_index in select_intervals(len(times) - 1, windows_per_rollout):
+            visible_labels = {}
+            for interval_index in range(len(times) - 1):
                 label_time_index = interval_index + 1
                 uv, xyz_cam, camera_from_object = project_keypoints(
                     keypoints_obj,
@@ -185,7 +191,17 @@ def collect_samples(generator: str, shared_path: Path, v2e_root: Path,
                 )
                 if np.any(uv < 0) or np.any(uv[:, 0] >= width) or np.any(uv[:, 1] >= height):
                     continue
-                label = build_label(uv, width, height)
+                try:
+                    label = build_label(uv, width, height)
+                except ValueError:
+                    continue
+                visible_labels[interval_index] = (uv, xyz_cam, camera_from_object, label)
+
+            selected_intervals = select_intervals(
+                list(visible_labels), windows_per_rollout
+            )
+            for interval_index in selected_intervals:
+                uv, xyz_cam, camera_from_object, label = visible_labels[interval_index]
                 image = encode_event_window(
                     timestamp_s, xs, ys, polarity,
                     float(times[interval_index]), float(times[label_time_index]),
