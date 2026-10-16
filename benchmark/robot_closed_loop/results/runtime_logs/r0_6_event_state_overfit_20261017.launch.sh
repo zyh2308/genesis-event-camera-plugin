@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-WORKTREE="/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-overfit-3eada66"
+WORKTREE="/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_6-overfit"
 PYTHON="/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
 SOURCE="/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016"
 TAG="$WORKTREE/benchmark/robot_closed_loop/results/runtime_logs/r0_6_event_state_overfit_20261017"
