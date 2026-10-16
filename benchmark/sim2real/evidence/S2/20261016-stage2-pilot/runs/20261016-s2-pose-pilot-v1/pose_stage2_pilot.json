@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "scope": "event-only SingleShotPose interface/training pilot on generic shared Genesis cuboid; not an E-POSE class/CAD evaluation",
+  "upstream_model": {
+    "repository": "https://github.com/microsoft/singleshotpose",
+    "commit": "2c282619101f9f31666dd18b42393375bea1600f",
+    "config": "cfg/yolo-pose.cfg",
+    "initialization": "random paired initialization; LINEMOD weights are not used"
+  },
+  "input": {
+    "source": "raw events from the paired EventGenesis or V2E stream",
+    "window": "(t_i,t_i+1], one 10 ms endpoint interval",
+    "channels": ["ON log-count", "OFF log-count", "total log-count"],
+    "fixed_count_scale_per_channel": 8,
+    "normalization": "min(log1p(pixel_event_count)/log1p(8),1), no per-image maximum normalization",
+    "resize_hw": [416, 416],
+    "inference_inputs": "event-derived full-frame tensor only"
+  },
+  "labels": {
+    "source": "shared Genesis target pose, camera pose, actual camera K, and configured box dimensions",
+    "time_reference": "right endpoint of event window",
+    "single_shot_pose_format": "class, projected centroid, eight projected 3D cuboid corners, normalized x/y extent",
+    "training_only_supervision": true
+  },
+  "training": {
+    "seed": 71,
+    "epochs": 2,
+    "windows_per_physical_rollout": 2,
+    "batch_size": 1,
+    "optimizer": "SGD",
+    "learning_rate": 0.001,
+    "momentum": 0.9,
+    "weight_decay": 0.0005,
+    "loss": "pinned SingleShotPose RegionLoss coordinate pretraining phase",
+    "paired_initialization": true,
+    "validation": "synthetic validation rollouts only"
+  },
+  "controls": {
+    "train_rollouts": ["train_00", "train_01", "train_02", "train_03"],
+    "validation_rollouts": ["validation_00", "validation_01"],
+    "forbidden_model_inputs": ["RGB", "GT mask", "GT crop", "GT box", "segmented events", "depth", "segmentation", "pose"],
+    "real_data_accessed": false
+  }
+}

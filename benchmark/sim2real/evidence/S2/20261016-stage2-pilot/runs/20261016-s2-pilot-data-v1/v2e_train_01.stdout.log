@@ -1,0 +1,220 @@
+[1;34mINFO[1;0m:__main__:torch device is cuda
+[1;34mINFO[1;0m:__main__:No module named 'gooey': Gooey GUI builder not available, will use command line arguments.
+Install with 'pip install Gooey if you want a no-arg GUI to invoke v2e'. See README
+[1;34mINFO[1;0m:__main__:name 'Gooey' is not defined: Gooey package GUI not available, using command line arguments. 
+You can try to install with "pip install Gooey"
+[1;34mINFO[1;0m:v2ecore.v2e_utils:using output folder /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01
+[1;34mINFO[1;0m:__main__:output_in_place==False so made output_folder=/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01
+[1;31mWARNING[1;0m:__main__:Either output_width is None or output_height is None,or both. Setting both of them to None. 
+Dimension will be set automatically from video input if available. 
+Check DVS camera size arguments.
+[1;34mINFO[1;0m:v2ecore.v2e_args:
+*** arguments:
+auto_timestamp_resolution:	False
+avi_frame_rate:	30
+batch_size:	8
+crop:	None
+cs_lambda_pixels:	None
+cs_tau_p_ms:	None
+cutoff_hz:	300.0
+ddd_output:	False
+disable_slomo:	False
+dvs1024:	False
+dvs128:	False
+dvs240:	False
+dvs346:	False
+dvs640:	False
+dvs_aedat2:	None
+dvs_aedat4:	None
+dvs_emulator_seed:	43
+dvs_exposure:	['duration', '0.01']
+dvs_h5:	/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01.h5
+dvs_params:	None
+dvs_text:	None
+dvs_vid:	dvs-video.avi
+dvs_vid_full_scale:	2
+hdr:	False
+input:	/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/v2e_input/train_01
+input_frame_rate:	100.0
+input_slowmotion_factor:	1.0
+label_signal_noise:	False
+leak_jitter_fraction:	0.1
+leak_rate_hz:	0.01
+neg_thres:	0.2
+no_preview:	True
+noise_rate_cov_decades:	0.1
+output_folder:	/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01
+output_height:	None
+output_in_place:	False
+output_width:	None
+overwrite:	False
+photoreceptor_noise:	False
+pos_thres:	0.2
+record_single_pixel_states:	None
+refractory_period:	0.0005
+save_dvs_model_state:	False
+scidvs:	False
+shot_noise_rate_hz:	0.001
+show_dvs_model_state:	None
+sigma_thres:	0.03
+skip_video_output:	True
+slomo_model:	/home/zhaoyuhan/Eventbased_WAM/external/sources/v2e-cac6384445/input/SuperSloMo39.ckpt
+slomo_stats_plot:	False
+start_time:	None
+stop_time:	None
+synthetic_input:	None
+timestamp_resolution:	2.5e-05
+unique_output_folder:	False
+vid_orig:	video_orig.avi
+vid_slomo:	video_slomo.avi
+
+[1;34mINFO[1;0m:v2ecore.v2e_args:DVS frame expsosure mode ExposureMode.DURATION: frame rate 100.0
+[1;34mINFO[1;0m:__main__:opening video input file /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/v2e_input/train_01
+[1;31mWARNING[1;0m:__main__:From input frame automatically set DVS output_width=160 and/or output_height=128. This may not be desired behavior. 
+Check DVS camera sizes arguments.
+[1;34mINFO[1;0m:__main__:--auto_timestamp_resolution is False, srcFps=100.0Hz input_slowmotion_factor=1.0, real src FPS=100.0Hz, srcFrameIntervalS=10ms, timestamp_resolution=25us, so SuperSloMo will use slowdown_factor=400 and have slomoTimestampResolutionS=25us
+[1;34mINFO[1;0m:__main__:Lowpass cutoff is f_3dB=300Hz with tau=530.52us and with sample rate fs=40kHz (sample interval dt=25us),
+It has IIR mixing factor eps=0.047 which is OK because it is less than recommended maxeps= 0.3
+[1;34mINFO[1;0m:v2ecore.slomo:CUDA available, running on GPU :-)
+[1;31mWARNING[1;0m:v2ecore.slomo:upsampling_factor=400 which is large, upsampling will take a long time; consider using auto_upsample to limit maximum optical to 1 pixel per upsampled frame
+[1;34mINFO[1;0m:v2ecore.slomo:upsampling by fixed factor of 400
+[1;34mINFO[1;0m:__main__:
+ events will have timestamp resolution 25us,
+[1;34mINFO[1;0m:__main__:Source video /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/v2e_input/train_01 has total 31 frames with total duration 300ms. 
+Source video is 100fps with slowmotion_factor 1 (frame interval 10ms),
+Will convert 31 frames 0 to 30
+(From 0.0s to 0.3s, duration 0.3s)
+[1;34mINFO[1;0m:__main__:v2e DVS video will have constant-duration frames 
+at 100fps (accumulation time 10ms), 
+DVS video will have 30.0 frames with duration 300ms and playback duration 1s
+
+[1;34mINFO[1;0m:v2ecore.emulator:ON/OFF log_e temporal contrast thresholds: 0.2 / 0.2 +/- 0.03
+[1;34mINFO[1;0m:v2ecore.emulator:opening event output dataset file /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01.h5
+[1;31mWARNING[1;0m:v2ecore.emulator:cannot get screen size for window placement: No enumerators available
+[1;34mINFO[1;0m:__main__:processing frames 0 to 30 from video input
+[1;34mINFO[1;0m:__main__:Input video /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/v2e_input/train_01 has W=160 x H=128 frames each with 3 channels
+[1;34mINFO[1;0m:__main__:*** Stage 1/3: Resizing 31 input frames to output size (with possible RGB to luma conversion)
+rgb2luma:   0%|          | 0/31 [00:00<?, ?fr/s][1;34mINFO[1;0m:__main__:
+Converting input frames from RGB color to luma
+rgb2luma:  32%|███▏      | 10/31 [00:00<00:00, 95.89fr/s]rgb2luma:  65%|██████▍   | 20/31 [00:00<00:00, 93.85fr/s]rgb2luma: 100%|██████████| 31/31 [00:00<00:00, 101.32fr/s]
+[1;34mINFO[1;0m:__main__:*** Stage 2/3: SloMo upsampling from /tmp/tmpa8vlzem7
+[1;34mINFO[1;0m:v2ecore.slomo:loading SuperSloMo model from /home/zhaoyuhan/Eventbased_WAM/external/sources/v2e-cac6384445/input/SuperSloMo39.ckpt
+[1;34mINFO[1;0m:v2ecore.slomo:interpolating 4 batches of frames using batch_size=8 with auto_upsample=False and minimum upsampling_factor=400
+slomo-interp:   0%|          | 0/4 [00:00<?, ? batch of 8 fr/s]slomo-interp:  25%|██▌       | 1/4 [00:07<00:21,  7.31s/ batch of 8 fr]slomo-interp:  50%|█████     | 2/4 [00:14<00:14,  7.04s/ batch of 8 fr]slomo-interp:  75%|███████▌  | 3/4 [00:21<00:07,  7.05s/ batch of 8 fr]slomo-interp: 100%|██████████| 4/4 [00:26<00:00,  6.49s/ batch of 8 fr]slomo-interp: 100%|██████████| 4/4 [00:26<00:00,  6.71s/ batch of 8 fr]
+[1;34mINFO[1;0m:v2ecore.slomo:Wrote 12000 frames and returning 12000 frame times.
+Average upsampling factor=400.0
+[1;34mINFO[1;0m:__main__:SloMo average upsampling factor=400.00; average DVS timestamp resolution=25us
+[1;34mINFO[1;0m:__main__:Using auto_timestamp_resolution. checking if cutoff hz is ok given sample rate 40000.0
+[1;34mINFO[1;0m:__main__:Lowpass cutoff is f_3dB=300Hz with tau=530.52us and with sample rate fs=40kHz (sample interval dt=25us),
+It has IIR mixing factor eps=0.047 which is OK because it is less than recommended maxeps= 0.3
+[1;34mINFO[1;0m:__main__:*** Stage 3/3: emulating DVS events from 12000 frames
+dvs:   0%|          | 0/12000 [00:00<?, ?fr/s][1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #2 at t=0.0000s
+dvs:   0%|          | 2/12000 [00:00<12:26, 16.07fr/s][1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #3 at t=0.0001s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #4 at t=0.0001s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #5 at t=0.0001s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #6 at t=0.0001s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #7 at t=0.0002s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #8 at t=0.0002s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #9 at t=0.0002s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #10 at t=0.0002s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #11 at t=0.0003s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #12 at t=0.0003s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #13 at t=0.0003s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #14 at t=0.0003s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #15 at t=0.0004s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #16 at t=0.0004s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #17 at t=0.0004s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #18 at t=0.0004s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #19 at t=0.0005s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #20 at t=0.0005s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #21 at t=0.0005s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #22 at t=0.0005s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #23 at t=0.0006s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #24 at t=0.0006s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #25 at t=0.0006s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #26 at t=0.0006s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #27 at t=0.0007s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #28 at t=0.0007s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #29 at t=0.0007s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #30 at t=0.0007s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #31 at t=0.0008s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #32 at t=0.0008s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #33 at t=0.0008s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #34 at t=0.0008s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #35 at t=0.0009s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #36 at t=0.0009s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #37 at t=0.0009s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #38 at t=0.0009s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #39 at t=0.0010s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #40 at t=0.0010s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #41 at t=0.0010s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #42 at t=0.0010s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #43 at t=0.0011s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #44 at t=0.0011s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #45 at t=0.0011s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #46 at t=0.0011s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #47 at t=0.0012s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #48 at t=0.0012s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #49 at t=0.0012s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #50 at t=0.0012s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #51 at t=0.0013s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #52 at t=0.0013s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #53 at t=0.0013s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #54 at t=0.0013s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #55 at t=0.0014s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #56 at t=0.0014s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #57 at t=0.0014s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #58 at t=0.0014s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #59 at t=0.0015s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #60 at t=0.0015s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #61 at t=0.0015s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #62 at t=0.0015s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #63 at t=0.0016s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #64 at t=0.0016s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #65 at t=0.0016s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #66 at t=0.0016s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #67 at t=0.0017s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #68 at t=0.0017s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #69 at t=0.0017s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #70 at t=0.0017s
+dvs:   1%|          | 70/12000 [00:00<00:32, 369.33fr/s][1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #71 at t=0.0018s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #72 at t=0.0018s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #73 at t=0.0018s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #74 at t=0.0018s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #75 at t=0.0019s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #76 at t=0.0019s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #77 at t=0.0019s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #78 at t=0.0019s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #79 at t=0.0020s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #80 at t=0.0020s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #81 at t=0.0020s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #82 at t=0.0020s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #83 at t=0.0021s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #84 at t=0.0021s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #85 at t=0.0021s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #86 at t=0.0021s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #87 at t=0.0022s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #88 at t=0.0022s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #89 at t=0.0022s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #90 at t=0.0022s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #91 at t=0.0023s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #92 at t=0.0023s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #93 at t=0.0023s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #94 at t=0.0023s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #95 at t=0.0024s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #96 at t=0.0024s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #97 at t=0.0024s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #98 at t=0.0024s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #99 at t=0.0025s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #100 at t=0.0025s
+[1;31mWARNING[1;0m:v2ecore.emulator:no signal events generated for frame #101 at t=0.0025s
+dvs:   1%|▏         | 171/12000 [00:00<00:18, 643.42fr/s]dvs:   2%|▏         | 263/12000 [00:00<00:15, 748.35fr/s]dvs:   3%|▎         | 355/12000 [00:00<00:14, 807.81fr/s]dvs:   4%|▍         | 454/12000 [00:00<00:13, 867.79fr/s]dvs:   5%|▍         | 546/12000 [00:00<00:12, 883.96fr/s]dvs:   5%|▌         | 639/12000 [00:00<00:12, 896.18fr/s]dvs:   6%|▌         | 733/12000 [00:00<00:12, 909.73fr/s]dvs:   7%|▋         | 825/12000 [00:01<00:12, 889.57fr/s]dvs:   8%|▊         | 915/12000 [00:01<00:12, 875.80fr/s]dvs:   8%|▊         | 1003/12000 [00:01<00:12, 872.64fr/s]dvs:   9%|▉         | 1098/12000 [00:01<00:12, 893.07fr/s]dvs:  10%|▉         | 1188/12000 [00:01<00:12, 874.82fr/s]dvs:  11%|█         | 1279/12000 [00:01<00:12, 883.39fr/s]dvs:  11%|█▏        | 1368/12000 [00:01<00:12, 841.16fr/s]dvs:  12%|█▏        | 1453/12000 [00:01<00:13, 803.48fr/s]dvs:  13%|█▎        | 1534/12000 [00:01<00:13, 803.22fr/s]dvs:  13%|█▎        | 1619/12000 [00:01<00:12, 814.37fr/s]dvs:  14%|█▍        | 1705/12000 [00:02<00:12, 826.71fr/s]dvs:  15%|█▍        | 1790/12000 [00:02<00:12, 830.90fr/s]dvs:  16%|█▌        | 1881/12000 [00:02<00:11, 852.62fr/s]dvs:  16%|█▋        | 1967/12000 [00:02<00:12, 824.75fr/s]dvs:  17%|█▋        | 2052/12000 [00:02<00:12, 828.86fr/s]dvs:  18%|█▊        | 2136/12000 [00:02<00:12, 796.85fr/s]dvs:  18%|█▊        | 2217/12000 [00:02<00:12, 781.24fr/s]dvs:  19%|█▉        | 2296/12000 [00:02<00:12, 760.59fr/s]dvs:  20%|█▉        | 2380/12000 [00:02<00:12, 782.72fr/s]dvs:  20%|██        | 2459/12000 [00:03<00:12, 776.96fr/s]dvs:  21%|██        | 2537/12000 [00:03<00:12, 768.19fr/s]dvs:  22%|██▏       | 2614/12000 [00:03<00:12, 749.09fr/s]dvs:  22%|██▏       | 2690/12000 [00:03<00:12, 734.09fr/s]dvs:  23%|██▎       | 2773/12000 [00:03<00:12, 759.44fr/s]dvs:  24%|██▍       | 2850/12000 [00:03<00:12, 759.13fr/s]dvs:  24%|██▍       | 2931/12000 [00:03<00:11, 772.55fr/s]dvs:  25%|██▌       | 3009/12000 [00:03<00:11, 758.48fr/s]dvs:  26%|██▌       | 3085/12000 [00:03<00:11, 748.60fr/s]dvs:  26%|██▋       | 3161/12000 [00:03<00:11, 751.25fr/s]dvs:  27%|██▋       | 3240/12000 [00:04<00:11, 760.11fr/s]dvs:  28%|██▊       | 3317/12000 [00:04<00:11, 743.19fr/s]dvs:  28%|██▊       | 3392/12000 [00:04<00:11, 743.42fr/s]dvs:  29%|██▉       | 3467/12000 [00:04<00:11, 716.11fr/s]dvs:  30%|██▉       | 3547/12000 [00:04<00:11, 738.66fr/s]dvs:  30%|███       | 3622/12000 [00:04<00:11, 726.70fr/s]dvs:  31%|███       | 3695/12000 [00:04<00:11, 722.41fr/s]dvs:  31%|███▏      | 3768/12000 [00:04<00:11, 701.05fr/s]dvs:  32%|███▏      | 3839/12000 [00:04<00:11, 684.47fr/s]dvs:  33%|███▎      | 3913/12000 [00:05<00:11, 700.10fr/s]dvs:  33%|███▎      | 3984/12000 [00:05<00:11, 690.63fr/s]dvs:  34%|███▍      | 4054/12000 [00:05<00:11, 691.43fr/s]dvs:  34%|███▍      | 4124/12000 [00:05<00:11, 679.08fr/s]dvs:  35%|███▍      | 4193/12000 [00:05<00:11, 676.69fr/s]dvs:  36%|███▌      | 4265/12000 [00:05<00:11, 686.26fr/s]dvs:  36%|███▌      | 4341/12000 [00:05<00:10, 707.83fr/s]dvs:  37%|███▋      | 4412/12000 [00:05<00:10, 707.77fr/s]dvs:  37%|███▋      | 4483/12000 [00:05<00:10, 695.00fr/s]dvs:  38%|███▊      | 4555/12000 [00:05<00:10, 701.48fr/s]dvs:  39%|███▊      | 4626/12000 [00:06<00:10, 684.67fr/s]dvs:  39%|███▉      | 4695/12000 [00:06<00:10, 672.84fr/s]dvs:  40%|███▉      | 4768/12000 [00:06<00:10, 688.60fr/s]dvs:  40%|████      | 4837/12000 [00:06<00:10, 676.04fr/s]dvs:  41%|████      | 4905/12000 [00:06<00:10, 667.37fr/s]dvs:  41%|████▏     | 4972/12000 [00:06<00:10, 657.68fr/s]dvs:  42%|████▏     | 5042/12000 [00:06<00:10, 668.01fr/s]dvs:  43%|████▎     | 5109/12000 [00:06<00:10, 662.28fr/s]dvs:  43%|████▎     | 5177/12000 [00:06<00:10, 664.33fr/s]dvs:  44%|████▎     | 5244/12000 [00:07<00:10, 656.86fr/s]dvs:  44%|████▍     | 5310/12000 [00:07<00:10, 652.45fr/s]dvs:  45%|████▍     | 5376/12000 [00:07<00:10, 652.81fr/s]dvs:  45%|████▌     | 5442/12000 [00:07<00:10, 647.74fr/s]dvs:  46%|████▌     | 5509/12000 [00:07<00:09, 654.12fr/s]dvs:  46%|████▋     | 5579/12000 [00:07<00:09, 667.36fr/s]dvs:  47%|████▋     | 5648/12000 [00:07<00:09, 673.67fr/s]dvs:  48%|████▊     | 5716/12000 [00:07<00:09, 655.80fr/s]dvs:  48%|████▊     | 5782/12000 [00:07<00:09, 645.48fr/s]dvs:  49%|████▊     | 5847/12000 [00:07<00:09, 645.55fr/s]dvs:  49%|████▉     | 5912/12000 [00:08<00:09, 638.05fr/s]dvs:  50%|████▉     | 5976/12000 [00:08<00:09, 626.63fr/s]dvs:  50%|█████     | 6044/12000 [00:08<00:09, 639.56fr/s]dvs:  51%|█████     | 6109/12000 [00:08<00:09, 633.37fr/s]dvs:  51%|█████▏    | 6177/12000 [00:08<00:09, 644.03fr/s]dvs:  52%|█████▏    | 6242/12000 [00:08<00:09, 631.08fr/s]dvs:  53%|█████▎    | 6306/12000 [00:08<00:09, 627.06fr/s]dvs:  53%|█████▎    | 6373/12000 [00:08<00:08, 639.14fr/s]dvs:  54%|█████▎    | 6437/12000 [00:08<00:08, 636.54fr/s]dvs:  54%|█████▍    | 6504/12000 [00:08<00:08, 645.74fr/s]dvs:  55%|█████▍    | 6571/12000 [00:09<00:08, 652.62fr/s]dvs:  55%|█████▌    | 6637/12000 [00:09<00:08, 632.04fr/s]dvs:  56%|█████▌    | 6704/12000 [00:09<00:08, 642.14fr/s]dvs:  56%|█████▋    | 6769/12000 [00:09<00:08, 632.67fr/s]dvs:  57%|█████▋    | 6833/12000 [00:09<00:08, 618.23fr/s]dvs:  57%|█████▋    | 6897/12000 [00:09<00:08, 624.43fr/s]dvs:  58%|█████▊    | 6960/12000 [00:09<00:08, 605.60fr/s]dvs:  59%|█████▊    | 7024/12000 [00:09<00:08, 613.24fr/s]dvs:  59%|█████▉    | 7086/12000 [00:09<00:08, 606.87fr/s]dvs:  60%|█████▉    | 7149/12000 [00:10<00:07, 610.63fr/s]dvs:  60%|██████    | 7211/12000 [00:10<00:07, 604.85fr/s]dvs:  61%|██████    | 7273/12000 [00:10<00:07, 608.90fr/s]dvs:  61%|██████    | 7337/12000 [00:10<00:07, 617.00fr/s]dvs:  62%|██████▏   | 7400/12000 [00:10<00:07, 618.37fr/s]dvs:  62%|██████▏   | 7464/12000 [00:10<00:07, 623.78fr/s]dvs:  63%|██████▎   | 7528/12000 [00:10<00:07, 625.61fr/s]dvs:  63%|██████▎   | 7591/12000 [00:10<00:07, 599.59fr/s]dvs:  64%|██████▍   | 7653/12000 [00:10<00:07, 603.19fr/s]dvs:  64%|██████▍   | 7715/12000 [00:10<00:07, 605.76fr/s]dvs:  65%|██████▍   | 7776/12000 [00:11<00:07, 597.48fr/s]dvs:  65%|██████▌   | 7836/12000 [00:11<00:07, 583.09fr/s]dvs:  66%|██████▌   | 7900/12000 [00:11<00:06, 598.65fr/s]dvs:  66%|██████▋   | 7960/12000 [00:11<00:06, 587.57fr/s]dvs:  67%|██████▋   | 8023/12000 [00:11<00:06, 598.96fr/s]dvs:  67%|██████▋   | 8085/12000 [00:11<00:06, 603.16fr/s]dvs:  68%|██████▊   | 8146/12000 [00:11<00:06, 600.29fr/s]dvs:  68%|██████▊   | 8207/12000 [00:11<00:06, 598.39fr/s]dvs:  69%|██████▉   | 8268/12000 [00:11<00:06, 601.39fr/s]dvs:  69%|██████▉   | 8329/12000 [00:11<00:06, 586.39fr/s]dvs:  70%|██████▉   | 8393/12000 [00:12<00:06, 600.83fr/s]dvs:  70%|███████   | 8454/12000 [00:12<00:06, 581.76fr/s]dvs:  71%|███████   | 8518/12000 [00:12<00:05, 596.64fr/s]dvs:  71%|███████▏  | 8578/12000 [00:12<00:05, 594.17fr/s]dvs:  72%|███████▏  | 8641/12000 [00:12<00:05, 604.01fr/s]dvs:  73%|███████▎  | 8707/12000 [00:12<00:05, 619.18fr/s]dvs:  73%|███████▎  | 8770/12000 [00:12<00:05, 619.62fr/s]dvs:  74%|███████▎  | 8833/12000 [00:12<00:05, 608.32fr/s]dvs:  74%|███████▍  | 8896/12000 [00:12<00:05, 612.68fr/s]dvs:  75%|███████▍  | 8958/12000 [00:13<00:05, 605.76fr/s]dvs:  75%|███████▌  | 9022/12000 [00:13<00:04, 614.49fr/s]dvs:  76%|███████▌  | 9084/12000 [00:13<00:04, 597.19fr/s]dvs:  76%|███████▌  | 9147/12000 [00:13<00:04, 603.86fr/s]dvs:  77%|███████▋  | 9208/12000 [00:13<00:04, 595.48fr/s]dvs:  77%|███████▋  | 9268/12000 [00:13<00:04, 593.67fr/s]dvs:  78%|███████▊  | 9328/12000 [00:13<00:04, 592.54fr/s]dvs:  78%|███████▊  | 9392/12000 [00:13<00:04, 602.94fr/s]dvs:  79%|███████▉  | 9453/12000 [00:13<00:04, 591.10fr/s]dvs:  79%|███████▉  | 9517/12000 [00:13<00:04, 603.54fr/s]dvs:  80%|███████▉  | 9580/12000 [00:14<00:03, 608.97fr/s]dvs:  80%|████████  | 9641/12000 [00:14<00:03, 591.92fr/s]dvs:  81%|████████  | 9703/12000 [00:14<00:03, 598.40fr/s]dvs:  81%|████████▏ | 9763/12000 [00:14<00:03, 592.34fr/s]dvs:  82%|████████▏ | 9825/12000 [00:14<00:03, 598.63fr/s]dvs:  82%|████████▏ | 9888/12000 [00:14<00:03, 606.32fr/s]dvs:  83%|████████▎ | 9950/12000 [00:14<00:03, 609.59fr/s]dvs:  83%|████████▎ | 10012/12000 [00:14<00:03, 593.75fr/s]dvs:  84%|████████▍ | 10074/12000 [00:14<00:03, 600.05fr/s]dvs:  84%|████████▍ | 10135/12000 [00:14<00:03, 585.04fr/s]dvs:  85%|████████▍ | 10197/12000 [00:15<00:03, 593.21fr/s]dvs:  85%|████████▌ | 10257/12000 [00:15<00:03, 577.75fr/s]dvs:  86%|████████▌ | 10318/12000 [00:15<00:02, 585.51fr/s]dvs:  86%|████████▋ | 10379/12000 [00:15<00:02, 590.82fr/s]dvs:  87%|████████▋ | 10439/12000 [00:15<00:02, 591.08fr/s]dvs:  87%|████████▋ | 10499/12000 [00:15<00:02, 575.21fr/s]dvs:  88%|████████▊ | 10560/12000 [00:15<00:02, 582.60fr/s]dvs:  88%|████████▊ | 10619/12000 [00:15<00:02, 571.45fr/s]dvs:  89%|████████▉ | 10678/12000 [00:15<00:02, 575.21fr/s]dvs:  89%|████████▉ | 10736/12000 [00:16<00:02, 561.00fr/s]dvs:  90%|████████▉ | 10794/12000 [00:16<00:02, 565.96fr/s]dvs:  90%|█████████ | 10851/12000 [00:16<00:02, 558.74fr/s]dvs:  91%|█████████ | 10909/12000 [00:16<00:01, 564.59fr/s]dvs:  91%|█████████▏| 10970/12000 [00:16<00:01, 576.99fr/s]dvs:  92%|█████████▏| 11028/12000 [00:16<00:01, 564.13fr/s]dvs:  92%|█████████▏| 11085/12000 [00:16<00:01, 520.84fr/s]dvs:  93%|█████████▎| 11138/12000 [00:16<00:01, 514.48fr/s]dvs:  93%|█████████▎| 11192/12000 [00:16<00:01, 521.12fr/s]dvs:  94%|█████████▎| 11245/12000 [00:16<00:01, 502.91fr/s]dvs:  94%|█████████▍| 11299/12000 [00:17<00:01, 511.90fr/s]dvs:  95%|█████████▍| 11351/12000 [00:17<00:01, 507.84fr/s]dvs:  95%|█████████▌| 11412/12000 [00:17<00:01, 535.39fr/s]dvs:  96%|█████████▌| 11469/12000 [00:17<00:00, 545.06fr/s]dvs:  96%|█████████▌| 11531/12000 [00:17<00:00, 564.78fr/s]dvs:  97%|█████████▋| 11588/12000 [00:17<00:00, 538.92fr/s]dvs:  97%|█████████▋| 11643/12000 [00:17<00:00, 528.71fr/s]dvs:  97%|█████████▋| 11697/12000 [00:17<00:00, 531.91fr/s]dvs:  98%|█████████▊| 11755/12000 [00:17<00:00, 543.48fr/s]dvs:  98%|█████████▊| 11810/12000 [00:18<00:00, 542.96fr/s]dvs:  99%|█████████▉| 11871/12000 [00:18<00:00, 561.40fr/s]dvs:  99%|█████████▉| 11928/12000 [00:18<00:00, 550.13fr/s]dvs: 100%|█████████▉| 11989/12000 [00:18<00:00, 564.86fr/s]dvs: 100%|██████████| 12000/12000 [00:18<00:00, 653.30fr/s]
+[1;34mINFO[1;0m:__main__:generated total 19.42k events (8.76k on, 10.66k off)
+[1;34mINFO[1;0m:__main__:Avg event rate for N=20480 px and total time =0.300 s
+	Total: 64.72kHz (29.18kHz on, 35.53kHz off)
+	Per pixel:  3.16Hz (1.42Hz on, 1.74Hz off)
+[1;34mINFO[1;0m:__main__:showing /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01 in desktop
+xprop:  unable to open display ':0.0'
+[1;31mWARNING[1;0m:__main__:Desktop 'None' not supported (neither DESKTOP_LAUNCH nor os.startfile could be used): could not open /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01 in desktop
+[1;34mINFO[1;0m:__main__:done processing 62 frames in 51.39s (1.21fr/s)
+ **************** see output folder /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events/train_01
