@@ -1,12 +1,12 @@
 # Genesis Event Camera：Robot R0 / R0.5 状态
 
 **更新时间：** 2026-10-16（Asia/Tokyo）
-**阶段：** R0 已由研究会话验收；R0.5 strict scoring 与统一时间步已实现，服务器静态与无手校准通过；动态 oracle 与 Direct-HDR/event-state 验证进行中；协议尚未冻结。
+**阶段：** R0 已验收；R0.5 严格评分和统一 0.5 ms 时间步已实现，服务器严格 GT oracle 已完成 300/300，无手 holdout 完成 30/30；strict +10 mm 横向偏差 sensitivity 正在运行，Direct-HDR/event-state 复验待运行；协议尚未冻结。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
 
-R0.5 strict static smoke 与 0.5 ms no-hand 校准已在服务器运行。R0 的 300/300 旧评分结果及历史 0.2 s Direct-HDR pilot 均不作为 R0.5 验收证据。R0.5 的逐集样本、代码提交、配置哈希和结果清单在下方单独登记。
+R0.5 静态 smoke、0.5 ms 无手校准与 holdout、严格评分先导和独立严格 oracle 100×3 已在 g1 服务器完成。R0 的旧评分 300/300 与历史 0.2 s Direct-HDR pilot 均不作为本阶段验收证据。新批次实际运行 commit、配置/数据哈希、日志和复跑命令在下方登记。
 
 ### 已完成并有证据
 
@@ -212,37 +212,49 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ## R0.5 strict closeout（进行中）
 
-### 已落地并有初步服务器证据
+### 已实现的测量与因果边界
 
-- 新增下游严格评分：每个物理步计算旋转后立方体 8 个角点相对 Plane 的真实最低净空；连续 0.5 s 同时要求双侧指接触、无 Plane 接触、真实净空 ≥80 mm，且从首次双侧接触起 object-to-TCP 相对位置漂移 ≤10 mm。逐集结果和 1 kHz 状态 trace 保存严格评分统计、接触/支撑样本数、滑移峰值及最小净空。
-- 保留 R0 旧规则 `r0_v1_legacy_center_clearance_historical_contact`，在旧规则首次满足停止条件时单独复算并记录；新正式 `success` 字段采用 `r0_5_strict_continuous_contact_clearance_slip`。历史归档文件不改写。
-- 新 R0.5 候选配置将 GT oracle、Direct-HDR 与自由滑动校准统一到 0.5 ms 物理步；控制仍为 100 Hz，预测器/闭合调度/机器人任务候选不变。因物理时间步改变，需要先重做无手减速度拟合，再运行 oracle。
-- 同一 oracle 控制与评分循环可接 GT 当前状态或因果事件状态。事件源只接收相机、固定针孔标定与直接 HDR 生成的 `[t_s,x_px,y_px,p]`；不读目标 GT、GT segmentation、depth 或未来状态。GT 误差评估和 segmentation 可见性审计在控制循环的独立输出侧进行。
-- 新 reference 每物理步 direct-render 线性 HDR，在同一条闭环物理轨迹中并行产生 1/2 kHz 事件流；日志计划覆盖 event-time 对齐误差、10 ms voxel 一致性、事件状态误差、动态目标遮挡率及完整 episode wall time。此时的 centroid/regression 仅用于状态接线 smoke，不构成可用 estimator 的精度结论。
-- 跨会话诊断输入（研究会话提供，R0 代码 `e70ba12`）：三个单种子重跑在旧停止窗口的真实底面最低净空为 `79.406/79.090/78.935 mm`；原命令各延续 50 ms 后都通过严格检查。此证据指向停止窗口/底面测量缺陷，而非需要立即改控制参数；R0.5 本轮据此修复评分与计时，未重调机器人机械控制。
+- strict scorer 逐物理步用旋转后方块的 8 个角点计算真实底面净空。合格保持要求连续 0.5 s 同时满足净空至少 80 mm、双侧指接触、无支撑面接触，且从双侧接触锚点起物体相对 TCP 平移不超过 10 mm。逐集 CSV、trace 保存真实净空、接触/支撑计数、连续窗口与相对滑移。
+- 旧评分 r0_v1_legacy_center_clearance_historical_contact 保留并并行复算；新 success 使用 r0_5_strict_continuous_contact_clearance_slip。R0 历史结果未改写。
+- GT oracle 与事件状态连接相同的固定预测器、控制器和 strict scorer。事件状态入口只接收带时间戳的事件、固定针孔标定和机器人本体状态；事件路径不读取目标 GT、GT segmentation/depth 或未来状态。GT 状态误差、接触真值和可见性 segmentation 只在独立评估侧记录。
+- Direct-HDR reference 绕开 Ours 时间重建和 V2E 插帧。HDR 帧经共享 plugin DVS 像素响应产生事件；当前 smoke 用理想对比阈值配置、无噪声/无限带宽，不是 EVK4 物理校准。reference 与两个 estimator 共享的是像素响应模型，不共享时间重建/插帧算法。
+- 本轮候选场景/机械控制未因 R0 旧停止窗缺陷而重调。研究会话提供的旧窗真实净空 79.406/79.090/78.935 mm，延长原命令 50 ms 均通过；这是触发修正测量和计时的证据，不计入 R0.5 结果。
 
-### 尚未运行 / 不可声称
+### 服务器静态与无手校准
 
-- strict oracle 小样本试跑已通过；尚未完成更新评分下的独立大样本统计和误差注入 strict 复测。旧 R0 的 300/300 不能引用为新成功率。
-- 0.5 ms no-hand 拟合数据已有 60 集，但固定 `a_eff` 的新种子预测 holdout（30 集）尚未运行；将用于校验自由滑动到达参考。
-- 完整拦截/接触/抬升 Direct-HDR 的 paired 1/2 kHz、横向边缘轨迹动态可见性、事件状态接管控制和实际成本均待服务器验证。
-- 本地只做了 Python 编译、JSON 解析、diff whitespace 与 frozen-core 差异检查；物理实验均在服务器执行。
+- strict static smoke 1/1 成功；最长连续合格窗 0.500 s，最低真实底面净空 80.08784 mm，双侧接触 1000/1000、支撑接触 0/1000、最大相对滑移 1.288 mm。此项只验证测量链，不代表动态成功率。
+- 0.5 ms no-hand calibration 60 集（0.30/0.40/0.50 m/s 各 20），60/60 通过拦截平面。固定共同减速度为 0.09803606718731761 m/s²；episode 拟合中位数 0.0980347534，IQR [0.0979928904, 0.0980804825]。各档中位到达时间 0.99112/0.66988/0.52403 s，到达速度 0.20285/0.33438/0.44863 m/s。
+- 校准先导运行代码 commit b757a83a7b8a391bb7553e4ee05d5fbce2cbbb94、初始配置 SHA256 4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517；拟合后候选配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd。校准数据清单 SHA256 f7ac352ffb2fd75475dd3c85c53f185bb188c886873b1133f6c4bb9f20939059。
 
-### strict static smoke 与 0.5 ms no-hand 校准
+### strict oracle 先导批次（诊断样本）
 
-- 运行代码 commit：`b757a83a7b8a391bb7553e4ee05d5fbce2cbbb94`。实验在隔离 worktree `~/Eventbased_WAM/repositories/gec-robot-r0_5-b757a83`（detached 于机器人分支提交）；服务器原 `main` 与旧 R0 worktree 未修改。
-- strict static smoke：1/1 success；最长连续严格保持窗 0.500 s，窗内最小真实底面净空 `0.08008784 m`，双侧接触 1000/1000 样本、支撑面接触 0/1000，object-to-TCP 最大漂移 `0.001288 m`。旧评分在 0.807 s 独立复算成功；严格评分于 0.808 s 完成。source config SHA256 `4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`；逐集 CSV `09a4cf4c795a4ddb19c8f692a5d8678fabdd151cce0addb356c2ebbaeea8b954`；trace `fde20ca377a445f0117a17b84a66ff851fda3721ab14e59dd407bd47be31ec2b`；GIF `682315c67458610cb6f443dd49af70da3793b5998463f74614ecd697fcbdbb9e`；目录 SHA256SUMS `b3e4290c2b5b897929b1c9840f4ddd879fbcf24c5c4362e8b9c2e4f42b6097d1`。仅验证 strict 测量链，不代表动态成功率。
-- no-hand 校准：同一代码 commit、0.5 ms physics，60 集（0.30/0.40/0.50 m/s 各20），60/60 均通过拦截平面。联合拟合 `a_eff=0.09803606718731761 m/s²`；单集拟合中位数 `0.0980347534`，IQR `[0.0979928904, 0.0980804825]`。各速度档中位到达时间 `0.99112/0.66988/0.52403 s`，中位到达速度 `0.20285/0.33438/0.44863 m/s`。校准运行用的 source config hash `4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`；拟合后更新的候选配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`。结果目录 `r0_5_slide_calibration_20261016/` 的 SHA256SUMS `f7ac352ffb2fd75475dd3c85c53f185bb188c886873b1133f6c4bb9f20939059`；log `f2834f979f4f0ebca968e893c6c11010692a08a2bd1470f2e4b4be72e2ace0a6`；launcher `b53243fb50f47f1fadf26c1e103d5781274913465a102915c919ec7ac7cccc0a`；exit 文件内容 `0`、SHA256 `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。结果清单校验通过。
+- commit 6cd7c70ea64ece2c274c00ae00ebabf30ebbc65b，配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd，0.5 ms 物理步、100 Hz 控制、10 ms GT observation latency，固定 a_eff=0.09803606718731761 m/s²；每档 3 集，9/9 strict success。每档 Wilson 95% CI 下界仅 43.85%，不用于验证成功率门槛。
+- 合格保持窗最低真实净空 80.0000–80.1152 mm，窗内支撑接触 0，最大相对滑移 1.856–3.582 mm。闭合和首次接触时序均相对固定 no-hand 预测到达时间报告；接触发生在拦截平面前，实际过线不存在，因此不能用“过线到接触时差”作为主指标。
 
-### 严格评分 oracle 先导批次
+### 独立 strict oracle 批次（正式 R0.5 可行性证据）
 
-- 代码 commit `6cd7c70ea64ece2c274c00ae00ebabf30ebbc65b`，配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`，0.5 ms physics、100 Hz control、10 ms GT observation latency、`a_eff=0.09803606718731761 m/s²`。每档 3 个新种子，三档各 3/3 strict success（9/9）；Wilson 95% CI 每档 `[0.4385,1.0000]`，仅用于诊断，远不足以验证 95% 成功率门槛。旧 R0.5 分数复算也是各 3/3。
-- 每集要求严格连续保持 0.500 s；长保持窗真实底面最低净空 `80.0000–80.1152 mm`，其间支撑面接触样本 0，首次双侧接触后最大 object-to-TCP 漂移 `1.856–3.582 mm`（限制 10 mm）。从闭合开始到校准 no-hand 模型的自由滑动到达时刻为 `−77.8 至 −50.6 ms`；首次接触相对该同一到达参考为 `−61.8 至 −37.1 ms`；接触位置在拦截面前 `12.0–19.8 mm`，平面实际过线均未发生；首次接触的目标/TCP 平面相对速度为 `0.189–0.416 m/s`。因此后续时序统计统一相对**no-hand free-slide 预测到达**，并单列 `actual_crossing_t_s`（被截停时为空），不将未发生过线记作缺失的接触时间。
-- 逐集 CSV `d3ed150caf8db357c9b5b961cca993ee68078fba952e1b92c07fe332891b55e0`；摘要 `bb1f84cc1ed168b85c2fd93cc0916b3b155c13ea7e30172d0cce7d73610cc27e`；代表成功 trace `cc9ffd3f4b3bfb2d247a43ee037ddb1ffc8f248f298e401ed1297589a38ef033`、GIF `6975d31e0dee2cc248b114cf1107fbe928471d18d8328511e4c1ef74bbf42b6d`；目录 SHA256SUMS 文件 `b88fe6c39e4ae83d91222d0ff6d2a065836676560e13af6b0ca0574aee9ca474`，已在本地和服务器 `sha256sum -c` 全项通过。服务器日志 SHA256 `628ce15d0e47429c57c5ed273409e78a0f815c49de1a80d067acbc96edb55f64`，launcher `d4feb20f93d7c0e946fe828ec0d2f0954157f634261817e743716275a9eb0a2f`，exit 文件内容 `0`；PID `1932999` (launcher) / `1933002` (python)。Genesis 共享 Quadrants cache lock 仅告警；没有清理共享缓存。
-- 本地核验：`python -m compileall -q benchmark/robot_closed_loop`、`git diff --check`、结果目录 `sha256sum -c SHA256SUMS` 均通过。旧评分保留在每集 `legacy_score` 字段，原 R0 归档不变。
+- g1 隔离 worktree /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc，运行代码 commit 8f22be28c7f334062de3e9a34b6c10352a2524f9，候选配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd；CPU-only，0.5 ms physics、100 Hz 控制、10 ms 状态延迟，固定 a_eff=0.09803606718731761 m/s²，seed block 起始 2026103300。
+- 0.30/0.40/0.50 m/s 分别 100/100 strict success（总计 300/300）；各档 Wilson 95% CI [0.9630, 1.0000]。旧版 R0 scorer 并行复算也各档 100/100；这里明确报告为 R0.5 新数据，不引用旧 R0 的 300/300。
+- 每集合格连续保持 0.500 s；300 集窗内最低真实净空范围 80.000246–80.117938 mm；双侧接触与净空合格样本均为每集 1000 个，合格窗内支撑接触为 0；最大物体/TCP 相对滑移跨集 1.829–4.416 mm（10 mm 限值）。
+- 可解释到达参考为校准的 no-hand free-slide 预测到达时间。各档闭合开始相对预测到达的中位数为 -76.16/-65.25/-55.49 ms；首次接触中位数为 -60.67/-50.34/-42.82 ms。所有目标都在被机械臂截停前未越过拦截平面（实际 crossing 0/300）；首次接触位置在平面前：各档范围 11.18–13.76、14.95–19.63、16.38–22.34 mm。首次接触目标相对 TCP 的平面速度中位数 0.1947/0.3089/0.4150 m/s。
+- 逐集结果和代表录像： [r0_5_oracle_strict100x3_20261016](../../benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3_20261016/)。CSV SHA256 0678027d67c8068aa8b4764651c8df98c67e892fe4ea5792d23ecf0824462df3；summary 48f5cdd47f4ded4677a11ef2baadf7a3f8868b2be61ccdfff23eea72f417f550；manifest 51decf3f9780f60a0b2c12fb7b4d5ef25971da67769b3bd79b15f0a95c3c81fd；代表 trace b8bd06981d0ceec6a97685779fb2724411efbf30a99782db9197283d896aa35f；GIF b527e85a396aa5c3503faa58a58e2e23c2209839480b2e7609ca96f197668577；目录 SHA256SUMS 文件 27ca298d8715747830c3f6b434e4064c7c9c136c915295390055fe5dcdd8775f。服务器和本地 sha256sum -c SHA256SUMS 全部通过。
+- 运行命令：CUDA_VISIBLE_DEVICES= PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode oracle --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --episodes 100 --speeds 0.3,0.4,0.5 --a-eff 0.09803606718731761 --seed 2026103300 --out benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3_20261016。完整 Python 进程墙钟 2315.97 s、用户 CPU 2274.06 s、系统 CPU 35.33 s、最大 RSS 3,404,592 KB，exit 0；launcher PID 1939036，Python PID 1939038。log SHA256 8acf9ccbd518549c46f05d82a09c9b3d51cda4ae2058d540956d0f1dee4df0c8，runtime 0b1ac74c9c786368219808171f7808a69f943e631c158716b492ddfe282cadd5，launcher bedf777f7388d4948bb1dd57866e41df7ee9373e37f0bb55e528324c7f245972，exit 文件内容为 0。
+- 分支结果 commit 8573279936d40102efeabf00286e34b6c99e7681。运行 manifest 保留实际运行的旧代码 commit 8f22be28c7f334062de3e9a34b6c10352a2524f9。Genesis 提示 Quadrants cache lock 警告但批次正常完成；未执行共享 cache 清理。
 
-### 当前复跑入口
+### 当前运行与待完成验证
 
-配置起点：[`scene_pilot_r0_5_candidate.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json)。命令、评分边界和事件接入说明见 [`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md) 的 R0.5 小节。服务器只在新的 branch worktree 执行，保留服务器原 `main` 工作区；启动前检查 GPU PID/归属，EGL 仅选空闲的 GPU 2。
+- 固定减速度 no-hand holdout 已完成：30 集、0.5 ms、0.30/0.40/0.50 m/s 各 10 集，使用 calibration 固定 a_eff=0.09803606718731761 m/s²，未在 holdout 重拟合；30/30 到达拦截平面。各档 TTC 误差绝对值 P95 为 1.004/0.669/0.569 ms，横向预测误差绝对值 P95 为 2.150/1.120/0.571 mm。holdout 预测只使用固定模型与每集初始测量状态，未来 crossing 只供 evaluator 计分。代码 commit 8573279936d40102efeabf00286e34b6c99e7681、配置 SHA256 dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd、seed 2026103600；CSV 3093e28c4fab340904f9592540114d6418cd0ad24dd9ddabc08ae76b00edfc39，summary 0eb3bec1c54e5eee975a9e6fd1251bad8b60c5a760b72b39bef668248ed7a013，manifest 2e0c22aaf0c792cfe23f6073f5215b183a7a030c5662a0e3dfd311d91bca839c，SHA256SUMS dc637f2aad7acc0af9bf0b3e28b6ebcc4fc3cc2e7930ca362458582585eea004；服务器和本地逐项校验通过。完整进程 wall 88.06 s、CPU user 60.52 s、max RSS 848,140 KB，exit 0，launcher PID 1990576 / Python PID 1990580；log SHA256 94c02ee2188976210a8eac6c9f65dc0b7141550482dfbb2914fd8cceeab2caf3，runtime f808314c50a732e9f77e6250657b40bf43aa92686a2f634c59c02b8f53b0d8ae。
+- strict 横向位置偏差 +10 mm sensitivity 正在 g1 CPU-only detached tmux r0_5_sens_biasy10mm_strict15_20261016 运行，15 集（每档 5），seed 2026103500，launcher PID 1992589；使用 commit 8573279936d40102efeabf00286e34b6c99e7681 与同一候选配置，不占 GPU。
+- sensitivity 结束后运行完整 Direct-HDR/reference/event-state 批次（速度 × 横向边缘轨迹、同物理轨迹 paired 1/2 kHz、0.5 ms）。启动前检查 GPU 2 PID/归属与空闲状态，GPU 3 的 CARLA 进程保持不动。服务器到 GitHub HTTPS 的一次 git ls-remote 超时，已通过 SHA256 校验的本地 Git bundle 更新隔离 worktree；SSH 正常，未触碰其他项目或进程。
+- reference 评估将报告接触/抬升窗口的动态可见性、事件时间戳与 voxel 采样差异、事件估计对接触后 lift gate 所需位置/速度的因果支持、实际端到端 wall/CPU/GPU 时间。centroid tracker 当前只是可接线基线，不能宣称完成学习型 estimator 或采样率收敛结论。
+- freeze 候选仍为同一平面滑块/Panda/侧面相机、三档速度、固定 a_eff 与控制器；strict scorer 的 80 mm/0.5 s/双侧接触/无支撑/10 mm 相对滑移作为建议正式成功定义。等待 holdout、敏感性和 Direct-HDR/event-state 验证完成后，再提出正式冻结建议；现阶段不启动规模数据、训练或 Ours/V2E 排名。
 
-机器人分支代码、配置、报告与运行器已推送至 `510b8d4`。其中 `1b2cb24` 加入旧评分窗口最低真实净空，`96b6450`/`d7da857` 补充 lift-gate 因果状态和逐时刻事件置信度日志，`0f2fafb`/`3a6a366`/`5fbe64a` 分别准备 strict 位置偏差、速度×横向位置 reference、0.5 ms no-hand holdout 运行器，`510b8d4` 输出固定减速度 holdout 摘要。严格 oracle 新种子 100×3 批次正在服务器隔离 worktree `~/Eventbased_WAM/repositories/gec-robot-r0_5-02b1afc` 上运行，实际 benchmark code commit `8f22be28c7f334062de3e9a34b6c10352a2524f9`、配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`、seed `2026103300`、Python PID `1939038`、tmux `r0_5_oracle_strict100x3_20261016`。该命令 `CUDA_VISIBLE_DEVICES=`，无 GPU 占用；launcher 使用 `/usr/bin/time` 记录完整 Python 进程 wall/CPU 时间。待主批次完成后，先运行固定 `a_eff` 的 30 集 no-hand holdout，再运行 strict 位置误差注入与完整 Direct-HDR/event-state smoke，并在本节补录逐集结果、轨迹/录像、数据与日志哈希及协议建议。
+### 复跑命令与运行约定
+
+在服务器 branch worktree 中执行，运行前记录 commit/config hash、核查项目路径和资源。长任务用 tmux，stdout/stderr、PID、exit 与 /usr/bin/time runtime 均保存在 benchmark runtime_logs。下列命令目录需使用未存在的新输出路径。
+
+~~~bash
+CUDA_VISIBLE_DEVICES= PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_closed_loop.run --mode oracle --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json --episodes 100 --speeds 0.3,0.4,0.5 --a-eff 0.09803606718731761 --seed 2026103300 --out benchmark/robot_closed_loop/results/r0_5_oracle_strict100x3_20261016
+~~~
+
+Frozen core 仍与基线 e79e656ac00f7847b98db9e12bf43b093f3afff1 一致；主分支未合并。
