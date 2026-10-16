@@ -847,7 +847,8 @@ def run_reference(
             episode_wall_s = time.perf_counter() - episode_started
             row.update({
                 "phase": "direct_hdr_event_state_smoke",
-                "reference_episode_wall_s": episode_wall_s,
+                "task_rollout_wall_s": episode_wall_s,
+                "task_rollout_wall_boundary": "complete physics and control rollout, including per-step HDR rendering, both DVS streams, event tracking, dynamic visibility sampling, and video frame capture; excludes output serialization and simulator initialization",
                 "reference_requested_duration_s_ignored_until_task_end": float(duration_s),
                 "reference_controller_sampling_hz": int(controller_hz),
             })
@@ -902,7 +903,7 @@ def run_reference(
                 "launch_y_m": launch_y, "physics_dt_s": env.dt_s,
                 "strict_score_version": row["score_version"],
                 "strict_success": row["success"], "legacy_success_at_legacy_stop": row["success_legacy_r0"],
-                "full_episode_wall_s": episode_wall_s,
+                "task_rollout_wall_s": episode_wall_s,
                 "simulated_duration_s": row["sim_duration_s"],
                 "real_time_factor": row["sim_duration_s"] / max(episode_wall_s, 1e-9),
                 "event_source": source_summary,
@@ -916,7 +917,7 @@ def run_reference(
                 "launch_y_m": launch_y, "strict_success": row["success"],
                 "success_legacy_r0": row["success_legacy_r0"],
                 "first_contact_s": row["first_contact_s"], "lift_start_s": row["lift_start_s"],
-                "sim_duration_s": row["sim_duration_s"], "wall_s": episode_wall_s,
+                "sim_duration_s": row["sim_duration_s"], "task_rollout_wall_s": episode_wall_s,
                 "event_count_1khz": len(events_1k), "event_count_2khz": len(events_2k),
                 "state_control_trace": str((episode_out / "state_control_trace.jsonl").relative_to(out)),
                 "raw_events": str((episode_out / "direct_hdr_events_1khz_2khz.npz").relative_to(out)),
@@ -938,9 +939,9 @@ def run_reference(
                      "successes": sum(bool(r["strict_success"]) for r in episode_rows if r["speed_m_s"] == s)}
             for s in speed_grid
         },
-        "total_end_to_end_wall_s": total_wall_s,
-        "mean_full_episode_wall_s": None if not episode_rows else float(np.mean([r["wall_s"] for r in episode_rows])),
-        "cost_boundary": "measured complete closed-loop episode, including physics, 2 kHz HDR renders, both DVS streams, event tracking, visibility audit, trace, video, and serialization",
+        "episode_loop_artifact_wall_s": total_wall_s,
+        "mean_task_rollout_wall_s": None if not episode_rows else float(np.mean([r["task_rollout_wall_s"] for r in episode_rows])),
+        "cost_boundary": "episode_loop_artifact_wall_s includes complete rollouts and per-episode trace/video/event/CSV/JSON artifact generation, but excludes environment initialization and final run_manifest/SHA256SUMS finalization. The launch wrapper must record the full Python process wall time as the end-to-end cost.",
         "no_rollout_scale_extrapolation": True,
         "pixel_response_model_boundary": "Direct linear-HDR input and DvsEmulator are shared with the plugin; Ours temporal reconstruction and V2E frame interpolation are bypassed. This ideal synthetic threshold model is uncalibrated to EVK4.",
         "visibility_evaluation_boundary": "uses evaluator-only segmentation and matched-pose target-only render; those data do not enter the event state source or controller",

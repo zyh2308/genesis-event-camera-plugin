@@ -192,6 +192,8 @@ PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python -m benchmark.robot_clo
 
 `reference_metrics.json` reports paired event matching, 10 ms voxel agreement,
 1/2 kHz event-state errors against evaluator-only GT, dynamic target visibility,
-and complete episode wall time. The cost includes physics, HDR rendering,
-event generation, event tracking, visibility auditing, trace/video writing, and
-serialization; no old short-run extrapolation is used.
+and task rollout wall time. The summary's `episode_loop_artifact_wall_s` also
+includes per-episode trace/video/event/CSV/JSON generation. The runner wrapper
+must separately record the full Python process wall time, including simulator
+initialization and final manifest/hash writing; that process wall time is the
+end-to-end reference cost. Do not extrapolate the earlier short HDR pilot.

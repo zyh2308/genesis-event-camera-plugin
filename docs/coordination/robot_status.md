@@ -222,7 +222,7 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 
 ### 尚未运行 / 不可声称
 
-- strict oracle 试跑与统计、旧/新评分差异、误差注入 strict 复测尚未运行。旧 R0 的 300/300 不能引用为新成功率。
+- strict oracle 小样本试跑已通过；尚未完成更新评分下的独立大样本统计和误差注入 strict 复测。旧 R0 的 300/300 不能引用为新成功率。
 - 完整拦截/接触/抬升 Direct-HDR 的 paired 1/2 kHz、横向边缘轨迹动态可见性、事件状态接管控制和实际成本均待服务器验证。
 - 本地只做了 Python 编译、JSON 解析、diff whitespace 与 frozen-core 差异检查；物理实验均在服务器执行。
 
@@ -232,8 +232,15 @@ CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. .venv-robot/bin/python
 - strict static smoke：1/1 success；最长连续严格保持窗 0.500 s，窗内最小真实底面净空 `0.08008784 m`，双侧接触 1000/1000 样本、支撑面接触 0/1000，object-to-TCP 最大漂移 `0.001288 m`。旧评分在 0.807 s 独立复算成功；严格评分于 0.808 s 完成。source config SHA256 `4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`；逐集 CSV `09a4cf4c795a4ddb19c8f692a5d8678fabdd151cce0addb356c2ebbaeea8b954`；trace `fde20ca377a445f0117a17b84a66ff851fda3721ab14e59dd407bd47be31ec2b`；GIF `682315c67458610cb6f443dd49af70da3793b5998463f74614ecd697fcbdbb9e`；目录 SHA256SUMS `b3e4290c2b5b897929b1c9840f4ddd879fbcf24c5c4362e8b9c2e4f42b6097d1`。仅验证 strict 测量链，不代表动态成功率。
 - no-hand 校准：同一代码 commit、0.5 ms physics，60 集（0.30/0.40/0.50 m/s 各20），60/60 均通过拦截平面。联合拟合 `a_eff=0.09803606718731761 m/s²`；单集拟合中位数 `0.0980347534`，IQR `[0.0979928904, 0.0980804825]`。各速度档中位到达时间 `0.99112/0.66988/0.52403 s`，中位到达速度 `0.20285/0.33438/0.44863 m/s`。校准运行用的 source config hash `4f58c58e3b0db367066ae126db7f3f4c603bd4c273aede33777e8381db240517`；拟合后更新的候选配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`。结果目录 `r0_5_slide_calibration_20261016/` 的 SHA256SUMS `f7ac352ffb2fd75475dd3c85c53f185bb188c886873b1133f6c4bb9f20939059`；log `f2834f979f4f0ebca968e893c6c11010692a08a2bd1470f2e4b4be72e2ace0a6`；launcher `b53243fb50f47f1fadf26c1e103d5781274913465a102915c919ec7ac7cccc0a`；exit 文件内容 `0`、SHA256 `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。结果清单校验通过。
 
+### 严格评分 oracle 先导批次
+
+- 代码 commit `6cd7c70ea64ece2c274c00ae00ebabf30ebbc65b`，配置 SHA256 `dcc681fa57ed85b38871455b9ddbb736af57a5c37fab5b6bffb9356b2d86c0cd`，0.5 ms physics、100 Hz control、10 ms GT observation latency、`a_eff=0.09803606718731761 m/s²`。每档 3 个新种子，三档各 3/3 strict success（9/9）；Wilson 95% CI 每档 `[0.4385,1.0000]`，仅用于诊断，远不足以验证 95% 成功率门槛。旧 R0.5 分数复算也是各 3/3。
+- 每集要求严格连续保持 0.500 s；长保持窗真实底面最低净空 `80.0000–80.1152 mm`，其间支撑面接触样本 0，首次双侧接触后最大 object-to-TCP 漂移 `1.856–3.582 mm`（限制 10 mm）。从闭合开始到校准 no-hand 模型的自由滑动到达时刻为 `−77.8 至 −50.6 ms`；首次接触相对该同一到达参考为 `−61.8 至 −37.1 ms`；接触位置在拦截面前 `12.0–19.8 mm`，平面实际过线均未发生；首次接触的目标/TCP 平面相对速度为 `0.189–0.416 m/s`。因此后续时序统计统一相对**no-hand free-slide 预测到达**，并单列 `actual_crossing_t_s`（被截停时为空），不将未发生过线记作缺失的接触时间。
+- 逐集 CSV `d3ed150caf8db357c9b5b961cca993ee68078fba952e1b92c07fe332891b55e0`；摘要 `bb1f84cc1ed168b85c2fd93cc0916b3b155c13ea7e30172d0cce7d73610cc27e`；代表成功 trace `cc9ffd3f4b3bfb2d247a43ee037ddb1ffc8f248f298e401ed1297589a38ef033`、GIF `6975d31e0dee2cc248b114cf1107fbe928471d18d8328511e4c1ef74bbf42b6d`；目录 SHA256SUMS 文件 `b88fe6c39e4ae83d91222d0ff6d2a065836676560e13af6b0ca0574aee9ca474`，已在本地和服务器 `sha256sum -c` 全项通过。服务器日志 SHA256 `628ce15d0e47429c57c5ed273409e78a0f815c49de1a80d067acbc96edb55f64`，launcher `d4feb20f93d7c0e946fe828ec0d2f0954157f634261817e743716275a9eb0a2f`，exit 文件内容 `0`；PID `1932999` (launcher) / `1933002` (python)。Genesis 共享 Quadrants cache lock 仅告警；没有清理共享缓存。
+- 本地核验：`python -m compileall -q benchmark/robot_closed_loop`、`git diff --check`、结果目录 `sha256sum -c SHA256SUMS` 均通过。旧评分保留在每集 `legacy_score` 字段，原 R0 归档不变。
+
 ### 当前复跑入口
 
 配置起点：[`scene_pilot_r0_5_candidate.json`](../../benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json)。命令、评分边界和事件接入说明见 [`benchmark/robot_closed_loop/README.md`](../../benchmark/robot_closed_loop/README.md) 的 R0.5 小节。服务器只在新的 branch worktree 执行，保留服务器原 `main` 工作区；启动前检查 GPU PID/归属，EGL 仅选空闲的 GPU 2。
 
-代码 commit `b757a83` 已推送；拟合减速度后的配置修改待 commit/push。完成 oracle 与 reference smoke 后，将在本节继续追加逐 episode 结果、关键成功/失败 trace 与录像入口、数据 SHA256SUMS、服务器日志与 exit 文件哈希，并提出冻结协议候选。
+代码 commit `b757a83` 与配置/校准记录 commit `6cd7c70` 已推送。严格 oracle 3×3 先导结果已入本地工作区；下一步运行新种子独立样本并继续 Direct-HDR/event-state smoke。最终在本节追加逐 episode 结果、关键成功/失败 trace 与录像入口、数据 SHA256SUMS、服务器日志与进程 wall-time 哈希，并提出冻结协议候选。
