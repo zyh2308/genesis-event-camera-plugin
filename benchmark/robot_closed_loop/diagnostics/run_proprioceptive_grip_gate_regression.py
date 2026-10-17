@@ -158,6 +158,20 @@ def main() -> int:
             for row in offset_y_trace:
                 stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
 
+        side_offset_full_trials = []
+        for index, offset_y_m in enumerate((0.020, 0.025, 0.030), start=4):
+            side_trial, side_trace, side_frames = run_static_trial(
+                env, index, args.seed + index, capture=True,
+                target_offset_xy_m=(0.0, offset_y_m),
+            )
+            scenario = f"side_offset_y_plus_{int(round(offset_y_m * 1000))}mm_full_trial"
+            side_trial["scenario"] = scenario
+            save_gif(out / f"{scenario}.gif", side_frames)
+            with (out / f"{scenario}_trace.jsonl").open("w", encoding="utf-8") as stream:
+                for row in side_trace:
+                    stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
+            side_offset_full_trials.append(side_trial)
+
         front_edge_30_trial, front_edge_30_trace, front_edge_30_frames = run_static_trial(
             env, 3, args.seed + 3, capture=True,
             target_offset_xy_m=(0.030, 0.0),
@@ -210,9 +224,14 @@ def main() -> int:
         empty_false_positive = any(
             row["scenario"] == "empty_close" and row["false_positive"] for row in negatives
         )
+        side_offset_false_positives = [
+            row["scenario"] for row in side_offset_full_trials
+            if row["lift_trigger_s"] is not None and not row["success"] and not row.get("probe_aborted", False)
+        ]
         result = {
             "status": "PASS" if positive["success"] and not empty_false_positive
-                      and not edge_false_positive and not front_edge_30_false_positive else "FAIL",
+                      and not edge_false_positive and not front_edge_30_false_positive
+                      and not side_offset_false_positives else "FAIL",
             "score_version": positive["score_version"],
             "true_hold": positive,
             "front_edge_full_lift_trial": front_edge_trial,
@@ -223,7 +242,10 @@ def main() -> int:
             "side_offset_y_plus_15mm_full_trial": offset_y_trial,
             "front_edge_x_plus_30mm_full_lift_trial": front_edge_30_trial,
             "front_edge_x_plus_30mm_gate_false_positive": front_edge_30_false_positive,
+            "side_offset_y_plus_20_25_30mm_full_trials": side_offset_full_trials,
+            "side_offset_full_task_gate_false_positives": side_offset_false_positives,
             "negative_scenarios": negatives,
+            "negative_scenario_gate_trigger_scope": "close-only eligibility is a request to start the shared lift probe, not a confirmed grasp or strict-success label",
             "gate_input_boundary": "gate receives only finger joint position/velocity and close-command timestamp; contacts are evaluator labels only",
             "strict_scorer_modified": False,
         }
@@ -246,7 +268,8 @@ def main() -> int:
             if path.is_file() and path.name != "SHA256SUMS"
         ), encoding="utf-8")
         print(json.dumps({"status": result["status"], "strict_hold": positive["success"],
-                          "gate_false_positives": [r["scenario"] for r in negatives if r["false_positive"]],
+                          "close_only_probe_candidates": [r["scenario"] for r in negatives if r["false_positive"]],
+                          "side_offset_full_task_false_positives": side_offset_false_positives,
                           "output": str(out)}, indent=2))
         return 0 if result["status"] == "PASS" else 2
     finally:
