@@ -1,0 +1,98 @@
+{
+  "mode": "r0_8_direct_hdr_learned_event_state_closed_loop",
+  "code_scope": "robot benchmark; frozen simulator core unchanged",
+  "physics_dt_s": 0.0005,
+  "paired_event_rates_hz": [
+    1000,
+    2000
+  ],
+  "controller_state_source": "2 kHz causal spatial learned event-state model",
+  "reference_controller_source": "events",
+  "event_model_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-final-oracle-20261017/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017c/ours_fit/spatial_event_state.pt",
+  "event_estimator_boundary": "spatial learned model consumes causal five-bin event tensors only; GT is used for supervised training and offline evaluator metrics, not inference",
+  "shared_lift_gate_boundary": "both GT and event paths use the same ProprioceptiveGripGate and ProprioceptiveLiftStabilityMonitor; the grip gate reads finger joint positions/velocities and close-command time, while the commanded lift probe and full lift are monitored using finger-joint drift/velocity and probe-command time. No target state/contact/segmentation/depth enters either control gate.",
+  "shared_control_config": {
+    "schema_version": 1,
+    "status": "r0_8_shared_control_probe_candidate_not_frozen",
+    "provenance": {
+      "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+      "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+      "r0_7_gripper_evidence": "successful episodes settle near 19 mm/finger; missed low-speed rollout reached about 11 mm aperture and did not hold bilateral contact",
+      "research_approval": "same GT-free proprioceptive completion gate may be shared by GT and event paths; strict scorer unchanged",
+      "probe_monitor_evidence": "development traces at code f20315e: centered strict hold max finger-q drift 0.2 um; front-edge stable seed 20.9 um; front-edge unstable seed crossed 30 um at 343.5 ms after lift and strict slip exceeded 10 mm at 529 ms; candidate thresholds require new-seed validation"
+    },
+    "close_time_estimator": {
+      "heatmap_world_height_m": 0.02,
+      "velocity_source": "causal rolling least-squares slope of decoded target-plane XY over recent valid observations",
+      "velocity_window_s": 0.05,
+      "minimum_regression_samples": 4,
+      "status": "candidate; evaluate at matched 1 kHz/2 kHz five-bin decision windows"
+    },
+    "proprioceptive_grip_gate": {
+      "min_close_command_elapsed_s": 0.05,
+      "finger_joint_position_range_m": [
+        0.012,
+        0.029
+      ],
+      "max_finger_joint_asymmetry_m": 0.004,
+      "max_abs_finger_joint_velocity_m_s": 0.03,
+      "stable_dwell_s": 0.03,
+      "status": "candidate; negative and real-hold contact regressions required before strict oracle rollout"
+    },
+    "diagnostic_windows": {
+      "after_first_contact_s": 1.5,
+      "task_success_score": "unchanged r0_5_strict_continuous_contact_clearance_slip"
+    },
+    "closure_lead_speed_schedule": {
+      "reference_speed_m_s": 0.3,
+      "reference_lead_s": 0.08,
+      "slope_s_per_mps": -0.1,
+      "min_lead_s": 0.05,
+      "max_lead_s": 0.1,
+      "status": "candidate restored to R0.5 strict-oracle-validated speed rule; R0.8 new-seed shared-gate confirmation required"
+    },
+    "proprioceptive_lift_confirmation": {
+      "probe_height_m": 0.04,
+      "baseline_start_s": 0.18,
+      "baseline_duration_s": 0.04,
+      "confirmation_duration_s": 0.42,
+      "max_joint_drift_m": 3e-05,
+      "violation_dwell_s": 0.01,
+      "status": "candidate causal finger-joint stability monitor during 40 mm probe and full lift; no target GT/contact/seg/depth input; validate false reject/false accept on fresh episodes"
+    }
+  },
+  "episodes": [
+    {
+      "episode_id": 0,
+      "seed": 2026104400,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "strict_success": false,
+      "success_legacy_r0": false,
+      "first_contact_s": null,
+      "lift_start_s": null,
+      "sim_duration_s": 3.0000000000000004,
+      "task_rollout_wall_s": 228.25804186798632,
+      "event_count_1khz": 301332,
+      "event_count_2khz": 326739,
+      "state_control_trace": "episodes/episode_000/state_control_trace.jsonl",
+      "raw_events": "episodes/episode_000/direct_hdr_events_1khz_2khz.npz",
+      "dynamic_visibility_min": 0.0,
+      "state_accuracy_1khz_p95_m": 0.18962729431223335,
+      "state_accuracy_2khz_p95_m": 0.32286332708352455
+    }
+  ],
+  "strict_success_by_speed": {
+    "0.4": {
+      "n": 1,
+      "successes": 0
+    }
+  },
+  "episode_loop_artifact_wall_s": 234.88265372347087,
+  "mean_task_rollout_wall_s": 228.25804186798632,
+  "cost_boundary": "episode_loop_artifact_wall_s includes complete rollouts and per-episode trace/video/event/CSV/JSON artifact generation, but excludes environment initialization and final run_manifest/SHA256SUMS finalization. The launch wrapper must record the full Python process wall time as the end-to-end cost.",
+  "no_rollout_scale_extrapolation": true,
+  "pixel_response_model_boundary": "Direct linear-HDR input and DvsEmulator are shared with the plugin; Ours temporal reconstruction and V2E frame interpolation are bypassed. This ideal synthetic threshold model is uncalibrated to EVK4.",
+  "visibility_evaluation_boundary": "uses evaluator-only segmentation and matched-pose target-only render; those data do not enter the event state source or controller",
+  "small_smoke_only": true
+}

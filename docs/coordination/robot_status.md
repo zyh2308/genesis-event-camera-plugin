@@ -557,7 +557,32 @@ g1 使用代码 commit `e13b0b307c464e3f753cd3bacaeb092ee5e22586` 重跑启动�
 
 该次离线回放 wall/user/system `12.10/10.91/0.55 s`、max RSS `394,656 KB`、exit 0。summary SHA256 `beba90f3f7f252529e6b41aa43d6dcbf95313aac767db177fa92e453bd653371`、逐 poll CSV `534e90bc0ead63130cfb52a57c44bea946a1a9e8c58cc239cf7de712467d2e7e`、目录 `SHA256SUMS` `dbbcf611121ae74bb65fef23386b6de234973138f161bae91dda4f98c084bb7b`；两处 raw-event NPZ 输入为 `8b7a69c0...`、`fe043e93...`、`50d5b246...`（完整值在 summary）。log/runtime/exit SHA256 `f17a90477871cc6cf5d76b612d3b1e4b2c111ca48b1a777766234a2017add37a / 3f2446be3abbf28917dfad9a5e0ec0f2df41c234d46d5fd749229ea8919240d6 / 9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。结果目录 [`r0_8_five_bin_sampling_20261017b/`](../../benchmark/robot_closed_loop/results/r0_8_five_bin_sampling_20261017b/) 已逐项通过 SHA256 核验。
 
-**R0.8 后续：**三条匹配 seed 的 60 µm monitor diagnostic 用于有限敏感性审查，仍未完成。然后运行已准备的同 cached physical/robot rollout Ours/V2E 三 epoch R1 pipeline smoke；训练只做调用链/哈希验证，不排名。若两个小样本 checkpoint 生成成功，再以相同 Direct-HDR R1 evaluation source 做单集 R2 闭环 smoke。报告阶段失败和 pixel-response 参数边界，不做正式多 seed。
+#### R0.8.9：同缓存 rollout 的 Ours/V2E R1 数据与训练 smoke
+
+g1 运行代码 commit `e13b0b307c464e3f753cd3bacaeb092ee5e22586`，scene SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`、shared-control SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，seed `2026104130/31`，速度均 `0.4 m/s`、初始 y=`−55/+55 mm`。R1 smoke status PASS 仅表示 pipeline contract 完整：每集只跑一次物理/机器人 rollout，两生成器 hash 相同的 HDF5 scene cache、100 Hz frame timestamps、GT labels 和 episode-level split；训练 episode 0、validation episode 1，split contract SHA256 `8070763b5b2e98ecc6be76b054d4d917094f1a077c7440933d889649ecad509f`。cache HDF5 SHA256 `d72a0c86bdf1c4491b4c2ece68c500c10f23b9ccee1102919ae8c4d319124357 / a2c4d19bf953b6082f517a15da526e1e6247e663d698626e58db0d040655a72d`；frame timestamp SHA256 `d3f2d9416c05453473a75fa2740af552ab0ab1a9f93d70f53aaf484b9b96e77f / 8d34f211646dbb13062a01968722e7d9d7eda11cbbe0640913213ba63b81e2c9`。两份训练 source manifest SHA256 为 Ours `77e0adaec8c74f436a374e03231acfac4c0b7a4267e13a0d1de0f5b6820dada8`、V2E `c48535c54fb703af92f7dcb483ff87ae87cf2ed8729c37f105194def128f81ac`。
+
+两模型各 fit 3 epochs，validation 各 208 个 causal five-bin 窗口、有效状态率 `100%`、状态 age P95 `10 ms`。Ours validation XY P95 `152.7 mm`、arrival P95 `328 ms`；V2E XY P95 `219.1 mm`、arrival P95 `841 ms`。样本只有一个训练 episode、一个横向 held-out episode，这些误差只说明最小训练/评价调用链运行，不代表泛化或生成器优劣。
+
+两集机器人任务都不是 strict success：首接触 `0.6125/0.6235 s`，双侧接触 `0.6175/0.6270 s`，lift 命令 `1.106/1.115 s` 后共同 30 µm gate 报 `grasp_gate_abort`；第一集合格 hold `0`，第二集 `0.462 s`，未达到 strict 连续 `0.5 s`。strict scorer 仍是 `r0_5_strict_continuous_contact_clearance_slip`，没有改分数来通过 R1。
+
+R1 训练生成器的独立性边界：Ours 使用缓存线性 HDR 和 GenesisPhysicsEventPlugin，理想 DVS 阈值 `0.2`、无噪声/无限带宽；官方 V2E 使用同时间戳 display RGB、SuperSloMo 与冻结 `v2e.yaml`（sigma `0.03`、cutoff `300 Hz`、leak/shot noise、refractory `0.5 ms`）。因此两训练组**共享 rollout/标签/split，但不共享 pixel-response model**；下游差异不能只解释为插帧/时间重建效果。两 R2 使用共同 Direct-HDR ideal-DVS event source，绕过 Ours/V2E 训练生成器，作为控制器接线的独立评估 smoke。
+
+R1 wrapper 完整 wall/user/system/max RSS `20:06.87 / 1580.95 / 38.56 s / 2,536,068 KB`；阶段计时为共享机器人 rollout/cache `37.54 s`、两生成器合计 `1060.26 s`、两次 fit 合计 `41.35 s`。exit 0。摘要 SHA256 `3535a312a35111d5e0082a7116b0d564900b0e1154291501ae45eda22ce171ce`、cache manifest `f7b7c1b26a405a6603f765ca0b0255a3f9e821086b050968a0ab0b876c7be513`、g1 全结果 `SHA256SUMS` `cc2bb9939295ca0c9c34de61ea54d640207a9ad28a0c5e4a186ebfe8b0e671b9`；训练 checkpoint SHA256 Ours `0b1199d11ec22da4443bd0236e1852f6c23e90dd5a77067afd9e5517817277f5`、V2E `64c89a0e22974f3db3fe7fe34a98b3a013bacbabe3c5db013547ffff389b39a4`。全量 g1 输出（489 文件）保留于 `g1:/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-final-oracle-20261017/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017c/`；版本库收录 64 文件/约 103 MB 可复核子集，portable manifest SHA256 `f77522d5dd76511110223c3c4ab2b3280b2aff51bfbdb9cbebccd0eddb016104` 全项通过，未复制 HDR/RGB/depth/seg frame cache 与 HDF5 cache；地址、遗漏范围与复跑方式见该结果目录 README。
+
+#### R0.8.10：两个 checkpoint 的同源 Direct-HDR R2 新 episode smoke
+
+两次均运行代码 commit `e13b0b307c464e3f753cd3bacaeb092ee5e22586`、同 scene/control hash、seed `2026104400`、`0.4 m/s`、中心 y、0.5 ms physics、2 kHz causal five-bin event controller；只替换 R1 fit checkpoint。两组 inference 只读 causal event state；proprioceptive grasp/lift gate 两组共用，GT/segmentation/depth 只进离线评估。
+
+| checkpoint / runtime | 结果 | 关键决策误差 | 运行成本 |
+|---|---|---|---|
+| Ours `0b1199d11ec22da4443bd0236e1852f6c23e90dd5a77067afd9e5517817277f5` | 0 contact / 0 lift / strict fail；`failure_primary=oracle_unreachable` | close 在 `0.120 s`，固定 predictor 的自由滑动到达 `0.6544 s`；close 时估计 TTC `84.1 ms`、同一 predictor 的 GT-current TTC `534.6 ms`，误差 `−450.5 ms`；close 提前到达参考 `534.4 ms`。1/2 kHz XY error P95 `189.6/322.9 mm` | episode loop `234.88 s`；完整 Python wall `5:09.88`、user/system `277.98/23.33 s`、max RSS `1,761,380 KB` |
+| V2E `64c89a0e22974f3db3fe7fe34a98b3a013bacbabe3c5db013547ffff389b39a4` | 首碰 `0.5725 s`，但无双侧接触、无 lift、strict fail；`failure_primary=unstable_grasp` | close 在 `0.110 s`，比自由滑动到达早 `544.4 ms`；预测 TTC `76.9 ms` 对 GT-current TTC `534.6 ms`，误差约 `−457.7 ms`；接触净开口 `11.684 mm`，低于 gate `12 mm` 行程门槛。1/2 kHz XY error P95 `160.7/136.6 mm` | episode loop `154.18 s`；完整 Python wall `3:42.67`、user/system `203.80/17.36 s`、max RSS `1,698,604 KB` |
+
+R2 两组均 `0/1 strict success`，是独立 held-out episode 上的模型接线与失败定位 smoke，不是正式比较。Ours/V2E full result manifests 和 per-episode trace/GIF 已纳入结果目录； summary SHA256 `14b7b89fef5bc2ef9165dfb35336edfcb9790e083d38b9b7354b9742b05db7e7 / 3fe259654836c4d3dd0461d57b1a054479f23b2a930f9b61efc2ab0338d35fc4`，完整目录 SHA256SUMS 文件 `7ce23a2046eb39a8d37f2dd3bf745ff5d89b493f1f16ba1312796c02d9073e04 / 4d385dd4e3c07024bdb9437e2bd6415c1967b2494c93a1075ba6119ea0d3d3d2`。
+
+**两个工作包当前结论：**R1 的同缓存配对/哈希/split/小预算 fit 调用链通过，R2 共同事件源/状态接口/控制/strict scorer 链路贯通但新 checkpoint 未闭环成功。采样对照仍不支持冻结 1 kHz；当前可暂用 2 kHz 作为开发默认（它匹配 0.5 ms 物理时钟），但必须保留 1/2 kHz 会改变部分动作的证据，不能写成采样已充分。训练像素响应不匹配、monitor false abort 与小数据造成的 TTC 泛化仍是正式实验前需在协议中明示的限制。
+
+**最后一个有限共同控制诊断：**启动器 `r0_8_monitor60_matched_abort_counterfactual_20261017a.launch.sh` 将同一 60 µm gate 应用于原九集里三条 30 µm abort（并带入 .5 m/s y=−55 mm 的既有成功 seed 作为对照），不按 seed 调参、不改变其他控制或 strict scorer。结果出来后将更新 30/60 µm gate 的可冻结判断；之后停止本阶段场景/控制搜索，转交协议冻结选择。
 
 阈值敏感性启动器顺序如下：
 
