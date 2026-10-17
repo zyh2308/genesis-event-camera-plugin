@@ -1,39 +1,30 @@
-# Stage 4 训练实时状态
+# Stage 4 训练状态
 
-最后刷新：`2026-10-16T16:38:00.550116+00:00`
+状态更新时间：`2026-10-17T04:03:48Z`。Run ID：`20261016-stage4-flowdt1-seed0-v4`。
 
-## 固定配置
+## 状态
 
-- 分支：`exp/public-sim2real-v1`；代码提交：`1fab7e17e201943c77703aa8a1c0c6eaefbb8f5a`。
-- 配置：`/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_training_launch_v1_torch_cuda.json`（SHA-256 `c0ab0d17f024b00106957c3e44d7a013e920f6e760f70266c43a9cf904634685`）。
-- 合成 bank：`/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_torch_cuda_32x2s`；计划 32×2 s，346×260，100 Hz endpoints，1 ms physics。
-- 真实数据评分/反馈：关闭。两组只用各自合成事件输入和共享合成灰度/标签。
+本轮 **STE-FlowNet dt1 seed 0 配对训练已完成**。EventGenesis 与 V2E 各完成 45 epochs × 198 batches = 8,910 次 optimizer 更新；两个训练进程及 campaign 的退出码均为 `0`。独立训练日志每组共 8,955 行（8,910 update 记录和 45 个 synthetic validation 记录）。
 
-## 共享物理 bank
+训练在 g1 的 `/home/zhaoyuhan/Eventbased_WAM` 上运行，EventGenesis 使用 GPU 2、V2E 使用 GPU 4（Tesla V100S 32 GiB）。有效 batch 为 8；两组的初始化 state SHA-256 均为 `acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf`。登记预算、固定配置和完整结果见 [`STAGE4_SEED0_TRAINING_REPORT.md`](STAGE4_SEED0_TRAINING_REPORT.md)。
 
-- 进度：32/32 rollouts; 状态 `complete`; 更新时间 `2026-10-16T14:00:06.525750+00:00`.
+## 合成验证结果
 
-## Previous attempts
+| 生成器 | 最佳 synthetic validation EPE | 最佳 epoch | 第 45 epoch EPE |
+|---|---:|---:|---:|
+| EventGenesis | 0.9389129835 px / 30 ms | 16 | 0.9466441114 px / 30 ms |
+| V2E | 0.9406893614 px / 30 ms | 17 | 0.9438607459 px / 30 ms |
 
-- `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v1`：campaign exit code `90`，结束/更新时间 `2026-10-16T10:40:17Z`；启动器和标准错误见 `/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。
-- `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v2`：campaign exit code `4`，结束/更新时间 `2026-10-16T10:49:41Z`；启动器和标准错误见 `/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。
-- `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v3`：campaign exit code `143`，结束/更新时间 `2026-10-16T11:04:28Z`；启动器和标准错误见 `/home/zhaoyuhan/Eventbased_WAM/logs/sim2real_stage4_flowdt1_seed0_tmux.log`。
-- 完整 shared HDF5 SHA-256：`e9e57131c84059047bddd0d34ac3271f23f5e4ff0e4fa5e0b9f8579772ee337a`；split SHA-256：`60722e124b24c8da2306f3a8a4115ec8588949653a2f014b3687c2a2dfc59aa1`。
+checkpoint 只根据 synthetic validation 选择。当前结果是一个 seed 的短阶段合成训练结果；不构成真实数据性能、生成器优劣或 Sim-to-Real 结论。真实测试未用于训练、选择或调参。
 
-## V2E 25 μs 导出
+## Artifact 位置
 
-- 完成：32 个 rollout；manifest `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4/v2e_events/v2e_complete_manifest.json`，SHA-256 `5d79bad2f9fe81e1fad8af0676b9048aefaf73c0b6edd8db7f39f31ef82beb2f`。
+- 服务器 run root：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4`
+- 完整训练日志、metrics JSONL、状态 JSON、退出码和模型权重：`flow_dt1_seed0/{eventgenesis,v2e}/`
+- 首 20 次更新的已提交独立证据：[`evidence/S4/20261016-stage4-flowdt1-seed0-v4-update20/README.md`](evidence/S4/20261016-stage4-flowdt1-seed0-v4-update20/README.md)
+- 完整结果、checkpoint 哈希、运行命令和复现信息：[`STAGE4_SEED0_TRAINING_REPORT.md`](STAGE4_SEED0_TRAINING_REPORT.md)
+- 工作树中独立审查的进度快照保留于 [`reviews/stage4_1895a15/REVIEW.md`](reviews/stage4_1895a15/REVIEW.md)；该审查早于训练完成，不能将其中的进度表当作最终状态。
 
-## 30 ms STE-FlowNet seed 0
+## 后续注意
 
-- 两组 adapter：1584 train / 528 synthetic-validation windows；manifest `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261016-stage4-flowdt1-seed0-v4/steflow_30ms/training_bank_manifest.json` SHA-256 `c9da4158d9775997f08dd75ce0ac2ccc33873d983422ef87c931e834f6da0624`。
-- **eventgenesis**：`training`，GPU `2`，optimizer updates `58/8910`；loss `1190.74560546875`（photo `1186.852783203125`；smooth `0.38927948474884033`）；有效 batch `8`；checkpoint `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4/flow_dt1_seed0/eventgenesis/last.pt`；SHA-256 `3149c07b7d13226dd63ca72603d3880ef6e44297d02b807beba3d5f3a075221d`；更新时间 `2026-10-16T16:35:49.986771+00:00`。
-  - update 20 checkpoint reload/optimizer/scheduler probe 通过；prediction max abs `7.152557373046875e-07`。
-- **v2e**：`training`，GPU `4`，optimizer updates `58/8910`；loss `1207.3978271484375`（photo `1203.6732177734375`；smooth `0.3724561929702759`）；有效 batch `8`；checkpoint `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4/flow_dt1_seed0/v2e/last.pt`；SHA-256 `45047da79159dc0e8f1a53c246c2695b6896d2b250b3c97932eba06041af5924`；更新时间 `2026-10-16T16:35:49.624643+00:00`。
-  - update 20 checkpoint reload/optimizer/scheduler probe 通过；prediction max abs `6.705522537231445e-08`。
-
-## 运行与证据
-
-- Run root：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261016-stage4-flowdt1-seed0-v4`。运行日志、PID、exit code 和 checkpoint 均留在服务器 run root。
-- 此仓库快照采于 `2026-10-16T16:38:00Z`（两组各 58/8910 updates）。同步完成后 g1 上的状态刷新器会继续更新此文件；训练通过 tmux 持续运行。
-- 当前结果仅证明训练链路和更新确实发生；不构成 generator 优劣或 Sim-to-Real 结论。
+训练完成后没有活动训练进程。独立审查发现 `--resume` 路径恢复 Torch CPU RNG state 的设备类型问题；本轮训练未使用该路径，不影响已完成结果，但在下次使用断点续训前应修复并单独核验。详见独立审查报告和完整训练报告。

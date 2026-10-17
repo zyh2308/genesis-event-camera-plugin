@@ -130,6 +130,9 @@ Reproduction/inspection entrypoints:
 - Immutable first-20 metric records and SHA-256 values:
   `evidence/S4/20261016-stage4-flowdt1-seed0-v4-update20/README.md`.
 
-These short-run loss values are optimization diagnostics only. The models have
-not completed the registered epochs or synthetic validation selection, and no
-real-data ranking has been run.
+At the time this update-20 snapshot was written, the registered epochs and
+synthetic-validation selection had not completed. The subsequent full run did
+complete; final metrics, checkpoints and exit records are reported separately
+in [`STAGE4_SEED0_TRAINING_REPORT.md`](STAGE4_SEED0_TRAINING_REPORT.md). These
+training loss values remain optimization diagnostics only, and no real-data
+ranking has been run.
