@@ -8,6 +8,25 @@
 
 R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 已完成 raw-event 离线回放、三集 2 kHz 真实事件闭环和复用 GT-shadow 事件的 tiny overfit 诊断，没有新增 Direct-HDR 渲染轨迹。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
 
+## R0.8 共同控制收尾与配对流水线（2026-10-17；待服务器验证）
+
+- **代码 commit：** `28258e617699584344baa98b43a175dce7a5c783`。场景配置未改，SHA256 仍为 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`；新增独立 shared-control 候选配置 [`shared_control_r0_8_candidate.json`](../../benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json)，SHA256 `bb88542e49924acc428120ce21ade6660cb0813a2ecc791302aa5b8fdc718383`。
+- 已实现共同 `ProprioceptiveGripGate`：仅读取 Panda 两指关节位置/速度和 close-command 时间；目标 GT、接触标签、segmentation、depth 均不进入 gate。GT 与 learned-event 路径共用此 gate，strict scorer 保持原样。候选阈值为每指关节位置 12–29 mm、两指不对称 ≤4 mm、速度 ≤30 mm/s、close 命令至少 50 ms、稳定 30 ms；依据是 R0.7 成功抓取约 19 mm/指与失败接触约 11.7 mm 净开口的日志差异。
+- learned heatmap 现在可按固定 20 mm 目标中心平面回投影；至少四个有效因果位置、50 ms 窗口后用位置历史 OLS 估计平面速度。状态 timestamp 仍为输入 cutoff。新增 `compare_five_bin_sampling_decisions.py`，从既有配对 1/2 kHz raw events 重建五-bin 输入并比较 state/TTC/close action/y command。当前仅做过 Python 编译与纯逻辑 gate sanity check；服务器物理负例、oracle、learned rollout 与 1/2 kHz replay 尚未运行，不报告性能结论。
+- 新增 `run_proprioceptive_grip_gate_regression.py`，预设 centered true hold、empty close、单指侧缘与前缘偏置负例。strict oracle rollout 支持显式左右/中间 launch-y 配置；首次接触后最多采集固定 1.0 s 失败诊断窗口，strict 成功提前停止。此时间窗只限制诊断运行，不改变 0.5 s strict hold 评分定义。
+- `run_oracle_trial` 增加可选 trajectory-cache callback，供后续从真实物理/机器人 rollout 存取 paired Ours/V2E 共用的 timestamped RGB/HDR/depth/seg/pose/action 数据；本 commit 尚未实现/运行配对生成与训练 smoke。仍需确认 Genesis link-level segmentation cache、官方 V2E + SuperSloMo 调用及其数据/标签/split 哈希完全一致。
+- 本地 `py_compile` 与纯 Python gate sanity check 已过；`git diff --check` 通过。核心目录 `genesis_event_plugin/` 无改动。远端 g1 运行证据待补。
+- 复跑入口（部署到 g1 后）：
+
+  ```bash
+  python -m benchmark.robot_closed_loop.diagnostics.run_proprioceptive_grip_gate_regression \
+    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+    --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
+    --output benchmark/robot_closed_loop/results/r0_8_grip_gate_regression_<run_id>
+  ```
+
+- 正式 handoff 将 **R1** 定义为 paired trajectory bank + Ours/V2E events + estimator open-loop；**R2** 是共同 Dense-HDR reference events + 同一 controller closed-loop。下一步先在 g1 做 gate 的三个负例/true-hold，再三档 × 左/中/右 strict oracle 回归，随后少量新 seed learned R2。配对训练只做小规模调用链 smoke；R1/R2 都是 smoke，不做排名或正式多 seed 结论。
+
 ### 已完成并有证据
 
 - 正式研究 baseline、robot handoff、R0 任务说明与候选场景配置已阅读；按其中的物理/碰撞规则实现 Panda + Plane + 平面方块。没有额外桌面碰撞盒。
