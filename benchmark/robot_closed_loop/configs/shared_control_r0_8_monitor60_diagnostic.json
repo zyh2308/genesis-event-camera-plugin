@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "diagnostic_only_monitor_threshold_sensitivity_not_candidate",
+  "provenance": {
+    "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "r0_7_gripper_evidence": "successful episodes settle near 19 mm/finger; missed low-speed rollout reached about 11 mm aperture and did not hold bilateral contact",
+    "research_approval": "same GT-free proprioceptive completion gate may be shared by GT and event paths; strict scorer unchanged",
+    "probe_monitor_evidence": "development traces at code f20315e: centered strict hold max finger-q drift 0.2 um; front-edge stable seed 20.9 um; front-edge unstable seed crossed 30 um at 343.5 ms after lift and strict slip exceeded 10 mm at 529 ms; candidate thresholds require new-seed validation",
+    "monitor_threshold_sensitivity": "Single uniform 60 um diagnostic variant to test whether the 30 um full-lift abort is a dynamic-load false reject while retaining the same proprioceptive-only structure. Must pass fresh front-edge/empty-close controls before any adoption."
+  },
+  "close_time_estimator": {
+    "heatmap_world_height_m": 0.02,
+    "velocity_source": "causal rolling least-squares slope of decoded target-plane XY over recent valid observations",
+    "velocity_window_s": 0.05,
+    "minimum_regression_samples": 4,
+    "status": "candidate; evaluate at matched 1 kHz/2 kHz five-bin decision windows"
+  },
+  "proprioceptive_grip_gate": {
+    "min_close_command_elapsed_s": 0.05,
+    "finger_joint_position_range_m": [
+      0.012,
+      0.029
+    ],
+    "max_finger_joint_asymmetry_m": 0.004,
+    "max_abs_finger_joint_velocity_m_s": 0.03,
+    "stable_dwell_s": 0.03,
+    "status": "candidate; negative and real-hold contact regressions required before strict oracle rollout"
+  },
+  "diagnostic_windows": {
+    "after_first_contact_s": 1.5,
+    "task_success_score": "unchanged r0_5_strict_continuous_contact_clearance_slip"
+  },
+  "closure_lead_speed_schedule": {
+    "reference_speed_m_s": 0.3,
+    "reference_lead_s": 0.08,
+    "slope_s_per_mps": -0.1,
+    "min_lead_s": 0.05,
+    "max_lead_s": 0.1,
+    "status": "candidate restored to R0.5 strict-oracle-validated speed rule; R0.8 new-seed shared-gate confirmation required"
+  },
+  "proprioceptive_lift_confirmation": {
+    "probe_height_m": 0.04,
+    "baseline_start_s": 0.18,
+    "baseline_duration_s": 0.04,
+    "confirmation_duration_s": 0.42,
+    "max_joint_drift_m": 6e-05,
+    "violation_dwell_s": 0.01,
+    "status": "diagnostic only; 60 um threshold sensitivity, never use as candidate until negative controls pass"
+  }
+}

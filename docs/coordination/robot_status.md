@@ -529,7 +529,15 @@ g1 使用代码 commit `98ee643750e5a8cfc3e7b3578657e94e297962fe`、场景 SHA25
 
 结果目录 [`r0_8_closure_rollback_center_pilot_20261017a/`](../../benchmark/robot_closed_loop/results/r0_8_closure_rollback_center_pilot_20261017a/) 和 `SHA256SUMS` 全项通过。CSV SHA256 `6c3dda222aa3fc6e8d4454404828e3903c868a7cbf766475b02d575aaefb17b8`；summary `37c78688e8f1f9c7dead3051cf774bd25b9b423b54e7d28c803fa0bcb859adf6`；manifest `e7a0d96c874f666a0f9283835b97c5c6744c869cedacd7b13e47211b18cc1073`；目录清单 `d89d6535aad169dac47a69f4f8c4f503c63cdee06e0364162f67dff5402d552c`。runtime Genesis 1.2.2/Torch 2.8 CPU；wall/user/system/max RSS `141.99/132.95/5.25 s / 1,489,600 KB`。运行 log/runtime/launcher SHA256 `34752565ae7fb781b68cb7a91ede9143df72d9ef4d8acc5d2cb081742a9dc932 / 6ea7ae0ad94a7729877013e09c99a79223eefea67e0daee8189241b0514a37e3 / 4c3d34ef8f2e062ed5d236a7cb0d86377518f17080d9d76394449c924cd0a80e`，exit 0。
 
-**R0.8 下一步：**先复核共同 lift monitor 的阈值是否误拒 0.40 m/s 稳定候选、同时能否识别前缘失败，再决定是否运行三档 × 左/中/右九集 strict oracle；随后按 causal five-bin 决策回放既有 1/2 kHz raw events，并做 Ours/V2E 同缓存 rollout、同架构三 epoch R1 与共同 Direct-HDR R2 smoke。只验收调用链、公平性边界和实测成本，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 和双方共用因果 gate 边界不变。两生成器当前 sensor response 不匹配，R1/R2 smoke 不作生成器算法排名。
+**R0.8 下一步：**诊断控制文件 [`shared_control_r0_8_monitor60_diagnostic.json`](../../benchmark/robot_closed_loop/configs/shared_control_r0_8_monitor60_diagnostic.json) SHA256 `59ef2b10b4fd74f06aa35fbd0303448d28b32e0b63798d27bcc7d55bf2f76c42`，仅将共同 lift q-drift 阈值由 30 调到 60 µm，不是候选配置。先运行其中心/侧偏真持物及 empty/front-edge 负例；仅当这些检查通过，才用同 seed `.4 m/s` counterfactual 区分 30 µm abort 是动态负载还是失稳。再据此决定是否运行三档 × 左/中/右九集 strict oracle；随后按 causal five-bin 决策回放既有 1/2 kHz raw events，并做 Ours/V2E 同缓存 rollout、同架构三 epoch R1 与共同 Direct-HDR R2 smoke。只验收调用链、公平性边界和实测成本，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 和双方共用因果 gate 边界不变。两生成器当前 sensor response 不匹配，R1/R2 smoke 不作生成器算法排名。
+
+阈值敏感性启动器顺序如下：
+
+~~~bash
+bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_proprio_monitor60_negative_regression_20261017a.launch.sh
+# 只有结果为 PASS 时，才运行同 seed 动态 counterfactual：
+bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_monitor60_dynamic_counterfactual_20261017a.launch.sh
+~~~
 
 回退 lead 的中心先导与后续完整横向回归启动器分别为：
 
