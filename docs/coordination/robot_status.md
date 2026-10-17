@@ -597,12 +597,12 @@ bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_monitor60_matched_abo
 
 | seed | 速度 / 初始 y | 30 µm hold 与结果 | 60 µm hold 与结果 |
 |---|---|---|---|
-| 2026104344 | 0.4 m/s / 0 mm | 0.473 s，gate abort，strict fail | 0.500 s，strict success；之后 monitor 于 1.7395 s abort |
+| 2026104344 | 0.4 m/s / 0 mm | 0.473 s，gate abort，strict fail | 原 2/4 strict score 保留；1.7395 s monitor abort 时 hold 0.4715 s，1.768 s scorer 累计至 0.5 s |
 | 2026104345 | 0.4 m/s / +55 mm | 0.1425 s，gate abort | 0.1715 s，gate abort，strict fail |
 | 2026104346 | 0.5 m/s / −55 mm | 0.500 s，strict success | 0.500 s，strict success |
 | 2026104347 | 0.5 m/s / 0 mm | 0 s，gate abort | 0 s，gate abort，strict fail |
 
-seed 4344 的 60 µm 结果完成了 strict 0.5 s 双侧接触/净空保持；qualified hold 内真实最小底面净空 80.079 mm、最大相对滑移 4.339 mm，clearance 达标时支撑接触样本为 0。monitor 在完成 strict hold 后才记录 unstable_grasp，因此任务 strict score 为 success，同时保留了后续 gate abort 事实。seed 4345 的关节漂移为 63.021 µm，qualified hold 内最大滑移 3.754 mm，但只有 0.1715 s；seed 4347 最大净空仅 35.263 mm，未进入 qualified hold。其余闭合提前量和实际接触状态与 30 µm 配对轨迹相符，没有重调闭合机械参数。
+seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified hold 为 0.4715 s；episode 到 1.768 s 后原 scorer 累计记录 0.5 s。按研究会要求保留原 2/4 strict score，但不得表述为 hold 先完成再 abort。按已合格 hold 窗计算的真实最小底面净空为 80.079 mm、最大相对滑移 4.339 mm，clearance 达标时支撑接触样本为 0；abort 后至 episode 终点的评分时间语义列为 R2 诊断问题。seed 4345 的关节漂移为 63.021 µm，qualified hold 内最大滑移 3.754 mm，但只有 0.1715 s；seed 4347 最大净空仅 35.263 mm，未进入 qualified hold。其余闭合提前量和实际接触状态与 30 µm 配对轨迹相符，没有重调闭合机械参数。
 
 这项小样本把一个仅差 27 ms 的中心 hold 从失败变为 strict success，但没有挽救 .4 m/s +55 mm 或 .5 m/s 中心样例；不能把 2/4 外推成稳定成功率。此前 60 µm 静态/侧偏负例回归通过，但没有覆盖所有动态前缘顶推轨迹。建议把 60 µm 作为下一版共同控制协议候选：它允许严格任务完成，且已有负例 smoke 未见 false success；正式冻结前仍应由研究会话决定是否接受尚未覆盖的动态前缘风险。30 µm 结果保留为保守对照，不合并统计。
 
@@ -611,3 +611,12 @@ seed 4344 的 60 µm 结果完成了 strict 0.5 s 双侧接触/净空保持；qu
 #### 两个工作包的协议候选与边界
 
 建议场景/机器人/机位/0.5 ms physics/strict scorer 按既有 hash 锁定；共同 controller 保留 80/70/60 ms 速度相关 close lead，lift gate 暂提 60 µm 为待研究冻结候选。事件 smoke 暂用 2 kHz causal five-bin 输入，因为它和 physics 时钟一致；1/2 kHz 回放已经显示会改变部分动作，故 2 kHz 仍是 provisional，不宣称采样充分。R1 最小同缓存配对流水线可作为后续正式数据实现起点，但 Ours/V2E 当前 pixel-response 不匹配；R2 两模型新 episode 均未 strict 成功，因此不应启动生成器排名或正式多 seed 训练。协议冻结前需由研究会话确认 60/30 µm gate 与 2 kHz 的候选边界，并明确是否先补一个动态前缘负例。
+
+
+#### R1 优先执行（2026-10-17，进行中）
+
+研究会已在 Windows 研究工作区 docs/robot_r1_priority_2026-10-17/ 核验旧 GT-shadow 的共同参考回放：9 集、每模型 581 个接触前查询、平均平面位置误差约 95 mm。该回放使用同一 Direct-HDR 文件/时刻，说明共同 evaluator 可复用；旧 checkpoint 训练仅一个 episode × 3 epochs，且 Ours/V2E 训练 pixel response 不一致，不能做生成器排名。参考集只作开发，不作为正式独立测试。
+
+本轮优先事项：在不修改 frozen simulator core 的前提下，为 Ours 和官方 V2E 使用明确命名的共同理想无噪声响应配置；保留官方默认配置和旧结果；以相同模型、episode split、optimizer-step 预算及训练 seed 训练配对模型；两组模型统一在相同旧 Direct-HDR 文件与查询时刻上评估位置、速度、固定预测器到达时间偏差、拦截横向偏差及状态/可达覆盖率。先复用现有缓存；再依精度与实测成本决定是否扩充三速度 × 左中右小批数据。R1 不等待 R2 抓取成功或夹爪 monitor 收敛。
+
+研究证据入口：/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_r1_priority_2026-10-17/。其中 R1_PRIORITY_REVIEW.md 与 R1_EXECUTION_PROMPT.md 为研究会说明；common_reference_audit.json、common_reference_polls.csv、run_common_reference_audit.py 为回放证据。当前实现和结果将追加于本状态文件，阶段结束前列明代码/配置/checkpoint/事件/查询时刻/data hashes、复跑命令、按 episode/速度指标及端到端成本。
