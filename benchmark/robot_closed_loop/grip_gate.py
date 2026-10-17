@@ -86,3 +86,102 @@ class ProprioceptiveGripGate:
             "required_stable_dwell_s": self.stable_dwell_s,
             "input_boundary": "finger joint position/velocity and close-command time only",
         }
+
+
+class ProprioceptiveLiftStabilityMonitor:
+    """Confirm a grasp during a small causal lift probe.
+
+    The monitor uses only Panda finger-joint positions and the probe command
+    timestamp. A small probe is necessary because identical closed apertures
+    can arise from a real grasp or from an edge push. It never reads target
+    pose, contacts, segmentation, depth, or evaluator score.
+    """
+
+    def __init__(self, config: Dict[str, Any], dt_s: float):
+        self.baseline_start_s = float(config["baseline_start_s"])
+        self.baseline_duration_s = float(config["baseline_duration_s"])
+        self.confirmation_duration_s = float(config["confirmation_duration_s"])
+        self.max_joint_drift_m = float(config["max_joint_drift_m"])
+        self.violation_dwell_s = float(config["violation_dwell_s"])
+        self.dt_s = float(dt_s)
+        self.reset()
+
+    def reset(self, start_s: Optional[float] = None) -> None:
+        self.start_s = None if start_s is None else float(start_s)
+        self.last_time_s: Optional[float] = None
+        self.baseline_samples = []
+        self.baseline_joint_position_m: Optional[np.ndarray] = None
+        self.violation_for_s = 0.0
+        self.maximum_joint_drift_m = 0.0
+        self.state = "not_started"
+
+    def update(
+        self,
+        now_s: float,
+        probe_started_s: Optional[float],
+        finger_joint_position_m: Sequence[float],
+        finger_joint_velocity_m_s: Sequence[float],
+    ) -> Dict[str, Any]:
+        now = float(now_s)
+        q = np.asarray(finger_joint_position_m, dtype=np.float64).reshape(2)
+        qd = np.asarray(finger_joint_velocity_m_s, dtype=np.float64).reshape(2)
+        if probe_started_s is None:
+            return self._result("not_started", None, q, qd, None)
+        if self.start_s is None or abs(self.start_s - float(probe_started_s)) > 1e-9:
+            self.reset(float(probe_started_s))
+
+        elapsed = max(0.0, now - self.start_s)
+        if self.last_time_s is None:
+            step_dt = 0.0
+        else:
+            step_dt = min(max(now - self.last_time_s, 0.0), 2.0 * self.dt_s)
+        self.last_time_s = now
+
+        baseline_end_s = self.baseline_start_s + self.baseline_duration_s
+        if self.baseline_joint_position_m is None:
+            if self.baseline_start_s <= elapsed <= baseline_end_s:
+                self.baseline_samples.append(q.copy())
+            if elapsed < baseline_end_s or not self.baseline_samples:
+                self.state = "baseline_collection"
+                return self._result(self.state, elapsed, q, qd, None)
+            self.baseline_joint_position_m = np.mean(self.baseline_samples, axis=0)
+
+        drift = float(np.max(np.abs(q - self.baseline_joint_position_m)))
+        self.maximum_joint_drift_m = max(self.maximum_joint_drift_m, drift)
+        if elapsed >= baseline_end_s and drift >= self.max_joint_drift_m:
+            self.violation_for_s += step_dt
+        else:
+            self.violation_for_s = 0.0
+
+        if self.violation_for_s + 1e-12 >= self.violation_dwell_s:
+            self.state = "unstable_grasp"
+        elif elapsed + 1e-12 >= self.confirmation_duration_s:
+            self.state = "confirmed"
+        else:
+            self.state = "probing"
+        return self._result(self.state, elapsed, q, qd, drift)
+
+    def _result(
+        self,
+        state: str,
+        elapsed: Optional[float],
+        q: np.ndarray,
+        qd: np.ndarray,
+        drift: Optional[float],
+    ) -> Dict[str, Any]:
+        return {
+            "state": state,
+            "confirmed": state == "confirmed",
+            "unstable": state == "unstable_grasp",
+            "probe_elapsed_s": elapsed,
+            "baseline_joint_position_m": None if self.baseline_joint_position_m is None else self.baseline_joint_position_m.tolist(),
+            "finger_joint_position_m": q.tolist(),
+            "finger_joint_velocity_m_s": qd.tolist(),
+            "joint_drift_from_probe_baseline_m": drift,
+            "maximum_joint_drift_m": self.maximum_joint_drift_m,
+            "joint_drift_threshold_m": self.max_joint_drift_m,
+            "violation_dwell_s": self.violation_for_s,
+            "required_violation_dwell_s": self.violation_dwell_s,
+            "required_confirmation_duration_s": self.confirmation_duration_s,
+            "input_boundary": "finger joint position/velocity and probe-command time only",
+        }

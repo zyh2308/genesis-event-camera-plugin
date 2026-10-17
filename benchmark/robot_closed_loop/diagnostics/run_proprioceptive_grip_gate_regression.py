@@ -186,6 +186,13 @@ def main() -> int:
             for row in trace_rows:
                 stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
         edge_false_positive = bool(front_edge_trial["lift_trigger_s"] is not None and not front_edge_trial["success"])
+        front_edge_probe_rejected = bool(front_edge_trial.get("probe_aborted", False))
+        front_edge_outcome = (
+            "probe_rejected_as_unstable" if front_edge_probe_rejected else
+            "probe_confirmed_strict_success" if front_edge_trial.get("success", False) else
+            "probe_confirmed_but_strict_failure" if front_edge_trial.get("lift_trigger_s") is not None else
+            "no_probe_or_lift"
+        )
         front_edge_30_false_positive = bool(
             front_edge_30_trial["lift_trigger_s"] is not None and not front_edge_30_trial["success"]
         )
@@ -199,6 +206,8 @@ def main() -> int:
             "true_hold": positive,
             "front_edge_full_lift_trial": front_edge_trial,
             "front_edge_gate_false_positive": edge_false_positive,
+            "front_edge_probe_rejected": front_edge_probe_rejected,
+            "front_edge_outcome": front_edge_outcome,
             "side_offset_y_plus_15mm_full_trial": offset_y_trial,
             "front_edge_x_plus_30mm_full_lift_trial": front_edge_30_trial,
             "front_edge_x_plus_30mm_gate_false_positive": front_edge_30_false_positive,

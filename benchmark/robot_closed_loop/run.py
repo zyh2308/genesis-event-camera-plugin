@@ -25,7 +25,10 @@ from benchmark.robot_closed_loop.predictor import (
     MotionState,
     fit_common_deceleration,
 )
-from benchmark.robot_closed_loop.grip_gate import ProprioceptiveGripGate
+from benchmark.robot_closed_loop.grip_gate import (
+    ProprioceptiveGripGate,
+    ProprioceptiveLiftStabilityMonitor,
+)
 from benchmark.robot_closed_loop.robot_env import (
     FreeSlideScene,
     RobotScene,
@@ -144,8 +147,15 @@ def run_static_trial(
     bilateral = False
     stall_s = 0.0
     grip_gate = ProprioceptiveGripGate(cfg["shared_control"]["proprioceptive_grip_gate"], env.dt_s)
+    lift_confirmation_cfg = cfg["shared_control"]["proprioceptive_lift_confirmation"]
+    lift_confirmation = ProprioceptiveLiftStabilityMonitor(lift_confirmation_cfg, env.dt_s)
     grip_gate_status: Dict[str, Any] = {"eligible": False, "reason": "not_evaluated"}
     lift_q = None
+    probe_q = None
+    abort_q = None
+    probe_started_s = None
+    probe_status: Dict[str, Any] = {"state": "not_started"}
+    grasp_probe_aborted = False
     lift_trigger_s = None
     max_steps = int(round(float(cfg["success"].get("episode_timeout_s", 3.0)) / env.dt_s))
     sample_steps = max(1, int(round(0.001 / env.dt_s)))
@@ -168,13 +178,21 @@ def run_static_trial(
 
     for step in range(max_steps):
         now = get_sim_time(env)
-        if lift_q is None:
-            env.robot.control_dofs_position(env.home_qpos[:7], env.arm_dofs)
+        if abort_q is not None:
+            env.robot.control_dofs_position(abort_q[:7], env.arm_dofs)
             env.command_fingers_close()
-        else:
+            stage = "probe_abort_lower"
+        elif lift_q is not None:
             env.robot.control_dofs_position(lift_q[:7], env.arm_dofs)
             env.command_fingers_close()
             stage = "lift_hold"
+        elif probe_q is not None:
+            env.robot.control_dofs_position(probe_q[:7], env.arm_dofs)
+            env.command_fingers_close()
+            stage = "grasp_probe"
+        else:
+            env.robot.control_dofs_position(env.home_qpos[:7], env.arm_dofs)
+            env.command_fingers_close()
         env.scene.step()
         now = get_sim_time(env)
         c = contact_snapshot(env)
@@ -183,17 +201,36 @@ def run_static_trial(
             bilateral_seen = True
         if (c["left"] or c["right"]) and first_contact_s is None:
             first_contact_s = now
-        if lift_q is None:
+        if lift_q is None and probe_q is None and abort_q is None and not grasp_probe_aborted:
             grip_gate_status = grip_gate.update(
                 now, trial_start_t, env.finger_joint_positions(), env.finger_joint_velocities(),
             )
             stall_s = float(grip_gate_status["stable_for_s"])
-        if lift_q is None and grip_gate_status["eligible"]:
+        if lift_q is None and probe_q is None and abort_q is None and not grasp_probe_aborted and grip_gate_status["eligible"]:
             goal = _home_hand_goal(env)
-            goal[2] += float(cfg["robot"]["lift_hand_delta_z_m"])
-            lift_q = as_numpy(env.command_hand(goal)).reshape(-1)
-            lift_trigger_s = now
-            stage = "lift_hold"
+            goal[2] += float(lift_confirmation_cfg["probe_height_m"])
+            probe_q = as_numpy(env.command_hand(goal)).reshape(-1)
+            probe_started_s = now
+            lift_confirmation.reset(probe_started_s)
+            probe_status = {"state": "probe_started", "probe_started_s": probe_started_s}
+            stage = "grasp_probe"
+        elif probe_q is not None:
+            probe_status = lift_confirmation.update(
+                now, probe_started_s, env.finger_joint_positions(), env.finger_joint_velocities(),
+            )
+            if probe_status["unstable"]:
+                home_goal = _home_hand_goal(env)
+                abort_q = as_numpy(env.command_hand(home_goal)).reshape(-1)
+                probe_q = None
+                grasp_probe_aborted = True
+                stage = "probe_abort_lower"
+            elif probe_status["confirmed"]:
+                goal = _home_hand_goal(env)
+                goal[2] += float(cfg["robot"]["lift_hand_delta_z_m"])
+                lift_q = as_numpy(env.command_hand(goal)).reshape(-1)
+                lift_trigger_s = now
+                probe_q = None
+                stage = "lift_hold"
         obj = object_state(env.target, now)
         pos = np.asarray(obj["position_m"], dtype=np.float64)
         clearance = cube_bottom_clearance_m(
@@ -219,6 +256,9 @@ def run_static_trial(
             frame = _record_state(env, now, stage, {
                 "finger_force_each": -5.0, "lift": lift_q is not None,
                 "grip_completion_gate": grip_gate_status,
+                "lift_confirmation": probe_status,
+                "probe_started_s": probe_started_s,
+                "probe_aborted": grasp_probe_aborted,
             }, contacts=c)
             frame["score"] = strict_score
             trace.append(frame)
@@ -244,7 +284,11 @@ def run_static_trial(
         "first_contact_s": first_contact_s, "bilateral_contact": bilateral,
         "measured_net_opening_initial_m": float(cfg["robot"]["initial_net_opening_m"]),
         "measured_net_opening_after_close_m": env.jaw_opening_m(),
-        "lift_trigger_s": lift_trigger_s, "target_bottom_clearance_m": bottom,
+        "lift_trigger_s": lift_trigger_s, "probe_started_s": probe_started_s,
+        "lift_confirmation_state": probe_status.get("state"),
+        "probe_aborted": grasp_probe_aborted,
+        "lift_confirmation_maximum_joint_drift_m": probe_status.get("maximum_joint_drift_m"),
+        "target_bottom_clearance_m": bottom,
         "hold_s": strict_summary["continuous_qualified_hold_s"],
         "maximum_true_bottom_clearance_m": max_true_clearance,
         "score_version": STRICT_SCORE_VERSION, "strict_score": strict_summary,
@@ -422,6 +466,13 @@ def run_oracle_trial(
     first_bilateral_position_m = None
     lift_started_s = None
     lift_q = None
+    probe_q = None
+    abort_q = None
+    probe_started_s = None
+    probe_status: Dict[str, Any] = {"state": "not_started"}
+    grasp_probe_aborted = False
+    lift_confirmation_completed_s = None
+    probe_abort_s = None
     lift_stall_time = 0.0
     stall_time = 0.0
     terminal_commit = False
@@ -445,6 +496,8 @@ def run_oracle_trial(
     grip_gate = ProprioceptiveGripGate(
         cfg["shared_control"]["proprioceptive_grip_gate"], env.dt_s,
     )
+    lift_confirmation_cfg = cfg["shared_control"]["proprioceptive_lift_confirmation"]
+    lift_confirmation = ProprioceptiveLiftStabilityMonitor(lift_confirmation_cfg, env.dt_s)
     strict_score = dict(strict_scorer.last)
     maximum_true_clearance = -float("inf")
     legacy_hold_steps = 0
@@ -460,10 +513,12 @@ def run_oracle_trial(
     prev_obj = None
     timeout_s = float(cfg["success"].get("episode_timeout_s", 3.0))
     post_contact_window_s = float(
-        cfg.get("shared_control", {}).get("diagnostic_windows", {}).get("after_first_contact_s", 1.0)
+        cfg.get("shared_control", {}).get("diagnostic_windows", {}).get("after_first_contact_s", 1.5)
     )
     max_steps = int(round(timeout_s / env.dt_s))
-    close_schedule = controller_cfg["closure_lead_speed_schedule"]
+    close_schedule = cfg["shared_control"].get(
+        "closure_lead_speed_schedule", controller_cfg["closure_lead_speed_schedule"],
+    )
     guard = float(controller_cfg["terminal_commit_guard_s"])
     y_bounds = tuple(float(v) for v in controller_cfg["legal_intercept_y_range_m"])
     home_hand = _home_hand_goal(env)
@@ -534,7 +589,7 @@ def run_oracle_trial(
                     else:
                         y_cmd, y_speed = command.position_m, command.velocity_m_s
                     hand_goal = np.asarray([float(controller_cfg["intercept_x_m"]), y_cmd, home_hand[2]])
-                    if lift_q is None:
+                    if lift_q is None and probe_q is None and abort_q is None:
                         env.command_hand(hand_goal)
                     if close_started_s is None and 0.0 <= ttc_cmd <= close_lead:
                         close_started_s = rel_t
@@ -565,7 +620,7 @@ def run_oracle_trial(
                         "hand_goal_m": hand_goal, "closing": close_started_s is not None,
                         "lifting": lift_q is not None, "terminal_commit": terminal_commit,
                     }
-                elif lift_q is None:
+                elif lift_q is None and probe_q is None and abort_q is None:
                     env.command_hand(np.asarray([float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2]]))
                     if close_started_s is None:
                         env.command_fingers_open()
@@ -588,7 +643,7 @@ def run_oracle_trial(
                 estimated_current_state = None
                 last_prediction = None
                 stall_time = 0.0
-                if lift_q is None:
+                if lift_q is None and probe_q is None and abort_q is None:
                     env.command_hand(np.asarray([
                         float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2],
                     ]))
@@ -607,7 +662,8 @@ def run_oracle_trial(
                     "lifting": False,
                 }
 
-        if close_started_s is not None and lift_q is None:
+        if (close_started_s is not None and lift_q is None and probe_q is None
+                and abort_q is None and not grasp_probe_aborted):
             lift_gate = grip_gate.update(
                 rel_t, close_started_s,
                 env.finger_joint_positions(), env.finger_joint_velocities(),
@@ -617,12 +673,52 @@ def run_oracle_trial(
                             "gripper_stalled": bool(lift_gate["instantaneous_candidate"]),
                             "lift_gate_stall_s": stall_time}
             if lift_gate["eligible"]:
-                lift_hand_goal = np.asarray([float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2] + float(cfg["robot"]["lift_hand_delta_z_m"])])
+                lift_hand_goal = np.asarray([
+                    float(controller_cfg["intercept_x_m"]), command.position_m,
+                    home_hand[2] + float(lift_confirmation_cfg["probe_height_m"]),
+                ])
+                probe_q = as_numpy(env.command_hand(lift_hand_goal)).reshape(-1)
+                probe_started_s = rel_t
+                lift_confirmation.reset(probe_started_s)
+                probe_status = {"state": "probe_started", "probe_started_s": probe_started_s}
+                last_command = {**last_command, "lifting": False, "grasp_probe": True,
+                                "grasp_probe_goal_m": lift_hand_goal.tolist()}
+        elif probe_q is not None:
+            probe_status = lift_confirmation.update(
+                rel_t, probe_started_s,
+                env.finger_joint_positions(), env.finger_joint_velocities(),
+            )
+            last_command = {**last_command, "lift_confirmation": probe_status,
+                            "grasp_probe": True, "lifting": False}
+            if probe_status["unstable"]:
+                abort_goal = np.asarray([
+                    float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2],
+                ])
+                abort_q = as_numpy(env.command_hand(abort_goal)).reshape(-1)
+                probe_q = None
+                grasp_probe_aborted = True
+                probe_abort_s = rel_t
+                last_command = {**last_command, "grasp_probe_aborted": True,
+                                "lifting": False, "abort_goal_m": abort_goal.tolist()}
+            elif probe_status["confirmed"]:
+                lift_hand_goal = np.asarray([
+                    float(controller_cfg["intercept_x_m"]), command.position_m,
+                    home_hand[2] + float(cfg["robot"]["lift_hand_delta_z_m"]),
+                ])
                 lift_q = as_numpy(env.command_hand(lift_hand_goal)).reshape(-1)
                 lift_started_s = rel_t
-                last_command = {**last_command, "lifting": True, "lift_hand_goal_m": lift_hand_goal}
+                lift_confirmation_completed_s = rel_t
+                probe_q = None
+                last_command = {**last_command, "lifting": True, "grasp_probe": False,
+                                "lift_hand_goal_m": lift_hand_goal.tolist()}
+        if abort_q is not None:
+            env.robot.control_dofs_position(abort_q[:7], env.arm_dofs)
+            env.command_fingers_close()
         elif lift_q is not None:
             env.robot.control_dofs_position(lift_q[:7], env.arm_dofs)
+            env.command_fingers_close()
+        elif probe_q is not None:
+            env.robot.control_dofs_position(probe_q[:7], env.arm_dofs)
             env.command_fingers_close()
 
         tcp_before_step = env.tcp_position()
@@ -696,7 +792,12 @@ def run_oracle_trial(
         if should_log:
             frame = _record_state(
                 env, next_rel_t,
-                "lift_hold" if lift_q is not None else ("closing" if close_started_s is not None else "intercept"),
+                "lift_hold" if lift_q is not None else (
+                    "grasp_probe_abort" if abort_q is not None else (
+                        "grasp_probe" if probe_q is not None else
+                        ("closing" if close_started_s is not None else "intercept")
+                    )
+                ),
                 last_command, contacts=c,
             )
             frame["score"] = strict_score
@@ -860,7 +961,14 @@ def run_oracle_trial(
         "last_predicted_ttc_s": None if last_prediction is None or not last_prediction.reachable else last_prediction.ttc_s,
         "last_predicted_y_m": None if last_prediction is None or not last_prediction.reachable else float(last_prediction.position_m[1]),
         "final_tcp_y_m": y_tcp, "measured_net_opening_m": env.jaw_opening_m(),
-        "lift_start_s": lift_started_s, "target_bottom_clearance_m": final_bottom,
+        "lift_start_s": lift_started_s,
+        "lift_confirmation_completed_s": lift_confirmation_completed_s,
+        "grasp_probe_started_s": probe_started_s,
+        "grasp_probe_aborted": grasp_probe_aborted,
+        "grasp_probe_abort_s": probe_abort_s,
+        "grasp_probe_final_state": probe_status.get("state"),
+        "grasp_probe_maximum_joint_drift_m": probe_status.get("maximum_joint_drift_m"),
+        "target_bottom_clearance_m": final_bottom,
         "maximum_target_bottom_clearance_m": maximum_true_clearance,
         "hold_s": strict_summary["continuous_qualified_hold_s"],
         "bilateral_contact_at_end": contacts["bilateral"],
@@ -1115,9 +1223,9 @@ def run_reference(
                 "post_contact_event_state_accuracy_evaluator_only": post_contact_event_errors_by_rate,
                 "post_contact_controller_state_accuracy_evaluator_only": post_contact_controller_summary,
                 "post_contact_controller_state_boundary": (
-                    "event-derived target state is logged for evaluator diagnostics; the shared lift gate consumes only finger joint position/velocity and close-command time; evaluator GT does not enter control"
+                    "event-derived target state is logged for evaluator diagnostics; the shared grip candidate gate uses finger joint position/velocity and close-command time, then the shared causal lift-probe monitor uses finger joint drift/velocity and probe-command time; evaluator GT does not enter either control gate"
                     if use_event_observation else
-                    "delayed current-GT state drives pre-close control only to produce a sensor-reference trajectory; the shared lift gate consumes only finger joint position/velocity and close-command time"
+                    "delayed current-GT state drives pre-close control only to produce a sensor-reference trajectory; the shared grip candidate gate uses finger joint position/velocity and close-command time, then the shared causal lift-probe monitor uses finger joint drift/velocity and probe-command time"
                 ),
                 "reference_controller_state_source": "causal_event_state" if use_event_observation else "delayed_current_gt_shadow_reference",
                 "dynamic_visibility_evaluator_only": visibility_summary,
@@ -1159,7 +1267,7 @@ def run_reference(
             "spatial learned model consumes causal five-bin event tensors only; GT is used for supervised training and offline evaluator metrics, not inference"
             if event_model_checkpoint is not None else "centroid/regression smoke estimator"
         ),
-        "shared_lift_gate_boundary": "both GT and event paths use ProprioceptiveGripGate: finger joint positions/velocities and close-command timestamp only; no target state/contact/segmentation/depth input",
+        "shared_lift_gate_boundary": "both GT and event paths use the same ProprioceptiveGripGate and ProprioceptiveLiftStabilityMonitor; the candidate grip gate reads finger joint positions/velocities and close-command time, then a small commanded probe is confirmed from finger-joint drift/velocity and probe-command time. No target state/contact/segmentation/depth enters either control gate.",
         "shared_control_config": cfg.get("shared_control"),
         "episodes": episode_rows,
         "strict_success_by_speed": {
