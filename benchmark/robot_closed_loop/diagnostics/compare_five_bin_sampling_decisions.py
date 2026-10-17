@@ -8,6 +8,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
@@ -238,6 +239,12 @@ def main() -> int:
             str(p.relative_to(args.rollout_root)): sha256(p)
             for p in sorted(args.rollout_root.glob("episodes/episode_*/direct_hdr_events_1khz_2khz.npz"))
         },
+        "label_and_control_trace_hashes": {
+            str(p.relative_to(args.rollout_root)): sha256(p)
+            for pattern in ("episodes/episode_*/state_control_trace.jsonl", "episodes/episode_*/episode.csv")
+            for p in sorted(args.rollout_root.glob(pattern))
+        },
+        "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "checkpoint_sha256": sha256(args.checkpoint),
         "scene_config_sha256": sha256(args.scene_config),
         "shared_control_config_sha256": sha256(args.control_config),
