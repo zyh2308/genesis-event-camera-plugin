@@ -1,6 +1,6 @@
 # Stage 4 corrected v2: live training status
 
-Updated: `2026-10-17T18:08:25Z` (last remote metric records). The paired synthetic pilot is running on g1. It is a pipeline check, not a generator-performance result.
+Updated: `2026-10-17T18:21:59Z`. The 198-update paired pilot and synthetic validation passed on g1. Process-exit/resume equivalence is running; no generator-performance conclusion is made from this short pilot.
 
 ## Run
 
@@ -8,7 +8,7 @@ Updated: `2026-10-17T18:08:25Z` (last remote metric records). The paired synthet
 - Training source commit: `567eec285551cc3054f54a7974a4112cfbb41d97`, branch `exp/public-sim2real-v1`
 - Frozen simulator core: `e79e656ac00f7847b98db9e12bf43b093f3afff1` (unchanged)
 - Method: STE-FlowNet, dt1, seed 0, EventGenesis/V2E paired; 32 shared physical rollouts, 1,584 synthetic train and 528 synthetic validation windows per arm; registered budget 45 epochs × 198 updates/epoch.
-- Supervisor: tmux `stage4-flow-corrected-20261017-v6`, continuation PID `3538277`; pilot PIDs `3540102` and `3540103`.
+- Supervisor: tmux `stage4-flow-corrected-20261017-v6`, continuation PID `3538277`; the pilot trainer PIDs `3540102` and `3540103` exited successfully after validation. Resume-equivalence PID `3558426` is active on GPU 2.
 - g1 GPUs: EventGenesis on GPU 2, V2E on GPU 4. Both were verified idle before launch. Peak allocated memory observed was 24,580,958,208 bytes per arm.
 - Real-data scoring is disabled. Flow labels are not consumed by the optimizer; inference input is five-bin events only.
 
@@ -20,7 +20,7 @@ The earlier preflight failure remains preserved. It came from a NumPy mixed-inde
 
 ## Training observed
 
-The independently verified update-20 receipt confirms both arms performed 20 optimizer updates, saved resumable checkpoints, had finite losses and gradients, and used identical seed, initialization, config, paired sample IDs and augmentation seeds. At the latest remote read (`18:08:25Z`), EventGenesis had logged update 91 and V2E update 93; both training processes were alive. Pilot logs and checkpoints remain on g1.
+The independent update-20 receipt confirms both arms performed at least 20 updates, saved resumable checkpoints, had finite losses and gradients, and used identical seed, initialization, config, paired sample IDs and augmentation seeds. Both arms then completed the full 198-update pilot, the 528-window validation over eight held-out rollouts, and post-validation epoch-boundary checkpointing. `paired_pilot_validation.json` is PASS; SHA256 `e8a7fe414b81f29e682707c1db95b9257e117ae356c0a192ef88af027a071004`.
 
 | Arm | Update-20 loss | Update-20 checkpoint SHA256 |
 |---|---:|---|
@@ -29,9 +29,16 @@ The independently verified update-20 receipt confirms both arms performed 20 opt
 
 The two short-pilot losses are telemetry only and do not support a generator ranking. The saved checkpoints are 580,038,560 bytes each. Their paths are `.../pilot/eventgenesis/update_000020.pt` and `.../pilot/v2e/update_000020.pt` under the run root below. Verification receipt SHA256: `fb83abe65816e58312b722dff388c471c07e979a87200146fc689a0dd8ecedc4`.
 
+| Arm | Synthetic val EPE (px/30ms) | Zero-flow val EPE | Resumable epoch checkpoint SHA256 |
+|---|---:|---:|---|
+| EventGenesis | 0.28709464 | 0.28420805 | `db23a06178622e121ad2d2eda78ab611579faf9b8386f08e06f59ee88a0ad109` |
+| V2E | 0.28606818 | 0.28420805 | `4e9dfdb5213c1fcbc0409795a256c7fd56e6e5a911c882c0ddbe4fc964251762` |
+
+After one pilot epoch both models are slightly worse than the zero-flow baseline on this synthetic validation. This is recorded as a pipeline/diagnostic result; it is not a real-data score, checkpoint selection, or a generator ranking.
+
 ## Still running / next gates
 
-The supervised continuation is capped at 198 pilot updates per arm. It will then run synthetic validation, process-exit/resume equivalence across the epoch boundary, production-launcher negative controls, and a final full gate check. Only if all pass will it resume from the pilot checkpoint into the remaining registered 45-epoch budget. No real dataset is used for checkpoint selection or ranking.
+The paired pilot validator exited 0. The current process-exit/resume test compares continuous and resumed training at update 199, including next sample IDs, augmentation seeds, metrics, model/optimizer/scheduler and RNG states. It will then run launcher negative controls and a final full gate check. Only if all pass will both arms resume from the validated epoch-1 checkpoints into the registered 45-epoch budget. No real dataset is used for checkpoint selection or ranking.
 
 ## Paths and reproduction
 

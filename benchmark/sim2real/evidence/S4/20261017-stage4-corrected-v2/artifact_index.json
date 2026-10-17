@@ -1,6 +1,6 @@
 {
   "schema": "stage4_corrected_v2_artifact_index_v1",
-  "observed_utc": "2026-10-17T18:08:25Z",
+  "observed_utc": "2026-10-17T18:21:59Z",
   "campaign": {
     "id": "20261017-stage4-flowdt1-seed0-corrected-v5",
     "branch": "exp/public-sim2real-v1",
@@ -8,7 +8,7 @@
     "frozen_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
     "real_data_scoring": false,
     "training_source_commit": "567eec285551cc3054f54a7974a4112cfbb41d97",
-    "status": "paired_198_update_pilot_running",
+    "status": "process_exit_resume_equivalence_running",
     "training": "STE-FlowNet dt1 seed0; 45 epochs x 198 updates; EventGenesis/V2E paired",
     "supervisor": {
       "tmux": "stage4-flow-corrected-20261017-v6",
@@ -23,11 +23,25 @@
       }
     },
     "latest_observed_optimizer_updates": {
-      "eventgenesis": 91,
-      "v2e": 93,
-      "observed_utc": "2026-10-17T18:08:25Z"
+      "eventgenesis": 198,
+      "v2e": 198,
+      "observed_utc": "2026-10-17T18:14:53Z"
     },
-    "preflight_fingerprint_sha256": "e147c8d8d3ca00f4b227c18228ceeb141dd522510df86e8bb31775d31c539930"
+    "preflight_fingerprint_sha256": "e147c8d8d3ca00f4b227c18228ceeb141dd522510df86e8bb31775d31c539930",
+    "pilot_validation": {
+      "status": "PASS",
+      "exit_code": 0,
+      "finished_utc": "2026-10-17T18:20:52Z",
+      "server_report": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/paired_pilot_validation.json",
+      "bytes": 12185,
+      "sha256": "e8a7fe414b81f29e682707c1db95b9257e117ae356c0a192ef88af027a071004"
+    },
+    "resume_equivalence": {
+      "status": "running",
+      "started_utc": "2026-10-17T18:20:52Z",
+      "pid": 3558426,
+      "gpu": 2
+    }
   },
   "artifacts": [
     {
@@ -116,7 +130,11 @@
       "finished_utc": "2026-10-17T17:56:44Z",
       "exit_code": 0,
       "passed_checks": 13,
-      "status": "PASS"
+      "status": "PASS",
+      "initial_pass_sha256": "6179a2d0db502dfcd53c75d0544f4b819f24395d8d5e670a8add6a0651a732be",
+      "current_stage_receipt_sha256": "f041520d76dda100f9e926711b9863e7149596f7a5c74a3a57de32715e508167",
+      "note": "The report is updated in place as verified gate receipts are attached; initial full-preflight checksum is retained in full_preflight_pass_summary.json.",
+      "checks_passed_so_far": 14
     },
     {
       "name": "static_ground_flow_indexing_diagnosis",
@@ -163,11 +181,15 @@
         "v2e": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/pilot/v2e/training_metrics.jsonl"
       },
       "latest_observed_updates": {
-        "eventgenesis": 91,
-        "v2e": 93
+        "eventgenesis": 198,
+        "v2e": 198
       },
       "observed_utc": "2026-10-17T18:08:25Z",
-      "status": "active_append_only"
+      "status": "complete_after_198_updates",
+      "eventgenesis_bytes": 166436,
+      "eventgenesis_sha256": "ee91e7a6af238fe7ef9febacd3541522008fb62b8140e8aaea8b1853f3cf0bfa",
+      "v2e_bytes": 165999,
+      "v2e_sha256": "31c7dfd12a32fc9a26ed589694863bff89ab9b74a107c6199ab77fc376660381"
     },
     {
       "name": "corrected_continuation_supervisor",
@@ -175,11 +197,58 @@
       "pid": 3538277,
       "server_log": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/continue_after_data.supervisor.log",
       "status": "active"
+    },
+    {
+      "name": "paired_198_update_pilot_validation",
+      "path_in_repo": "paired_pilot_validation.json",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/paired_pilot_validation.json",
+      "bytes": 12185,
+      "sha256": "e8a7fe414b81f29e682707c1db95b9257e117ae356c0a192ef88af027a071004",
+      "exit_code": 0,
+      "updates_per_arm": 198,
+      "held_out_rollouts_per_arm": 8,
+      "validation_windows_per_arm": 528,
+      "fixed_visuals_per_arm": 4,
+      "status": "PASS",
+      "validation_epe_px_per_30ms": {
+        "eventgenesis": 0.28709463959823733,
+        "v2e": 0.2860681771595413,
+        "zero_flow": 0.28420805185061765
+      },
+      "interpretation": "both short-run models are slightly worse than zero flow; diagnostic only"
+    },
+    {
+      "name": "epoch_boundary_checkpoint_eventgenesis",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/pilot/eventgenesis/last.pt",
+      "bytes": 580035686,
+      "sha256": "db23a06178622e121ad2d2eda78ab611579faf9b8386f08e06f59ee88a0ad109",
+      "optimizer_update": 198,
+      "next_epoch": 1,
+      "next_position_samples": 0,
+      "scheduler_last_epoch": 1,
+      "status": "resumable_and_validated"
+    },
+    {
+      "name": "epoch_boundary_checkpoint_v2e",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/pilot/v2e/last.pt",
+      "bytes": 580035686,
+      "sha256": "4e9dfdb5213c1fcbc0409795a256c7fd56e6e5a911c882c0ddbe4fc964251762",
+      "optimizer_update": 198,
+      "next_epoch": 1,
+      "next_position_samples": 0,
+      "scheduler_last_epoch": 1,
+      "status": "resumable_and_validated"
+    },
+    {
+      "name": "resume_equivalence_process",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence",
+      "pid": 3558426,
+      "gpu": 2,
+      "started_utc": "2026-10-17T18:20:52Z",
+      "status": "running"
     }
   ],
   "pending": [
-    "complete paired 198-update pilot",
-    "paired synthetic validation and per-rollout evidence",
     "process-exit/resume equivalence at update 198->199",
     "production launch-gate negative controls",
     "final full-phase gate verification",
@@ -189,6 +258,7 @@
     "corrected full preflight 13/13",
     "independent 24-case static-ground indexing diagnosis",
     "paired seed0 update-20 checkpoint and optimizer verification",
-    "paired pilot training active beyond update 20"
+    "both arms completed 198 optimizer updates",
+    "paired eight-rollout synthetic validation and post-validation epoch-boundary checkpoint validation"
   ]
 }
