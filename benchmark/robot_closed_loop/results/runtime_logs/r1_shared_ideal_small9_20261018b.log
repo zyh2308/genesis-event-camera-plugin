@@ -1,0 +1,176 @@
+R1 small9 development run: r1_shared_ideal_small9_20261018b
+code_commit=123369f4bd70a1fe039bf073a35333d0d30ead19
+root=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd
+old_cache_root=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-final-oracle-20261017/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017c/trajectory_cache
+active_shared_cache_root=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache
+direct_hdr_reference=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
+robot_python=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
+v2e_python=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
+v2e_source=/home/zhaoyuhan/Eventbased_WAM/code/v2e_source
+slomo_model=/home/zhaoyuhan/Eventbased_WAM/code/v2e_source/input/SuperSloMo39.ckpt
+render_device=EGL_DEVICE_ID 3 (physical GPU 3); V2E=physical GPU 3; model fits=CPU
+shared_rollout_capture=reused immutable 9-episode cache
+{
+  "status": "PASS",
+  "output": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1",
+  "episodes": 9,
+  "checkpoint_sha256": {
+    "ours": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9",
+    "v2e": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45"
+  },
+  "cost_s": {
+    "shared_rollout_capture": 0.0,
+    "paired_event_generation_from_existing_cache": 2930.6902295174077,
+    "two_equal_budget_model_fits": 1136.1253908295184,
+    "wall_scope": "end-to-end replay and training process wall time; excludes original cached rollouts and common-reference evaluation"
+  },
+  "output_file_count": 179
+}
+{
+  "output": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/common_reference_eval",
+  "overall": {
+    "ours": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 384,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 384,
+        "false_unreachable": 197,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.6609294320137694
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.052845949717461246,
+          "p50": 0.009196793364362226,
+          "p95": 0.36361790109452247
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 1.0081310107761792,
+          "p50": 0.23164026300080368,
+          "p95": 5.277929751814809
+        },
+        "intercept_xy_error_m": {
+          "n": 384,
+          "mean": 0.029575605784794654,
+          "p50": 0.01849046842313854,
+          "p95": 0.09170910846222721
+        },
+        "intercept_y_signed_error_m": {
+          "n": 384,
+          "mean": 0.009752662717884468,
+          "p50": 0.004180597111009866,
+          "p95": 0.08661132502874697
+        },
+        "arrival_signed_error_s": {
+          "n": 384,
+          "mean": -0.023596214199794435,
+          "p50": -0.05140393881703398,
+          "p95": 0.49073253979052084
+        },
+        "arrival_abs_error_s": {
+          "n": 384,
+          "mean": 0.1978056730368627,
+          "p50": 0.13939194457506138,
+          "p95": 0.6038808488211805
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    },
+    "v2e": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 514,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 514,
+        "false_unreachable": 67,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.8846815834767642
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.00483729818454521,
+          "p50": 0.004089354818698791,
+          "p95": 0.011258517929327071
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 0.1266205478024714,
+          "p50": 0.10773864725069765,
+          "p95": 0.2974091210708824
+        },
+        "intercept_xy_error_m": {
+          "n": 514,
+          "mean": 0.017134279847073927,
+          "p50": 0.011140705409492229,
+          "p95": 0.05087108673354392
+        },
+        "intercept_y_signed_error_m": {
+          "n": 514,
+          "mean": 0.00404633290837661,
+          "p50": 0.0014397351482824553,
+          "p95": 0.04422331555881276
+        },
+        "arrival_signed_error_s": {
+          "n": 514,
+          "mean": 0.035762282475238064,
+          "p50": -0.015232133356602201,
+          "p95": 0.590461372931713
+        },
+        "arrival_abs_error_s": {
+          "n": 514,
+          "mean": 0.16579545760657208,
+          "p50": 0.0879114701314549,
+          "p95": 0.6033363147242562
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    }
+  },
+  "wall_s": 9.42603880353272
+}
+capture=excluded because a previously measured immutable cache was reused
+paired=	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:07:49
+	Maximum resident set size (kbytes): 5086332
+	Exit status: 0
+evaluation=	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:09.87
+	Maximum resident set size (kbytes): 337976
+	Exit status: 0
+R1 small9 pipeline completed: /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b

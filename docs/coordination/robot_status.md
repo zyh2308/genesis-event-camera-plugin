@@ -1,14 +1,14 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-17（Asia/Tokyo）
-**阶段：** R0.5 strict oracle 已核验三档各 100/100；GT-shadow 9/9 是延迟当前 GT 驱动的 sensor-reference，不是事件控制。R0.5 event-controller smoke 为 strict success 0/9、接触 3/9、抬升 0/9。R0.6 已修复速度回归和状态新鲜度缺陷、完成三集 raw-event 离线回放，并在 g1 完成新一组三集 2 kHz event-controller rollout：strict success 0/3、接触 1/3、抬升 0/3。任务、相机、物理时钟与 strict scorer 保持不变。事件空间归因和 lift 状态仍未通过；尚未启动大规模配对数据、正式多 seed 训练或 Ours/V2E 排名。
+**更新时间：** 2026-10-18（Asia/Tokyo）
+**阶段：** R0.5 strict oracle 已核验三档各 100/100；R0.6 感知 smoke 与 R2 抓取闭环问题仍按历史批次报告。R1 的九集共同理想响应配对训练和共同 Direct-HDR 开发评估已在 g1 完成，两个模型共用 581 个接触前查询；这满足 R1 最小可复核开发链路，但九集参考全是开发资料，不作正式测试或生成器排名。R2 不阻塞 R1。任务、相机、物理时钟、frozen core 与 strict scorer 均未因本轮修改。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## 当前进度
 
-R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹，控制器使用 10 ms 延迟当前 GT，事件只用于评估。R0.6 已完成 raw-event 离线回放、三集 2 kHz 真实事件闭环和复用 GT-shadow 事件的 tiny overfit 诊断，没有新增 Direct-HDR 渲染轨迹。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
+R0.5 场景可行性、R0.6 状态接口诊断、R1 配对生成器评估和 R2 抓取闭环分开报告。R0.5 oracle 是三档各 100/100；旧版 event-controller smoke 是 0/9 strict success、3/9 接触、0/9 抬升。R0.5 GT-shadow 是独立的完整成功 reference 轨迹。R0.6 的历史结果不被本轮 R1 覆盖。R1 现已用固定六集训练/三集验证 split 完成同响应 Ours/V2E paired fit，并将两模型在同一 Direct-HDR 开发集上逐时刻回放；Ours 的正 y 边缘误差有明显失效簇，结果没有被包装成排名。逐批次的实际代码 commit、配置/数据哈希、日志和复跑命令如下。
 
-## R0.8 共同控制收尾与配对流水线（2026-10-17；待服务器验证）
+## R0.8 共同控制收尾与配对流水线（2026-10-17 至 18；工程候选实测，待协议冻结）
 
 - **代码 commit：** `28258e617699584344baa98b43a175dce7a5c783`。场景配置未改，SHA256 仍为 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`；新增独立 shared-control 候选配置 [`shared_control_r0_8_candidate.json`](../../benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json)，SHA256 `bb88542e49924acc428120ce21ade6660cb0813a2ecc791302aa5b8fdc718383`。
 - 已实现共同 `ProprioceptiveGripGate`：仅读取 Panda 两指关节位置/速度和 close-command 时间；目标 GT、接触标签、segmentation、depth 均不进入 gate。GT 与 learned-event 路径共用此 gate，strict scorer 保持原样。候选阈值为每指关节位置 12–29 mm、两指不对称 ≤4 mm、速度 ≤30 mm/s、close 命令至少 50 ms、稳定 30 ms；依据是 R0.7 成功抓取约 19 mm/指与失败接触约 11.7 mm 净开口的日志差异。
@@ -25,7 +25,7 @@ R0.5 场景可行性与 R0.6 状态接口诊断分开报告。R0.5 oracle 是三
     --output benchmark/robot_closed_loop/results/r0_8_grip_gate_regression_<run_id>
   ```
 
-- 正式 handoff 将 **R1** 定义为 paired trajectory bank + Ours/V2E events + estimator open-loop；**R2** 是共同 Dense-HDR reference events + 同一 controller closed-loop。下一步先在 g1 做 gate 的三个负例/true-hold，再三档 × 左/中/右 strict oracle 回归，随后少量新 seed learned R2。配对训练只做小规模调用链 smoke；R1/R2 都是 smoke，不做排名或正式多 seed 结论。
+- 当时正式 handoff 将 **R1** 定义为 paired trajectory bank + Ours/V2E events + estimator open-loop、将 **R2** 定义为共同 Dense-HDR reference events + 同一 controller closed-loop。此前“配对训练仅做调用链 smoke”的判断已由下文 R1 small9 公平配对训练与共同参考开发评估更新；当前仍未开展正式 holdout 或排名。
 
 ### 已完成并有证据
 
@@ -597,12 +597,12 @@ bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_monitor60_matched_abo
 
 | seed | 速度 / 初始 y | 30 µm hold 与结果 | 60 µm hold 与结果 |
 |---|---|---|---|
-| 2026104344 | 0.4 m/s / 0 mm | 0.473 s，gate abort，strict fail | 原 2/4 strict score 保留；1.7395 s monitor abort 时 hold 0.4715 s，1.768 s scorer 累计至 0.5 s |
+| 2026104344 | 0.4 m/s / 0 mm | 0.473 s，gate abort，strict fail | 原 2/4 strict score 保留；1.7395 s monitor abort 时 hold 0.4715 s（尚未完成），episode 在 abort 后继续到 1.768 s 时 scorer 累计值才到 0.5 s |
 | 2026104345 | 0.4 m/s / +55 mm | 0.1425 s，gate abort | 0.1715 s，gate abort，strict fail |
 | 2026104346 | 0.5 m/s / −55 mm | 0.500 s，strict success | 0.500 s，strict success |
 | 2026104347 | 0.5 m/s / 0 mm | 0 s，gate abort | 0 s，gate abort，strict fail |
 
-seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified hold 为 0.4715 s；episode 到 1.768 s 后原 scorer 累计记录 0.5 s。按研究会要求保留原 2/4 strict score，但不得表述为 hold 先完成再 abort。按已合格 hold 窗计算的真实最小底面净空为 80.079 mm、最大相对滑移 4.339 mm，clearance 达标时支撑接触样本为 0；abort 后至 episode 终点的评分时间语义列为 R2 诊断问题。seed 4345 的关节漂移为 63.021 µm，qualified hold 内最大滑移 3.754 mm，但只有 0.1715 s；seed 4347 最大净空仅 35.263 mm，未进入 qualified hold。其余闭合提前量和实际接触状态与 30 µm 配对轨迹相符，没有重调闭合机械参数。
+seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified hold 为 0.4715 s，**尚未满足连续 0.5 s**；episode 在 abort 后继续，至 1.768 s 原 scorer 的累计记录才到 0.5 s。按研究会要求保留原 2/4 strict score，但不得表述为 hold 先完成再 abort。按已合格 hold 窗计算的真实最小底面净空为 80.079 mm、最大相对滑移 4.339 mm，clearance 达标时支撑接触样本为 0；abort 后至 episode 终点的评分时间语义列为 R2 诊断问题。seed 4345 的关节漂移为 63.021 µm，qualified hold 内最大滑移 3.754 mm，但只有 0.1715 s；seed 4347 最大净空仅 35.263 mm，未进入 qualified hold。其余闭合提前量和实际接触状态与 30 µm 配对轨迹相符，没有重调闭合机械参数。
 
 这项小样本把一个仅差 27 ms 的中心 hold 从失败变为 strict success，但没有挽救 .4 m/s +55 mm 或 .5 m/s 中心样例；不能把 2/4 外推成稳定成功率。此前 60 µm 静态/侧偏负例回归通过，但没有覆盖所有动态前缘顶推轨迹。建议把 60 µm 作为下一版共同控制协议候选：它允许严格任务完成，且已有负例 smoke 未见 false success；正式冻结前仍应由研究会话决定是否接受尚未覆盖的动态前缘风险。30 µm 结果保留为保守对照，不合并统计。
 
@@ -610,18 +610,18 @@ seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified h
 
 #### 两个工作包的协议候选与边界
 
-建议场景/机器人/机位/0.5 ms physics/strict scorer 按既有 hash 锁定；共同 controller 保留 80/70/60 ms 速度相关 close lead，lift gate 暂提 60 µm 为待研究冻结候选。事件 smoke 暂用 2 kHz causal five-bin 输入，因为它和 physics 时钟一致；1/2 kHz 回放已经显示会改变部分动作，故 2 kHz 仍是 provisional，不宣称采样充分。R1 最小同缓存配对流水线可作为后续正式数据实现起点，但 Ours/V2E 当前 pixel-response 不匹配；R2 两模型新 episode 均未 strict 成功，因此不应启动生成器排名或正式多 seed 训练。协议冻结前需由研究会话确认 60/30 µm gate 与 2 kHz 的候选边界，并明确是否先补一个动态前缘负例。
+这是 2026-10-17 的协议候选快照：建议场景/机器人/机位/0.5 ms physics/strict scorer 按既有 hash 锁定，controller 保留 80/70/60 ms close lead，lift gate 暂提 60 µm。其“不匹配 pixel-response、只可作最小流水线起点”的 R1 判断已由 2026-10-18 small9 共同响应开发批次更新；采样与 gate 的冻结问题仍属 R2/协议审查。
 
 
-#### R1 优先执行（2026-10-17，进行中）
+#### R1 优先执行（2026-10-17 至 18；最小开发评估已完成，正式测试未启动）
 
 研究会已在 Windows 研究工作区 docs/robot_r1_priority_2026-10-17/ 核验旧 GT-shadow 的共同参考回放：9 集、每模型 581 个接触前查询、平均平面位置误差约 95 mm。该回放使用同一 Direct-HDR 文件/时刻，说明共同 evaluator 可复用；旧 checkpoint 训练仅一个 episode × 3 epochs，且 Ours/V2E 训练 pixel response 不一致，不能做生成器排名。参考集只作开发，不作为正式独立测试。
 
-本轮优先事项：在不修改 frozen simulator core 的前提下，为 Ours 和官方 V2E 使用明确命名的共同理想无噪声响应配置；保留官方默认配置和旧结果；以相同模型、episode split、optimizer-step 预算及训练 seed 训练配对模型；两组模型统一在相同旧 Direct-HDR 文件与查询时刻上评估位置、速度、固定预测器到达时间偏差、拦截横向偏差及状态/可达覆盖率。先复用现有缓存；再依精度与实测成本决定是否扩充三速度 × 左中右小批数据。R1 不等待 R2 抓取成功或夹爪 monitor 收敛。
+本轮执行要求：在不修改 frozen simulator core 的前提下，为 Ours 和官方 V2E 使用明确命名的共同理想无噪声响应配置；保留官方默认配置和旧结果；以相同模型、episode split、训练预算及训练 seed 训练配对模型；两组模型统一在相同旧 Direct-HDR 文件与查询时刻上评估位置、速度、固定预测器到达时间偏差、拦截横向偏差及状态/可达覆盖率。R1 不等待 R2 抓取成功或夹爪 monitor 收敛。结果见下节。
 
-研究证据入口：/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_r1_priority_2026-10-17/。其中 R1_PRIORITY_REVIEW.md 与 R1_EXECUTION_PROMPT.md 为研究会说明；common_reference_audit.json、common_reference_polls.csv、run_common_reference_audit.py 为回放证据。当前实现和结果将追加于本状态文件，阶段结束前列明代码/配置/checkpoint/事件/查询时刻/data hashes、复跑命令、按 episode/速度指标及端到端成本。
+研究证据入口：`/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_r1_priority_2026-10-17/`。其中 `R1_PRIORITY_REVIEW.md` 与 `R1_EXECUTION_PROMPT.md` 为研究会说明；`common_reference_audit.json`、`common_reference_polls.csv`、`run_common_reference_audit.py` 为此前回放证据。R1 small9 的代码/配置/checkpoint/事件/查询时刻/data hashes、复跑命令、episode/速度指标及端到端成本已列在下节。
 
-#### R1 共同响应实现（已提交；g1 实跑待恢复）
+#### R1 共同响应实现历程（已提交并在 g1 完成九集开发批次）
 
 代码已推送到 `exp/robot-closed-loop-v1`，commit `10ff100caf5e79f9f8a75b575b080f3cb01c10b4`。新增缓存回放训练入口 `benchmark/robot_closed_loop/diagnostics/run_r1_from_cached_rollouts.py`、共同 Direct-HDR 评估入口 `benchmark/robot_closed_loop/diagnostics/evaluate_r1_common_direct_hdr.py`，并让官方 V2E wrapper 可接收独立实验 YAML。Python 编译和 `git diff --check` 通过；此处仅为静态检查，不代表 R1 已运行。
 
@@ -631,4 +631,40 @@ seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified h
 
 新评估脚本会为每个 episode 重建 estimator，避免速度回归历史跨 episode 串入；两组在完全相同的 Direct-HDR 文件与 query 时刻上回放，并输出逐 poll/逐 episode/逐速度的 XY 位置误差、XY 速度误差、固定 predictor 到达时间与拦截位置误差，以及缺失状态和预测可达/不可达判断覆盖率。到达/拦截参考是同一 fixed predictor 输入评估时刻 GT 的结果，不是实际过线真值。
 
-g1 已确认旧配对缓存 `r0_8_paired_pipeline_smoke_20261017c/trajectory_cache/episode_{000,001}` 含两份 HDF5、各自完整 PNG、frame manifest、episode result 与 trace；初次资源快照显示 GPU 3 空闲，GPU 2/4 由其他任务占用。代码 fetch 成功，但隔离 worktree checkout 在慢连接中途被中断；尚未启动新生成/训练任务，也没有新 R1 指标或成本。下一次远程连接前遵守 SSH backoff；启动前重新核对 worktree、GPU 3 和现有进程。旧 R1 smoke 与上述研究会旧 checkpoint 回放继续按历史不匹配/欠训练结果保留，不升级为本轮验收。
+此前的二集调用链 smoke 和旧 checkpoint 回放继续按历史结果保留，不升级为本轮验收。本轮先有一次 launcher 因过宽 warning 正则把合法 V2E 日志中的时间戳误判为 300 Hz 告警，随后修复到 `123369f4bd70a1fe039bf073a35333d0d30ead19`；失败尝试生成的事件和 checkpoint 未用于本轮训练/评估。最终 small9 运行从同一不可变九集 cache 重新生成两组训练事件，launcher exit `0`，完整结果和逐查询 evaluator 输出见下方 R1 small9 closeout。
+
+#### R1 small9：共同响应配对训练与共同 Direct-HDR 开发评估（g1，2026-10-18）
+
+本轮按用户正式 R1 定义完成了配对训练与同源参考评估：同一批九个 episode 的缓存 rollout、图像 endpoint、时间戳、标签与 episode split；Ours/V2E 分别只接收各自生成器事件；相同 `heatmap_v2`、seed `606`、固定 40 epoch、batch 32、相同 6 train / 3 validation episode；两个 checkpoint 再读取完全相同的 Direct-HDR 文件和 581 个接触前查询时刻。所有九个 Direct-HDR episode 均为已用过的开发材料，不是独立正式测试。arrival/intercept 对照是把同一冻结 predictor 应用于查询 cutoff 的评估 GT 状态；**不是实测越过拦截平面的到达真值**。
+
+- 实际运行代码 commit `123369f4bd70a1fe039bf073a35333d0d30ead19`，branch `exp/robot-closed-loop-v1`；scene SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，control SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，small9 experiment config SHA256 `324363fe362c5ad3367e989d3839d4525ea87e148b1b1d3dc3244ead45426865`，shared ideal response SHA256 `4b5bd964835b9b09559a12b127779bc05d371b68f1dc6a2e0d231d148c953a72`，V2E overlay SHA256 `8abe329a0013c5cd47dd3050576656cacfa9b15e487c6e8f8a1b9ff6d7ac1505`。官方 V2E default SHA256 `155f0ef7305bac9c52aa09e485d4c5a1feeaf448f1279a2cccf04097b290add4` 未改，frozen core 未改。
+- 两边共享的可控像素响应为 ideal/no-noise：ON/OFF threshold `0.2`、threshold sigma/noise/leak/refractory 为零、cutoff `0`（无限带宽）、seed `42`、`lin_log` transfer threshold `20 DN`。共同 endpoint 是缓存 Genesis display PNG 经 OpenCV grayscale；HDR 仍作 provenance/hash，但不是本轮 Ours 输入。时间重建仍按算法身份分开：Ours 使用 frozen `GenesisPhysicsEventPlugin` 和缓存 pose/depth/seg 作几何插值；V2E 使用官方 image-folder + SuperSloMo。两者不逐事件相同，也没有给 estimator 添加额外输入。
+- train IDs `[0,1,2,3,7,8]`，validation `[4,5,6]`；split-contract SHA256 `809a7471393a2c54da6d594cc0395c4b791f8735339af2e694936957d0496012`；两边训练窗口数相同，均 1203。每边实际 40 epoch、best epoch 40；Ours fit 556.14 s，V2E 550.16 s。training event source manifest SHA256：Ours `ba671c67cf02211d89b07910c56e9503541f1620bf5b26e51c77ecdf7e30a4bc`、V2E `74d42e3c822ddfe12f5f154b8628a7b0054c0b7d98eb76da666443402c70ff0a`。训练 checkpoint SHA256：Ours `d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9`、V2E `bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45`。
+- 共同 Direct-HDR reference 仍为旧九集开发文件，manifest SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；reference summary SHA256 `cbff52f36467d92d2b23683af362c5164a76707d51186cf25cdc53dee7d45909`。评估 2 kHz event stream、100 Hz query、固定 10 ms latency。两组状态均 fresh `581/581`、age P95 `10 ms`；该 reference 下 GT predictor 全部 581 query 可达，所以 unreachable specificity 没有负例分母，不能估计。
+
+| 速度 | 模型 | reachable coverage | XY 位置误差 mean / P95 | XY 速度误差 mean / P95 | 拦截 XY 误差 mean / P95 | 固定预测器 TTC 绝对偏差 mean / P95 |
+|---:|---|---:|---:|---:|---:|---:|
+| 0.30 m/s | Ours | 177/275 (64.4%) | 49.9 / 370.1 mm | 0.839 / 4.202 m/s | 34.7 / 100.9 mm | 243 / 642 ms |
+| 0.30 m/s | V2E | 217/275 (78.9%) | 5.6 / 12.5 mm | 0.133 / 0.318 m/s | 19.9 / 64.8 mm | 198 / 554 ms |
+| 0.40 m/s | Ours | 113/174 (64.9%) | 55.8 / 357.8 mm | 1.101 / 5.339 m/s | 29.2 / 90.1 mm | 171 / 487 ms |
+| 0.40 m/s | V2E | 165/174 (94.8%) | 4.3 / 11.2 mm | 0.119 / 0.279 m/s | 18.2 / 44.5 mm | 159 / 623 ms |
+| 0.50 m/s | Ours | 94/132 (71.2%) | 55.1 / 347.9 mm | 1.238 / 5.400 m/s | 20.4 / 46.7 mm | 145 / 469 ms |
+| 0.50 m/s | V2E | 132/132 (100%) | 4.0 / 8.4 mm | 0.123 / 0.283 m/s | 11.2 / 33.6 mm | 121 / 576 ms |
+
+合计 Ours reachable `384/581 (66.1%)`、V2E `514/581 (88.5%)`；state missing `0/581`。所有四类指标均同时输出 mean/p50/P95 和各自有效样本数；arrival/intercept 只在预测为 reachable 的 query 上可计算。特别是 Ours 的正 y 边缘三个独立参考 episode（`y=+55 mm`，速度 0.30/0.40/0.50）均出现明显发散：位置 mean `125–128 mm`、reach coverage `41–51%`；中心样本明显好于该边缘。V2E 本小批没有相同退化。该模式说明 Ours 尚未对共同 reference 域稳定；样本不足以判断是时间重建/event distribution 差异、模型容量/预算还是两者交互，不能称生成器胜负或转入正式排名。接触前最后 100 ms 的补充分层、episode 级全指标与逐 poll 原始 CSV 一并提交，避免只看均值/可达子集。
+
+接触前最后 100 ms（按评估侧 GT 首接触时刻离线切片，不作为输入）的 Ours/V2E 位置误差 mean/P95 为 `37.5/185.2` 与 `6.6/14.0 mm`，速度误差 `0.894/3.493` 与 `0.162/0.365 m/s`，拦截 XY 误差 `15.8/52.5` 与 `9.0/30.8 mm`，reachable coverage 为 `49/90 (54.4%)` 与 `82/90 (91.1%)`；同固定 predictor 的绝对 TTC 偏差为 `71.1/185.1` 与 `78.2/317.7 ms`。TTC 只在各自判为 reachable 的 query 计算，故同时列出 coverage，避免将其单独解释为质量排序。
+
+- 完整按 episode 数据：[`r1_episode_metrics.csv`](../../benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/common_reference_eval/r1_episode_metrics.csv)；按速度汇总：[`r1_speed_metrics.csv`](../../benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/common_reference_eval/r1_speed_metrics.csv)；581 时刻逐模型数据：[`r1_common_direct_hdr_polls.csv`](../../benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/common_reference_eval/r1_common_direct_hdr_polls.csv)；详细指标/覆盖 JSON：[`r1_common_direct_hdr_summary.json`](../../benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/common_reference_eval/r1_common_direct_hdr_summary.json)。按 episode CSV SHA256 `f79b9f421d58e85f3fb05a67a4ed320998e63a6064275e0c9c2775520709f823`，speed CSV SHA256 `43b591a8a01a64a251a5034793855a8bf450df818bf60678dab56a1b10981230`，poll CSV SHA256 `be467921aaa3b5aa3ddfcd361de062b61f5f016bec2f2bf6e9e03a94af475ed8`，summary SHA256 `228f9fe1bc0f28e4864e434af097408838d93e234cc1e020b3cedc2b6a3f05ae`。
+- Cache/run provenance hashes: capture manifest SHA256 `0332601486baf1451b50d8ec73474b4b83d66ec9f25577035e0cbadbfdc3349a`; `cache_input_hashes.json` SHA256 `07792667b7c662ae65a2e1b78ab023c308bb63b975d12a96059a246818e49e6e`; paired run summary SHA256 `439123ce980970478a7be7ab3107e8abcf7ef2ae24b6e5818feafd67221c04d9`; full g1 paired `SHA256SUMS` manifest SHA256 `ca0fc49c37d8d0235fc9368c751d92ec06c6ac5efc730b94e7e466826fc0b599`.
+- R1 runtime：从既有九集 cache 生成两套训练事件 `2930.69 s`，两组等预算 fit 汇总 `1136.13 s`；`/usr/bin/time` 端到端 paired generation+training wall `1:07:49`，peak RSS `5,086,332 KB`。共同参考评估 wall `9.87 s`（summary 内计时 `9.43 s`）。新加的七集物理/机器人 cache 在 capture commit `148bc87640b6721b7f2f773fb8abe0ce00665e55` 下生成，用时 `183.7377 s`；capture manifest SHA256 `0332601486baf1451b50d8ec73474b4b83d66ec9f25577035e0cbadbfdc3349a`；本次 immutable cache capture 计时为 `0 s`，不把 rollout capture 隐入 generation/fit 成本。初次 run 的误报尝试未复用其 event output。
+- g1 完整输出路径：`/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/`；训练事件、pair manifests 和 checkpoint SHA 清单在 `paired_r1/SHA256SUMS`，g1 上 `sha256sum -c` 全项通过。小型报告、两 checkpoint、逐时刻与逐 episode/speed 输出和运行日志已纳入当前仓库；完整事件 NPZ/HDF5/训练输入仍在该 g1 路径，配对 cache input hash 映射见 `paired_r1/cache_input_hashes.json`，不复制大 cache 到 git。
+- 复跑（使用新的 RUN_ID，避免覆盖；cache 已含 episode_000–008）：
+
+  ```bash
+  cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd
+  tmux new-session -d -s r1_small9_repro_20261018 \
+    'env R1_REUSE_CACHE_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache ROBOT_PYTHON=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python V2E_PYTHON=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python /bin/bash benchmark/robot_closed_loop/diagnostics/run_r1_small9_development.sh r1_shared_ideal_small9_20261018c'
+  ```
+
+本轮 R1 开发通过标准——相同响应配置、episode 配对训练、共同 reference、四类指标与 missing/reachable coverage 可复现——已完成；**正式 R1 测试集、正式 ranking、多 seed training 均未启动**。建议进入正式实验前先对 Ours `+55 mm` 全速度失效簇做小范围生成事件/五-bin 输入对照，确认 event-domain 对齐；只有在因果上仍无法区分时，再由研究会决定是否加小批训练轨迹或改动生成路径。正式测试必须另留未经挑 checkpoint/调参/预算的 episodes。R2 的 60 µm 动态负例与 monitor 收敛继续独立推进，不再作 R1 前置。
