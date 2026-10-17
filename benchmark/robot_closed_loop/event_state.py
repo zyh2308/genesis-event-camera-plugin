@@ -263,6 +263,9 @@ class LearnedEventStateEstimator:
         resolution_wh: Sequence[int],
         *,
         max_state_age_s: float = 0.030,
+        fixed_height_m: Optional[float] = None,
+        velocity_window_s: float = 0.050,
+        minimum_regression_samples: int = 4,
         camera_to_world_cv: Optional[np.ndarray] = None,
         intrinsics_fx_fy_cx_cy: Optional[Sequence[float]] = None,
     ):
@@ -279,6 +282,9 @@ class LearnedEventStateEstimator:
         self.checkpoint_sha256 = hashlib.sha256(self.checkpoint_path.read_bytes()).hexdigest()
         self.width, self.height = (int(v) for v in resolution_wh)
         self.max_state_age_s = float(max_state_age_s)
+        self.fixed_height_m = None if fixed_height_m is None else float(fixed_height_m)
+        self.velocity_window_s = float(velocity_window_s)
+        self.minimum_regression_samples = int(minimum_regression_samples)
         torch.set_num_threads(1)
         self.model, self.label_mean, self.label_scale, checkpoint = load_checkpoint(
             str(self.checkpoint_path), device="cpu",
@@ -308,6 +314,8 @@ class LearnedEventStateEstimator:
         self._event_chunks: deque[np.ndarray] = deque()
         self.latest_state: Optional[MotionState] = None
         self.latest_generated_at_s: Optional[float] = None
+        self._position_history: deque[Tuple[float, np.ndarray]] = deque(maxlen=32)
+        self.latest_diagnostics: Dict[str, object] = {}
         self.last_confidence = {"event_count": 0, "time_bin_count": 0}
         self.inference_ms: List[float] = []
         self.status_counts: Dict[str, int] = {}
@@ -381,6 +389,7 @@ class LearnedEventStateEstimator:
                 output = self._decode_heatmap_state(
                     self.model(input_tensor), self.label_mean, self.label_scale,
                     self.camera_to_world_cv, self.intrinsics, (self.width, self.height),
+                    fixed_height_m=self.fixed_height_m,
                 )[0]
             else:
                 output = self.model(input_tensor)[0] * self.label_scale + self.label_mean
@@ -392,8 +401,38 @@ class LearnedEventStateEstimator:
             return EventObservation("tracking_lost", "tracking_lost", None, age_s,
                                     self.latest_generated_at_s, event_count, time_bin_count)
         # Timestamp labels the input cutoff, not the inference completion time.
+        # A rolling slope over causal planar positions replaces the model's
+        # instantaneous velocity head once sufficient history has accrued.
+        velocity_source = "model_auxiliary"
+        velocity_rms = None
+        if self.architecture == self._heatmap_architecture and self.fixed_height_m is not None:
+            self._position_history.append((float(cutoff_s), values[:2].copy()))
+            cutoff_history = float(cutoff_s) - self.velocity_window_s
+            while self._position_history and self._position_history[0][0] < cutoff_history:
+                self._position_history.popleft()
+            if len(self._position_history) >= self.minimum_regression_samples:
+                hist_t = np.asarray([item[0] for item in self._position_history], dtype=np.float64)
+                hist_xy = np.stack([item[1] for item in self._position_history])
+                centered_t = hist_t - hist_t.mean()
+                denom = float(np.dot(centered_t, centered_t))
+                if denom > 1e-12:
+                    velocity_xy = centered_t @ hist_xy / denom
+                    residual_xy = hist_xy - (hist_xy.mean(axis=0) + centered_t[:, None] * velocity_xy)
+                    velocity_rms = float(np.sqrt(np.mean(np.sum(residual_xy * residual_xy, axis=1))))
+                    values[3:5] = velocity_xy
+                    values[5] = 0.0
+                    velocity_source = "causal_planar_position_regression"
         self.latest_state = MotionState(float(cutoff_s), values[:3], values[3:])
         self.latest_generated_at_s = now
+        self.latest_diagnostics = {
+            "world_height_mode": "fixed_target_center_plane" if self.fixed_height_m is not None else "learned_height",
+            "fixed_height_m": self.fixed_height_m,
+            "velocity_source": velocity_source,
+            "velocity_regression_window_s": self.velocity_window_s,
+            "velocity_regression_samples": len(self._position_history),
+            "velocity_regression_xy_rms_m": velocity_rms,
+            "causal_state_time_s": float(cutoff_s),
+        }
         self.status_counts["fresh"] = self.status_counts.get("fresh", 0) + 1
         return EventObservation("fresh", "tracking", self.latest_state, age_s, now,
                                 event_count, time_bin_count)
@@ -420,6 +459,12 @@ class LearnedEventStateEstimator:
                 "minimum_nonempty_5ms_bins": self.minimum_time_bins,
                 "maximum_state_age_s": self.max_state_age_s,
                 "invalid_state_behavior": "no_event/tracking_lost/stale returns no state and the existing controller holds lateral command and does not start closure",
+            },
+            "causal_planar_motion": {
+                "fixed_height_m": self.fixed_height_m,
+                "velocity_window_s": self.velocity_window_s,
+                "minimum_regression_samples": self.minimum_regression_samples,
+                "history_uses_only_valid_causal_observations": True,
             },
             "observation_status_counts": dict(self.status_counts),
             "inference_model_only_ms": {
@@ -510,9 +555,14 @@ class DirectHdrEventSource:
             for hz in (1000, 2000)
         }
         if self.model_checkpoint is not None:
+            shared_control = cfg.get("shared_control", {})
+            close_estimator = shared_control.get("close_time_estimator", {})
             self.learned_estimator = LearnedEventStateEstimator(
                 self.model_checkpoint, cfg["camera"]["resolution_wh"],
                 max_state_age_s=maximum_age,
+                fixed_height_m=close_estimator.get("heatmap_world_height_m"),
+                velocity_window_s=float(close_estimator.get("velocity_window_s", 0.050)),
+                minimum_regression_samples=int(close_estimator.get("minimum_regression_samples", 4)),
                 camera_to_world_cv=self.camera_to_world_cv,
                 intrinsics_fx_fy_cx_cy=(
                     self.camera_intrinsics["fx"], self.camera_intrinsics["fy"],
@@ -564,6 +614,11 @@ class DirectHdrEventSource:
         if self.learned_estimator is not None and int(rate_hz) == self.controller_hz:
             return dict(self.learned_estimator.last_confidence)
         return dict(self.trackers[int(rate_hz)].last_confidence)
+
+    def estimator_diagnostics(self) -> Dict[str, object]:
+        if self.learned_estimator is None:
+            return {"velocity_source": "centroid_tracker"}
+        return dict(self.learned_estimator.latest_diagnostics)
 
     def capture_snapshot(self, label: str, time_s: float) -> None:
         if self.last_hdr is not None and label not in self.snapshots:

@@ -241,16 +241,22 @@ def build_free_slide_scene(
     )
 
 
-def build_robot_scene(config: Dict[str, Any], *, dt_s: Optional[float] = None) -> RobotScene:
+def build_robot_scene(
+    config: Dict[str, Any], *, dt_s: Optional[float] = None,
+    segmentation_level: Optional[str] = None,
+) -> RobotScene:
     import genesis as gs
 
     if getattr(gs, "_initialized", False) is False:
         gs.init(backend=gs.cpu, logging_level="warning")
     physics = config["physics"]
     dt = float(dt_s if dt_s is not None else physics["dt_s"])
+    vis_options = {"ambient_light": (0.25, 0.25, 0.25)}
+    if segmentation_level is not None:
+        vis_options["segmentation_level"] = str(segmentation_level)
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=dt, gravity=tuple(physics["gravity_m_s2"])),
-        vis_options=gs.options.VisOptions(ambient_light=(0.25, 0.25, 0.25)),
+        vis_options=gs.options.VisOptions(**vis_options),
         show_viewer=False,
     )
     plane = scene.add_entity(

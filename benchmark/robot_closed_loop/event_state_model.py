@@ -118,12 +118,21 @@ def decode_heatmap_state(
     camera_to_world_cv: torch.Tensor,
     intrinsics: torch.Tensor,
     resolution_wh: tuple[int, int],
+    fixed_height_m: float | None = None,
 ) -> torch.Tensor:
-    """Decode UV plus predicted height into world xyz and velocity at cutoff."""
+    """Decode UV into calibrated world xyz and return the auxiliary velocity.
+
+    ``fixed_height_m`` selects the approved planar-target ablation: intersect
+    the predicted pixel ray with the known target-center plane. This is a
+    fixed calibration/task constraint, not a GT phase switch.
+    """
     heatmap_logits, auxiliary_normalized = output
     uv = _softargmax_uv(heatmap_logits, resolution_wh)
     auxiliary = auxiliary_normalized * label_scale[2:] + label_mean[2:]
-    z = auxiliary[:, 0]
+    z = (
+        torch.full_like(auxiliary[:, 0], float(fixed_height_m))
+        if fixed_height_m is not None else auxiliary[:, 0]
+    )
     fx, fy, cx, cy = intrinsics
     ray_camera = torch.stack(((uv[:, 0] - cx) / fx, (uv[:, 1] - cy) / fy,
                               torch.ones_like(z)), dim=1)

@@ -25,6 +25,7 @@ from benchmark.robot_closed_loop.predictor import (
     MotionState,
     fit_common_deceleration,
 )
+from benchmark.robot_closed_loop.grip_gate import ProprioceptiveGripGate
 from benchmark.robot_closed_loop.robot_env import (
     FreeSlideScene,
     RobotScene,
@@ -43,6 +44,7 @@ from benchmark.robot_closed_loop.scoring import (
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = Path(__file__).resolve().parent / "configs" / "scene_pilot_r0_v1.json"
+DEFAULT_CONTROL_CONFIG = Path(__file__).resolve().parent / "configs" / "shared_control_r0_8_candidate.json"
 
 
 def sha256(path: Path) -> str:
@@ -119,41 +121,6 @@ def _settle_free_slide(env: FreeSlideScene, duration_s: float = 0.05) -> None:
         env.scene.step()
 
 
-def _gripper_stall(env: RobotScene) -> bool:
-    q = env.finger_joint_positions()
-    qd = env.finger_joint_velocities()
-    return bool(np.all((q > 0.012) & (q < 0.029)) and np.max(np.abs(qd)) < 0.03)
-
-
-def _lift_gate(
-    estimated_state: Optional[MotionState],
-    hand_y_m: float,
-    intercept_x_m: float,
-    gate_cfg: Dict[str, Any],
-) -> Dict[str, Any]:
-    """Gate lifting with the same estimated target state available to a policy."""
-    if estimated_state is None:
-        return {"eligible": False, "reason": "no_current_state_estimate"}
-    p = np.asarray(estimated_state.position_m, dtype=np.float64)
-    v = np.asarray(estimated_state.velocity_m_s, dtype=np.float64)
-    dx = float(p[0] - intercept_x_m)
-    dy = float(p[1] - hand_y_m)
-    planar_speed = float(np.linalg.norm(v[:2]))
-    x_ok = abs(dx) <= float(gate_cfg["x_tolerance_m"])
-    y_ok = abs(dy) <= float(gate_cfg["y_tolerance_m"])
-    speed_ok = planar_speed <= float(gate_cfg["planar_speed_max_m_s"])
-    return {
-        "eligible": bool(x_ok and y_ok and speed_ok),
-        "estimated_position_m": p.tolist(),
-        "estimated_planar_speed_m_s": planar_speed,
-        "dx_m": dx,
-        "dy_m": dy,
-        "x_ok": x_ok,
-        "y_ok": y_ok,
-        "speed_ok": speed_ok,
-    }
-
-
 def run_static_trial(
     env: RobotScene, episode_id: int, seed: int, *, capture: bool = False,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
@@ -173,6 +140,8 @@ def run_static_trial(
     first_contact_s = None
     bilateral = False
     stall_s = 0.0
+    grip_gate = ProprioceptiveGripGate(cfg["shared_control"]["proprioceptive_grip_gate"], env.dt_s)
+    grip_gate_status: Dict[str, Any] = {"eligible": False, "reason": "not_evaluated"}
     lift_q = None
     lift_trigger_s = None
     max_steps = int(round(float(cfg["success"].get("episode_timeout_s", 3.0)) / env.dt_s))
@@ -211,11 +180,12 @@ def run_static_trial(
             bilateral_seen = True
         if (c["left"] or c["right"]) and first_contact_s is None:
             first_contact_s = now
-        if lift_q is None and _gripper_stall(env):
-            stall_s += env.dt_s
-        elif lift_q is None:
-            stall_s = 0.0
-        if lift_q is None and stall_s >= 0.03:
+        if lift_q is None:
+            grip_gate_status = grip_gate.update(
+                now, trial_start_t, env.finger_joint_positions(), env.finger_joint_velocities(),
+            )
+            stall_s = float(grip_gate_status["stable_for_s"])
+        if lift_q is None and grip_gate_status["eligible"]:
             goal = _home_hand_goal(env)
             goal[2] += float(cfg["robot"]["lift_hand_delta_z_m"])
             lift_q = as_numpy(env.command_hand(goal)).reshape(-1)
@@ -243,7 +213,10 @@ def run_static_trial(
             legacy_bilateral_at_stop = bool(bilateral_seen)
             legacy_clearance_at_stop = center_bottom
         if step % sample_steps == 0 or c["bilateral"]:
-            frame = _record_state(env, now, stage, {"finger_force_each": -5.0, "lift": lift_q is not None}, contacts=c)
+            frame = _record_state(env, now, stage, {
+                "finger_force_each": -5.0, "lift": lift_q is not None,
+                "grip_completion_gate": grip_gate_status,
+            }, contacts=c)
             frame["score"] = strict_score
             trace.append(frame)
         if capture and step % video_steps == 0:
@@ -396,6 +369,7 @@ def run_oracle_trial(
     initial_y_m: Optional[float] = None,
     visibility_evaluator: Optional[Any] = None,
     use_event_observation: bool = True,
+    trajectory_cache: Optional[Any] = None,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
@@ -433,6 +407,9 @@ def run_oracle_trial(
     trace: List[Dict[str, Any]] = []
     frames: List[np.ndarray] = []
     close_started_s = None
+    predicted_ttc_at_close_s = None
+    close_estimated_state = None
+    close_estimator_diagnostics = None
     first_contact_s = None
     first_bilateral_s = None
     first_contact_position_m = None
@@ -452,12 +429,17 @@ def run_oracle_trial(
     event_observation_status = None
     last_obs = None if event_source is not None and use_event_observation else history[-1]
     last_command = {"y_command_m": 0.0, "closing": False, "lifting": False}
+    if trajectory_cache is not None:
+        trajectory_cache.capture(env, 0.0, last_command, force=True)
     crossing_actual = None
     object_history: List[Dict[str, Any]] = []
     strict_scorer = StrictHoldScorer(
         float(cfg["success"]["target_bottom_clearance_m"]),
         float(cfg["success"]["maximum_object_to_tcp_slip_m"]),
         float(cfg["success"]["continuous_hold_s"]),
+    )
+    grip_gate = ProprioceptiveGripGate(
+        cfg["shared_control"]["proprioceptive_grip_gate"], env.dt_s,
     )
     strict_score = dict(strict_scorer.last)
     maximum_true_clearance = -float("inf")
@@ -473,6 +455,9 @@ def run_oracle_trial(
     tcp_velocity = np.zeros(3, dtype=np.float64)
     prev_obj = None
     timeout_s = float(cfg["success"].get("episode_timeout_s", 3.0))
+    post_contact_window_s = float(
+        cfg.get("shared_control", {}).get("diagnostic_windows", {}).get("after_first_contact_s", 1.0)
+    )
     max_steps = int(round(timeout_s / env.dt_s))
     close_schedule = controller_cfg["closure_lead_speed_schedule"]
     guard = float(controller_cfg["terminal_commit_guard_s"])
@@ -504,6 +489,7 @@ def run_oracle_trial(
                     "time_bin_count_window": event_observation.time_bin_count_window,
                     "max_state_age_s": event_source.trackers[event_source.controller_hz].max_state_age_s,
                     "estimator": "spatial_learned_event_state" if event_source.learned_estimator is not None else "centroid_regression_smoke",
+                    "estimator_diagnostics": event_source.estimator_diagnostics(),
                 }
                 obs = event_observation.state
             else:
@@ -549,6 +535,19 @@ def run_oracle_trial(
                     if close_started_s is None and 0.0 <= ttc_cmd <= close_lead:
                         close_started_s = rel_t
                         closure_lead_used_s = close_lead
+                        predicted_ttc_at_close_s = float(ttc_cmd)
+                        close_estimated_state = {
+                            "state_time_s": float(last_obs.time_s),
+                            "position_m": last_obs.position_m.tolist(),
+                            "velocity_m_s": last_obs.velocity_m_s.tolist(),
+                            "propagated_position_m": estimated_current_state.position_m.tolist(),
+                            "propagated_velocity_m_s": estimated_current_state.velocity_m_s.tolist(),
+                            "state_age_s": float(observation_age),
+                        }
+                        close_estimator_diagnostics = (
+                            None if event_observation_status is None
+                            else event_observation_status.get("estimator_diagnostics")
+                        )
                     if close_started_s is not None:
                         env.command_fingers_close()
                     else:
@@ -604,19 +603,16 @@ def run_oracle_trial(
                     "lifting": False,
                 }
 
-        if close_started_s is not None and lift_q is None and rel_t - close_started_s >= 0.05:
-            lift_gate = _lift_gate(
-                estimated_current_state, command.position_m,
-                float(controller_cfg["intercept_x_m"]), controller_cfg["lift_gate"],
+        if close_started_s is not None and lift_q is None:
+            lift_gate = grip_gate.update(
+                rel_t, close_started_s,
+                env.finger_joint_positions(), env.finger_joint_velocities(),
             )
-            if _gripper_stall(env) and lift_gate["eligible"]:
-                stall_time += env.dt_s
-            else:
-                stall_time = 0.0
+            stall_time = float(lift_gate["stable_for_s"])
             last_command = {**last_command, "lift_gate": lift_gate,
-                            "gripper_stalled": _gripper_stall(env),
+                            "gripper_stalled": bool(lift_gate["instantaneous_candidate"]),
                             "lift_gate_stall_s": stall_time}
-            if stall_time >= 0.03:
+            if lift_gate["eligible"]:
                 lift_hand_goal = np.asarray([float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2] + float(cfg["robot"]["lift_hand_delta_z_m"])])
                 lift_q = as_numpy(env.command_hand(lift_hand_goal)).reshape(-1)
                 lift_started_s = rel_t
@@ -668,6 +664,8 @@ def run_oracle_trial(
                 event_source.capture_snapshot("lift_start", next_rel_t)
         if visibility_evaluator is not None and step % visibility_evaluator.sample_every_steps == 0:
             visibility_evaluator.sample(env, next_rel_t)
+        if trajectory_cache is not None and (step + 1) % control_steps == 0:
+            trajectory_cache.capture(env, next_rel_t, last_command)
 
         # Reproduce the old R0 scorer at its original first stop point so the
         # historical result remains interpretable alongside the strict score.
@@ -759,6 +757,12 @@ def run_oracle_trial(
             if event_source is not None:
                 event_source.capture_snapshot("strict_hold_complete", next_rel_t)
             break
+        if (
+            first_contact_s is not None
+            and next_rel_t >= first_contact_s + post_contact_window_s
+            and not strict_scorer.success_at(env.dt_s)
+        ):
+            break
         if np.linalg.norm(object_state(env.target, next_rel_t)["velocity_m_s"][:2]) < 0.015 and next_rel_t > 0.4 and lift_q is None:
             # Continue until timeout so an ungrasped stop is explicitly classified.
             pass
@@ -778,6 +782,17 @@ def run_oracle_trial(
     contact_to_planned_arrival = None if first_contact_s is None or planned_arrival_s is None else float(first_contact_s - planned_arrival_s)
     close_to_planned_arrival = None if close_started_s is None or planned_arrival_s is None else float(close_started_s - planned_arrival_s)
     contact_to_close_s = None if first_contact_s is None or close_started_s is None else float(first_contact_s - close_started_s)
+    actual_crossing_ttc_at_close_s = (
+        None if close_started_s is None or crossing_actual is None
+        else float(crossing_actual["time_s"] - close_started_s)
+    )
+    ttc_error_at_close_s = (
+        None if predicted_ttc_at_close_s is None or actual_crossing_ttc_at_close_s is None
+        else float(predicted_ttc_at_close_s - actual_crossing_ttc_at_close_s)
+    )
+    rollout_end_rel_t = float(get_sim_time(env) - launch_t)
+    if trajectory_cache is not None:
+        trajectory_cache.capture(env, rollout_end_rel_t, last_command, force=True)
     first_contact_relative_speed = None if first_contact_relative_velocity_m_s is None else float(np.linalg.norm(first_contact_relative_velocity_m_s[:2]))
     first_contact_location_error = None if first_contact_position_m is None or first_contact_tcp_m is None else {
         "object_x_minus_intercept_m": float(first_contact_position_m[0] - float(controller_cfg["intercept_x_m"])),
@@ -817,10 +832,21 @@ def run_oracle_trial(
         "first_contact_relative_speed_m_s": first_contact_relative_speed,
         "planned_free_slide_arrival_t_s": planned_arrival_s,
         "close_start_s": close_started_s,
+        "predicted_ttc_at_close_s": predicted_ttc_at_close_s,
+        "actual_crossing_ttc_at_close_s": actual_crossing_ttc_at_close_s,
+        "ttc_error_at_close_s": ttc_error_at_close_s,
+        "estimated_state_at_close": close_estimated_state,
+        "estimator_diagnostics_at_close": close_estimator_diagnostics,
         "terminal_commit_s": terminal_commit_s,
         "close_start_minus_planned_arrival_s": close_to_planned_arrival,
         "first_contact_minus_planned_arrival_s": contact_to_planned_arrival,
         "first_contact_minus_close_start_s": contact_to_close_s,
+        "post_contact_diagnostic_window_s": post_contact_window_s,
+        "post_contact_observed_s": None if first_contact_s is None else float(rollout_end_rel_t - first_contact_s),
+        "post_contact_window_completed": bool(
+            first_contact_s is not None and rollout_end_rel_t >= first_contact_s + post_contact_window_s - env.dt_s
+        ),
+        "rollout_observed_duration_s": rollout_end_rel_t,
         "actual_crossing_t_s": None if crossing_actual is None else crossing_actual["time_s"],
         "actual_crossing_y_m": crossing_y,
         "contact_minus_crossing_s": t_contact_error,
@@ -954,9 +980,9 @@ def run_reference(
             episode_wall_s = time.perf_counter() - episode_started
             row.update({
                 "phase": (
-                    "direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
-                    "direct_hdr_event_state_smoke" if use_event_observation else
-                    "direct_hdr_gt_controlled_sensor_reference"
+                    "direct_hdr_r0_8_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
+                    "direct_hdr_r0_8_event_state_smoke" if use_event_observation else
+                    "direct_hdr_r0_8_gt_controlled_sensor_reference"
                 ),
                 "task_rollout_wall_s": episode_wall_s,
                 "task_rollout_wall_boundary": "complete physics and control rollout, including per-step HDR rendering, both DVS streams, event tracking, dynamic visibility sampling, and video frame capture; excludes output serialization and simulator initialization",
@@ -1085,9 +1111,9 @@ def run_reference(
                 "post_contact_event_state_accuracy_evaluator_only": post_contact_event_errors_by_rate,
                 "post_contact_controller_state_accuracy_evaluator_only": post_contact_controller_summary,
                 "post_contact_controller_state_boundary": (
-                    "scores the actual causal event-derived observation propagated by the fixed predictor and used by the lift gate; evaluator GT aligns position/velocity after the episode and never enters the controller"
+                    "event-derived target state is logged for evaluator diagnostics; the shared lift gate consumes only finger joint position/velocity and close-command time; evaluator GT does not enter control"
                     if use_event_observation else
-                    "delayed current-GT state drives the fixed controller only to produce a complete sensor-reference trajectory; event estimates are evaluator-only and GT does not enter the Direct-HDR event source"
+                    "delayed current-GT state drives pre-close control only to produce a sensor-reference trajectory; the shared lift gate consumes only finger joint position/velocity and close-command time"
                 ),
                 "reference_controller_state_source": "causal_event_state" if use_event_observation else "delayed_current_gt_shadow_reference",
                 "dynamic_visibility_evaluator_only": visibility_summary,
@@ -1111,9 +1137,9 @@ def run_reference(
     write_csv(out / "r0_5_reference_episodes.csv", episode_rows)
     summary = {
         "mode": (
-            "r0_7_direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
-            "r0_5_direct_hdr_reference_and_event_state_smoke" if use_event_observation else
-            "r0_5_direct_hdr_gt_shadow_sensor_reference"
+            "r0_8_direct_hdr_learned_event_state_closed_loop" if use_event_observation and event_model_checkpoint is not None else
+            "r0_8_direct_hdr_event_state_smoke" if use_event_observation else
+            "r0_8_direct_hdr_gt_shadow_sensor_reference"
         ),
         "code_scope": "robot benchmark; frozen simulator core unchanged",
         "physics_dt_s": env.dt_s, "paired_event_rates_hz": [1000, 2000],
@@ -1129,6 +1155,8 @@ def run_reference(
             "spatial learned model consumes causal five-bin event tensors only; GT is used for supervised training and offline evaluator metrics, not inference"
             if event_model_checkpoint is not None else "centroid/regression smoke estimator"
         ),
+        "shared_lift_gate_boundary": "both GT and event paths use ProprioceptiveGripGate: finger joint positions/velocities and close-command timestamp only; no target state/contact/segmentation/depth input",
+        "shared_control_config": cfg.get("shared_control"),
         "episodes": episode_rows,
         "strict_success_by_speed": {
             str(s): {"n": sum(1 for r in episode_rows if r["speed_m_s"] == s),
@@ -1443,6 +1471,8 @@ def write_run_manifest(args: argparse.Namespace, config: Dict[str, Any], out: Pa
         "mode": args.mode, "command": sys.argv,
         "code_commit_at_run_start": commit, "branch": branch,
         "config_path": str(config_path), "config_sha256": sha256(config_path),
+        "shared_control_config_path": str(Path(args.control_config).resolve()),
+        "shared_control_config_sha256": sha256(Path(args.control_config).resolve()),
         "frozen_simulator_core": config["provenance"]["frozen_simulator_core"],
         "runtime": {
             "python": sys.version.split()[0], "genesis": getattr(gs, "__version__", "unknown"),
@@ -1471,6 +1501,8 @@ def write_run_manifest(args: argparse.Namespace, config: Dict[str, Any], out: Pa
 def run_batch(args: argparse.Namespace) -> None:
     config_path = Path(args.config).resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
+    control_config_path = Path(args.control_config).resolve()
+    control_config = json.loads(control_config_path.read_text(encoding="utf-8"))
     if args.event_model_checkpoint is not None:
         if args.mode != "reference" or args.reference_controller_source != "events":
             raise ValueError("--event-model-checkpoint is valid only for reference mode with event control")
@@ -1481,6 +1513,9 @@ def run_batch(args: argparse.Namespace) -> None:
         checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
         if checkpoint.get("config_sha256") != sha256(config_path):
             raise ValueError("checkpoint scene/config SHA256 does not match the selected config")
+    # Shared controller additions are versioned independently from the scene
+    # file so existing perception checkpoints retain their exact scene hash.
+    config["shared_control"] = control_config
     out = Path(args.out).resolve()
     if out.exists() and any(out.iterdir()):
         raise FileExistsError(f"Refusing to mix/overwrite existing run artifacts: {out}")
@@ -1593,6 +1628,8 @@ def run_batch(args: argparse.Namespace) -> None:
     elif args.mode in {"oracle", "sensitivity"}:
         if args.a_eff is None:
             raise ValueError("oracle and sensitivity modes require --a-eff from the no-hand calibration")
+        if args.initial_y_values is not None and len(args.initial_y_values) != len(args.speeds) * args.episodes:
+            raise ValueError("--initial-y-values must provide one value per speed/episode pair")
         for speed in args.speeds:
             for index in range(args.episodes):
                 eid = len(results)
@@ -1603,8 +1640,10 @@ def run_batch(args: argparse.Namespace) -> None:
                     position_bias_y_m=args.bias_y,
                     ttc_bias_s=args.ttc_bias_ms / 1000.0,
                     extra_latency_s=args.extra_latency_ms / 1000.0,
+                    initial_y_m=(None if args.initial_y_values is None else args.initial_y_values[eid]),
                 )
                 row["config_sha256"] = sha256(config_path)
+                row["shared_control_config_sha256"] = sha256(control_config_path)
                 results.append(row)
                 trace_by_id[eid] = trace
         csv_name = "r0_5_sensitivity.csv" if args.mode == "sensitivity" else "r0_5_oracle_per_episode.csv"
@@ -1626,6 +1665,7 @@ def run_batch(args: argparse.Namespace) -> None:
                 position_bias_y_m=float(row["position_bias_y_m"]),
                 ttc_bias_s=float(row["ttc_bias_s"]),
                 extra_latency_s=args.extra_latency_ms / 1000.0,
+                initial_y_m=float(row["start_y_m"]),
             )
             save_gif(videos_dir / f"oracle_episode_{eid:04d}_{rerun['failure_primary']}.gif", frames)
         grouped = {}
@@ -1665,10 +1705,12 @@ def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["static", "slide", "oracle", "sensitivity", "preflight", "reference"], required=True)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
+    parser.add_argument("--control-config", default=str(DEFAULT_CONTROL_CONFIG))
     parser.add_argument("--out", required=True)
     parser.add_argument("--episodes", type=int, default=20)
     parser.add_argument("--seed", type=int, default=10000)
     parser.add_argument("--speeds", type=lambda s: [float(v) for v in s.split(",")], default=[0.3, 0.4, 0.5])
+    parser.add_argument("--initial-y-values", type=lambda s: [float(v) for v in s.split(",")], help="one fixed lateral launch position per speed/episode pair in oracle/sensitivity mode")
     parser.add_argument("--speed", type=float, default=0.4, help="single speed used by reference pilot")
     parser.add_argument("--split", choices=["calibration", "holdout"], default="calibration")
     parser.add_argument("--a-eff", type=float)
