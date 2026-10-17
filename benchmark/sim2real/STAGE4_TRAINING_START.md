@@ -1,5 +1,7 @@
 # Stage 4：立即启动重建与光流的实际训练
 
+> **2026-10-17 研究验收修正：长训练放行条件已由 [STAGE4_CORRECTNESS_REPAIR_AND_PREFLIGHT.md](STAGE4_CORRECTNESS_REPAIR_AND_PREFLIGHT.md) 更新。旧 Stage 4 数据/代码组合未通过正确性复核；先完成该文件的前置检查，通过后按既有授权自主继续，不能直接复用旧组合重跑。**
+
 工程执行会话：**搭建Sim-to-Real实验闭环**（VS Code → WSL Codex）。这是研究会话在 Stage 3 验收后的执行指令。请直接实施、开训和交付运行证据，不停在计划或重复 smoke。
 
 ## 1. 当前授权与优先级

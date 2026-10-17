@@ -1,0 +1,181 @@
+{
+  "scope": "Independent assessment of captured legacy Stage-4 evidence; not an installed production launcher gate.",
+  "status": "BLOCKED",
+  "checks": [
+    {
+      "check": "static_ground_physical_labels",
+      "status": "FAIL",
+      "evidence": {
+        "cases_with_old_valid_ground": 23,
+        "max_ground_displacement_px": 9.578248023986816,
+        "tolerance_px": 1e-05
+      }
+    },
+    {
+      "check": "loss_warp_identity_and_integer_translation",
+      "status": "FAIL",
+      "evidence": {
+        "max_interior_MAE": 0.10860436409711838,
+        "tolerance_MAE": 1e-06
+      }
+    },
+    {
+      "check": "model_warp_identity_and_integer_translation",
+      "status": "FAIL",
+      "evidence": {
+        "max_interior_MAE": 0.10860436409711838,
+        "tolerance_MAE": 1e-06
+      }
+    },
+    {
+      "check": "actual_frame_provider_depth_K_pixel_contract",
+      "status": "FAIL",
+      "evidence": {
+        "plane_height_abs_p99_m": 0.022299350860579104,
+        "tolerance_m": 0.001
+      }
+    },
+    {
+      "check": "analytic_projection",
+      "status": "PASS",
+      "evidence": [
+        {
+          "expected_uv": [
+            0.0,
+            0.0
+          ],
+          "max_error": 0.0,
+          "all_geometry_valid": true
+        },
+        {
+          "expected_uv": [
+            -1.0,
+            0.0
+          ],
+          "max_error": 0.0,
+          "all_geometry_valid": true
+        },
+        {
+          "expected_uv": [
+            2.0,
+            -0.7000000000000001
+          ],
+          "max_error": 1.9073486334786338e-07,
+          "all_geometry_valid": true
+        }
+      ]
+    },
+    {
+      "check": "adapter_transport_not_physical_GT_validity",
+      "status": "PASS",
+      "evidence": {
+        "adapter_files": 64
+      }
+    },
+    {
+      "check": "selected_raw_events_to_representation",
+      "status": "PASS",
+      "evidence": {
+        "windows_rebuilt": 24
+      }
+    },
+    {
+      "check": "augmentation",
+      "status": "PASS",
+      "evidence": {
+        "cases": 12
+      }
+    },
+    {
+      "check": "EPE_and_padding",
+      "status": "PASS",
+      "evidence": {
+        "metric_controls": {
+          "identical_prediction_epe": 0.0,
+          "zero_prediction_epe_expected_5": 5.0,
+          "v_only_error_expected_4": 4.0
+        },
+        "negative_controls": [
+          {
+            "case": "missing_v",
+            "rejected": true
+          },
+          {
+            "case": "wrong_units",
+            "rejected": true
+          },
+          {
+            "case": "empty_mask",
+            "rejected": true
+          },
+          {
+            "case": "NaN",
+            "rejected": true
+          }
+        ],
+        "padding": {
+          "event_shape": [
+            1,
+            2,
+            352,
+            352,
+            5
+          ],
+          "event_exact": true,
+          "gray0_exact": true,
+          "gray1_exact": true
+        }
+      }
+    },
+    {
+      "check": "correlation_forward_and_backward",
+      "status": "PASS",
+      "evidence": {
+        "correlation_forward_max_error": 0.0,
+        "correlation_gradient_max_errors": [
+          8.881784197001252e-16,
+          0.0
+        ],
+        "correlation_gradcheck_fast": true
+      }
+    }
+  ],
+  "source_and_input_fingerprints": {
+    "sources": {
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/generate_stage4_flow_bank.py": "a06ce9cdd2351af978336f6c0c9511bc7e8f06d7463cbcc30b1265efa950f3b6",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/prepare_stage4_steflow_bank.py": "54e27b54d1ed7e13b96c7d971b464c28738ebac0ac423dbef4c4d893685ffd9b",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/prepare_steflow_stage0.py": "21a9f51fdbc6feab761ad3ef5d8157e298f9e0e2d95bda44b35acb1839ddfac2",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/train_steflow_stage4.py": "983b155a475d765bfc892c9b60a41dd01327539662f3f6166f73957b3d82ed74",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/run_steflow_stage2_pilot.py": "167a88520162d06a7b1973eb4fcca64cf73680d50a8f583a60f953f27a0dd48a",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/genesis_event_plugin/physics_plugin.py": "f01c6cb760153f09add80e0e18610a5710d07e0a7077e9552e0c7e7e009fb5cf",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/genesis_event_plugin/physics_interpolator.py": "3870f984b603c69c7dab2bc1a26a8d35218135af2ad139e50b115257777f09ef",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/genesis_event_plugin/torch_physics.py": "af6e2e39dc4b124b32274dca028e6b2f02617ebdb1e1fb05e27f3af913567d1f",
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/genesis_event_plugin/physics_warp.py": "a7efbbf1e339084ae9c92e5252257a059aaeac4ff1f8269c1c245330bd51b3b7",
+      "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+      "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785",
+      "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py": "2274d68f0bf1880c6b9806bc7835ea0243570af1b5a4415e0a968e154a8ec26a",
+      "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/vis/rasterizer_context.py": "5f7fdf211bd3bb384c6b0739786ddb2b7906da88c89a31efbf66c8dfd6e9ef01",
+      "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/vis/camera.py": "78c18ffada07a98657ddf11326e833fc928431ecead674434aadb25dc023b714",
+      "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/ext/pyrender/renderer.py": "0c7fe474b49bbcc88e747090629174fb97f7f0ceb0d2693f74c721be40dccd9d",
+      "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/ext/pyrender/jit_render.py": "96e9f4b0c01188e6a6083918dd086110fb6bedf56d07095006385ed908549585",
+      "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/ext/pyrender/camera.py": "681ba95116285f031e5193f73bce2c0cae2364c2a1334d98e3e2e786fbb84bbe",
+      "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/vis/rasterizer.py": "16ad98c2392cc86d07b230c3fa2a20c720679223bfd4213110efe570d71026e3"
+    },
+    "inputs": {
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_training_launch_v1_torch_cuda.json": "c0ab0d17f024b00106957c3e44d7a013e920f6e760f70266c43a9cf904634685",
+      "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261016-stage4-flowdt1-seed0-v4/steflow_30ms/training_bank_manifest.json": "c9da4158d9775997f08dd75ce0ac2ccc33873d983422ef87c931e834f6da0624",
+      "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_torch_cuda_32x2s/bank_manifest.json": "10826c785fa4cba29970e78e79ac28fac14c306888b691f73ab2597a4439f71c",
+      "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v1_torch_cuda_32x2s/registered_split.json": "60722e124b24c8da2306f3a8a4115ec8588949653a2f014b3687c2a2dfc59aa1"
+    }
+  },
+  "evidence_file_sha256": {
+    "remote_preflight.json": "31a23245af1f32d4ca306bb83c988edfb7c965215a80f2b70529cd47f7bf3b3f",
+    "additional_contracts.json": "5de540fa6c3c3ab7fc976a7c317e89b3a8e7eb817b162dd8d658283a40a8cc7c",
+    "render_minimal.json": "cea5b476055d8b593b9b3ec60763f0465fff12766e4e8b2bd43cde7ec3cb87b6"
+  },
+  "additional_requirements_for_new_full_run": [
+    "Exact new CUDA training entrypoint paired short run",
+    "Actual interrupted/resumed next optimizer steps, including RNG and epoch boundary",
+    "Launcher rejects missing/failed/stale receipt without spawning training"
+  ]
+}

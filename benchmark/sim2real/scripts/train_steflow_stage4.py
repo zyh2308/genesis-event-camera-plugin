@@ -13,15 +13,18 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "compat"))
 from run_steflow_stage2_pilot import (
     compute_epe, model_output_to_flow_hw, objective_dt1, pure_torch_spatial_correlation,
     set_seed, state_sha256,
 )
+from steflow_align_corners import patch_ste
 
 
 SIZE = 256
@@ -137,7 +140,8 @@ def val_input(data: dict, index: int, device: torch.device):
 
 
 def save_checkpoint(path: Path, *, model, optimizer, scheduler, seed, generator, epoch, update,
-                    sampler_position, config_hash, manifest_hash, initial_hash, best_epe, best_epoch):
+                    sampler_position, config_hash, manifest_hash, initial_hash, best_epe, best_epoch,
+                    next_epoch=None, next_position_samples=None, phase="train", resume_allowed=True):
     current_hash = state_sha256(model)
     state = {
         "state_dict": model.state_dict(), "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(),
@@ -150,11 +154,74 @@ def save_checkpoint(path: Path, *, model, optimizer, scheduler, seed, generator,
         "best_synthetic_validation_epe": best_epe, "best_epoch": best_epoch,
         "effective_batch": 8, "microbatch": 8, "accumulation_steps": 1,
         "flow_unit": FLOW_UNIT, "real_data_used": False,
+        "next_epoch": int(epoch if next_epoch is None else next_epoch),
+        "next_position_samples": int(sampler_position if next_position_samples is None else next_position_samples),
+        "resume_phase": phase, "resume_allowed": bool(resume_allowed),
     }
     atomic_torch_save(state, path)
 
 
+@torch.no_grad()
+def evaluate_validation(model, val, device, run: Path, label: str) -> dict:
+    model.eval()
+    epe_by_rollout, zero_by_rollout = {}, {}
+    fixed_visualizations = {}
+    for rollout in sorted(val):
+        epe_values, zero_values = [], []
+        for sample_index in range(66):
+            event, _, _ = val_input(val[rollout], sample_index, device)
+            pred = model(event, 352, use_dt4=False, flow_seq=False)
+            flow = model_output_to_flow_hw(pred)
+            if flow.shape != (2, 352, 352):
+                raise RuntimeError(f"validation output must be [2,352,352], got {flow.shape}")
+            flow = flow[:, 46:306, 3:349]
+            gt = val[rollout]["flow_gt"][sample_index]
+            valid = val[rollout]["flow_valid"][sample_index]
+            epe, _ = compute_epe(flow, gt, valid, prediction_unit="px_per_interval", gt_unit="px_per_interval")
+            zero, _ = compute_epe(np.zeros_like(gt), gt, valid, prediction_unit="px_per_interval", gt_unit="px_per_interval")
+            epe_values.append(epe); zero_values.append(zero)
+            if sample_index == 0 and rollout[:2] not in fixed_visualizations:
+                fixed_visualizations[rollout[:2]] = (rollout, flow.copy(), gt.copy(), valid.copy())
+        epe_by_rollout[rollout] = float(np.mean(epe_values))
+        zero_by_rollout[rollout] = float(np.mean(zero_values))
+    strata = {}
+    for stratum_index in range(4):
+        prefix = f"s{stratum_index}_"
+        ids = [rid for rid in sorted(val) if rid.startswith(prefix)]
+        if len(ids) != 2:
+            raise RuntimeError(f"validation stratum {stratum_index} must contain 2 rollouts, got {ids}")
+        strata[stratum_index] = {
+            "rollouts": ids,
+            "model_mean_epe_px_per_30ms": float(np.mean([epe_by_rollout[rid] for rid in ids])),
+            "zero_flow_mean_epe_px_per_30ms": float(np.mean([zero_by_rollout[rid] for rid in ids])),
+        }
+    viz_root = run / "fixed_validation_visuals" / label
+    viz_root.mkdir(parents=True, exist_ok=True)
+    for _, (rollout, pred, gt, valid) in sorted(fixed_visualizations.items()):
+        # Fixed, pre-registered sample 0 from the first held-out rollout in
+        # each stratum; values are encoded over a fixed +/-20 px display range.
+        def encode(field):
+            return np.clip(np.rint((np.clip(field, -20.0, 20.0) + 20.0) * (255.0 / 40.0)), 0, 255).astype(np.uint8)
+        panel = np.concatenate((encode(gt[0]), encode(gt[1]), valid.astype(np.uint8) * 255,
+                                encode(pred[0]), encode(pred[1]), valid.astype(np.uint8) * 255), axis=1)
+        if not cv2.imwrite(str(viz_root / f"{rollout}_sample000_gt_uv_valid_pred_uv_valid.png"), panel):
+            raise IOError(f"failed to write fixed validation visualization for {rollout}")
+    result = {
+        "model_mean_epe_px_per_30ms": float(np.mean(list(epe_by_rollout.values()))),
+        "zero_flow_mean_epe_px_per_30ms": float(np.mean(list(zero_by_rollout.values()))),
+        "model_epe_by_rollout": epe_by_rollout,
+        "zero_flow_epe_by_rollout": zero_by_rollout,
+        "strata": strata,
+        "fixed_visualization_samples": sorted(value[0] + "/sample000" for value in fixed_visualizations.values()),
+        "real_data_used": False,
+    }
+    model.train()
+    return result
+
+
 def main() -> None:
+    if not os.environ.get("STAGE4_LAUNCH_GATE_VERIFIED"):
+        raise SystemExit("refusing direct trainer invocation; use scripts/stage4_launch_gate.py")
     p = argparse.ArgumentParser()
     p.add_argument("--model-root", type=Path, required=True)
     p.add_argument("--data-root", type=Path, required=True)
@@ -163,9 +230,10 @@ def main() -> None:
     p.add_argument("--generator", choices=("eventgenesis", "v2e"), required=True)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--resume", type=Path)
+    p.add_argument("--max-updates", type=int, default=None,
+                   help="stop after this absolute update count; epoch-boundary stops include scheduler and validation")
     args = p.parse_args()
     run = args.run_root.resolve() / args.generator
-    run.mkdir(parents=True, exist_ok=True)
     data_root, model_root = args.data_root.resolve(), args.model_root.resolve()
     config = json.loads(args.config.read_text())
     train_cfg = config["flow_dt1"]
@@ -186,11 +254,14 @@ def main() -> None:
     corr_module.spatial_correlation_sample = pure_torch_spatial_correlation
     import models
     import multiscaleloss
+    upstream_hashes = patch_ste(models, multiscaleloss, model_root)
     torch.set_num_threads(4)
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA unavailable; refusing CPU training")
     device = torch.device("cuda:0")
     torch.cuda.set_device(device)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     set_seed(args.seed)
     model = models.steflow().to(device)
     model.train()
@@ -203,7 +274,9 @@ def main() -> None:
     start_epoch, start_update, start_batch = 0, 0, 0
     best_epe, best_epoch = float("inf"), None
     if args.resume:
-        saved = torch.load(args.resume, map_location=device, weights_only=False)
+        saved = torch.load(args.resume, map_location="cpu", weights_only=False)
+        if not saved.get("resume_allowed", False) or saved.get("resume_phase") != "train":
+            raise ValueError("checkpoint is inference-only or not at a resumable training phase")
         if saved["generator"] != args.generator or saved["seed"] != args.seed:
             raise ValueError("resume checkpoint generator/seed mismatch")
         if saved["config_sha256"] != sha256(args.config) or saved["data_manifest_sha256"] != sha256(manifest_path):
@@ -211,12 +284,17 @@ def main() -> None:
         model.load_state_dict(saved["state_dict"]); optimizer.load_state_dict(saved["optimizer"])
         scheduler.load_state_dict(saved["scheduler"])
         random.setstate(saved["python_rng"]); np.random.set_state(saved["numpy_rng"])
-        torch.set_rng_state(saved["torch_rng"]); torch.cuda.set_rng_state_all(saved["cuda_rng"])
-        start_epoch, start_update, start_batch = int(saved["epoch"]), int(saved["optimizer_update"]), int(saved["sampler_position"])
+        torch.set_rng_state(saved["torch_rng"].cpu())
+        torch.cuda.set_rng_state_all([state.cpu() for state in saved["cuda_rng"]])
+        start_epoch = int(saved["next_epoch"])
+        start_update = int(saved["optimizer_update"])
+        start_batch = int(saved["next_position_samples"])
+        initial_hash = saved["initial_state_sha256"]
         best_epe, best_epoch = saved["best_synthetic_validation_epe"], saved["best_epoch"]
         if state_sha256(model) != saved["current_state_sha256"]:
             raise RuntimeError("resume model state hash mismatch")
 
+    run.mkdir(parents=True, exist_ok=True)
     atomic_json(run / "run_metadata.json", {
         "generator": args.generator, "seed": args.seed, "gpu_visible_index": 0,
         "physical_gpu_id": os.environ.get("STAGE4_PHYSICAL_GPU", "unknown"),
@@ -228,7 +306,9 @@ def main() -> None:
         "initial_state_sha256": initial_hash, "effective_batch": 8, "microbatch": 8, "gradient_accumulation_steps": 1,
         "epochs": 45, "train_windows": 1584, "validation_windows": 528,
         "objective": "official multiscale Charbonnier photometric + 10x second-order smoothness",
+        "coordinate_compatibility": upstream_hashes,
         "real_data_used": False, "flow_gt_used_in_optimizer": False,
+        "cudnn_deterministic": True,
         "augmentation_check": validate_geometry_transform(),
     })
     log_path = run / "training_metrics.jsonl"
@@ -239,6 +319,16 @@ def main() -> None:
     manifest_hash = sha256(manifest_path)
     start_time = time.monotonic()
     global_update = start_update
+    if global_update == 0:
+        baseline = evaluate_validation(model, val, device, run, "initial")
+        print(json.dumps({"event": "initial_synthetic_validation", "optimizer_updates": 0, **baseline}), flush=True)
+        with log_path.open("a", buffering=1) as output:
+            output.write(json.dumps({"event": "initial_synthetic_validation", "optimizer_updates": 0, **baseline}) + "\n")
+
+    if args.max_updates is not None and args.max_updates <= global_update:
+        raise ValueError(f"--max-updates={args.max_updates} must exceed the current update {global_update}")
+
+    stopped_at_budget = False
     with log_path.open("a", buffering=1) as log:
         for epoch in range(start_epoch, 45):
             order_rng = np.random.default_rng(args.seed + 1000003 * epoch)
@@ -248,21 +338,26 @@ def main() -> None:
             batches = [perm[i:i + 8] for i in range(0, len(perm), 8)]
             if config["flow_dt1"]["drop_last"]:
                 batches = [b for b in batches if len(b) == 8]
-            for batch_index, batch in enumerate(batches, start=(start_batch // 8 if epoch == start_epoch else 0)):
+            start_batch_index = (start_batch // 8 if epoch == start_epoch else 0)
+            for batch_index, batch in enumerate(batches, start=start_batch_index):
                 if len(batch) != 8:
                     continue
                 optimizer.zero_grad(set_to_none=True)
                 event_batch, gray_batch, event_counts = [], [], []
+                batch_ids = []
+                augmentation_seeds = []
                 for micro, sample_ix in enumerate(batch):
                     rollout, sample_ix = train_samples[int(sample_ix)]
                     sample = train[rollout]
                     seed_seq = np.random.SeedSequence([args.seed, epoch, batch_index, micro])
+                    augmentation_seeds.append([args.seed, epoch, batch_index, micro])
                     aug_rng = np.random.default_rng(seed_seq)
                     transform_sample = {k: sample[k][sample_ix:sample_ix + 1]
                                         for k in ("events", "gray_prev", "gray_next", "flow_gt", "flow_valid")}
                     event, gray, _, _ = apply_joint_transform(transform_sample, aug_rng, device)
                     event_batch.append(event); gray_batch.append(gray)
                     event_counts.append(int(sample["event_counts"][sample_ix]))
+                    batch_ids.append(str(sample["sample_ids"][sample_ix]))
                 event_batch = torch.cat(event_batch, dim=0)
                 gray_batch = torch.cat(gray_batch, dim=0)
                 output = model(event_batch, SIZE, use_dt4=False, flow_seq=False)
@@ -283,9 +378,11 @@ def main() -> None:
                 if not all(np.isfinite(x) for x in (loss_value, photo_value, smooth_value, grad_norm)) or grad_norm <= 0 or grad_tensors == 0:
                     raise RuntimeError(f"invalid loss/gradient at update {global_update + 1}")
                 optimizer.step(); global_update += 1
+                sampler_position = (batch_index + 1) * 8
                 record = {
                     "optimizer_update": global_update, "epoch": epoch + 1, "batch_in_epoch": batch_index + 1,
-                    "rollout_sample_ids": [str(train[r]["sample_ids"][i]) for r, i in [train_samples[int(j)] for j in batch]],
+                    "rollout_sample_ids": batch_ids,
+                    "augmentation_seed_sequences": augmentation_seeds,
                     "effective_batch": 8, "microbatch": 8, "accumulation_steps": 1,
                     "loss": loss_value, "photometric_loss": photo_value,
                     "smoothness_loss": smooth_value, "gradient_l2_norm": grad_norm,
@@ -296,103 +393,82 @@ def main() -> None:
                     "updated_utc": datetime.now(timezone.utc).isoformat(),
                 }
                 log.write(json.dumps(record) + "\n")
-                sampler_position = (batch_index + 1) * 8
-                if global_update == 20 or global_update % 100 == 0:
-                    current_hash = state_sha256(model)
+                at_epoch_end = sampler_position >= len(train_samples)
+                should_stop = args.max_updates is not None and global_update >= args.max_updates
+                if global_update == 20 or global_update % 100 == 0 or should_stop or at_epoch_end:
                     common = dict(model=model, optimizer=optimizer, scheduler=scheduler, seed=args.seed,
                                   generator=args.generator, epoch=epoch, update=global_update,
                                   sampler_position=sampler_position, config_hash=sha256(args.config),
                                   manifest_hash=manifest_hash, initial_hash=initial_hash,
-                                  best_epe=best_epe, best_epoch=best_epoch)
+                                  best_epe=best_epe, best_epoch=best_epoch,
+                                  next_epoch=epoch, next_position_samples=sampler_position)
                     save_checkpoint(run / "last.pt", **common)
                     if global_update == 20:
                         save_checkpoint(run / "update_000020.pt", **common)
-                        saved = torch.load(run / "update_000020.pt", map_location=device, weights_only=False)
-                        restored = models.steflow().to(device)
-                        restored.load_state_dict(saved["state_dict"])
-                        restored_optimizer = torch.optim.Adam([
-                            {"params": restored.bias_parameters(), "weight_decay": 0.0},
-                            {"params": restored.weight_parameters(), "weight_decay": .0004},
-                        ], lr=.0004, betas=(.9, .999))
-                        restored_optimizer.load_state_dict(saved["optimizer"])
-                        restored_scheduler = torch.optim.lr_scheduler.MultiStepLR(
-                            restored_optimizer, milestones=[5, 10, 20], gamma=.7)
-                        restored_scheduler.load_state_dict(saved["scheduler"])
-                        model.eval(); restored.eval()
-                        probe, _, _ = val_input(val[sorted(val)[0]], 0, device)
-                        with torch.no_grad():
-                            live_probe = model(probe, 352, use_dt4=False, flow_seq=False)
-                            restored_probe = restored(probe, 352, use_dt4=False, flow_seq=False)
-                        restore_error = float((live_probe - restored_probe).abs().max().cpu())
-                        restore_hash_match = state_sha256(model) == state_sha256(restored)
-                        if not restore_hash_match or restore_error > 1e-6:
-                            raise RuntimeError(f"update-20 checkpoint restore verification failed: hash={restore_hash_match}, max_abs={restore_error}")
-                        model.train()
-                        del restored, restored_optimizer, restored_scheduler, live_probe, restored_probe, probe
-                        torch.cuda.empty_cache()
                     status = {**record, "status": "training", "checkpoint": str(run / "last.pt"),
                               "checkpoint_sha256": sha256(run / "last.pt"), "initial_state_sha256": initial_hash,
-                              "physical_gpu_id": os.environ.get("STAGE4_PHYSICAL_GPU", "unknown"),
-                              "current_state_sha256": current_hash, "completed_updates": global_update,
+                              "current_state_sha256": state_sha256(model), "completed_updates": global_update,
                               "total_updates": total_updates, "run_root": str(run),
                               "checkpoint_updated_utc": datetime.now(timezone.utc).isoformat(),
-                              "update20_restore_verified": global_update == 20,
-                              "restore_prediction_max_abs": restore_error if global_update == 20 else None}
+                              "checkpoint_is_epoch_boundary": at_epoch_end,
+                              "resume_rng_cpu_tensors": True}
                     atomic_json(run / "live_status.json", status)
                     print(json.dumps(status), flush=True)
                 if global_update in (100, 500):
-                    # Evidence snapshot is copied at a checked update count.
                     save_checkpoint(run / f"update_{global_update:06d}.pt", model=model, optimizer=optimizer,
                                     scheduler=scheduler, seed=args.seed, generator=args.generator, epoch=epoch,
                                     update=global_update, sampler_position=sampler_position,
                                     config_hash=sha256(args.config), manifest_hash=manifest_hash,
-                                    initial_hash=initial_hash, best_epe=best_epe, best_epoch=best_epoch)
-            start_batch = 0
+                                    initial_hash=initial_hash, best_epe=best_epe, best_epoch=best_epoch,
+                                    next_epoch=epoch, next_position_samples=sampler_position)
+                if should_stop and not at_epoch_end:
+                    stopped_at_budget = True
+                    break
+            if stopped_at_budget:
+                break
+
+            # Epoch boundary includes scheduler update, full validation and a
+            # post-validation resumable checkpoint. Resume never replays a
+            # completed epoch or silently repeats its scheduler step.
             scheduler.step()
-            model.eval()
-            epe_by_rollout = {}
-            with torch.no_grad():
-                for rollout in sorted(val):
-                    epe_values = []
-                    for sample_index in range(66):
-                        event, gray0, gray1 = val_input(val[rollout], sample_index, device)
-                        pred = model(event, 352, use_dt4=False, flow_seq=False)
-                        flow = model_output_to_flow_hw(pred)
-                        if flow.shape != (2, 352, 352):
-                            raise RuntimeError(f"validation output must be [2,352,352], got {flow.shape}")
-                        flow = flow[:, 46:306, 3:349]
-                        epe, _ = compute_epe(flow, val[rollout]["flow_gt"][sample_index], val[rollout]["flow_valid"][sample_index],
-                                             prediction_unit="px_per_interval", gt_unit="px_per_interval")
-                        epe_values.append(epe)
-                    epe_by_rollout[rollout] = float(np.mean(epe_values))
-            val_epe = float(np.mean(list(epe_by_rollout.values())))
+            validation = evaluate_validation(model, val, device, run, f"epoch_{epoch + 1:02d}")
+            val_epe = validation["model_mean_epe_px_per_30ms"]
             if val_epe < best_epe:
                 best_epe, best_epoch = val_epe, epoch + 1
                 save_checkpoint(run / "synthetic_best.pt", model=model, optimizer=optimizer, scheduler=scheduler,
                                 seed=args.seed, generator=args.generator, epoch=epoch, update=global_update,
                                 sampler_position=0, config_hash=sha256(args.config), manifest_hash=manifest_hash,
-                                initial_hash=initial_hash, best_epe=best_epe, best_epoch=best_epoch)
-            model.train()
+                                initial_hash=initial_hash, best_epe=best_epe, best_epoch=best_epoch,
+                                next_epoch=epoch + 1, next_position_samples=0, phase="inference", resume_allowed=False)
             validation_record = {"event": "synthetic_validation", "epoch": epoch + 1,
-                                 "optimizer_updates": global_update, "rollout_equal_weight_epe_px_per_30ms": epe_by_rollout,
-                                 "mean_epe_px_per_30ms": val_epe, "best_epe": best_epe,
-                                 "best_epoch": best_epoch, "real_data_used": False,
+                                 "optimizer_updates": global_update, "best_epe": best_epe,
+                                 "best_epoch": best_epoch, **validation,
                                  "updated_utc": datetime.now(timezone.utc).isoformat()}
-            with log_path.open("a", buffering=1) as output:
-                output.write(json.dumps(validation_record) + "\n")
+            log.write(json.dumps(validation_record) + "\n")
             print(json.dumps(validation_record), flush=True)
-            if global_update >= total_updates:
+            complete = global_update >= total_updates
+            save_checkpoint(run / "last.pt", model=model, optimizer=optimizer, scheduler=scheduler,
+                            seed=args.seed, generator=args.generator, epoch=epoch, update=global_update,
+                            sampler_position=len(train_samples), config_hash=sha256(args.config),
+                            manifest_hash=manifest_hash, initial_hash=initial_hash,
+                            best_epe=best_epe, best_epoch=best_epoch,
+                            next_epoch=epoch + 1, next_position_samples=0,
+                            phase="complete" if complete else "train", resume_allowed=not complete)
+            if args.max_updates is not None and global_update >= args.max_updates:
+                stopped_at_budget = True
                 break
-    save_checkpoint(run / "last.pt", model=model, optimizer=optimizer, scheduler=scheduler,
-                    seed=args.seed, generator=args.generator, epoch=44, update=global_update,
-                    sampler_position=len(train_samples), config_hash=sha256(args.config),
-                    manifest_hash=manifest_hash, initial_hash=initial_hash,
-                    best_epe=best_epe, best_epoch=best_epoch)
-    atomic_json(run / "live_status.json", {"status": "complete", "completed_updates": global_update,
-                "total_updates": total_updates, "best_synthetic_validation_epe_px_per_30ms": best_epe,
-                "best_epoch": best_epoch, "initial_state_sha256": initial_hash,
-                "current_state_sha256": state_sha256(model),
-                "last_checkpoint": str(run / "last.pt"), "updated_utc": datetime.now(timezone.utc).isoformat()})
+            if complete:
+                break
+
+    final_status = {"status": "complete" if global_update >= total_updates else "paused_at_update_budget",
+                    "completed_updates": global_update, "total_updates": total_updates,
+                    "best_synthetic_validation_epe_px_per_30ms": best_epe,
+                    "best_epoch": best_epoch, "initial_state_sha256": initial_hash,
+                    "current_state_sha256": state_sha256(model), "last_checkpoint": str(run / "last.pt"),
+                    "resume_next_epoch": (torch.load(run / "last.pt", map_location="cpu", weights_only=False)["next_epoch"]),
+                    "updated_utc": datetime.now(timezone.utc).isoformat()}
+    atomic_json(run / "live_status.json", final_status)
+    print(json.dumps(final_status), flush=True)
 
 
 if __name__ == "__main__":

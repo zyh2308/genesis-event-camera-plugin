@@ -36,6 +36,51 @@ STRATA = (
 WIDTH, HEIGHT = 346, 260
 FPS, DT, DURATION = 100, 0.001, 2.0
 FRAMES = int(FPS * DURATION) + 1
+BANK_SCHEMA = "stage4_shared_flow_bank_v2_geometry_corrected"
+
+
+class GeometryCameraProxy:
+    """Expose pixel-index geometry K while delegating rendering to Genesis."""
+    def __init__(self, camera, intrinsics: np.ndarray):
+        self._camera = camera
+        self.intrinsics = np.asarray(intrinsics, dtype=np.float64)
+
+    def __getattr__(self, name):
+        return getattr(self._camera, name)
+
+
+def segmentation_render_to_link(raw_seg: np.ndarray, render_to_link: dict) -> np.ndarray:
+    """Map renderer-local segmentation indices to physical Genesis link IDs."""
+    raw = np.asarray(raw_seg)
+    mapping = {int(k): int(v) for k, v in render_to_link.items()}
+    if not np.issubdtype(raw.dtype, np.integer) or (raw.size and int(raw.min()) < 0):
+        raise RuntimeError(f"renderer segmentation IDs must be nonnegative integers, got {raw.dtype}")
+    present = np.unique(raw)
+    missing = [int(value) for value in present if int(value) not in mapping]
+    if missing:
+        raise RuntimeError(f"renderer segmentation IDs have no physical-link mapping: {missing}")
+    if mapping.get(0) != -1:
+        raise RuntimeError(f"renderer background must map 0 -> -1, got {mapping.get(0)}")
+    max_render_id = max(int(raw.max()) if raw.size else 0, max(mapping, default=0))
+    if max_render_id > 1_000_000:
+        raise RuntimeError(f"renderer segmentation ID is implausibly large for a lookup table: {max_render_id}")
+    lut = np.full(max_render_id + 1, np.iinfo(np.int32).min, dtype=np.int32)
+    for render_id, physical_link_id in mapping.items():
+        lut[render_id] = physical_link_id
+    return lut[raw.astype(np.int64, copy=False)]
+
+
+def geometry_intrinsics(camera) -> tuple[np.ndarray, np.ndarray]:
+    """Return renderer K and pixel-index K for center-sampled depth."""
+    K_renderer = as_numpy(camera.intrinsics).astype(np.float64)
+    if K_renderer.shape != (3, 3):
+        raise RuntimeError(f"Genesis camera intrinsics must be 3x3, got {K_renderer.shape}")
+    K_pixel = K_renderer.copy()
+    # Camera principal points denote pixel centers at W/2,H/2; physics_warp
+    # uses integer pixel indices, so shift K by half a pixel once at this edge.
+    K_pixel[0, 2] -= 0.5
+    K_pixel[1, 2] -= 0.5
+    return K_renderer, K_pixel
 
 
 def sha256(path: Path) -> str:
@@ -139,12 +184,13 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         vis_options=gs.options.VisOptions(ambient_light=(0.38, 0.38, 0.38), segmentation_level="link"),
         show_viewer=False,
     )
-    scene.add_entity(gs.morphs.Plane(), surface=gs.surfaces.Default(color=(0.38, 0.40, 0.43, 1.0)))
+    ground = scene.add_entity(gs.morphs.Plane(), surface=gs.surfaces.Default(color=(0.38, 0.40, 0.43, 1.0)))
     rng = np.random.default_rng(episode["scene_seed"])
     palette = ((.88, .16, .09, 1.), (.08, .68, .22, 1.), (.10, .28, .92, 1.), (.92, .68, .08, 1.))
     objects = []
     bases = []
     sizes = []
+    registered_initial_positions = []
     for oi in range(3):
         size = float(rng.uniform(.10, .16))
         base = np.asarray([rng.uniform(-.25, .25), rng.uniform(-.20, .20), size * .5 + .025])
@@ -152,8 +198,10 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             # Cross the center at a nearer diagonal depth to create occlusion.
             base = np.asarray([-.26, -.16, .16])
             size = .16
+        initial = trajectory_pose(0.0, episode, oi, base)
+        registered_initial_positions.append(initial.copy())
         body = scene.add_entity(
-            gs.morphs.Box(pos=tuple(base), size=(size, size * rng.uniform(.75, 1.25), size * rng.uniform(.75, 1.2))),
+            gs.morphs.Box(pos=tuple(initial), size=(size, size * rng.uniform(.75, 1.25), size * rng.uniform(.75, 1.2))),
             surface=gs.surfaces.Default(color=palette[(oi + episode["local_index"]) % len(palette)], emissive=(.015, .015, .015)),
         )
         objects.append(body); bases.append(base); sizes.append(size)
@@ -165,15 +213,38 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     scene.build()
 
     links = {int(link.idx): link for link in scene.rigid_solver.links}
+    ground_id = int(ground.links[0].idx)
     object_ids = sorted(int(body.links[0].idx) for body in objects)
     if any(object_id not in links for object_id in object_ids):
         raise RuntimeError("Genesis object link/segmentation contract failed")
+    K_renderer, K_geometry = geometry_intrinsics(camera)
+    camera_geometry = GeometryCameraProxy(camera, K_geometry)
     frame_cache, state_cache = {}, {}
+    segmentation_map_cache = {}
 
     def frame_provider(active_scene, active_camera):
-        rgb, depth, seg, _ = active_camera.render(rgb=True, depth=True, segmentation=True, radiance=True)
+        # HDR radiance and depth-only use different renderer passes. Combining
+        # them resolves multisample depth and breaks the center-ray contract.
+        rgb, _, _, _ = active_camera.render(
+            rgb=True, depth=False, segmentation=False, radiance=True, force_render=True
+        )
+        _, depth, raw_seg, _ = active_camera.render(
+            rgb=False, depth=True, segmentation=True, force_render=True
+        )
+        visualizer = active_camera.visualizer
+        if not hasattr(visualizer, "segmentation_idx_dict"):
+            raise RuntimeError("Genesis visualizer does not expose segmentation_idx_dict")
+        render_to_link = visualizer.segmentation_idx_dict
+        normalized_mapping = {str(k): int(v) for k, v in render_to_link.items()}
+        if segmentation_map_cache and segmentation_map_cache != normalized_mapping:
+            raise RuntimeError(f"renderer segmentation mapping changed inside rollout {episode['id']}")
+        segmentation_map_cache.update(normalized_mapping)
+        raw_seg = as_numpy(raw_seg).astype(np.int32)
         payload = {"rgb": as_numpy(rgb).astype(np.float32), "radiance": as_numpy(rgb).astype(np.float32),
-                   "depth": as_numpy(depth).astype(np.float32), "seg": as_numpy(seg).astype(np.int32)}
+                   "depth": as_numpy(depth).astype(np.float32),
+                   "seg": segmentation_render_to_link(raw_seg, render_to_link),
+                   "seg_render_idx": raw_seg,
+                   "seg_render_to_link": normalized_mapping}
         frame_cache["last"] = payload
         return payload
 
@@ -195,9 +266,15 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         motion_state_provider=state_provider, device=event_cfg["device"],
         warp_backend=event_cfg["warp_backend"],
     )
-    plugin.attach(scene, camera).start_episode()
+    plugin.attach(scene, camera_geometry).start_episode()
 
-    times, radiance, depths, segmentations, camera_poses, object_poses, display, event_chunks = [], [], [], [], [], [], [], []
+    observed_initial_positions = [link_to_world_cv(body.links[0])[:3, 3] for body in objects]
+    initial_pose_error = max(float(np.max(np.abs(actual - expected)))
+                             for actual, expected in zip(observed_initial_positions, registered_initial_positions))
+    if initial_pose_error > 1e-4:
+        raise RuntimeError(f"first captured object pose differs from trajectory_pose(0): {initial_pose_error} m")
+
+    times, radiance, depths, segmentations, raw_segmentations, camera_poses, object_poses, display, event_chunks = [], [], [], [], [], [], [], [], []
     started = time.monotonic()
     for endpoint in range(FRAMES):
         for substep in range(10 if endpoint else 0):
@@ -216,11 +293,14 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             raise RuntimeError("Genesis depth/segmentation shape mismatch")
         if not np.isfinite(payload["radiance"]).all():
             raise RuntimeError("non-finite linear radiance")
+        if np.any(np.isnan(payload["depth"])) or np.any(np.isinf(payload["depth"])):
+            raise RuntimeError("non-finite renderer depth")
         object_pixels = sum(int(np.count_nonzero(payload["seg"] == sid)) for sid in object_ids)
         if object_pixels == 0:
             raise RuntimeError(f"no moving-scene object pixels visible in {episode['id']} frame {endpoint}")
         times.append(t); radiance.append(payload["radiance"]); depths.append(payload["depth"])
-        segmentations.append(payload["seg"]); camera_poses.append(state["camera_to_world"])
+        segmentations.append(payload["seg"]); raw_segmentations.append(payload["seg_render_idx"])
+        camera_poses.append(state["camera_to_world"])
         object_poses.append(state["object_to_world"]); display.append(radiance_to_v2e_luma_u8(payload["radiance"]))
         if endpoint:
             event_chunks.append(chunk)
@@ -239,7 +319,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     times = np.asarray(times, dtype=np.float64)
     if not np.allclose(np.diff(times), .01, atol=1e-7, rtol=0.0):
         raise RuntimeError(f"nonuniform endpoint timestamps in {episode['id']}")
-    K = as_numpy(camera.intrinsics).astype(np.float64)
+    K = K_geometry
     object_pose_array = np.stack([[state[sid] for sid in sorted(state)] for state in object_poses]).astype(np.float64)
     all_seg_ids = sorted(object_poses[0])
     pose_col = {sid: i for i, sid in enumerate(all_seg_ids)}
@@ -290,12 +370,21 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     group.attrs["flow_contract"] = "forward source-pixel displacement from endpoint i to i+3; px per 30 ms interval"
     group.attrs["validity_contract"] = "source geometry, in-bounds target projection, and nearest-target-depth agreement within max(2 cm, 2%); common to both generators"
     group.attrs["v2e_display_mapping"] = "Rec.709 linear Y, exposure 1, Reinhard, sRGB transfer, uint8 round-to-nearest; fixed across endpoints"
+    group.attrs["segmentation_contract"] = "renderer segmentation_idxc mapped through camera.visualizer.segmentation_idx_dict; background -1; segmentation_link_idx stores physical Genesis link IDs"
+    group.attrs["depth_contract"] = "depth-only renderer pass with MSAA disabled; radiance captured separately"
+    group.attrs["pixel_center_contract"] = "renderer K principal point shifted by -0.5 px for integer-index ray grid; same K used by EventGenesis and physical GT"
+    group.attrs["trajectory_initialization_contract"] = "rigid object bodies are instantiated at trajectory_pose(t=0) before first capture"
+    group.attrs["trajectory_initialization_max_abs_error_m"] = initial_pose_error
+    group.attrs["ground_segmentation_link_id"] = ground_id
     group.create_dataset("frame_timestamps_s", data=times)
     group.create_dataset("radiance_linear_rgb", data=np.stack(radiance).astype(np.float32), compression="gzip", compression_opts=1)
     group.create_dataset("depth_m", data=np.stack(depths).astype(np.float32), compression="gzip", compression_opts=1)
     group.create_dataset("segmentation_link_idx", data=np.stack(segmentations).astype(np.int32), compression="gzip", compression_opts=1)
+    group.create_dataset("segmentation_render_idx", data=np.stack(raw_segmentations).astype(np.int32), compression="gzip", compression_opts=1)
     group.create_dataset("v2e_display_luma_u8", data=np.stack(display), compression="gzip", compression_opts=1)
     group.create_dataset("camera_intrinsics_K_px", data=K)
+    group.create_dataset("camera_intrinsics_K_renderer", data=K_renderer)
+    group.create_dataset("segmentation_render_to_link_json", data=np.bytes_(json.dumps(frame_cache["last"]["seg_render_to_link"], sort_keys=True)))
     group.create_dataset("camera_to_world_cv", data=np.stack(camera_poses).astype(np.float64))
     group.create_dataset("object_segmentation_link_ids", data=np.asarray(all_seg_ids, dtype=np.int32))
     group.create_dataset("object_to_world", data=object_pose_array)
@@ -311,6 +400,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         "scene_seed": episode["scene_seed"], "frames": FRAMES, "time_s": [float(times[0]), float(times[-1])],
         "eventgenesis_events": int(len(events)), "valid_fraction_30ms_mean": float(valid30.mean()),
         "flow30_shape": list(flow30.shape), "K": K.tolist(),
+        "initial_pose_max_abs_error_m": initial_pose_error,
         "v2e_input_files": len(display), "v2e_input_sha256": sha256(v2e_dir / "000000.png"),
         "rollout_seconds": round(time.monotonic() - started, 3),
     }
@@ -355,7 +445,7 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     commit = subprocess.check_output(["git", "-C", str(repo_root), "rev-parse", "HEAD"], text=True).strip()
     manifest = {
-        "schema": "stage4_shared_flow_bank_v1", "created_utc": datetime.now(timezone.utc).isoformat(),
+        "schema": BANK_SCHEMA, "created_utc": datetime.now(timezone.utc).isoformat(),
         "host": socket.gethostname(), "repo_commit": commit, "frozen_simulator_core": CORE,
         "config_sha256": sha256(config_path), "split_seed": launch["shared_bank"]["split_seed"],
         "flow_direction_check": verify_flow_direction(), "episodes": [],
@@ -363,7 +453,7 @@ def main() -> None:
     h5_path = root / "shared_trajectory.h5.partial"
     try:
         with h5py.File(h5_path, "w") as h5:
-            h5.attrs["schema"] = "stage4_shared_flow_bank_v1"
+            h5.attrs["schema"] = BANK_SCHEMA
             h5.attrs["config_sha256"] = manifest["config_sha256"]
             h5.attrs["frozen_simulator_core"] = CORE
             h5.attrs["split_unit"] = "whole independent rollout; validation groups have distinct scene_seed and trajectory ID"

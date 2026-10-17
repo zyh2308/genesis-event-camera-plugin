@@ -1,0 +1,50 @@
+{
+  "audited_commit": "ce2333128b5a203412b4e3aa80ca355fd669c07b",
+  "checked_at_JST": "2026-10-17T17:45:59.787846+09:00",
+  "training_completion": "PASS",
+  "research_result_acceptance": "FAIL_PENDING_CORRECTNESS_REPAIR",
+  "paired_all_update_sample_orders_match": true,
+  "arms": {
+    "eventgenesis": {
+      "updates": 8910,
+      "validations": 45,
+      "exit_code": "0",
+      "best_epoch": 16,
+      "legacy_best_epe": 0.9389129835000911,
+      "legacy_final_epe": 0.9466441114213922
+    },
+    "v2e": {
+      "updates": 8910,
+      "validations": 45,
+      "exit_code": "0",
+      "best_epoch": 17,
+      "legacy_best_epe": 0.9406893614490628,
+      "legacy_final_epe": 0.9438607459228423
+    }
+  },
+  "legacy_zero_flow_epe": 0.8241647044299749,
+  "legacy_metric_caveat": "All EPE above uses faulty segmentation-to-link mapping and is not a physically valid generator comparison.",
+  "confirmed_findings": [
+    {
+      "priority": "P0",
+      "issue": "Renderer segmentation indices passed as link IDs to shared GT and EventGenesis interpolation; static ground assigned object motion.",
+      "evidence": [
+        "renderer_source_verification.json",
+        "segmentation_verification.json",
+        "local_source_excerpts.json"
+      ]
+    },
+    {
+      "priority": "P1",
+      "issue": "STEFlow loss/model grid coordinates use W-1/H-1 while grid_sample defaults to align_corners=False.",
+      "evidence": [
+        "warp_coordinate_verification.json",
+        "renderer_source_verification.json"
+      ]
+    }
+  ],
+  "real_dataset_scoring_performed_by_audit": false,
+  "production_code_changed_by_audit": false,
+  "audit_GPU_use": "24 fixed synthetic validation windows per existing best model, inference only; no training",
+  "recommended_next_step": "Repair mappings and warp contracts; version/rebuild affected data; paired synthetic short run before new full training or seeds."
+}
