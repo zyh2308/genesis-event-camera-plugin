@@ -52,6 +52,8 @@ CODE_FILES = [
     "benchmark/sim2real/scripts/stage4_validate_pilot.py",
     "benchmark/sim2real/scripts/stage4_gate_negative_controls.py",
     "benchmark/sim2real/scripts/run_stage4_corrected_v2_server.sh",
+    "benchmark/sim2real/manifests/downstream_source_bundle.json",
+    "benchmark/sim2real/manifests/v2e_source_pin.json",
     "benchmark/sim2real/compat/steflow_align_corners.py",
     "genesis_event_plugin/physics_plugin.py",
     "genesis_event_plugin/genesis_adapter.py",
@@ -108,6 +110,26 @@ def package_version(name: str) -> str:
         return "not-installed"
 
 
+def verify_pinned_tree(root: Path, rows: list[dict], expected_tree_sha256: str,
+                       label: str) -> dict:
+    """Verify an extracted, metadata-free source tree against its pinned manifest."""
+    tree_rows = []
+    for row in rows:
+        relative = row["path"]
+        path = root / relative
+        if not path.is_file():
+            raise FileNotFoundError(f"{label} pinned source file missing: {path}")
+        size = path.stat().st_size
+        actual = sha256(path)
+        if size != row["size_bytes"] or actual != row["sha256"]:
+            raise RuntimeError(f"{label} pinned source file mismatch: {relative}")
+        tree_rows.append([relative, size, actual])
+    tree_sha = hashlib.sha256(json.dumps(tree_rows, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+    if tree_sha != expected_tree_sha256:
+        raise RuntimeError(f"{label} source-tree hash mismatch: {tree_sha} != {expected_tree_sha256}")
+    return {"tree_sha256": tree_sha, "file_count": len(tree_rows), "commit": None}
+
+
 def build_fingerprint(repo: Path, config: Path, bank: Path, v2e: Path,
                       data: Path, model: Path, genesis_root: Path) -> dict:
     code = {}
@@ -122,7 +144,6 @@ def build_fingerprint(repo: Path, config: Path, bank: Path, v2e: Path,
         "STEFlow.py": sha256(model / "models/STEFlow.py"),
         "multiscaleloss.py": sha256(model / "multiscaleloss.py"),
         "corr.py": sha256(model / "models/corr.py"),
-        "git_commit": subprocess.check_output(["git", "-C", str(model), "rev-parse", "HEAD"], text=True).strip(),
     }
     upstream_expected = {
         "STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785",
@@ -131,6 +152,19 @@ def build_fingerprint(repo: Path, config: Path, bank: Path, v2e: Path,
     }
     if any(model_hashes[key] != expected for key, expected in upstream_expected.items()):
         raise RuntimeError(f"locked STE-FlowNet source changed: {model_hashes}")
+    project = repo.parents[1]
+    config_value = json.loads(config.read_text())
+    downstream_bundle_path = repo / "benchmark/sim2real/manifests/downstream_source_bundle.json"
+    if sha256(downstream_bundle_path) != config_value["source_locks"]["downstream_bundle_sha256"]:
+        raise RuntimeError("downstream source bundle manifest hash disagrees with the locked config")
+    downstream_bundle = json.loads(downstream_bundle_path.read_text())
+    ste_row = next((row for row in downstream_bundle["repositories"] if row["repo"] == "STE-FlowNet"), None)
+    if ste_row is None or ste_row["commit"] != config_value["source_locks"]["STE_FlowNet_commit"]:
+        raise RuntimeError("STE-FlowNet pinned commit disagrees with the locked source manifest/config")
+    ste_tree = verify_pinned_tree(model, ste_row["files"], ste_row["included_tree_sha256"], "STE-FlowNet")
+    model_hashes["pinned_commit"] = ste_row["commit"]
+    model_hashes["source_tree_sha256"] = ste_tree["tree_sha256"]
+    model_hashes["source_file_count"] = ste_tree["file_count"]
     bank_manifest_path = bank / "bank_manifest.json"
     split_path = bank / "registered_split.json"
     h5_path = bank / "shared_trajectory.h5"
@@ -170,16 +204,21 @@ def build_fingerprint(repo: Path, config: Path, bank: Path, v2e: Path,
             v2e_input_hashes[str(frame_path)] = frame["sha256"]
     if len(raw_v2e_hashes) != 32 or len(v2e_input_hashes) != 6432:
         raise RuntimeError(f"V2E raw/input artifact census mismatch: {len(raw_v2e_hashes)}/{len(v2e_input_hashes)}")
-    project = repo.parents[1]
     v2e_source = project / "external/sources/v2e-cac6384445/v2e-pinned"
     v2e_entry = v2e_source / "v2e.py"
     v2e_model = project / "external/sources/v2e-cac6384445/input/SuperSloMo39.ckpt"
-    v2e_source_commit = subprocess.check_output(["git", "-C", str(v2e_source), "rev-parse", "HEAD"], text=True).strip()
-    config_value = json.loads(config.read_text())
+    v2e_manifest_path = repo / "benchmark/sim2real/manifests/v2e_source_pin.json"
+    v2e_pin = json.loads(v2e_manifest_path.read_text())
     expected_v2e_commit = config_value["generators"]["v2e"]["commit"]
-    if v2e_source_commit != expected_v2e_commit:
-        raise RuntimeError(f"pinned V2E source commit mismatch: {v2e_source_commit} != {expected_v2e_commit}")
-    v2e_code = {"commit": v2e_source_commit, "entry_sha256": sha256(v2e_entry), "slomo_checkpoint_sha256": sha256(v2e_model)}
+    if v2e_pin["commit"] != expected_v2e_commit or config_value["source_locks"]["V2E_commit"] != expected_v2e_commit:
+        raise RuntimeError("V2E pinned commit disagrees with the locked source manifest/config")
+    v2e_tree = verify_pinned_tree(v2e_source, v2e_pin["files"], v2e_pin["source_tree_sha256"], "V2E")
+    v2e_slomo_pin = v2e_pin["slomo_checkpoint"]
+    if not v2e_model.is_file() or v2e_model.stat().st_size != v2e_slomo_pin["size_bytes"] or sha256(v2e_model) != v2e_slomo_pin["sha256"]:
+        raise RuntimeError(f"V2E SuperSloMo checkpoint hash mismatch: {v2e_model}")
+    v2e_code = {"commit": v2e_pin["commit"], "source_tree_sha256": v2e_tree["tree_sha256"],
+                "source_file_count": v2e_tree["file_count"], "entry_sha256": sha256(v2e_entry),
+                "slomo_checkpoint_sha256": v2e_slomo_pin["sha256"]}
     genesis_files = {}
     for relative in ("genesis/vis/camera.py", "genesis/vis/visualizer.py",
                      "genesis/vis/rasterizer_context.py", "genesis/ext/pyrender/renderer.py"):
