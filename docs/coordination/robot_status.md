@@ -522,3 +522,11 @@ g1 使用代码 commit `98ee643750e5a8cfc3e7b3578657e94e297962fe`、场景 SHA25
 此前独立 strict oracle 已证明 `0.08 - 0.10·(v−0.30)` s（截断 `[0.05,0.10]`）在三档有效，预期 close lead 为约 `80/70/60 ms`；R0.8 中改到 `150/140/130 ms` 后九集全失败。故当前配置候选回退至先前经验证的速度规则；新控制文件 SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，机械值未动，只改早闭合 lead 参数。须先用新 seed 三档中心各一集确认与 shared gate 兼容，再跑三档 × 左/中/右开发回归；不得将旧 300/300 直接算作新 gate 统计。
 
 **R0.8 下一步：**先完成回退 lead 的三速度中心小回归，通过后再完成横向 9 集新 episode strict oracle；然后用既有两档 raw events 按 causal five-bin 决策窗口重做 1/2 kHz TTC/close-action 回放；运行共享 physical/robot cache 的 Ours/V2E 同架构三 epoch R1 smoke 与两 checkpoint 的 Direct-HDR R2 smoke。只验收调用链、公平性边界和实测成本，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 与双方共用因果 gate 边界不变。Ours ideal pixel response 与 V2E frozen sensor/noise/cutoff/refractory 配置不同，R1/R2 smoke 差异不能解释为生成器算法优劣。
+
+回退 lead 的中心先导与后续完整横向回归启动器分别为：
+
+~~~bash
+bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_closure_rollback_center_pilot_20261017a.launch.sh
+# 仅在三档中心均通过 shared gate 后运行：
+bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_shared_gate_oracle_3speed3lateral_20261017b.launch.sh
+~~~
