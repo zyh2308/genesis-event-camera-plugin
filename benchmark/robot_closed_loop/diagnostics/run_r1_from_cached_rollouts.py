@@ -62,6 +62,25 @@ def main() -> int:
 
     experiment_path = args.experiment_config.resolve()
     experiment = json.loads(experiment_path.read_text(encoding="utf-8"))
+    import yaml
+    v2e_config_path = args.v2e_config.resolve()
+    v2e_parameters = yaml.safe_load(v2e_config_path.read_text(encoding="utf-8"))["parameters"]
+    response = experiment["pixel_response"]
+    parameter_map = {
+        "pos_thres": "pos_thres", "neg_thres": "neg_thres", "sigma_thres": "sigma_thres",
+        "cutoff_hz": "cutoff_hz", "leak_rate_hz": "leak_rate_hz",
+        "leak_jitter_fraction": "leak_jitter_fraction",
+        "noise_rate_cov_decades": "noise_rate_cov_decades",
+        "shot_noise_rate_hz": "shot_noise_rate_hz",
+        "refractory_period_s": "refractory_period_s", "seed": "seed",
+    }
+    mismatched = {
+        v2e_key: {"ours": response[ours_key], "v2e": v2e_parameters.get(v2e_key)}
+        for ours_key, v2e_key in parameter_map.items()
+        if float(response[ours_key]) != float(v2e_parameters.get(v2e_key, float("nan")))
+    }
+    if mismatched:
+        raise ValueError(f"shared-response configuration mismatch: {mismatched}")
     training = experiment["evaluation"]
     default_split = training["episode_split"]
     episode_ids = [int(value) for value in args.episode_ids.split(",") if value.strip()]
@@ -75,6 +94,8 @@ def main() -> int:
     cache_root = args.cache_root.resolve()
     out = args.output.resolve()
     _clean_dir(out)
+    replay_root = out / "generator_replays"
+    _clean_dir(replay_root)
     ours_root, v2e_root = out / "ours_training", out / "v2e_training"
     _clean_dir(ours_root)
     _clean_dir(v2e_root)
@@ -99,7 +120,7 @@ def main() -> int:
     v2e_python = Path(args.python).resolve()
     v2e_source = args.v2e_source.resolve()
     slomo_model = args.slomo_model.resolve()
-    v2e_config = args.v2e_config.resolve()
+    v2e_config = v2e_config_path
     generation_started = time.perf_counter()
     episode_records: List[Dict[str, Any]] = []
     for episode_id in episode_ids:
@@ -115,8 +136,10 @@ def main() -> int:
             raise FileNotFoundError(f"cached official V2E PNG frames missing: {frames_dir}")
         result = json.loads(result_path.read_text(encoding="utf-8"))
         trace = _jsonl(trace_path)
-        ours_out = cache_dir / f"r1_{experiment['experiment_id']}_ours"
-        v2e_out = cache_dir / f"r1_{experiment['experiment_id']}_v2e"
+        replay_dir = replay_root / f"episode_{episode_id:03d}"
+        _clean_dir(replay_dir)
+        ours_out = replay_dir / "ours"
+        v2e_out = replay_dir / "v2e"
         if ours_out.exists() or v2e_out.exists():
             raise FileExistsError(f"refusing to overwrite prior per-cache replay: {ours_out} or {v2e_out}")
 
@@ -129,7 +152,7 @@ def main() -> int:
         ]
         process = subprocess.run(command, cwd=ROOT, text=True, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, check=False)
-        (cache_dir / f"r1_{experiment['experiment_id']}_v2e_driver.log").write_text(process.stdout, encoding="utf-8")
+        (replay_dir / "v2e_driver.log").write_text(process.stdout, encoding="utf-8")
         if process.returncode != 0:
             raise RuntimeError(f"official V2E failed for episode {episode_id}: {process.stdout[-2500:]}")
         v2e_events = _load_v2e_events(v2e_out / "events.h5")
@@ -145,6 +168,7 @@ def main() -> int:
             "frame_manifest_sha256": _sha256(frame_manifest),
             "episode_result_sha256": _sha256(result_path),
             "trace_sha256": _sha256(trace_path),
+            "replay_artifact_root": str(replay_dir),
             "split_contract_sha256": split_hash,
             "split": "train" if episode_id in train_ids else "validation",
             "ours_event_count": int(len(ours_events)),
