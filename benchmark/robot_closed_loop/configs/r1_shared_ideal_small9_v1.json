@@ -1,0 +1,57 @@
+{
+  "experiment_id": "r1_shared_ideal_small9_v1",
+  "purpose": "Development-only nine-episode Ours/V2E paired R1 batch with matched ideal pixel response.",
+  "parent_response_config": "benchmark/robot_closed_loop/configs/r1_shared_ideal_response_v1.json",
+  "pixel_response": {
+    "pos_thres": 0.2,
+    "neg_thres": 0.2,
+    "sigma_thres": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "leak_jitter_fraction": 0.0,
+    "noise_rate_cov_decades": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "seed": 42,
+    "readout_model": "ideal_readout",
+    "interpretation": "ideal deterministic response; zero mismatch/noise/refractory and infinite bandwidth"
+  },
+  "training_input_endpoint": {
+    "source": "same cached Genesis display PNGs at archived 100 Hz timestamps",
+    "conversion": "OpenCV IMREAD_GRAYSCALE uint8 values represented as float32 [0,255]",
+    "response_transfer": "V2E-compatible lin_log with threshold=20 DN",
+    "cached_scene_linear_hdr": "retained and hashed as rollout provenance; not used as event input"
+  },
+  "temporal_paths": {
+    "ours": "frozen GenesisPhysicsEventPlugin with cached depth, segmentation, camera pose, and articulated/object poses for geometric motion interpolation",
+    "v2e": "official V2E image-folder pipeline with official SuperSloMo checkpoint",
+    "shared": "input grayscale endpoints, timestamps, lin_log transfer, thresholds, controllable response parameters, labels, split, optimizer budget, and seed"
+  },
+  "evaluation": {
+    "reference": "same existing Direct-HDR event files and query timestamps for both checkpoints",
+    "reference_usage": "all nine existing episodes are development material; reserve untouched episodes for formal R1 test",
+    "network": "heatmap_v2",
+    "training_seed": 606,
+    "max_epochs": 40,
+    "patience": 40,
+    "batch_size": 32,
+    "threads": 2,
+    "episode_split": {
+      "train_episode_ids": [0, 1, 2, 3, 7, 8],
+      "validation_episode_ids": [4, 5, 6],
+      "unit": "episode",
+      "purpose": "development split with every speed and lateral region represented in both partitions"
+    }
+  },
+  "rollout_plan": [
+    {"episode_id": 0, "cache_source": "existing r0_8 shared cache", "seed": 2026104130, "speed_m_s": 0.4, "launch_y_m": -0.055},
+    {"episode_id": 1, "cache_source": "existing r0_8 shared cache", "seed": 2026104131, "speed_m_s": 0.4, "launch_y_m": 0.055},
+    {"episode_id": 2, "cache_source": "new shared rollout", "seed": 2026104132, "speed_m_s": 0.3, "launch_y_m": -0.055},
+    {"episode_id": 3, "cache_source": "new shared rollout", "seed": 2026104133, "speed_m_s": 0.3, "launch_y_m": 0.0},
+    {"episode_id": 4, "cache_source": "new shared rollout", "seed": 2026104134, "speed_m_s": 0.3, "launch_y_m": 0.055},
+    {"episode_id": 5, "cache_source": "new shared rollout", "seed": 2026104135, "speed_m_s": 0.4, "launch_y_m": 0.0},
+    {"episode_id": 6, "cache_source": "new shared rollout", "seed": 2026104136, "speed_m_s": 0.5, "launch_y_m": -0.055},
+    {"episode_id": 7, "cache_source": "new shared rollout", "seed": 2026104137, "speed_m_s": 0.5, "launch_y_m": 0.0},
+    {"episode_id": 8, "cache_source": "new shared rollout", "seed": 2026104138, "speed_m_s": 0.5, "launch_y_m": 0.055}
+  ]
+}

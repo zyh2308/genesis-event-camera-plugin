@@ -93,6 +93,9 @@ def main() -> int:
         raise ValueError("episode list must be nonempty and train/validation IDs disjoint")
     if set(episode_ids) != set(train_ids) | set(validation_ids):
         raise ValueError("every selected episode must appear in exactly one declared split")
+    planned_rows = {int(row["episode_id"]): row for row in experiment.get("rollout_plan", [])}
+    if planned_rows and not set(episode_ids).issubset(planned_rows):
+        raise ValueError(f"selected episodes are absent from rollout plan: {sorted(set(episode_ids) - set(planned_rows))}")
 
     cache_root = args.cache_root.resolve()
     out = args.output.resolve()
@@ -139,6 +142,25 @@ def main() -> int:
         if not frames_dir.is_dir() or not list(frames_dir.glob("*.png")):
             raise FileNotFoundError(f"cached official V2E PNG frames missing: {frames_dir}")
         result = json.loads(result_path.read_text(encoding="utf-8"))
+        planned = planned_rows.get(episode_id)
+        if planned is not None:
+            observed = {
+                "seed": int(result.get("seed", -1)),
+                "speed_m_s": float(result.get("launch_speed_m_s", float("nan"))),
+                "launch_y_m": float(result.get("start_y_m", float("nan"))),
+            }
+            expected = {
+                "seed": int(planned["seed"]),
+                "speed_m_s": float(planned["speed_m_s"]),
+                "launch_y_m": float(planned["launch_y_m"]),
+            }
+            if observed["seed"] != expected["seed"] or any(
+                abs(observed[key] - expected[key]) > 1e-9 for key in ("speed_m_s", "launch_y_m")
+            ):
+                raise ValueError(
+                    f"cached rollout episode {episode_id} disagrees with experiment plan: "
+                    f"observed={observed}, expected={expected}"
+                )
         trace = _jsonl(trace_path)
         replay_dir = replay_root / f"episode_{episode_id:03d}"
         _clean_dir(replay_dir)
@@ -168,6 +190,9 @@ def main() -> int:
             raise FileNotFoundError(frame_manifest)
         pair = {
             "episode_id": episode_id,
+            "seed": int(result["seed"]),
+            "speed_m_s": float(result["launch_speed_m_s"]),
+            "launch_y_m": float(result["start_y_m"]),
             "shared_cache_sha256": _sha256(cache_path),
             "frame_manifest_sha256": _sha256(frame_manifest),
             "episode_result_sha256": _sha256(result_path),
