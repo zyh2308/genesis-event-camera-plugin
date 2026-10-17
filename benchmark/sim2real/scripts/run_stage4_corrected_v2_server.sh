@@ -14,7 +14,7 @@ DATA_ROOT="$PROJECT/data/sim2real/stage4/$RUN_ID/steflow_30ms"
 MODEL_ROOT="$PROJECT/external/sources/downstream/STE-FlowNet"
 V2E_SOURCE="$PROJECT/external/sources/v2e-cac6384445/v2e-pinned"
 GENESIS_ROOT="$PROJECT/runtime/sim2real/genesis_hdr_v2"
-ENV_ROOT="$PROJECT/miniconda3/envs/Eventbased_WAM"
+ENV_ROOT="/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM"
 PY="$ENV_ROOT/bin/python"
 COMMIT=$(git -C "$REPO" rev-parse HEAD)
 
