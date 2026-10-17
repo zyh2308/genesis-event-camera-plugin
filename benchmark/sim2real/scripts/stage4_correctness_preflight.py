@@ -52,6 +52,40 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def per_pixel_flow_norm(flow_chw: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Return one 2-D Euclidean flow magnitude per selected pixel."""
+    flow = np.asarray(flow_chw)
+    mask = np.asarray(mask, dtype=bool)
+    if flow.ndim != 3 or flow.shape[0] != 2 or flow.shape[1:] != mask.shape:
+        raise ValueError(f"expected flow (2,H,W) and mask (H,W), got {flow.shape} and {mask.shape}")
+    selected = flow[:, mask]
+    expected = (2, int(np.count_nonzero(mask)))
+    if selected.shape != expected:
+        raise ValueError(f"boolean-selected flow shape mismatch: {selected.shape} != {expected}")
+    if selected.shape[1] == 0:
+        return np.empty((0,), dtype=np.float64)
+    return np.linalg.norm(selected.astype(np.float64, copy=False), axis=0)
+
+
+def flow_indexing_control() -> dict:
+    """Catch NumPy advanced-index axis reordering with hand-computable vectors."""
+    fixture = np.zeros((1, 2, 1, 3), dtype=np.float32)
+    fixture[0, :, 0, :] = np.asarray([[3., 5., 8.], [4., 12., 15.]], dtype=np.float32)
+    mask = np.ones((1, 3), dtype=bool)
+    correct = per_pixel_flow_norm(fixture[0], mask)
+    legacy_selected = fixture[0, :, mask]
+    legacy_value = float(np.max(np.linalg.norm(legacy_selected, axis=0)))
+    expected = np.asarray([5., 13., 17.], dtype=np.float64)
+    if legacy_selected.shape != (3, 2) or not np.array_equal(correct, expected) or np.isclose(legacy_value, expected.max()):
+        raise RuntimeError(
+            f"flow indexing regression fixture failed: legacy_shape={legacy_selected.shape}, "
+            f"legacy_value={legacy_value}, per_pixel={correct.tolist()}"
+        )
+    return {"legacy_boolean_index_shape": list(legacy_selected.shape),
+            "correct_selected_shape": [2, 3], "expected_per_pixel_norms": expected.tolist(),
+            "legacy_axis0_max": legacy_value, "correct_max": float(correct.max())}
+
+
 def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
     import genesis as gs
     from genesis_event_plugin.genesis_adapter import camera_to_world_cv, link_to_world_cv
@@ -337,6 +371,7 @@ def check_cuda_warps(model_root: Path) -> tuple[dict, dict]:
 
 
 def check_bank(bank: Path, v2e: Path, data: Path) -> tuple[dict, dict]:
+    indexing_control = flow_indexing_control()
     bank_manifest = json.loads((bank / "bank_manifest.json").read_text())
     if bank_manifest.get("schema") != "stage4_shared_flow_bank_v3_geometry_corrected":
         raise RuntimeError(f"wrong bank schema: {bank_manifest.get('schema')}")
@@ -396,7 +431,8 @@ def check_bank(bank: Path, v2e: Path, data: Path) -> tuple[dict, dict]:
                     mask = valid[index] & (physical[index * 3] == ground_id)
                     if np.any(mask):
                         ground_cases += 1
-                        value = float(np.max(np.linalg.norm(flow[index, :, mask], axis=0)))
+                        per_pixel = per_pixel_flow_norm(flow[index], mask)
+                        value = float(np.max(per_pixel))
                         max_ground_flow = max(max_ground_flow, value)
             if sha256(Path(entries[("eventgenesis", rollout)]["path"])) != entries[("eventgenesis", rollout)]["sha256"]:
                 raise RuntimeError(f"eventgenesis adapter hash mismatch for {rollout}")
@@ -431,6 +467,7 @@ def check_bank(bank: Path, v2e: Path, data: Path) -> tuple[dict, dict]:
                "adapter_manifest_sha256": sha256(data / "training_bank_manifest.json"),
                "rollouts": 32, "paired_adapter_files": 64, "paired_windows": event_windows,
                "static_camera_ground_cases": ground_cases, "max_static_ground_flow_px_per_30ms": max_ground_flow,
+               "flow_indexing_control": indexing_control,
                "first_frame_initial_pose_max_abs_error_m": max(initial_pose_errors.values()),
                "event_count_filtering": "none"}
     return summary, {"per_rollout_segmentation_ids": map_counts}

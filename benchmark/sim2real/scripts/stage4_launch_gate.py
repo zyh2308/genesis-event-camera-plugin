@@ -52,6 +52,7 @@ CODE_FILES = [
     "benchmark/sim2real/scripts/stage4_validate_pilot.py",
     "benchmark/sim2real/scripts/stage4_gate_negative_controls.py",
     "benchmark/sim2real/scripts/run_stage4_corrected_v2_server.sh",
+    "benchmark/sim2real/scripts/continue_stage4_corrected_v2_after_data_server.sh",
     "benchmark/sim2real/manifests/downstream_source_bundle.json",
     "benchmark/sim2real/manifests/v2e_source_pin.json",
     "benchmark/sim2real/compat/steflow_align_corners.py",
