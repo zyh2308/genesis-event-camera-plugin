@@ -620,3 +620,15 @@ seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified h
 本轮优先事项：在不修改 frozen simulator core 的前提下，为 Ours 和官方 V2E 使用明确命名的共同理想无噪声响应配置；保留官方默认配置和旧结果；以相同模型、episode split、optimizer-step 预算及训练 seed 训练配对模型；两组模型统一在相同旧 Direct-HDR 文件与查询时刻上评估位置、速度、固定预测器到达时间偏差、拦截横向偏差及状态/可达覆盖率。先复用现有缓存；再依精度与实测成本决定是否扩充三速度 × 左中右小批数据。R1 不等待 R2 抓取成功或夹爪 monitor 收敛。
 
 研究证据入口：/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_r1_priority_2026-10-17/。其中 R1_PRIORITY_REVIEW.md 与 R1_EXECUTION_PROMPT.md 为研究会说明；common_reference_audit.json、common_reference_polls.csv、run_common_reference_audit.py 为回放证据。当前实现和结果将追加于本状态文件，阶段结束前列明代码/配置/checkpoint/事件/查询时刻/data hashes、复跑命令、按 episode/速度指标及端到端成本。
+
+#### R1 共同响应实现（已提交；g1 实跑待恢复）
+
+代码已推送到 `exp/robot-closed-loop-v1`，commit `10ff100caf5e79f9f8a75b575b080f3cb01c10b4`。新增缓存回放训练入口 `benchmark/robot_closed_loop/diagnostics/run_r1_from_cached_rollouts.py`、共同 Direct-HDR 评估入口 `benchmark/robot_closed_loop/diagnostics/evaluate_r1_common_direct_hdr.py`，并让官方 V2E wrapper 可接收独立实验 YAML。Python 编译和 `git diff --check` 通过；此处仅为静态检查，不代表 R1 已运行。
+
+共同响应配置 [`r1_shared_ideal_response_v1.json`](../../benchmark/robot_closed_loop/configs/r1_shared_ideal_response_v1.json) SHA256 `4b5bd964835b9b09559a12b127779bc05d371b68f1dc6a2e0d231d148c953a72`；V2E 独立 overlay [`r1_shared_ideal_response_v1_v2e.yaml`](../../benchmark/robot_closed_loop/configs/r1_shared_ideal_response_v1_v2e.yaml) SHA256 `8abe329a0013c5cd47dd3050576656cacfa9b15e487c6e8f8a1b9ff6d7ac1505`。官方默认 [`v2e.yaml`](../../benchmark/configs/v2e.yaml) 未修改，SHA256 `155f0ef7305bac9c52aa09e485d4c5a1feeaf448f1279a2cccf04097b290add4`。两训练路径从相同缓存 PNG 由 OpenCV 读出灰度端点，使用相同 V2E-compatible `lin_log`、ON/OFF 阈值 `0.2`、零阈值扰动、零噪声/泄漏/不应期和无限带宽；Ours 几何重建继续使用缓存深度、分割和物体/相机位姿，V2E 继续走官方 SuperSloMo。缓存 HDR 仍纳入 rollout HDF5 hash，但不冒称为此次 Ours 输入的 scene-linear radiance。时间重建路径保持不同；该共同配置只统一可控像素响应，不声称两生成算法逐事件相同。
+
+最小缓存开发预算已写入实验配置：同一 `heatmap_v2`、seed `606`、固定最多 `240` epochs（patience 同为 240，验证集选 checkpoint）、batch `32`；旧两集按 episode 拆为 episode 0 train、episode 1 validation。训练集仅一个 episode，所以该步只验证共同响应下的端到端接线与开发评估，不足以判断模型是否学会跨速度/横向泛化。之后根据精度和成本再扩至三速度 × 中心/左右的小批；现有九集 Direct-HDR 参考全部是已查看的开发材料，不能充当正式测试集。
+
+新评估脚本会为每个 episode 重建 estimator，避免速度回归历史跨 episode 串入；两组在完全相同的 Direct-HDR 文件与 query 时刻上回放，并输出逐 poll/逐 episode/逐速度的 XY 位置误差、XY 速度误差、固定 predictor 到达时间与拦截位置误差，以及缺失状态和预测可达/不可达判断覆盖率。到达/拦截参考是同一 fixed predictor 输入评估时刻 GT 的结果，不是实际过线真值。
+
+g1 已确认旧配对缓存 `r0_8_paired_pipeline_smoke_20261017c/trajectory_cache/episode_{000,001}` 含两份 HDF5、各自完整 PNG、frame manifest、episode result 与 trace；初次资源快照显示 GPU 3 空闲，GPU 2/4 由其他任务占用。代码 fetch 成功，但隔离 worktree checkout 在慢连接中途被中断；尚未启动新生成/训练任务，也没有新 R1 指标或成本。下一次远程连接前遵守 SSH backoff；启动前重新核对 worktree、GPU 3 和现有进程。旧 R1 smoke 与上述研究会旧 checkpoint 回放继续按历史不匹配/欠训练结果保留，不升级为本轮验收。
