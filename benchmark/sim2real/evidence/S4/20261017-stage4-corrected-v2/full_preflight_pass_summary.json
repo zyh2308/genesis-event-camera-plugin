@@ -1,0 +1,52 @@
+{
+  "schema": "stage4_full_preflight_summary_v1",
+  "run_id": "20261017-stage4-flowdt1-seed0-corrected-v5",
+  "source_commit": "567eec285551cc3054f54a7974a4112cfbb41d97",
+  "started_utc": "2026-10-17T17:54:14Z",
+  "finished_utc": "2026-10-17T17:56:44Z",
+  "exit_code": 0,
+  "overall_status": "PASS",
+  "fingerprint_sha256": "e147c8d8d3ca00f4b227c18228ceeb141dd522510df86e8bb31775d31c539930",
+  "server_report": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/preflight_result_corrected_v2.json",
+  "server_report_bytes": 1422918,
+  "server_report_sha256": "6179a2d0db502dfcd53c75d0544f4b819f24395d8d5e670a8add6a0651a732be",
+  "server_stdout_sha256": "c57939efdf57ad5e68a1decb432318cbcc90ffa7cab87f52345aa302ca3d7c6c",
+  "server_stderr_sha256": "0856e48a6a10c9371535f8b095e2f17a1b56763569f41e45d958bb8f3418c623",
+  "checks": {
+    "renderer_segmentation_mapping": "PASS",
+    "depth_K_pixel_center": "PASS",
+    "trajectory_initialization": "PASS",
+    "steflow_model_and_loss_warp_cuda": "PASS",
+    "epe_controls": "PASS",
+    "correlation_operator_cuda": "PASS",
+    "bank_manifest_and_geometry": {
+      "status": "PASS",
+      "static_camera_ground_cases": 24,
+      "max_per_pixel_flow_norm_px_per_30ms": 4.76837158203125e-7,
+      "flow_indexing_hand_control": {
+        "expected_per_pixel_norms": [5.0, 13.0, 17.0],
+        "legacy_axis0_max": 19.621416091918945,
+        "correct_max": 17.0
+      }
+    },
+    "event_window_recount": {
+      "status": "PASS",
+      "independently_recounted_windows": 4224,
+      "interval_rule": "(t_i,t_i+3]"
+    },
+    "paired_adapters_and_shared_labels": {
+      "status": "PASS",
+      "paired_rollouts": 32,
+      "paired_windows": 4224,
+      "train_samples_per_generator": 1584,
+      "validation_samples_per_generator": 528,
+      "input_contract": "five-bin event-only representation"
+    },
+    "event_representation_and_edge_cases": "PASS",
+    "fingerprint_completeness": "PASS",
+    "frozen_core_unchanged": "PASS",
+    "synthetic_only_guard": "PASS"
+  },
+  "real_data_scoring": false,
+  "training_launched_only_after_pass": true
+}

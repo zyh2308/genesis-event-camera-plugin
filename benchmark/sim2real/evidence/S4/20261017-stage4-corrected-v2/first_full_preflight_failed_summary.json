@@ -1,0 +1,40 @@
+{
+  "schema": "stage4_preflight_failure_summary_v1",
+  "observed_utc": "2026-10-17T17:45:54Z",
+  "campaign_id": "20261017-stage4-flowdt1-seed0-corrected-v5",
+  "source_commit": "7b13229698f16ba1ea18b580c33ccae9601b6236",
+  "overall_status": "BLOCKED",
+  "exit_code": 2,
+  "fingerprint_sha256": "494e4856c2ccf0d1c15b60b9bdadc42b89d29cacc2b73b4ced5b6efae02e14fa",
+  "server_report": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/preflight_result.json",
+  "server_report_bytes": 1413996,
+  "server_report_sha256": "9e5b111b525a471e48f9349d48bf61af032d5a0bdf7d7fc4cf9c5d20ebc18a08",
+  "checks": {
+    "renderer_segmentation_mapping": "PASS",
+    "depth_K_pixel_center": "PASS",
+    "trajectory_initialization": "PASS",
+    "steflow_model_and_loss_warp_cuda": "PASS",
+    "epe_controls": "PASS",
+    "correlation_operator_cuda": "PASS",
+    "bank_manifest_and_geometry": "FAIL",
+    "event_window_recount": "PASS",
+    "paired_adapters_and_shared_labels": "PASS",
+    "event_representation_and_edge_cases": "PASS",
+    "frozen_core_unchanged": "PASS",
+    "synthetic_only_guard": "PASS",
+    "fingerprint_completeness": "PASS"
+  },
+  "failure": {
+    "check": "bank_manifest_and_geometry",
+    "reported": "static-camera ground physical flow contract failed: cases=24, max=1.7672651665634476e-05",
+    "root_cause": "NumPy mixed advanced indexing with flow[index, :, mask] returns shape (N,2); norm(axis=0) therefore sums across pixels instead of reducing the 2-D flow vector at each pixel.",
+    "independent_corrected_recomputation": {
+      "cases": 24,
+      "max_per_pixel_norm_px_per_30ms": 4.76837158203125e-07,
+      "other_cases_max_px_per_30ms": 8.526512829121202e-14,
+      "old_threshold_px_per_30ms": 1e-05,
+      "threshold_changed": false
+    }
+  },
+  "preservation": "The full original report and stdout/stderr remain on g1 at the indexed paths. This compact record preserves the check verdicts and failure evidence without replacing the original artifact."
+}

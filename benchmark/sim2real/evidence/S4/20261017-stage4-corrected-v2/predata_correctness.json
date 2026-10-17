@@ -1,0 +1,313 @@
+{
+  "schema": "stage4_predata_controls_v1",
+  "stage": "predata",
+  "overall_status": "PASS",
+  "created_unix": 1792234839.8165717,
+  "checks": [
+    {
+      "check": "renderer_segmentation_mapping",
+      "status": "PASS",
+      "actual": {
+        "status": "PASS",
+        "genesis_version": "1.2.2",
+        "renderer_segmentation_idxc_to_link": {
+          "0": -1,
+          "1": 0,
+          "2": 1,
+          "3": 2,
+          "4": 3
+        },
+        "renderer_segmentation_idxc_to_key": {
+          "0": -1,
+          "1": [
+            0,
+            0
+          ],
+          "2": [
+            1,
+            1
+          ],
+          "3": [
+            2,
+            2
+          ],
+          "4": [
+            3,
+            3
+          ]
+        },
+        "renderer_mapping_api": "Camera._visualizer.segmentation_idx_dict (pinned Genesis 1.2.2)",
+        "renderer_mapping_value_contract": "segmentation_level=link: idxc -> (entity.idx, link.idx); use tuple[1]",
+        "physical_link_ids": {
+          "plane": 0,
+          "objects": [
+            1,
+            2,
+            3
+          ]
+        },
+        "noncontiguous_mapping_fixture": [
+          [
+            -1,
+            17,
+            5,
+            42
+          ]
+        ],
+        "depth_only_pass": true,
+        "renderer_K": [
+          [
+            234.52620818528507,
+            0.0,
+            173.0
+          ],
+          [
+            0.0,
+            234.52620818528507,
+            130.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "geometry_K": [
+          [
+            234.52620818528507,
+            0.0,
+            172.5
+          ],
+          [
+            0.0,
+            234.52620818528507,
+            129.5
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "plane_height_abs_p99_m": 0.00017955241977385406,
+        "plane_height_tolerance_m": 0.001,
+        "static_scene_flow_max_px": 8.526512829121202e-14,
+        "static_flow_tolerance_px": 1e-05,
+        "target_object_mean_abs_flow_px": 0.7459822786068488,
+        "all_other_pixels_max_abs_flow_px": 8.526512829121202e-14,
+        "independent_projected_object_flow_px": [
+          -1.090078822168607,
+          0.4306722861467165
+        ],
+        "observed_projected_object_flow_px": [
+          -1.0900726318359375,
+          0.4306793212890625
+        ],
+        "independent_projection_max_abs_error_px": 7.035142346012435e-06,
+        "trajectory_initial_pose_max_abs_error_m": 1.108276567740596e-09,
+        "eventgenesis_plugin_frame_provider": {
+          "capture_steps": 2,
+          "event_count_second_interval": 202,
+          "geometry_K_matches_registered": true,
+          "segmentation_mapping_applied": true,
+          "depth_only": true
+        },
+        "trajectory_initialization": "generator enforces first captured link translation equals trajectory_pose(0) <= 1e-4 m"
+      },
+      "tolerance": "see actual fields",
+      "command": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/stage4_correctness_preflight.py --stage predata --repo-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json --bank-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s --v2e-root /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/v2e_events --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet --genesis-root /home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2 --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "evidence": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "elapsed_s": 138.153
+    },
+    {
+      "check": "depth_K_pixel_center",
+      "status": "PASS",
+      "actual": {
+        "status": "PASS",
+        "plane_height_abs_p99_m": 0.00017955241977385406,
+        "tolerance_m": 0.001,
+        "static_scene_flow_max_px": 8.526512829121202e-14
+      },
+      "tolerance": "see actual fields",
+      "command": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/stage4_correctness_preflight.py --stage predata --repo-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json --bank-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s --v2e-root /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/v2e_events --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet --genesis-root /home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2 --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "evidence": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "elapsed_s": 0.0
+    },
+    {
+      "check": "trajectory_initialization",
+      "status": "PASS",
+      "actual": {
+        "status": "PASS",
+        "fixture_pose_max_abs_error_m": 1.108276567740596e-09,
+        "tolerance_m": 0.0001,
+        "all_rollouts_checked_after_generation": false
+      },
+      "tolerance": "see actual fields",
+      "command": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/stage4_correctness_preflight.py --stage predata --repo-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json --bank-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s --v2e-root /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/v2e_events --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet --genesis-root /home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2 --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "evidence": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "elapsed_s": 0.0
+    },
+    {
+      "check": "steflow_model_and_loss_warp_cuda",
+      "status": "PASS",
+      "actual": {
+        "status": "PASS",
+        "device": "NVIDIA GeForce RTX 3090",
+        "dtype": "torch.float32",
+        "warp_controls": [
+          {
+            "du": 0,
+            "dv": 0,
+            "loss_warp_mae": 8.445815069535456e-08,
+            "model_warp_mae": 8.445815069535456e-08,
+            "loss_warp_max_abs": 1.7583370208740234e-06,
+            "model_warp_max_abs": 1.7583370208740234e-06,
+            "flow_gradient_finite": true
+          },
+          {
+            "du": 1,
+            "dv": 0,
+            "loss_warp_mae": 8.656960659436663e-08,
+            "model_warp_mae": 8.656960659436663e-08,
+            "loss_warp_max_abs": 1.7583370208740234e-06,
+            "model_warp_max_abs": 1.7583370208740234e-06,
+            "flow_gradient_finite": true
+          },
+          {
+            "du": 0,
+            "dv": 1,
+            "loss_warp_mae": 8.42278993218315e-08,
+            "model_warp_mae": 8.42278993218315e-08,
+            "loss_warp_max_abs": 1.7583370208740234e-06,
+            "model_warp_max_abs": 1.7583370208740234e-06,
+            "flow_gradient_finite": true
+          },
+          {
+            "du": 1,
+            "dv": 1,
+            "loss_warp_mae": 8.633360693011127e-08,
+            "model_warp_mae": 8.633360693011127e-08,
+            "loss_warp_max_abs": 1.7583370208740234e-06,
+            "model_warp_max_abs": 1.7583370208740234e-06,
+            "flow_gradient_finite": true
+          }
+        ],
+        "photometric_loss_control": {
+          "zero_flow_charbonnier": 185.45570373535156,
+          "known_positive_u_flow_charbonnier": 2.043148994445801,
+          "known_warp_has_finite_gradient": true
+        },
+        "warp_error_tolerances": {
+          "interior_mae": 1e-06,
+          "max_abs_float32": 5e-06
+        },
+        "full_model_forward_shape": [
+          1,
+          2,
+          256,
+          256
+        ],
+        "full_model_output_finite": true,
+        "compatibility": {
+          "upstream_hashes": {
+            "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+            "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+          },
+          "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+          "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+          "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+        }
+      },
+      "tolerance": "see actual fields",
+      "command": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/stage4_correctness_preflight.py --stage predata --repo-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json --bank-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s --v2e-root /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/v2e_events --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet --genesis-root /home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2 --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "evidence": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "elapsed_s": 0.834
+    },
+    {
+      "check": "epe_controls",
+      "status": "PASS",
+      "actual": {
+        "status": "PASS",
+        "perfect_2d": 0.0,
+        "u3_v4": 5.0,
+        "vertical_only_v4": 4.0,
+        "valid_region_mean": 5.0,
+        "valid_count": 4,
+        "empty_mask_rejected": true,
+        "shape_unit_finite_broadcast_checks": "compute_epe requires exact [2,H,W], explicit unit and finite values"
+      },
+      "tolerance": "see actual fields",
+      "command": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/stage4_correctness_preflight.py --stage predata --repo-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json --bank-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s --v2e-root /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/v2e_events --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet --genesis-root /home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2 --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "evidence": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "elapsed_s": 0.001
+    },
+    {
+      "check": "correlation_operator_cuda",
+      "status": "PASS",
+      "actual": {
+        "implementation": "benchmark-local memory-efficient pure PyTorch autograd function (81 spatial shifts)",
+        "upstream_extension_installed": false,
+        "target_shape": [
+          1,
+          64,
+          128,
+          128
+        ],
+        "batch_size": 1,
+        "dtype": "float32",
+        "target_forward_max_abs_error": 7.62939453125e-06,
+        "small_forward_backward_max_gradient_error": 1.4901161193847656e-08,
+        "target_forward_seconds": 0.005067549645900726,
+        "target_peak_allocated_gpu_bytes": 9568256,
+        "target_peak_reserved_gpu_bytes_above_baseline": 0,
+        "output_shape": [
+          1,
+          9,
+          9,
+          128,
+          128
+        ]
+      },
+      "tolerance": "see actual fields",
+      "command": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/stage4_correctness_preflight.py --stage predata --repo-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json --bank-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s --v2e-root /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/v2e_events --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet --genesis-root /home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2 --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "evidence": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/predata_correctness.json",
+      "elapsed_s": 0.093
+    }
+  ],
+  "evidence": {
+    "renderer_segmentation_mapping": {
+      "genesis_runtime": "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/__init__.py",
+      "raw_seg_unique": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "render_to_link": {
+        "0": -1,
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3
+      },
+      "plane_id": 0,
+      "object_ids": [
+        1,
+        2,
+        3
+      ]
+    },
+    "depth_K_pixel_center": {},
+    "trajectory_initialization": {},
+    "steflow_model_and_loss_warp_cuda": {
+      "model_state_sha256": "52164b282a906efbaa23dda87c8d228d5eb86150a090bb0d677f4e463602fa76",
+      "pytorch": "2.5.1+cu121",
+      "cuda": "12.1"
+    },
+    "epe_controls": {},
+    "correlation_operator_cuda": {}
+  },
+  "data_generation_authorized": true,
+  "warning": "This pre-data probe is not a full training receipt."
+}
