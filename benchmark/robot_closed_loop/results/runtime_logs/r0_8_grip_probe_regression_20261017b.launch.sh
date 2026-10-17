@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -u
-repo=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-lift-probe-20261017
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo="$(cd "$script_dir/../../../.." && pwd)"
 cd "$repo"
 logs=$repo/benchmark/robot_closed_loop/results/runtime_logs
 name=r0_8_grip_probe_regression_20261017b
