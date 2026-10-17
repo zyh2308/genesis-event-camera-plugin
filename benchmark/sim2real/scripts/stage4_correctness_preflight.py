@@ -156,8 +156,11 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
         independent_error = float(np.max(np.abs(np.asarray(independent_flow) - observed_flow)))
         if object_mean <= 1e-5 or other_max > 1e-5:
             raise RuntimeError(f"object-only physical displacement failed: target mean={object_mean}, other max={other_max}")
-        if independent_error > 1e-5 or independent_flow[0] <= 0:
-            raise RuntimeError(f"known +world-X object shift has wrong sign/scale: expected={independent_flow}, observed={observed_flow}")
+        # World +X does not imply positive image-u: the sign depends on the
+        # registered camera rotation. Compare both rendered components against
+        # an independent SE(3) projection and require a nonzero displacement.
+        if independent_error > 1e-5 or np.linalg.norm(independent_flow) <= 1e-3:
+            raise RuntimeError(f"known object displacement disagrees with independent projection: expected={independent_flow}, observed={observed_flow}")
 
         # Exercise the real frozen plugin with the same renderer-map/depth/K
         # adapter used by the exporter before generating a full rollout bank.
