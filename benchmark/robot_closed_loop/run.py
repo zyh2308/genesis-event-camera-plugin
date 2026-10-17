@@ -1312,7 +1312,7 @@ def run_reference(
             "spatial learned model consumes causal five-bin event tensors only; GT is used for supervised training and offline evaluator metrics, not inference"
             if event_model_checkpoint is not None else "centroid/regression smoke estimator"
         ),
-        "shared_lift_gate_boundary": "both GT and event paths use the same ProprioceptiveGripGate and ProprioceptiveLiftStabilityMonitor; the candidate grip gate reads finger joint positions/velocities and close-command time, then a small commanded probe is confirmed from finger-joint drift/velocity and probe-command time. No target state/contact/segmentation/depth enters either control gate.",
+        "shared_lift_gate_boundary": "both GT and event paths use the same ProprioceptiveGripGate and ProprioceptiveLiftStabilityMonitor; the grip gate reads finger joint positions/velocities and close-command time, while the commanded lift probe and full lift are monitored using finger-joint drift/velocity and probe-command time. No target state/contact/segmentation/depth enters either control gate.",
         "shared_control_config": cfg.get("shared_control"),
         "episodes": episode_rows,
         "strict_success_by_speed": {
