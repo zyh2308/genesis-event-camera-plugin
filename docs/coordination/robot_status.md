@@ -543,7 +543,21 @@ g1 使用代码 commit `98ee643750e5a8cfc3e7b3578657e94e297962fe`、场景 SHA25
 
 结果 [`r0_8_shared_gate_oracle_3speed3lateral_20261017b/`](../../benchmark/robot_closed_loop/results/r0_8_shared_gate_oracle_3speed3lateral_20261017b/) 清单逐项通过：CSV `62cb2ebbfa8dd3edf3dcea6ea02f80160e6084bfb781fd4490ff165689cf79ec`，summary `ef675d2f74e329298835f4aaa15c0314876d446f654c451fa65f8cdc7e46e6e1`，manifest `d94a4b35b307916b839e5d9269d56ee3e32af2ea5d4d7012efe7fc4325c71324`，SHA256SUMS `0ecfa6e7a25218af9de592dec6477bbb8139722f54e20db4abb344d9e7407a65`。Python wall/user/system/max RSS `205.68/194.55/6.15 s / 1,579,100 KB`，exit 0；log/runtime/launcher SHA256 `aa2d518e87929fda5447287e31508e8264059610f3076e4f8e76ddfaf374a285 / a63ccf9b37311244113395ccd185f3b2fe92781a161e8f58185a59a7b132c130 / 4027a3f592a14ede627e12b51eb6de6d4b7dc5d4528e551cbb6bfed46b0a218a`。
 
-**R0.8 下一步：**先对三条 gate-abort episode 用 60 µm 做一次有限的 matched diagnostic（另外保留 30 µm 原始结果），判断 y/速度阶段差异是否主要由 monitor 漂移阈值决定；不按 seed 定制阈值。随后开展 causal five-bin 的既有 1/2 kHz raw-event 决策回放、同 cached physical/robot rollout 的 Ours/V2E 三 epoch R1 pipeline smoke，以及两 checkpoint 的共同 Direct-HDR R2 smoke。报告阶段失败和传感器响应边界；不做排名或正式多 seed。
+#### R0.8.8：既有 raw-event 的五-bin 1/2 kHz 决策回放（新运行）
+
+g1 使用代码 commit `e13b0b307c464e3f753cd3bacaeb092ee5e22586` 重跑启动器 `r0_8_five_bin_sampling_20261017b.launch.sh`，exit 0；scene SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`、shared-control SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`、heatmap checkpoint SHA256 `64b120afde4579563d8c18f4430eeaab00c3829adaa682fa82f321fac496ea7a`。数据为既有三条同源 Direct-HDR raw-event/GT robot trajectory，五个因果时间 bin、100 Hz poll；1/2 kHz 只改变事件采样 cadence，标签只在估计后离线计算。该输入共享理想 DvsEmulator 像素响应，因此本结果是采样充分性诊断，不是两个像素模型的比较。
+
+| Episode | 1/2 kHz close action 一致率 | 闭合触发时差 | TTC 差 P95 | XY 状态差 P95 | 接触前 XY 误差 P95（1/2 kHz） | 接触前速度误差 P95（1/2 kHz） |
+|---|---:|---:|---:|---:|---:|---:|
+| 000 | 93.8% | 50 ms | 517 ms | 40.70 mm | 10.53 / 10.91 mm | 0.207 / 0.218 m/s |
+| 001 | 98.5% | 0 ms | 247 ms | 25.94 mm | 8.44 / 9.95 mm | 0.242 / 0.278 m/s |
+| 002 | 97.5% | 0 ms | 129 ms | 6.85 mm | 7.77 / 8.09 mm | 0.261 / 0.242 m/s |
+
+接触前 TTC 误差绝对 P95 在 1/2 kHz 下分别为：episode 000 `490/390 ms`、001 `517/478 ms`、002 `279/352 ms`；不宜只看 paired median 或图像 cosine 来冻结 cadence。episode 000 全段 fresh fraction 为 `54.6%`，另两条为 `100%`；三条接触前 XY 已接近厘米级，但速度/TTC 与 episode 000 的动作触发仍有明显差异。故**当前证据不足以冻结 1 或 2 kHz**；后续最小 paired smoke 暂用已有 2 kHz 决策输入，正式训练协议应将采样率列为待冻结项，若它会改变动作需只对关键决策窗补采/重放 5 kHz，并以 action/TTC/到达误差而非 cosine 评估。
+
+该次离线回放 wall/user/system `12.10/10.91/0.55 s`、max RSS `394,656 KB`、exit 0。summary SHA256 `beba90f3f7f252529e6b41aa43d6dcbf95313aac767db177fa92e453bd653371`、逐 poll CSV `534e90bc0ead63130cfb52a57c44bea946a1a9e8c58cc239cf7de712467d2e7e`、目录 `SHA256SUMS` `dbbcf611121ae74bb65fef23386b6de234973138f161bae91dda4f98c084bb7b`；两处 raw-event NPZ 输入为 `8b7a69c0...`、`fe043e93...`、`50d5b246...`（完整值在 summary）。log/runtime/exit SHA256 `f17a90477871cc6cf5d76b612d3b1e4b2c111ca48b1a777766234a2017add37a / 3f2446be3abbf28917dfad9a5e0ec0f2df41c234d46d5fd749229ea8919240d6 / 9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa`。结果目录 [`r0_8_five_bin_sampling_20261017b/`](../../benchmark/robot_closed_loop/results/r0_8_five_bin_sampling_20261017b/) 已逐项通过 SHA256 核验。
+
+**R0.8 后续：**三条匹配 seed 的 60 µm monitor diagnostic 用于有限敏感性审查，仍未完成。然后运行已准备的同 cached physical/robot rollout Ours/V2E 三 epoch R1 pipeline smoke；训练只做调用链/哈希验证，不排名。若两个小样本 checkpoint 生成成功，再以相同 Direct-HDR R1 evaluation source 做单集 R2 闭环 smoke。报告阶段失败和 pixel-response 参数边界，不做正式多 seed。
 
 阈值敏感性启动器顺序如下：
 
