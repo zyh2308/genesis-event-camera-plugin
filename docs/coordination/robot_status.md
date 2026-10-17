@@ -582,20 +582,32 @@ R2 两组均 `0/1 strict success`，是独立 held-out episode 上的模型接�
 
 **两个工作包当前结论：**R1 的同缓存配对/哈希/split/小预算 fit 调用链通过，R2 共同事件源/状态接口/控制/strict scorer 链路贯通但新 checkpoint 未闭环成功。采样对照仍不支持冻结 1 kHz；当前可暂用 2 kHz 作为开发默认（它匹配 0.5 ms 物理时钟），但必须保留 1/2 kHz 会改变部分动作的证据，不能写成采样已充分。训练像素响应不匹配、monitor false abort 与小数据造成的 TTC 泛化仍是正式实验前需在协议中明示的限制。
 
-**最后一个有限共同控制诊断：**启动器 `r0_8_monitor60_matched_abort_counterfactual_20261017a.launch.sh` 将同一 60 µm gate 应用于原九集里三条 30 µm abort（并带入 .5 m/s y=−55 mm 的既有成功 seed 作为对照），不按 seed 调参、不改变其他控制或 strict scorer。结果出来后将更新 30/60 µm gate 的可冻结判断；之后停止本阶段场景/控制搜索，转交协议冻结选择。
+#### R0.8.11：60 µm gate 的 matched dynamic counterfactual（g1，2026-10-17）
 
-阈值敏感性启动器顺序如下：
+运行代码 commit e13b0b307c464e3f753cd3bacaeb092ee5e22586，frozen simulator core e79e656ac00f7847b98db9e12bf43b093f3afff1。Genesis 1.2.2、Python 3.11.15、Torch 2.8.0 CPU physics、0.5 ms physics step；渲染使用 EGL GPU 3。场景 SHA256 aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a。诊断控制配置在有效控制参数上仅将 shared-control full-lift joint-drift monitor 从 30 µm 改为 60 µm；schema/provenance 同时标记为 diagnostic-only，SHA256 59ef2b10b4fd74f06aa35fbd0303448d28b32e0b63798d27bcc7d55bf2f76c42；30 µm 主控制配置 SHA256 3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80。闭合时序、机械参数、任务和 r0_5_strict_continuous_contact_clearance_slip scorer 均未改，旧评分仍单独保留。
 
-~~~bash
-bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_proprio_monitor60_negative_regression_20261017a.launch.sh
-# 只有结果为 PASS 时，才运行同 seed 动态 counterfactual：
-bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_monitor60_dynamic_counterfactual_20261017a.launch.sh
-~~~
-
-回退 lead 的中心先导与后续完整横向回归启动器分别为：
+命令（g1 隔离 worktree）：
 
 ~~~bash
-bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_closure_rollback_center_pilot_20261017a.launch.sh
-# 仅在三档中心均通过 shared gate 后运行：
-bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_shared_gate_oracle_3speed3lateral_20261017b.launch.sh
+cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-final-oracle-20261017
+bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_monitor60_matched_abort_counterfactual_20261017a.launch.sh
 ~~~
+
+4 集为先前 30 µm 回归中的三个 abort seed 加一个 .5 m/s 左偏成功对照，非独立新样本；每档各 2 集。60 µm 下 strict success 2/4，按速度均为 1/2，Wilson 95% 区间各为 [0.095, 0.905]。逐集配对如下：
+
+| seed | 速度 / 初始 y | 30 µm hold 与结果 | 60 µm hold 与结果 |
+|---|---|---|---|
+| 2026104344 | 0.4 m/s / 0 mm | 0.473 s，gate abort，strict fail | 0.500 s，strict success；之后 monitor 于 1.7395 s abort |
+| 2026104345 | 0.4 m/s / +55 mm | 0.1425 s，gate abort | 0.1715 s，gate abort，strict fail |
+| 2026104346 | 0.5 m/s / −55 mm | 0.500 s，strict success | 0.500 s，strict success |
+| 2026104347 | 0.5 m/s / 0 mm | 0 s，gate abort | 0 s，gate abort，strict fail |
+
+seed 4344 的 60 µm 结果完成了 strict 0.5 s 双侧接触/净空保持；qualified hold 内真实最小底面净空 80.079 mm、最大相对滑移 4.339 mm，clearance 达标时支撑接触样本为 0。monitor 在完成 strict hold 后才记录 unstable_grasp，因此任务 strict score 为 success，同时保留了后续 gate abort 事实。seed 4345 的关节漂移为 63.021 µm，qualified hold 内最大滑移 3.754 mm，但只有 0.1715 s；seed 4347 最大净空仅 35.263 mm，未进入 qualified hold。其余闭合提前量和实际接触状态与 30 µm 配对轨迹相符，没有重调闭合机械参数。
+
+这项小样本把一个仅差 27 ms 的中心 hold 从失败变为 strict success，但没有挽救 .4 m/s +55 mm 或 .5 m/s 中心样例；不能把 2/4 外推成稳定成功率。此前 60 µm 静态/侧偏负例回归通过，但没有覆盖所有动态前缘顶推轨迹。建议把 60 µm 作为下一版共同控制协议候选：它允许严格任务完成，且已有负例 smoke 未见 false success；正式冻结前仍应由研究会话决定是否接受尚未覆盖的动态前缘风险。30 µm 结果保留为保守对照，不合并统计。
+
+逐集数据、trace 和成功/失败 GIF 在本地 [r0_8_monitor60_matched_abort_counterfactual_20261017a](../../benchmark/robot_closed_loop/results/r0_8_monitor60_matched_abort_counterfactual_20261017a/)，g1 原始目录为 /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-final-oracle-20261017/benchmark/robot_closed_loop/results/r0_8_monitor60_matched_abort_counterfactual_20261017a/（约 13.9 MB）。本地 SHA256SUMS 六项均通过。CSV SHA256 d284a218f0b79afd819bc5380168ae36cd9fe4eee87ef31a7a81ab2d55d95d86；summary 00ff59ae4f570499bf15f93423ff48d5934628f30b2e4f82c0da64f393018941；manifest 44978878994202e503bc243753f755d2aca79d9c00be2596873fce6f28d2f93b；目录 SHA256SUMS 文件 3bd56357cd5ce0c953a9e78cb1b4932f017a5f7485047cc4d8478198baeac64b。启动器 SHA256 9bdb3d98bf5e58535aebf9fe2e42c385cd9aebc161ac0e0eaf612af61ab8048a；log/runtime/exit/pid SHA256 890787fa36ea4aedc1cc0bc8854e053bce863c321a9afd587445f91793d10943 / 45da82522ff4e6dbb1572f9f83fbebd97c585c224b319134c40ae1260fd78f2b / 9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa / 952d5d75d08c8a2f942c64782687eeaaa232d8f0cce7fc4e34c54479f5f127f5。wall/user/system/max RSS 为 154.33/147.04/5.41 s/1,493,496 KB，exit 0。运行日志有共享 Quadrants cache lock warning；没有清理 cache 或干预其他用户进程。
+
+#### 两个工作包的协议候选与边界
+
+建议场景/机器人/机位/0.5 ms physics/strict scorer 按既有 hash 锁定；共同 controller 保留 80/70/60 ms 速度相关 close lead，lift gate 暂提 60 µm 为待研究冻结候选。事件 smoke 暂用 2 kHz causal five-bin 输入，因为它和 physics 时钟一致；1/2 kHz 回放已经显示会改变部分动作，故 2 kHz 仍是 provisional，不宣称采样充分。R1 最小同缓存配对流水线可作为后续正式数据实现起点，但 Ours/V2E 当前 pixel-response 不匹配；R2 两模型新 episode 均未 strict 成功，因此不应启动生成器排名或正式多 seed 训练。协议冻结前需由研究会话确认 60/30 µm gate 与 2 kHz 的候选边界，并明确是否先补一个动态前缘负例。
