@@ -93,7 +93,11 @@ DECCELERATION="$("$ROBOT_PYTHON" -c 'import json,sys; print(json.load(open(sys.a
   --output "$EVAL_ROOT" \
   --deceleration "$DECCELERATION"
 
-printf 'capture='; cat "$RUN_ROOT/capture.time" | rg '^\s*Elapsed \(wall clock\)|Maximum resident set size|Exit status'
-printf 'paired='; cat "$RUN_ROOT/paired_training.time" | rg '^\s*Elapsed \(wall clock\)|Maximum resident set size|Exit status'
-printf 'evaluation='; cat "$RUN_ROOT/common_reference_eval.time" | rg '^\s*Elapsed \(wall clock\)|Maximum resident set size|Exit status'
+if [[ -f "$RUN_ROOT/capture.time" ]]; then
+  printf 'capture='; grep -E 'Elapsed \(wall clock\)|Maximum resident set size|Exit status' "$RUN_ROOT/capture.time"
+else
+  echo "capture=excluded because a previously measured immutable cache was reused"
+fi
+printf 'paired='; grep -E 'Elapsed \(wall clock\)|Maximum resident set size|Exit status' "$RUN_ROOT/paired_training.time"
+printf 'evaluation='; grep -E 'Elapsed \(wall clock\)|Maximum resident set size|Exit status' "$RUN_ROOT/common_reference_eval.time"
 echo "R1 small9 pipeline completed: $RUN_ROOT"
