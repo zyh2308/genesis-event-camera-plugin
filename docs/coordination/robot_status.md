@@ -513,6 +513,12 @@ R1 两集均有双侧接触与抬升，第一次接触相对固定预测到达�
 bash benchmark/robot_closed_loop/results/runtime_logs/r0_8_proprio_side_offset_full_regression_20261017c.launch.sh
 ~~~
 
-至此共同 gate 的中心/y+15/y+20/y+25 正例和 empty/front-edge/x+30/y+30 负例已有小样本全任务诊断，可继续小样本三档 × 左/中/右新 seed strict oracle；不据此宣称 gate 已有总体误拒/漏报率保证。后续仍应以完整 lift 中止作为安全状态，不把“close-only eligible”或“probe confirmed”单独解释为抓取成功。
+#### R0.8.4：早闭合时序回归（发现并回退候选参数）
 
-**R0.8 下一步：**在上述控制候选与 strict scorer 下跑三档速度 × `y={-55,0,+55} mm` 九集新 episode oracle（仅验证失败环节/可重复性）；用既有两档 raw events 按 causal five-bin 决策窗口重做 1/2 kHz TTC/close-action 回放；跑共享 physical/robot cache 的 Ours/V2E 同架构三 epoch R1 smoke 与两 checkpoint 的 Direct-HDR R2 smoke。只做调用链、公平性边界和实际成本核验，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 与双方共用因果 gate 边界不变。Ours ideal pixel response 与 V2E frozen sensor/noise/cutoff/refractory 配置不同，任何 R1/R2 smoke 差异均不能解释为生成器算法优劣。
+g1 使用代码 commit `98ee643750e5a8cfc3e7b3578657e94e297962fe`、场景 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`、控制 SHA256 `80fe0c77449e18d460553600d7e6628a0cef62d80fd9521531602de1282c8bcc`，seed `2026104300–2026104308`，三速度 × y=`−55/0/+55 mm` 各 1 集。strict scorer 未改；所有 9 集均失败，`failure_primary=unstable_grasp`，`first_contact_s` 有值但 lift probe 未启动、hold 为 0。闭合相对固定自由滑动到达参考提前 `122–141 ms`，首次接触发生在 close 后 `15.5–62.0 ms`；接触后测得开口 `0.79–11.68 mm`，均低于 gate 的 `12 mm` 最小单指行程。该结果定位为闭合过早、目标被夹爪挡在可抓区外，而非 lift monitor 误拒。
+
+逐集结果及一个代表失败 trace/GIF 在 [`r0_8_shared_gate_oracle_3speed3lateral_20261017a/`](../../benchmark/robot_closed_loop/results/r0_8_shared_gate_oracle_3speed3lateral_20261017a/)，逐项 `SHA256SUMS` 通过：CSV `8295c5d23e184fd408e05fdebc45cb705a30c5232a41550cf8e53633020d92bf`，summary `06d0fa7fc7f48e7a490de5a1c2f974084b0c8f65fe7f86c6f94e3974d95743b4`，目录清单 `e5a53c9297896a8818b65a55110265db0762269febc3e52719ef903726ec218a`。manifest code/config hashes 同上；runtime Genesis 1.2.2 + Torch 2.8 CPU，0.5 ms physics。wall/user/system/max RSS `241.33/234.48/6.00 s / 1,567,484 KB`，exit 0；运行 log/runtime SHA256 `b771a86354b22af72d9063532a38816dc501a6cf3ade374e97836c8211fc0c04 / f415ce86e8a957176fe572d9a9d2c1bc18ff4a826805b25909be159c3b0e3801`。
+
+此前独立 strict oracle 已证明 `0.08 - 0.10·(v−0.30)` s（截断 `[0.05,0.10]`）在三档有效，预期 close lead 为约 `80/70/60 ms`；R0.8 中改到 `150/140/130 ms` 后九集全失败。故当前配置候选回退至先前经验证的速度规则；新控制文件 SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，机械值未动，只改早闭合 lead 参数。须先用新 seed 三档中心各一集确认与 shared gate 兼容，再跑三档 × 左/中/右开发回归；不得将旧 300/300 直接算作新 gate 统计。
+
+**R0.8 下一步：**先完成回退 lead 的三速度中心小回归，通过后再完成横向 9 集新 episode strict oracle；然后用既有两档 raw events 按 causal five-bin 决策窗口重做 1/2 kHz TTC/close-action 回放；运行共享 physical/robot cache 的 Ours/V2E 同架构三 epoch R1 smoke 与两 checkpoint 的 Direct-HDR R2 smoke。只验收调用链、公平性边界和实测成本，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 与双方共用因果 gate 边界不变。Ours ideal pixel response 与 V2E frozen sensor/noise/cutoff/refractory 配置不同，R1/R2 smoke 差异不能解释为生成器算法优劣。
