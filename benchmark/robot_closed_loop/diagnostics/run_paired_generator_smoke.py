@@ -382,6 +382,8 @@ def main() -> int:
     config["shared_control"] = json.loads(control_path.read_text(encoding="utf-8"))
     gs.init(backend=gs.cpu, logging_level="warning")
     env = build_robot_scene(config, segmentation_level="link")
+    # Materialize Genesis' link segmentation descriptors before resolving IDs.
+    env.camera.render(rgb=True, depth=True, segmentation=True, radiance=True)
     pose_bodies = _resolve_motion_bodies(env)
     cache_root = out / "trajectory_cache"
     ours_root, v2e_root = out / "ours_training", out / "v2e_training"
