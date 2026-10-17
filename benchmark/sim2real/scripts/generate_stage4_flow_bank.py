@@ -83,6 +83,22 @@ def geometry_intrinsics(camera) -> tuple[np.ndarray, np.ndarray]:
     return K_renderer, K_pixel
 
 
+def renderer_segmentation_index_map(camera) -> dict:
+    """Read the pinned Genesis Camera's runtime render-ID map.
+
+    Genesis 1.2.2 stores the Visualizer on ``Camera._visualizer``; Camera has
+    no public ``visualizer`` attribute. The returned mapping is the runtime
+    ``segmentation_idx_dict`` checked by the bank preflight.
+    """
+    visualizer = getattr(camera, "_visualizer", None)
+    if visualizer is None or not hasattr(visualizer, "segmentation_idx_dict"):
+        raise RuntimeError("Genesis Camera._visualizer.segmentation_idx_dict is unavailable")
+    mapping = visualizer.segmentation_idx_dict
+    if not isinstance(mapping, dict) or not mapping:
+        raise RuntimeError("Genesis renderer segmentation index map is empty or malformed")
+    return mapping
+
+
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -231,10 +247,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         _, depth, raw_seg, _ = active_camera.render(
             rgb=False, depth=True, segmentation=True, force_render=True
         )
-        visualizer = active_camera.visualizer
-        if not hasattr(visualizer, "segmentation_idx_dict"):
-            raise RuntimeError("Genesis visualizer does not expose segmentation_idx_dict")
-        render_to_link = visualizer.segmentation_idx_dict
+        render_to_link = renderer_segmentation_index_map(active_camera)
         normalized_mapping = {str(k): int(v) for k, v in render_to_link.items()}
         if segmentation_map_cache and segmentation_map_cache != normalized_mapping:
             raise RuntimeError(f"renderer segmentation mapping changed inside rollout {episode['id']}")

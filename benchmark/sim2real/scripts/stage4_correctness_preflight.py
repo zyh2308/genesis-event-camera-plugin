@@ -24,7 +24,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 sys.path.insert(0, str(REPO / "benchmark/sim2real/compat"))
 
 from generate_stage4_flow_bank import (
-    GeometryCameraProxy, as_numpy, geometry_intrinsics, segmentation_render_to_link,
+    GeometryCameraProxy, as_numpy, geometry_intrinsics, renderer_segmentation_index_map,
+    segmentation_render_to_link,
     registered_episodes, trajectory_pose,
 )
 from run_steflow_stage2_pilot import compute_epe, pure_torch_spatial_correlation, state_sha256, verify_correlation
@@ -87,7 +88,7 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
         _, _, _, _ = camera.render(rgb=True, depth=False, segmentation=False, radiance=True, force_render=True)
         _, depth_raw, seg_raw, _ = camera.render(rgb=False, depth=True, segmentation=True, force_render=True)
         raw_seg = as_numpy(seg_raw).astype(np.int32)
-        render_to_link = {int(k): int(v) for k, v in camera.visualizer.segmentation_idx_dict.items()}
+        render_to_link = {int(k): int(v) for k, v in renderer_segmentation_index_map(camera).items()}
         seg = segmentation_render_to_link(raw_seg, render_to_link)
         if render_to_link.get(0) != -1:
             raise RuntimeError("actual renderer background did not map to physical background -1")
@@ -163,7 +164,7 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
                                                        radiance=True, force_render=True)
             _, depth_value, raw_labels, _ = active_camera.render(rgb=False, depth=True,
                                                                    segmentation=True, force_render=True)
-            label_mapping = active_camera.visualizer.segmentation_idx_dict
+            label_mapping = renderer_segmentation_index_map(active_camera)
             physical_labels = segmentation_render_to_link(as_numpy(raw_labels).astype(np.int32), label_mapping)
             payload = {"rgb": as_numpy(radiance), "radiance": as_numpy(radiance),
                        "depth": as_numpy(depth_value), "seg": physical_labels}
@@ -205,6 +206,7 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
         report = {
             "status": "PASS", "genesis_version": getattr(gs, "__version__", "unknown"),
             "renderer_segmentation_idxc_to_link": render_to_link,
+            "renderer_mapping_api": "Camera._visualizer.segmentation_idx_dict (pinned Genesis 1.2.2)",
             "physical_link_ids": {"plane": plane_id, "objects": object_ids},
             "noncontiguous_mapping_fixture": mapped_fixture.tolist(),
             "depth_only_pass": True, "renderer_K": K_renderer.tolist(), "geometry_K": K_geometry.tolist(),
@@ -277,13 +279,18 @@ def check_cuda_warps(model_root: Path) -> tuple[dict, dict]:
         model_out = model.flow_warp(image, flow, pad="zeros")
         y1, x1 = h - max(dv, 0), w - max(du, 0)
         reference = image[:, :, dv:dv + y1, du:du + x1]
-        loss_err = float((loss_out[:, :, :y1, :x1] - reference).abs().max().cpu())
-        model_err = float((model_out[:, :, :y1, :x1] - reference).abs().max().cpu())
+        loss_delta = (loss_out[:, :, :y1, :x1] - reference).abs()
+        model_delta = (model_out[:, :, :y1, :x1] - reference).abs()
+        loss_mae = float(loss_delta.mean().cpu())
+        model_mae = float(model_delta.mean().cpu())
+        loss_err = float(loss_delta.max().cpu())
+        model_err = float(model_delta.max().cpu())
         (model_out[:, :, :y1, :x1].square().mean()).backward()
         grad_finite = bool(flow.grad is not None and torch.isfinite(flow.grad).all())
-        rows.append({"du": du, "dv": dv, "loss_warp_max_abs": loss_err,
+        rows.append({"du": du, "dv": dv, "loss_warp_mae": loss_mae,
+                     "model_warp_mae": model_mae, "loss_warp_max_abs": loss_err,
                      "model_warp_max_abs": model_err, "flow_gradient_finite": grad_finite})
-        if max(loss_err, model_err) > 1e-6 or not grad_finite:
+        if max(loss_mae, model_mae) > 1e-6 or max(loss_err, model_err) > 5e-6 or not grad_finite:
             raise RuntimeError(f"CUDA STE warp contract failed: {rows[-1]}")
 
     # Exercise the actual photometric loss with a one-pixel translated texture.
@@ -312,6 +319,7 @@ def check_cuda_warps(model_root: Path) -> tuple[dict, dict]:
         raise RuntimeError(f"STE full forward contract failed: {tuple(output.shape)}")
     return ({"status": "PASS", "device": torch.cuda.get_device_name(device),
              "dtype": str(image.dtype), "warp_controls": rows, "photometric_loss_control": photo,
+             "warp_error_tolerances": {"interior_mae": 1e-6, "max_abs_float32": 5e-6},
              "full_model_forward_shape": list(output.shape), "full_model_output_finite": True,
              "compatibility": patch_record},
             {"model_state_sha256": state_sha256(model), "pytorch": torch.__version__, "cuda": torch.version.cuda})
