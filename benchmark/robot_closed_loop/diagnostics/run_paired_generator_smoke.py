@@ -258,7 +258,12 @@ class _ReplayCamera:
         self.intrinsics = np.asarray(intrinsics, dtype=np.float64)
 
 
-def _make_ours_events(cache_path: Path, output_dir: Path) -> np.ndarray:
+def _make_ours_events(
+    cache_path: Path,
+    output_dir: Path,
+    frames_dir: Optional[Path] = None,
+    response_config: Optional[Dict[str, Any]] = None,
+) -> np.ndarray:
     from genesis_event_plugin import GenesisPhysicsEventPlugin
     from genesis_event_plugin.noise_model import DvsNoiseConfig
 
@@ -280,24 +285,55 @@ def _make_ours_events(cache_path: Path, output_dir: Path) -> np.ndarray:
         scene = _ReplayScene()
         camera = _ReplayCamera((width, height), K)
         state = {"index": 0}
+        grayscale_frames = None
+        if response_config is not None:
+            if frames_dir is None:
+                raise ValueError("frames_dir is required for a shared-response replay")
+            import cv2
+            frame_paths = sorted(Path(frames_dir).glob("*.png"))
+            if len(frame_paths) != len(timestamps):
+                raise RuntimeError(
+                    f"cached PNG count {len(frame_paths)} does not match timestamps {len(timestamps)}"
+                )
+            grayscale_frames = []
+            for frame_path in frame_paths:
+                image = cv2.imread(str(frame_path), cv2.IMREAD_GRAYSCALE)
+                if image is None:
+                    raise RuntimeError(f"cannot read cached V2E input frame {frame_path}")
+                grayscale_frames.append(image.astype(np.float32))
+            grayscale_frames = np.stack(grayscale_frames)
 
         def frame_provider(_scene, _camera):
             i = state["index"]
-            return {"rgb": display[i], "radiance": radiance[i], "depth": depth[i], "seg": seg[i]}
+            # The R1 shared-response route presents the exact OpenCV grayscale
+            # endpoint that official V2E reads from these PNGs.  The cached
+            # scene-linear HDR buffer remains provenance only in this route.
+            response_input = radiance[i] if grayscale_frames is None else grayscale_frames[i]
+            return {"rgb": display[i], "radiance": response_input, "depth": depth[i], "seg": seg[i]}
 
         def motion_provider(_scene, _camera):
             i = state["index"]
             return {"camera_to_world": camera_poses[i], "object_to_world": {int(sid): poses[i, j] for j, sid in enumerate(ids)}}
 
+        response = (response_config or {}).get("pixel_response", {})
         ideal_dvs = DvsNoiseConfig(
-            pos_thres=0.2, neg_thres=0.2, sigma_thres=0.0,
-            cutoff_hz=0.0, leak_rate_hz=0.0, leak_jitter_fraction=0.0,
-            shot_noise_rate_hz=0.0, refractory_period_s=0.0,
-            log_input=False, readout_model="ideal_readout",
+            pos_thres=float(response.get("pos_thres", 0.2)),
+            neg_thres=float(response.get("neg_thres", 0.2)),
+            sigma_thres=float(response.get("sigma_thres", 0.0)),
+            cutoff_hz=float(response.get("cutoff_hz", 0.0)),
+            leak_rate_hz=float(response.get("leak_rate_hz", 0.0)),
+            leak_jitter_fraction=float(response.get("leak_jitter_fraction", 0.0)),
+            shot_noise_rate_hz=float(response.get("shot_noise_rate_hz", 0.0)),
+            noise_rate_cov_decades=float(response.get("noise_rate_cov_decades", 0.0)),
+            refractory_period_s=float(response.get("refractory_period_s", 0.0)),
+            log_input=False, radiance_input=False,
+            response_mode="video_linlog", readout_model="ideal_readout",
+            seed=int(response.get("seed", 42)),
         )
         plugin = GenesisPhysicsEventPlugin(
             preset="clean", noise_config=ideal_dvs, input_space="linear",
             motion_state_provider=motion_provider, frame_provider=frame_provider,
+            response_mode="video_linlog" if response_config is not None else "physical_log",
             disocclusion_policy="hold", device="cpu",
         )
         plugin.attach(scene, camera)
@@ -323,7 +359,8 @@ def _make_ours_events(cache_path: Path, output_dir: Path) -> np.ndarray:
         "input_cache": str(cache_path), "input_cache_sha256": _sha256(cache_path),
         "input_frames": len(timestamps), "input_timestamps_sha256": hashlib.sha256(timestamps.tobytes()).hexdigest(),
         "event_count": len(result), "event_schema": "[t_seconds_from_launch, x_px, y_px, polarity]",
-        "pixel_response": "shared ideal DvsEmulator thresholds 0.2, zero noise, infinite bandwidth",
+        "pixel_response": "legacy ideal DvsEmulator response" if response_config is None else response_config,
+        "input_endpoint": "cached HDR radiance" if grayscale_frames is None else "same cached PNGs read by OpenCV grayscale as official V2E; display-derived, not scene-linear HDR",
         "plugin_wall_ms": plugin_ms,
     }, indent=2), encoding="utf-8")
     return result

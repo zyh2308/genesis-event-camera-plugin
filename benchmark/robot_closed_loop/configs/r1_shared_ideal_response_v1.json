@@ -1,0 +1,45 @@
+{
+  "experiment_id": "r1_shared_ideal_response_v1",
+  "purpose": "Development-only paired Ours/V2E event generation with matched controllable pixel response.",
+  "training_input_endpoint": {
+    "source": "same cached Genesis display PNGs at the archived 100 Hz timestamps",
+    "conversion": "OpenCV IMREAD_GRAYSCALE uint8 values represented as float32 [0,255]",
+    "response_transfer": "V2E-compatible lin_log with threshold=20 DN, shared parameter values; no claim of scene-linear HDR response",
+    "cached_scene_linear_hdr": "retained and hashed as rollout provenance; not used as Ours sensor input in this experiment"
+  },
+  "pixel_response": {
+    "pos_thres": 0.2,
+    "neg_thres": 0.2,
+    "sigma_thres": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "leak_jitter_fraction": 0.0,
+    "noise_rate_cov_decades": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "seed": 42,
+    "readout_model": "ideal_readout",
+    "interpretation": "ideal deterministic pixel response; zero mismatch/noise/refractory and infinite bandwidth"
+  },
+  "temporal_paths": {
+    "ours": "frozen GenesisPhysicsEventPlugin with cached depth, segmentation, camera pose, and articulated/object poses for geometric motion interpolation",
+    "v2e": "official V2E image-folder pipeline with the existing official SuperSloMo checkpoint",
+    "shared": "input grayscale endpoints, timestamps, lin_log transfer, thresholds, bandwidth/noise values, labels, and episode split"
+  },
+  "evaluation": {
+    "reference": "same existing Direct-HDR event files and query timestamps for both checkpoints",
+    "reference_usage": "development material only; reserve untouched episodes for formal R1 test",
+    "network": "heatmap_v2",
+    "training_seed": 606,
+    "max_epochs": 240,
+    "patience": 240,
+    "batch_size": 32,
+    "threads": 2,
+    "episode_split": {
+      "train_episode_ids": [0],
+      "validation_episode_ids": [1],
+      "unit": "episode",
+      "purpose": "minimum-cache endpoint-to-endpoint R1 development validation only"
+    }
+  }
+}

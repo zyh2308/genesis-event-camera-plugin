@@ -2,8 +2,9 @@
 """Run the official V2E image-folder path with SuperSloMo enabled.
 
 This is a readiness smoke only. It refuses the direct EventEmulator shortcut,
-loads every frozen V2E parameter from ``benchmark/configs/v2e.yaml``, and
-records the exact CLI used for the official chain.
+loads every V2E parameter from an explicit config (the official default config
+unless an experiment overlay is supplied), and records the exact CLI used for
+the official chain.
 """
 
 from __future__ import annotations
@@ -108,6 +109,8 @@ def main() -> int:
     parser.add_argument("--source", type=Path, default=None)
     parser.add_argument("--python", dest="python_exe", default=sys.executable)
     parser.add_argument("--slomo-model", type=Path, default=None)
+    parser.add_argument("--config", type=Path, default=None,
+                        help="parameter YAML; defaults to the unchanged benchmark/configs/v2e.yaml")
     args = parser.parse_args()
 
     source = args.source or Path(os.environ.get(
@@ -129,7 +132,7 @@ def main() -> int:
     if len(frames) < 3:
         return _stop("same-Genesis replay did not produce at least 3 intermediate frames", frame_count=len(frames))
 
-    config_path = ROOT / "benchmark/configs/v2e.yaml"
+    config_path = (args.config or ROOT / "benchmark/configs/v2e.yaml").resolve()
     protocol_path = ROOT / "benchmark/protocol_v3.yaml"
     config = _load_yaml(config_path)
     protocol = _load_yaml(protocol_path)
@@ -201,7 +204,10 @@ def main() -> int:
     log_file.write_text(completed.stdout, encoding="utf-8")
     (output / "v2e_cli.json").write_text(json.dumps({
         "config": str(config_path),
-        "config_hash_scope": "exact bytes of benchmark/configs/v2e.yaml",
+        "config_hash_scope": "exact bytes of selected YAML config",
+        "config_sha256": _sha256(config_path),
+        "official_default_config": str(ROOT / "benchmark/configs/v2e.yaml"),
+        "selected_config_is_official_default": config_path == (ROOT / "benchmark/configs/v2e.yaml").resolve(),
         "official_source": "https://github.com/SensorsINI/v2e",
         "official_checkpoint_source": OFFICIAL_MODEL_URL,
         "checkpoint_path": str(model),

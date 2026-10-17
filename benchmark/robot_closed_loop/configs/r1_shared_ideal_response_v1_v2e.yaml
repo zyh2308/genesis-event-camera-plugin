@@ -1,0 +1,20 @@
+method_id: r1_shared_ideal_response_v1_v2e_overlay
+label: R1 shared ideal deterministic pixel response overlay
+source_config: benchmark/robot_closed_loop/configs/r1_shared_ideal_response_v1.json
+parameter_source:
+  class: experiment_overlay
+  status: development_only
+  official_default_config_modified: false
+parameters:
+  pos_thres: 0.2
+  neg_thres: 0.2
+  sigma_thres: 0.0
+  cutoff_hz: 0.0
+  leak_rate_hz: 0.0
+  shot_noise_rate_hz: 0.0
+  refractory_period_s: 0.0
+  leak_jitter_fraction: 0.0
+  noise_rate_cov_decades: 0.0
+  seed: 42
+input_contract: same cached PNGs, official V2E OpenCV grayscale reader, fixed 100 Hz timestamps
+config_hash_scope: exact_bytes_of_this_file
