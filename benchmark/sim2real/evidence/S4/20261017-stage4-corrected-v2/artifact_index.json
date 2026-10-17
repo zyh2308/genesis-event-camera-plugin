@@ -1,21 +1,25 @@
 {
   "schema": "stage4_corrected_v2_artifact_index_v1",
-  "observed_utc": "2026-10-17T18:21:59Z",
+  "observed_utc": "2026-10-17T19:04:16Z",
   "campaign": {
     "id": "20261017-stage4-flowdt1-seed0-corrected-v5",
     "branch": "exp/public-sim2real-v1",
-    "commit": "567eec285551cc3054f54a7974a4112cfbb41d97",
+    "commit": "1115a8f6e2f5bac82a4b7428b37ec5006342355f",
     "frozen_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
     "real_data_scoring": false,
     "training_source_commit": "567eec285551cc3054f54a7974a4112cfbb41d97",
-    "status": "process_exit_resume_equivalence_running",
+    "status": "paired_full_budget_resume_active",
     "training": "STE-FlowNet dt1 seed0; 45 epochs x 198 updates; EventGenesis/V2E paired",
     "supervisor": {
-      "tmux": "stage4-flow-corrected-20261017-v6",
-      "continuation_pid": 3538277,
+      "tmux": "stage4-flow-corrected-20261017-v7",
+      "continuation_pid": 3590105,
       "pilot_pids": {
         "eventgenesis": 3540102,
         "v2e": 3540103
+      },
+      "full_training_pids": {
+        "eventgenesis": 3594965,
+        "v2e": 3594967
       },
       "gpus": {
         "eventgenesis": 2,
@@ -23,11 +27,11 @@
       }
     },
     "latest_observed_optimizer_updates": {
-      "eventgenesis": 198,
-      "v2e": 198,
-      "observed_utc": "2026-10-17T18:14:53Z"
+      "eventgenesis": 227,
+      "v2e": 228,
+      "observed_utc": "2026-10-17T19:03:34Z"
     },
-    "preflight_fingerprint_sha256": "e147c8d8d3ca00f4b227c18228ceeb141dd522510df86e8bb31775d31c539930",
+    "preflight_fingerprint_sha256": "cf7aa53677b0b2b3b010171d0a8d0c7899562ee2ce48538ee31f4854056f8145",
     "pilot_validation": {
       "status": "PASS",
       "exit_code": 0,
@@ -37,11 +41,21 @@
       "sha256": "e8a7fe414b81f29e682707c1db95b9257e117ae356c0a192ef88af027a071004"
     },
     "resume_equivalence": {
-      "status": "running",
-      "started_utc": "2026-10-17T18:20:52Z",
-      "pid": 3558426,
-      "gpu": 2
-    }
+      "strict_full_trajectory_replay": {
+        "status": "FAILED_PRESERVED",
+        "exit_code": 1,
+        "repo_evidence": "resume_full_replay_failure.json",
+        "reason": "CUDA grid_sample backward is nondeterministic; separate trajectories diverged despite matching sample IDs, augmentation schedule, LR, and RNG checkpoint fields."
+      },
+      "actual_checkpoint_resume_oracle": {
+        "status": "PASS",
+        "source_update": 198,
+        "resumed_update": 199,
+        "repo_evidence": "resume_checkpoint_oracle.json",
+        "sha256": "796f7806ef12df90c1b3fff9aafdb40c6e0e86d71bb3c6df5facf3de7991bafe"
+      }
+    },
+    "launcher_commit": "1115a8f6e2f5bac82a4b7428b37ec5006342355f"
   },
   "artifacts": [
     {
@@ -196,7 +210,9 @@
       "tmux": "stage4-flow-corrected-20261017-v6",
       "pid": 3538277,
       "server_log": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/continue_after_data.supervisor.log",
-      "status": "active"
+      "status": "finished_after_strict_resume_check_failed",
+      "exit_code": 1,
+      "finished_utc": "2026-10-17T18:45:46Z"
     },
     {
       "name": "paired_198_update_pilot_validation",
@@ -240,25 +256,144 @@
       "status": "resumable_and_validated"
     },
     {
-      "name": "resume_equivalence_process",
+      "name": "strict_full_trajectory_resume_comparison",
       "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence",
       "pid": 3558426,
       "gpu": 2,
       "started_utc": "2026-10-17T18:20:52Z",
-      "status": "running"
+      "status": "preserved_failure",
+      "exit_code": 1,
+      "finished_utc": "2026-10-17T18:45:46Z"
+    },
+    {
+      "name": "strict_resume_failure_record",
+      "path_in_repo": "resume_full_replay_failure.json",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/formal_resume_equivalence.stderr.log",
+      "bytes": 626,
+      "sha256": "428c978366b8a2051fab76da8d5fefa738e906116e1500b4c487ad3e3bf3916b",
+      "exit_code": 1,
+      "status": "preserved_failure"
+    },
+    {
+      "name": "cuda_grid_sample_nondeterminism_diagnostic",
+      "path_in_repo": "resume_cuda_nondeterminism_diagnostic.json",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/determinism_diagnostic_01/stderr.log",
+      "bytes": 1676,
+      "sha256": "8c8b74eed7acaddb2e4a51ab1e792706790132a1f0473ddd53d79b7affbd0e26",
+      "exit_code": 1,
+      "status": "confirmed_operational_limitation"
+    },
+    {
+      "name": "resume_checkpoint_oracle",
+      "path_in_repo": "resume_checkpoint_oracle.json",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/resume_checkpoint_oracle.json",
+      "bytes": 4065,
+      "sha256": "796f7806ef12df90c1b3fff9aafdb40c6e0e86d71bb3c6df5facf3de7991bafe",
+      "source_update": 198,
+      "resumed_update": 199,
+      "status": "PASS"
+    },
+    {
+      "name": "resume_retry1_full_gate_receipt",
+      "path_in_repo": "resume_retry1_gate_verification.json",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/preflight_result_resume_retry1.json",
+      "bytes": 1424752,
+      "sha256": "946fc6da4402c6bb372293d1c1d12097ff99181d6accc797fe4c4642ec95df5f",
+      "fingerprint_sha256": "cf7aa53677b0b2b3b010171d0a8d0c7899562ee2ce48538ee31f4854056f8145",
+      "checks_passed": 16,
+      "status": "PASS"
+    },
+    {
+      "name": "launcher_negative_controls_retry1",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/launcher_negative_controls/launcher_negative_controls.json",
+      "bytes": 10111,
+      "sha256": "c30e8c6f3e8e7317da1299fa258afcccf8682ec37939368ac66fbd1af5822197",
+      "cases": 5,
+      "all_blocked_before_run_root_or_trainer": true,
+      "status": "PASS"
+    },
+    {
+      "name": "final_full_phase_gate_verify_retry1",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/final_full_gate_verify_retry1.stdout.log",
+      "bytes": 419,
+      "sha256": "a6f2d616713711db9f6cd23bb8bcbd0d16dee39bbba39bb9f5afc00867287ec7",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "paired_full_budget_resume_start",
+      "path_in_repo": "resume_retry1_gate_verification.json",
+      "server_run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1",
+      "tmux": "stage4-flow-corrected-20261017-v7",
+      "supervisor_pid": 3590105,
+      "pids": {
+        "eventgenesis": 3594965,
+        "v2e": 3594967
+      },
+      "gpus": {
+        "eventgenesis": 2,
+        "v2e": 4
+      },
+      "observed_updates": {
+        "eventgenesis": 227,
+        "v2e": 228
+      },
+      "status": "active"
+    },
+    {
+      "name": "full_training_update200_checkpoint_eventgenesis",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/last.pt",
+      "bytes": 580035686,
+      "sha256": "1cc06ac0e16224bd53e7aece0ee8892c64402344e4a04fc2ddf201e948e8f989",
+      "optimizer_update": 200,
+      "resume_allowed": true,
+      "status": "saved"
+    },
+    {
+      "name": "full_training_update200_checkpoint_v2e",
+      "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/last.pt",
+      "bytes": 580035686,
+      "sha256": "d3241020205eb2ce1849812306b18b8791f90c6e2eb338945afbe6a2c0ff13ad",
+      "optimizer_update": 200,
+      "resume_allowed": true,
+      "status": "saved"
+    },
+    {
+      "name": "resume_full_replay_failure_record",
+      "path_in_repo": "resume_full_replay_failure.json",
+      "bytes": 4508,
+      "sha256": "e77d466fb555c88bd41792629c1387076ed472357d30ad259dca895785b11688",
+      "status": "preserved_failure"
+    },
+    {
+      "name": "resume_cuda_nondeterminism_record",
+      "path_in_repo": "resume_cuda_nondeterminism_diagnostic.json",
+      "bytes": 2769,
+      "sha256": "0beb8173ae97aee8de54822919ab2061fd9ce8c0da066379dee5fb4297209cf2",
+      "status": "confirmed_operational_limitation"
+    },
+    {
+      "name": "resume_retry1_gate_and_training_start_summary",
+      "path_in_repo": "resume_retry1_gate_verification.json",
+      "bytes": 5876,
+      "sha256": "99622f5fe1bbd56745c013fd261d02f575f3bf8f056244a350317696dfc00b3d",
+      "status": "PASS_TRAINING_ACTIVE"
     }
   ],
   "pending": [
-    "process-exit/resume equivalence at update 198->199",
-    "production launch-gate negative controls",
-    "final full-phase gate verification",
-    "resume both arms into registered 45-epoch budget after gates pass"
+    "continue monitoring paired synthetic-only 45-epoch runs; keep the tmux supervisor detached",
+    "after completion, verify final checkpoints, validation, logs, and paired update schedule; make no real-data ranking claim"
   ],
   "completed": [
     "corrected full preflight 13/13",
     "independent 24-case static-ground indexing diagnosis",
     "paired seed0 update-20 checkpoint and optimizer verification",
     "both arms completed 198 optimizer updates",
-    "paired eight-rollout synthetic validation and post-validation epoch-boundary checkpoint validation"
+    "paired eight-rollout synthetic validation and post-validation epoch-boundary checkpoint validation",
+    "failed strict replay preserved with CUDA nondeterministic grid_sample backward evidence",
+    "actual update-198 process-exit resume verified against independent next-batch and forward-loss oracle",
+    "retry full preflight and 16/16 launch-gate checks passed with refreshed source/data fingerprint",
+    "all five invalid launcher states were blocked before run root or trainer creation",
+    "paired 45-epoch synthetic-only resumes started; both arms produced finite update-199+ gradients and resumable update-200 checkpoints"
   ]
 }

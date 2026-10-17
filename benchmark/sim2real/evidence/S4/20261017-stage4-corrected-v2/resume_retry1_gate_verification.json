@@ -1,0 +1,135 @@
+{
+  "schema": "stage4_resume_retry1_gate_verification_v1",
+  "status": "PASS_TRAINING_ACTIVE",
+  "observed_utc": "2026-10-17T19:04:16Z",
+  "repository": {
+    "branch": "exp/public-sim2real-v1",
+    "commit": "1115a8f6e2f5bac82a4b7428b37ec5006342355f",
+    "frozen_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+    "training_code_config_data_changed_for_retry": false
+  },
+  "full_gate": {
+    "overall_status": "PASS",
+    "check_count": 16,
+    "all_checks_pass": true,
+    "fingerprint_sha256": "cf7aa53677b0b2b3b010171d0a8d0c7899562ee2ce48538ee31f4854056f8145",
+    "receipt_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/preflight_result_resume_retry1.json",
+    "receipt_bytes": 1424752,
+    "receipt_sha256": "946fc6da4402c6bb372293d1c1d12097ff99181d6accc797fe4c4642ec95df5f",
+    "checks": [
+      "renderer_segmentation_mapping",
+      "depth_K_pixel_center",
+      "trajectory_initialization",
+      "steflow_model_and_loss_warp_cuda",
+      "epe_controls",
+      "correlation_operator_cuda",
+      "bank_manifest_and_geometry",
+      "event_window_recount",
+      "paired_adapters_and_shared_labels",
+      "event_representation_and_edge_cases",
+      "frozen_core_unchanged",
+      "synthetic_only_guard",
+      "fingerprint_completeness",
+      "paired_formal_epoch_pilot",
+      "resume_equivalence_epoch_boundary",
+      "launcher_negative_controls"
+    ],
+    "negative_control_report": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/launcher_negative_controls/launcher_negative_controls.json",
+      "bytes": 10111,
+      "sha256": "c30e8c6f3e8e7317da1299fa258afcccf8682ec37939368ac66fbd1af5822197",
+      "status": "PASS",
+      "cases_all_blocked_before_run_root_or_trainer": [
+        "missing_receipt",
+        "stale_config_fingerprint",
+        "missing_required_check",
+        "injected_failed_check",
+        "stale_data_manifest_fingerprint"
+      ]
+    },
+    "final_full_phase_gate_verify_exit_code": 0,
+    "final_full_phase_gate_stdout_sha256": "a6f2d616713711db9f6cd23bb8bcbd0d16dee39bbba39bb9f5afc00867287ec7"
+  },
+  "resume_oracle": {
+    "path_in_repo": "benchmark/sim2real/evidence/S4/20261017-stage4-corrected-v2/resume_checkpoint_oracle.json",
+    "server_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_retry1/resume_checkpoint_oracle.json",
+    "bytes": 4065,
+    "sha256": "796f7806ef12df90c1b3fff9aafdb40c6e0e86d71bb3c6df5facf3de7991bafe",
+    "status": "PASS",
+    "boundary_update_198_to_199": true,
+    "independent_forward_loss_abs_errors": {
+      "loss": 0.0,
+      "photometric_loss": 0.0,
+      "smoothness_loss": 0.0
+    },
+    "optimizer_adam_counters": "198 to 199 for all 70 parameter states",
+    "real_data_used": false
+  },
+  "training": {
+    "status": "ACTIVE",
+    "campaign_id": "20261017-stage4-flowdt1-seed0-corrected-v5",
+    "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1",
+    "tmux_session": "stage4-flow-corrected-20261017-v7",
+    "supervisor_pid": 3590105,
+    "budget": "45 epochs x 198 optimizer updates per epoch; resume from saved update 198 to complete 8910 total updates per arm",
+    "real_data_scoring": false,
+    "event_only_inference_input": true,
+    "flow_gt_used_in_optimizer": false,
+    "arms": {
+      "eventgenesis": {
+        "pid": 3594965,
+        "gpu": 2,
+        "started_utc": "2026-10-17T19:01:42.866265Z",
+        "first_resumed_update": 199,
+        "observed_update": 227,
+        "observed_metric_utc": "2026-10-17T19:03:32.257009Z",
+        "observed_loss": 986.736328125,
+        "observed_gradient_l2_norm": 1279.200904528382,
+        "finite_gradient_tensors": 70,
+        "update_200_checkpoint": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/last.pt",
+          "bytes": 580035686,
+          "sha256": "1cc06ac0e16224bd53e7aece0ee8892c64402344e4a04fc2ddf201e948e8f989",
+          "optimizer_update": 200,
+          "resume_allowed": true
+        }
+      },
+      "v2e": {
+        "pid": 3594967,
+        "gpu": 4,
+        "started_utc": "2026-10-17T19:01:41.631833Z",
+        "first_resumed_update": 199,
+        "observed_update": 228,
+        "observed_metric_utc": "2026-10-17T19:03:31.769949Z",
+        "observed_loss": 961.4680786132812,
+        "observed_gradient_l2_norm": 1006.6526466569591,
+        "finite_gradient_tensors": 70,
+        "update_200_checkpoint": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/last.pt",
+          "bytes": 580035686,
+          "sha256": "d3241020205eb2ce1849812306b18b8791f90c6e2eb338945afbe6a2c0ff13ad",
+          "optimizer_update": 200,
+          "resume_allowed": true
+        }
+      }
+    },
+    "paired_update_199_inputs": {
+      "sample_ids_and_augmentation_sequences_identical": true,
+      "sample_ids": [
+        "s2_01/dt1_171",
+        "s2_02/dt1_096",
+        "s2_04/dt1_177",
+        "s3_05/dt1_147",
+        "s3_03/dt1_102",
+        "s2_04/dt1_144",
+        "s0_00/dt1_144",
+        "s1_02/dt1_012"
+      ],
+      "augmentation_seeds": [
+        [0, 1, 0, 0], [0, 1, 0, 1], [0, 1, 0, 2], [0, 1, 0, 3],
+        [0, 1, 0, 4], [0, 1, 0, 5], [0, 1, 0, 6], [0, 1, 0, 7]
+      ]
+    }
+  },
+  "interpretation": "The corrected production gate accepted the actual update-198 checkpoint boundary and rejected all tested invalid launch states. Both arms are actively training from their own pilot checkpoints in a new run directory. The recorded short-pilot validation remains slightly worse than zero flow and is not evidence of a generator-performance advantage."
+}
