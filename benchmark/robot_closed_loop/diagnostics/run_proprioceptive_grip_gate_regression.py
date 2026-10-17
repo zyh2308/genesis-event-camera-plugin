@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 
 from benchmark.robot_closed_loop.grip_gate import ProprioceptiveGripGate
 from benchmark.robot_closed_loop.robot_env import as_numpy, build_robot_scene
-from benchmark.robot_closed_loop.run import run_static_trial, save_gif
+from benchmark.robot_closed_loop.run import jsonable, run_static_trial, save_gif
 
 
 DEFAULT_SCENE = ROOT / "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json"
@@ -138,7 +138,7 @@ def main() -> int:
             trace_rows.extend(negative.pop("trace_rows"))
         with (out / "grip_gate_trace.jsonl").open("w", encoding="utf-8") as stream:
             for row in trace_rows:
-                stream.write(json.dumps(row, ensure_ascii=False) + "\n")
+                stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
         result = {
             "status": "PASS" if positive["success"] and not any(row["false_positive"] for row in negatives) else "FAIL",
             "score_version": positive["score_version"],
