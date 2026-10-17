@@ -54,7 +54,10 @@ def main() -> int:
                         default=ROOT / "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json")
     parser.add_argument("--v2e-source", type=Path, required=True)
     parser.add_argument("--slomo-model", type=Path, required=True)
-    parser.add_argument("--python", default=sys.executable)
+    parser.add_argument("--python", default=sys.executable,
+                        help="robot/plugin and estimator-training interpreter")
+    parser.add_argument("--v2e-python", default=None,
+                        help="official V2E interpreter; defaults to --python")
     parser.add_argument("--episode-ids", default="0,1")
     parser.add_argument("--train-episode-ids", default=None)
     parser.add_argument("--validation-episode-ids", default=None)
@@ -117,7 +120,8 @@ def main() -> int:
     for source_root in (ours_root, v2e_root):
         (source_root / "episode_split_contract.json").write_text(json.dumps(split_contract, indent=2), encoding="utf-8")
 
-    v2e_python = Path(args.python).resolve()
+    runner_python = Path(args.python).resolve()
+    v2e_python = Path(args.v2e_python or args.python).resolve()
     v2e_source = args.v2e_source.resolve()
     slomo_model = args.slomo_model.resolve()
     v2e_config = v2e_config_path
@@ -145,7 +149,7 @@ def main() -> int:
 
         ours_events = _make_ours_events(cache_path, ours_out, frames_dir=frames_dir, response_config=experiment)
         command = [
-            str(v2e_python), str(ROOT / "benchmark/scripts/v2e_official_pipeline_smoke.py"),
+            str(runner_python), str(ROOT / "benchmark/scripts/v2e_official_pipeline_smoke.py"),
             "--frames", str(frames_dir), "--output-dir", str(v2e_out),
             "--source", str(v2e_source), "--python", str(v2e_python),
             "--slomo-model", str(slomo_model), "--config", str(v2e_config),
@@ -191,7 +195,7 @@ def main() -> int:
     for source_name, source_root in (("ours", ours_root), ("v2e", v2e_root)):
         fit_out = out / f"{source_name}_fit"
         command = [
-            str(v2e_python), "-m", "benchmark.robot_closed_loop.diagnostics.train_event_state_development",
+            str(runner_python), "-m", "benchmark.robot_closed_loop.diagnostics.train_event_state_development",
             "--config", str(args.scene_config.resolve()), "--source-results", str(source_root),
             "--out", str(fit_out), "--train-episodes", ",".join(map(str, train_ids)),
             "--validation-episodes", ",".join(map(str, validation_ids)),
