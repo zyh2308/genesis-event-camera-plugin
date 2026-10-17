@@ -185,10 +185,21 @@ def main() -> int:
         with (out / "grip_gate_trace.jsonl").open("w", encoding="utf-8") as stream:
             for row in trace_rows:
                 stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
-        edge_false_positive = bool(front_edge_trial["lift_trigger_s"] is not None and not front_edge_trial["success"])
+        edge_false_positive = bool(
+            front_edge_trial["lift_trigger_s"] is not None
+            and not front_edge_trial["success"]
+            and not front_edge_trial.get("probe_aborted", False)
+        )
         front_edge_probe_rejected = bool(front_edge_trial.get("probe_aborted", False))
+        if front_edge_trial.get("grasp_stability_abort_s") is not None:
+            front_edge_monitor_abort_phase = "full_lift"
+        elif front_edge_trial.get("probe_aborted", False):
+            front_edge_monitor_abort_phase = "40mm_probe"
+        else:
+            front_edge_monitor_abort_phase = None
         front_edge_outcome = (
-            "probe_rejected_as_unstable" if front_edge_probe_rejected else
+            "rejected_during_full_lift" if front_edge_monitor_abort_phase == "full_lift" else
+            "probe_rejected_as_unstable" if front_edge_monitor_abort_phase == "40mm_probe" else
             "probe_confirmed_strict_success" if front_edge_trial.get("success", False) else
             "probe_confirmed_but_strict_failure" if front_edge_trial.get("lift_trigger_s") is not None else
             "no_probe_or_lift"
@@ -207,6 +218,7 @@ def main() -> int:
             "front_edge_full_lift_trial": front_edge_trial,
             "front_edge_gate_false_positive": edge_false_positive,
             "front_edge_probe_rejected": front_edge_probe_rejected,
+            "front_edge_monitor_abort_phase": front_edge_monitor_abort_phase,
             "front_edge_outcome": front_edge_outcome,
             "side_offset_y_plus_15mm_full_trial": offset_y_trial,
             "front_edge_x_plus_30mm_full_lift_trial": front_edge_30_trial,

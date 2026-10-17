@@ -89,12 +89,14 @@ class ProprioceptiveGripGate:
 
 
 class ProprioceptiveLiftStabilityMonitor:
-    """Confirm a grasp during a small causal lift probe.
+    """Confirm a grasp during a causal lift probe and the full lift.
 
     The monitor uses only Panda finger-joint positions and the probe command
     timestamp. A small probe is necessary because identical closed apertures
-    can arise from a real grasp or from an edge push. It never reads target
-    pose, contacts, segmentation, depth, or evaluator score.
+    can arise from a real grasp or from an edge push. Continuing after
+    confirmation catches grasps that only start slipping under the final lift
+    load. It never reads target pose, contacts, segmentation, depth, or
+    evaluator score.
     """
 
     def __init__(self, config: Dict[str, Any], dt_s: float):
