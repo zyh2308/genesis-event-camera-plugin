@@ -1,0 +1,59 @@
+{
+  "schema": "stage4_paired_training_progress_snapshot_v1",
+  "observed_utc": "2026-10-17T19:09:12Z",
+  "status": "ACTIVE",
+  "launch_gate_receipt_sha256": "946fc6da4402c6bb372293d1c1d12097ff99181d6accc797fe4c4642ec95df5f",
+  "full_phase_gate_exit_code": 0,
+  "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1",
+  "tmux_session": "stage4-flow-corrected-20261017-v7",
+  "supervisor_pid": 3590105,
+  "training_budget": "45 epochs x 198 updates per epoch; total target 8910 updates per arm",
+  "training_protocol": {
+    "synthetic_only": true,
+    "real_data_scoring": false,
+    "flow_gt_used_in_optimizer": false,
+    "event_only_model_input": true,
+    "generator_parameters_changed": false,
+    "model_config_or_optimizer_changed": false
+  },
+  "paired_schedule": {
+    "update_199_sample_ids_and_augmentations_match": true,
+    "source_update": 198,
+    "first_resumed_update": 199
+  },
+  "arms": {
+    "eventgenesis": {
+      "pid": 3594965,
+      "gpu": 2,
+      "observed_optimizer_update": 315,
+      "latest_metric_utc": "2026-10-17T19:08:56.558951Z",
+      "loss": 1100.896484375,
+      "gradient_l2_norm": 393.0761265777472,
+      "finite_gradient_tensors": 70,
+      "latest_resumable_checkpoint": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/last.pt",
+        "optimizer_update": 300,
+        "bytes": 580035686,
+        "sha256": "40cc0ce3adc17e35a5b3aa126af85fd3b3252a4ddab8b775f28b16e6fbb86bac",
+        "resume_allowed": true
+      }
+    },
+    "v2e": {
+      "pid": 3594967,
+      "gpu": 4,
+      "observed_optimizer_update": 321,
+      "latest_metric_utc": "2026-10-17T19:09:05.252840Z",
+      "loss": 984.0206909179688,
+      "gradient_l2_norm": 882.8407528320645,
+      "finite_gradient_tensors": 70,
+      "latest_resumable_checkpoint": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/last.pt",
+        "optimizer_update": 300,
+        "bytes": 580035686,
+        "sha256": "39746e5c9bb10742ba05b67de4a865c6e1928b95b0e301f4ecaf3d6b2da339b6",
+        "resume_allowed": true
+      }
+    }
+  },
+  "interpretation": "The optimizer counts and finite gradients show both processes advanced beyond the validated resume boundary. Losses differ by arm and are not a performance comparison. The full training budget and validation remain in progress."
+}

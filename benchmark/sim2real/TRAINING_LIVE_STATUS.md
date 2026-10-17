@@ -1,6 +1,6 @@
 # Stage 4 paired flow training: live status
 
-Updated: `2026-10-17T19:04:16Z` (g1 UTC). Both corrected full-budget resumes are active. At the last metric snapshot (19:03:34Z), EventGenesis had reached update 227 and V2E update 228; both had finite loss, gradient, and 70 finite gradient tensors.
+Updated: `2026-10-17T19:09:12Z` (g1 UTC). Both corrected full-budget resumes are active. The latest metric snapshot has EventGenesis at update 315 and V2E at 321; both have finite loss, gradient, and 70 finite gradient tensors. Latest resumable checkpoints are at update 300.
 
 ## Run identity
 
@@ -23,12 +23,16 @@ The retry ran the complete preflight again using the current code/data fingerpri
 
 ## Training observed
 
-Both arms resumed their own validated epoch-boundary checkpoint at update 198 and wrote optimizer update 199. At 19:03:34Z the logs showed: EventGenesis update 227, loss `986.7363`, gradient norm `1279.2009`; V2E update 228, loss `961.4681`, gradient norm `1006.6526`. Each update had 70 finite gradient tensors. These values are runtime health checks, not a performance comparison.
+Both arms resumed their own validated epoch-boundary checkpoint at update 198 and wrote optimizer update 199. At 19:09:12Z the latest records were: EventGenesis update 315, loss `1100.8965`, gradient norm `393.0761`; V2E update 321, loss `984.0207`, gradient norm `882.8408`. Each update had 70 finite gradient tensors. These values are runtime health checks, not a performance comparison.
 
 Both arms saved resumable update-200 checkpoints (580,035,686 bytes each):
 
 - EventGenesis: `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/last.pt`, SHA256 `1cc06ac0e16224bd53e7aece0ee8892c64402344e4a04fc2ddf201e948e8f989`.
 - V2E: `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/last.pt`, SHA256 `d3241020205eb2ce1849812306b18b8791f90c6e2eb338945afbe6a2c0ff13ad`.
+
+They have since advanced to resumable update-300 checkpoints. As of 19:09:12Z, EventGenesis `last.pt` SHA256 is `40cc0ce3adc17e35a5b3aa126af85fd3b3252a4ddab8b775f28b16e6fbb86bac`; V2E is `39746e5c9bb10742ba05b67de4a865c6e1928b95b0e301f4ecaf3d6b2da339b6` (580,035,686 bytes each). The latest exact metrics and checkpoint hashes are recorded in [`paired_training_progress_190912.json`](evidence/S4/20261017-stage4-corrected-v2/paired_training_progress_190912.json).
+
+Early throughput projects roughly 8–10 additional hours to complete the remaining optimizer updates, before epoch-end synthetic validation overhead. This estimate uses the first 120 updates per arm and will vary with shared server load.
 
 The previous 198-update pilot's synthetic validation remains slightly worse than zero flow for both generators (`0.28709464` EventGenesis, `0.28606818` V2E, versus `0.28420805` zero-flow EPE px/30ms). This diagnostic result is retained and does not support a generator ranking. The full run has not completed.
 
