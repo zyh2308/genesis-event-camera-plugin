@@ -93,7 +93,8 @@ def _build_dataset(source_root: Path, episode_ids: Sequence[int], config: Dict[s
             events = np.asarray(archive["events_2000hz"], dtype=np.float64)
         events = events[np.argsort(events[:, 0], kind="stable")]
 
-        contact_s = float(episode["first_contact_s"])
+        contact_value = (episode.get("first_contact_s") or "").strip()
+        contact_s = None if not contact_value else float(contact_value)
         lift_s = None if not episode["lift_start_s"] else float(episode["lift_start_s"])
         duration_s = float(episode["sim_duration_s"])
         first_poll = np.ceil(burn_in_s / cadence_s - 1e-10) * cadence_s

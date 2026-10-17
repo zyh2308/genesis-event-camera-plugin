@@ -89,17 +89,26 @@ def _resolve_motion_bodies(env) -> Dict[int, Any]:
     resolved_robot_links: set[int] = set()
     target_seg_ids: set[int] = set()
     for raw_seg_id, descriptor in seg_map.items():
-        candidates = _descriptor_indices(descriptor)
-        link_hits = candidates.intersection(robot_links)
-        if len(link_hits) == 1:
-            link_id = next(iter(link_hits))
-            mapping[int(raw_seg_id)] = robot_links[link_id]
-            resolved_robot_links.add(link_id)
-            continue
-        target_hits = candidates.intersection(target_ids)
-        if target_hits:
+        # Genesis 1.2.2 link-level descriptors are [entity_idx, link_idx].
+        # Treating them as an unordered set is ambiguous when entity_idx is
+        # also a valid link index.
+        entity_idx = link_idx = None
+        if isinstance(descriptor, (tuple, list)) and len(descriptor) >= 2:
+            try:
+                entity_idx, link_idx = int(descriptor[0]), int(descriptor[1])
+            except (TypeError, ValueError):
+                entity_idx = link_idx = None
+        if entity_idx == int(env.robot.idx) and link_idx in robot_links:
+            mapping[int(raw_seg_id)] = robot_links[link_idx]
+            resolved_robot_links.add(link_idx)
+        elif entity_idx in target_ids:
             mapping[int(raw_seg_id)] = env.target
             target_seg_ids.add(int(raw_seg_id))
+        else:
+            candidates = _descriptor_indices(descriptor)
+            if candidates.intersection(target_ids):
+                mapping[int(raw_seg_id)] = env.target
+                target_seg_ids.add(int(raw_seg_id))
     missing_links = sorted(set(robot_links) - resolved_robot_links)
     if missing_links:
         raise RuntimeError(
@@ -387,6 +396,17 @@ def main() -> int:
     pose_bodies = _resolve_motion_bodies(env)
     cache_root = out / "trajectory_cache"
     ours_root, v2e_root = out / "ours_training", out / "v2e_training"
+    split_contract = {
+        "train_episode_ids": [0], "validation_episode_ids": [1],
+        "split_unit": "episode", "training_seed": 606,
+        "purpose": "two-episode pipeline smoke only; no generalization claim",
+    }
+    split_contract_bytes = json.dumps(split_contract, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    split_contract_sha256 = hashlib.sha256(split_contract_bytes).hexdigest()
+    for source_root in (ours_root, v2e_root):
+        source_root.mkdir(parents=True, exist_ok=False)
+        (source_root / "episode_split_contract.json").write_bytes(
+            json.dumps(split_contract, sort_keys=True, indent=2).encode("utf-8"))
     common_episode_rows: list[tuple[dict, list[dict], Path]] = []
     capture_started = time.perf_counter()
     try:
@@ -451,6 +471,7 @@ def main() -> int:
             "source_frame_count": cached_frame_count,
             "timestamp_sha256": json.loads((cache_dir / "frame_manifest.json").read_text())["timestamp_sha256"],
             "shared_training_label_hashes": label_hashes,
+            "episode_split_contract_sha256": split_contract_sha256,
             "split_unit": "episode",
             "assignment": "episode 0 train / episode 1 validation" if episode_id == 0 else "episode 1 validation",
         }
@@ -518,7 +539,7 @@ def main() -> int:
             "same_trajectory_cache_hashes": True,
             "same_frame_timestamps": True,
             "same_GT_labels_and_episode_split": True,
-            "episode_split": {"train": [0], "validation": [1], "split_unit": "episode", "smoke_only": True},
+            "episode_split": {**split_contract, "sha256": split_contract_sha256, "smoke_only": True},
             "ours_source_files": ours_hashes, "v2e_source_files": v2e_hashes,
         },
         "training_smoke": train_outputs,

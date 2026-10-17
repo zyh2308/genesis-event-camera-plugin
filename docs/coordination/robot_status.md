@@ -414,3 +414,55 @@ EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. \
 ~~~
 
 Frozen core 仍与基线 e79e656ac00f7847b98db9e12bf43b093f3afff1 一致；主分支未合并。
+
+### R0.8 共同控制收尾与配对流水线（进行中，覆盖旧的“未执行”候选描述）
+
+研究会话确认 `6cc5a0e` 后，本阶段锁定原任务、三档速度、相机、0.5 ms 物理时钟和 strict scorer。R0.8 代码提交已推送至 `exp/robot-closed-loop-v1`：`28258e617699584344baa98b43a175dce7a5c783`（共享无 GT 夹持 gate 与 fixed-plane/rolling-OLS estimator），`bd2e5ed17ba3f28e08e383191f0f8fe02c1cfc31`（回归日志 NumPy JSON 序列化修复），`019648f6b012cc8ced2c2e1f69c833422bd8a166`（配对 smoke），当前配对代码为 `1e5c40c4f63f433d304a075e88d1e313c6f7761e`（先渲染并解析 link segmentation）。核心目录未改。场景配置 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`；shared-control 候选 SHA256 `bb88542e49924acc428120ce21ade6660cb0813a2ecc791302aa5b8fdc718383`。
+
+#### 已测：夹持 gate 负例目前未通过
+
+g1 回归运行代码 `bd2e5ed...`、场景/控制配置为上列哈希、种子 `2026104100`，命令：
+
+~~~bash
+EGL_DEVICE_ID=3 CUDA_VISIBLE_DEVICES=3 PYOPENGL_PLATFORM=egl PYTHONPATH=. \
+  /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.diagnostics.run_proprioceptive_grip_gate_regression \
+  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
+  --output benchmark/robot_closed_loop/results/r0_8_grip_gate_regression_20261017b \
+  --negative-duration 0.35 --seed 2026104100
+~~~
+
+服务器原始目录 `~/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_grip_gate_regression_20261017b/`，完整回归 exit 2（门控回归 FAIL）：中心静态真实夹持 strict hold 通过，接触 `0.065 s`、gate/lift `0.1335 s`、严格保持 `0.5 s`；空夹爪无误触发。原 `y=+35 mm` 侧向负例实际没有接触，不能算单指负例。前缘 `x=+25 mm` 产生双指边缘接触，门控在 close 后 `84 ms` 错误判为 eligible；eligible 时每指 q 约 `19.79 mm`、净开口 `39.59 mm`，与中心夹持约 `19.89 mm/指`、`39.78 mm` 几乎重合。现有 gate 输入（夹爪 q/qd 和 close command 时间）不能可靠区分这两种物理状态；不得把它报为“负例已解决”，也不得据此继续 strict oracle gate 回归。还需定位真正单指接触构型，并测试共同、无 GT 的额外确认信号或探测动作；不得调松 strict scorer。
+
+第一次 g1 尝试 `r0_8_grip_gate_regression_20261017` 在仿真与录像阶段完成后因 trace JSON 序列化错误退出，修复后重跑如上。首轮不完整产物及日志保留在服务器，但不作为成功统计。Genesis 对共享 Quadrants JIT cache 的锁告警出现两次，两次回归均正常完成仿真并写出结果；未清理或修改共享 cache，也未触碰他人进程。
+
+#### 已测：同一五-bin 输入口径的 1/2 kHz 回放仍不足以冻结采样率
+
+使用 R0.7 三条已存 Direct-HDR raw-event trajectory、固定 heatmap checkpoint SHA256 `64b120afde4579563d8c18f4430eeaab00c3829adaa682fa82f321fac496ea7a` 和同一 causal five-bin 控制回放，g1 运行代码 `019648f...`、seed/data 使用已有清单、scene/control 哈希如上，输出在服务器 `benchmark/robot_closed_loop/results/r0_8_five_bin_sampling_20261017/`，exit 0。每集 100 Hz decision poll；1/2 kHz 同源 event input 的闭合命令一致率分别 `93.8% / 98.5% / 97.5%`，其中第一集触发时刻差 `50 ms`；配对 fresh poll TTC 差 P95 分别约 `517 / 247 / 129 ms`，state XY 差 P95 `40.7 / 25.9 / 6.85 mm`（全阶段，受接触后/失败段影响）。pre-contact 位置 P95 约 `7.8–10.9 mm`，速度误差 P95 约 `0.21–0.28 m/s`；age/fresh fraction 按 episode 差别较大。该回放用 1/2 kHz 原始事件生成实际五-bin 输入，不再引用早期 `(2,64,64)` cosine；它是既有模型的采样/决策稳定性开发诊断，不是 oracle 或闭环结果。真实 crossing time 在这些被抓取/停住的轨迹上为空，故“close vs actual crossing”无法计分；需在运动段可达参考上报告 cutoff TTC 与动作时序，不用不存在的过线时间补值。
+
+复跑命令：
+
+~~~bash
+CUDA_VISIBLE_DEVICES= PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
+  /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+  -m benchmark.robot_closed_loop.diagnostics.compare_five_bin_sampling_decisions \
+  --rollout-root benchmark/robot_closed_loop/results/r0_7_heatmap_event_state_closed_loop_3seed_20261017 \
+  --checkpoint benchmark/robot_closed_loop/results/r0_7_heatmap_event_state_development_20261017/spatial_event_state.pt \
+  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
+  --output benchmark/robot_closed_loop/results/r0_8_five_bin_sampling_20261017
+~~~
+
+#### 正在测：共同缓存 rollout 的 Ours/V2E 生成、同架构训练 smoke
+
+配对流水线首次在代码 `1e5c40c...` fail-closed：g1 Genesis 1.2.2 link segmentation 描述符实际为 `[entity_idx, link_idx]`，而不是可无序匹配的 link index 集合；首轮未进入 rollout/数据生成。现已按实测描述符修正映射，并加入 episode split contract hash、无接触 episode 标签兼容；新代码/新输出路径推送后再复跑。拟用同一套场景/控制配置，固定 `0.4 m/s`、左右 launch y `-55/+55 mm`、seed `2026104130/2026104131`。每条物理/机器人 rollout 只跑一次，缓存固定 100 Hz 的同一时刻 HDR、display RGB、depth、link segmentation、目标/机器人状态和控制；两侧数据复制同一 episode CSV、逐 1 ms trace、train/validation episode split，并在 provenance 文件写缓存、帧时间戳、标签和 split hashes。之后使用 frozen `GenesisPhysicsEventPlugin` 处理缓存 HDR/几何，并调用官方 `v2e_official_pipeline_smoke.py` + SuperSloMo 处理同一时间戳的 display RGB；再用同一 heatmap 网络、3 epoch 调用预算做 train episode 0 / validation episode 1 smoke。此为 R1 调用链验证，不是精度排名。
+
+重要公平边界：该 pilot 的 Ours 事件输出显式用 ideal `DvsEmulator`（阈值 0.2、无噪声、无限带宽），官方 V2E 仍使用冻结 `benchmark/configs/v2e.yaml` 参数（sigma 0.03、cutoff 300 Hz、leak/shot noise、0.5 ms refractory）。因此训练生成器像素响应没有共享，只能证明缓存/时间戳/标签/split 配对和调用链；不能把模型差异归因于插帧/时间重建单因素。R2 两个模型都在同一 Direct-HDR `DvsEmulator` reference source 做少量闭环 smoke。完整成本、模型/hash 与 cache hashes 待本次 g1 run 结束后补录。
+
+#### 未闭环项和当前建议
+
+1. 夹持 gate 前缘双指边缘接触假阳性未解决，单指负例尚无效；在找到双方共用、无 GT 的充分区分信号前不做 strict oracle gate 回归，不冻结 R0.8 gate。
+2. 1/2 kHz 在 causal five-bin 决策窗口的速度/TTC/触发稳定性证据不足，暂不冻结采样率；需要按 pre-contact / close-decision 窗口细分，必要时仅补关键窗口高频 Direct-HDR。
+3. R1 配对 smoke 当前在 g1 运行中；之后运行新 gate oracle 及 learned Direct-HDR R2 的条件是先关掉前缘 false eligible 问题，不能沿用旧 oracle 统计冒充新版本验证。
+4. 正式生成器训练前需冻结 Ours/V2E 输入像素响应公平边界。建议研究会话在 protocol freeze 讨论中决定：把 Ours 和 V2E sensor-response 参数统一到同一理想响应，或明确接受 full-generator pipeline 的响应差异并限制论文归因。核心未改；无大规模数据/正式训练/排名。
