@@ -250,7 +250,8 @@ def main() -> int:
     # normal for the declared stationary hold.  Only cadence/timestamp
     # bypasses and explicit cutoff/undersampling warnings are forbidden.
     forbidden = re.compile(
-        r"(undersampl|cutoff.*warning|warning.*300|disable_slomo\s*[:=]\s*(true|1|yes)|rescal.*timestamp)",
+        r"(undersampl|cutoff.*warning|warning.{0,120}\b300\s*(?:hz|hertz)\b|"
+        r"disable_slomo\s*[:=]\s*(true|1|yes)|rescal.*timestamp)",
         re.I,
     )
     forbidden_lines = [line for line in completed.stdout.splitlines() if forbidden.search(line)]

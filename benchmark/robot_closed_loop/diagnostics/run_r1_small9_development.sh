@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 RUN_ID="${1:?usage: run_r1_small9_development.sh RUN_ID}"
 WORK_ROOT="${EVENTBASED_WAM_ROOT:-$HOME/Eventbased_WAM}"
+REUSE_CACHE_ROOT="${R1_REUSE_CACHE_ROOT:-}"
 ROBOT_PYTHON="${ROBOT_PYTHON:-$WORK_ROOT/repositories/gec-robot/.venv-robot/bin/python}"
 V2E_PYTHON="${V2E_PYTHON:-$HOME/miniconda3/envs/Eventbased_WAM/bin/python}"
 V2E_SOURCE="${V2E_SOURCE:-$WORK_ROOT/code/v2e_source}"
@@ -12,7 +13,7 @@ OLD_CACHE_ROOT="${R1_OLD_CACHE_ROOT:-$WORK_ROOT/repositories/genesis-event-camer
 REFERENCE_ROOT="${R1_REFERENCE_ROOT:-$WORK_ROOT/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016}"
 
 RUN_ROOT="$ROOT/benchmark/robot_closed_loop/results/$RUN_ID"
-CACHE_ROOT="$RUN_ROOT/trajectory_cache"
+CACHE_ROOT="${REUSE_CACHE_ROOT:-$RUN_ROOT/trajectory_cache}"
 PAIRED_ROOT="$RUN_ROOT/paired_r1"
 EVAL_ROOT="$RUN_ROOT/common_reference_eval"
 LOG_ROOT="$ROOT/benchmark/robot_closed_loop/results/runtime_logs"
@@ -40,6 +41,7 @@ echo "R1 small9 development run: $RUN_ID"
 echo "code_commit=$(git -C "$ROOT" rev-parse HEAD)"
 echo "root=$ROOT"
 echo "old_cache_root=$OLD_CACHE_ROOT"
+echo "active_shared_cache_root=$CACHE_ROOT"
 echo "direct_hdr_reference=$REFERENCE_ROOT"
 echo "robot_python=$ROBOT_PYTHON"
 echo "v2e_python=$V2E_PYTHON"
@@ -47,15 +49,22 @@ echo "v2e_source=$V2E_SOURCE"
 echo "slomo_model=$SLOMO_MODEL"
 echo "render_device=EGL_DEVICE_ID 3 (physical GPU 3); V2E=physical GPU 3; model fits=CPU"
 
-/usr/bin/time -v -o "$RUN_ROOT/capture.time" env \
-  CUDA_VISIBLE_DEVICES=3 EGL_DEVICE_ID=3 PYOPENGL_PLATFORM=egl PYTHONPATH="$ROOT" \
-  "$ROBOT_PYTHON" "$ROOT/benchmark/robot_closed_loop/diagnostics/capture_r1_supplementary_rollouts.py" \
-  --output "$CACHE_ROOT"
+if [[ -n "$REUSE_CACHE_ROOT" ]]; then
+  for episode_id in 000 001 002 003 004 005 006 007 008; do
+    [[ -d "$CACHE_ROOT/episode_$episode_id" ]] || { echo "missing reusable cache episode_$episode_id"; exit 2; }
+  done
+  echo "shared_rollout_capture=reused immutable 9-episode cache"
+else
+  /usr/bin/time -v -o "$RUN_ROOT/capture.time" env \
+    CUDA_VISIBLE_DEVICES=3 EGL_DEVICE_ID=3 PYOPENGL_PLATFORM=egl PYTHONPATH="$ROOT" \
+    "$ROBOT_PYTHON" "$ROOT/benchmark/robot_closed_loop/diagnostics/capture_r1_supplementary_rollouts.py" \
+    --output "$CACHE_ROOT"
 
-for episode_id in 000 001; do
-  [[ -d "$OLD_CACHE_ROOT/episode_$episode_id" ]] || { echo "missing old shared cache episode_$episode_id"; exit 2; }
-  ln -s "$OLD_CACHE_ROOT/episode_$episode_id" "$CACHE_ROOT/episode_$episode_id"
-done
+  for episode_id in 000 001; do
+    [[ -d "$OLD_CACHE_ROOT/episode_$episode_id" ]] || { echo "missing old shared cache episode_$episode_id"; exit 2; }
+    ln -s "$OLD_CACHE_ROOT/episode_$episode_id" "$CACHE_ROOT/episode_$episode_id"
+  done
+fi
 
 /usr/bin/time -v -o "$RUN_ROOT/paired_training.time" env \
   CUDA_VISIBLE_DEVICES=3 PYTHONPATH="$ROOT" \
