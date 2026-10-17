@@ -454,15 +454,22 @@ CUDA_VISIBLE_DEVICES= PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_
   --output benchmark/robot_closed_loop/results/r0_8_five_bin_sampling_20261017
 ~~~
 
-#### 正在测：共同缓存 rollout 的 Ours/V2E 生成、同架构训练 smoke
+#### 已完成：共同缓存 rollout 的 Ours/V2E 生成与同架构训练 smoke（仅 R1 调用链）
 
-配对流水线首次在代码 `1e5c40c...` fail-closed：g1 Genesis 1.2.2 link segmentation 描述符实际为 `[entity_idx, link_idx]`，而不是可无序匹配的 link index 集合；首轮未进入 rollout/数据生成。现已按实测描述符修正映射，并加入 episode split contract hash、无接触 episode 标签兼容；新代码/新输出路径推送后再复跑。拟用同一套场景/控制配置，固定 `0.4 m/s`、左右 launch y `-55/+55 mm`、seed `2026104130/2026104131`。每条物理/机器人 rollout 只跑一次，缓存固定 100 Hz 的同一时刻 HDR、display RGB、depth、link segmentation、目标/机器人状态和控制；两侧数据复制同一 episode CSV、逐 1 ms trace、train/validation episode split，并在 provenance 文件写缓存、帧时间戳、标签和 split hashes。之后使用 frozen `GenesisPhysicsEventPlugin` 处理缓存 HDR/几何，并调用官方 `v2e_official_pipeline_smoke.py` + SuperSloMo 处理同一时间戳的 display RGB；再用同一 heatmap 网络、3 epoch 调用预算做 train episode 0 / validation episode 1 smoke。此为 R1 调用链验证，不是精度排名。
+g1 新输出目录 `benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/`，代码 commit `3bef1684824acbe1db6de8aa215429eeee46dab0`，场景 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，实际运行 shared-control SHA256 `bb88542e49924acc428120ce21ade6660cb0813a2ecc791302aa5b8fdc718383`，exit 0。seed `2026104130/31`，两集均 `0.4 m/s`、launch y `-55/+55 mm`。每集只生成一次共享物理/机器人轨迹，缓存 HDR、display RGB、depth、link segmentation、机器人/目标状态与控制；两种生成器确实复用了相同 cache HDF5、100 Hz frame timestamps、监督 labels 和 episode split，g1 完整 `SHA256SUMS` 逐项通过。split 为 episode 0 train / episode 1 validation，contract SHA256 `8070763b5b2e98ecc6be76b054d4d917094f1a077c7440933d889649ecad509f`；每模型验证 108 个 causal five-bin 窗口。两 checkpoint SHA256：Ours `20df733f26e89d7caf4aa1a87f47e1109418b6b57405bb60622b324d7c7d5536`；V2E `e18b48b586b12c11c67cedf198120364c1dfa38a45e8b591d5ddcc7779b74b46`。该两集只覆盖单一速度和两个横向位置，不能据此训练泛化或进行性能对比。
 
-重要公平边界：该 pilot 的 Ours 事件输出显式用 ideal `DvsEmulator`（阈值 0.2、无噪声、无限带宽），官方 V2E 仍使用冻结 `benchmark/configs/v2e.yaml` 参数（sigma 0.03、cutoff 300 Hz、leak/shot noise、0.5 ms refractory）。因此训练生成器像素响应没有共享，只能证明缓存/时间戳/标签/split 配对和调用链；不能把模型差异归因于插帧/时间重建单因素。R2 两个模型都在同一 Direct-HDR `DvsEmulator` reference source 做少量闭环 smoke。完整成本、模型/hash 与 cache hashes 待本次 g1 run 结束后补录。
+R1 两集均有双侧接触与抬升，第一次接触相对固定预测到达为 `-49.7/-53.6 ms`，首次接触到 lift 为 `73.5/68.0 ms`，相对速度约 `0.312/0.308 m/s`。输出的 `success=false` 是右删失：旧固定接触后窗口为 `0.5 s`，只观测到 `0.256/0.255 s` 合格保持；达到净空阈值约需 0.2 s，尚未完整观测 strict 0.5 s hold。因此这两集既不记 strict success，也不记 strict failure。为修复计时，候选配置现将固定接触后窗口改为 `1.0 s`（新 SHA256 `227ec27dcd57cde4fd6a16ad4b5082670dd1825c2e68c59ccdb1524e49032173`）；新配置尚未有 oracle 回归结果。scorer 未改。
 
-#### 未闭环项和当前建议
+训练接口/调用链通过。每个小 fit 仅 3 epochs、CPU，均 100% 状态有效、P95 age 10 ms；episode 1 validation 的 Ours XY P95 `143.9 mm`、arrival P95 `267 ms`，V2E XY P95 `112.7 mm`、arrival P95 `600 ms`，这反映数据极少、跨位置的小样本弱拟合，不是 generator rank。训练数据 event counts Ours/V2E 分别为 `941,607/178,496` 和 `927,704/185,268`。公平边界仍未解决：Ours smoke 强制 ideal DVS 阈值 0.2、无噪声、无限带宽；V2E 使用项目冻结 YAML（sigma 0.03、cutoff 300 Hz、leak/shot noise、refractory 0.5 ms）。这只能作为 full-generator pipeline call-chain smoke，不能把后续差异归因于单独的插帧/时间重建。
 
-1. 夹持 gate 前缘双指边缘接触假阳性未解决，单指负例尚无效；在找到双方共用、无 GT 的充分区分信号前不做 strict oracle gate 回归，不冻结 R0.8 gate。
-2. 1/2 kHz 在 causal five-bin 决策窗口的速度/TTC/触发稳定性证据不足，暂不冻结采样率；需要按 pre-contact / close-decision 窗口细分，必要时仅补关键窗口高频 Direct-HDR。
-3. R1 配对 smoke 当前在 g1 运行中；之后运行新 gate oracle 及 learned Direct-HDR R2 的条件是先关掉前缘 false eligible 问题，不能沿用旧 oracle 统计冒充新版本验证。
-4. 正式生成器训练前需冻结 Ours/V2E 输入像素响应公平边界。建议研究会话在 protocol freeze 讨论中决定：把 Ours 和 V2E sensor-response 参数统一到同一理想响应，或明确接受 full-generator pipeline 的响应差异并限制论文归因。核心未改；无大规模数据/正式训练/排名。
+完整 `/usr/bin/time -v` 成本：wall `769.34 s`、CPU user/system `1017.46/26.78 s`、max RSS `2,253,644 KB`；共享 rollout/cache `23.74 s`，Ours 与官方 V2E generation 共 `654.70 s`，两次 fit 共 `28.52 s`。Ours cached Direct-HDR plugin replay 为 `190.99/197.57 s` 每约 `1.11/1.12 s` rollout；V2E 第二集 226 插帧帧实测 `123.42 s`（1.83 frame/s）。不从此 pilot 外推大规模成本。训练摘要中一个既有通用 split 文案错误声称两 split 覆盖全速度/横向位置；本次实际 split 只有一个训练 episode 与一个横向 heldout episode，摘要代码已更正，R1 结果 README 明确该旧文案不适用于本 pilot。
+
+本地版本化结果：[`r0_8_paired_pipeline_smoke_20261017b/`](../../benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/)，summary JSON SHA256 `7c8d49196cf3cf76763cd68c02947f80318715fb04691108a3f0659db43b77a6`，`SHA256SUMS.local-artifacts` 覆盖本地 46 个文件；完整 g1 输出包含未下载 HDR/depth/segmentation caches 和所有 frames，其 `SHA256SUMS` 文件 SHA256 `644a538864acdceac51d213946f6a2e043d7711bffe804cbb3a3cf60ae7e4581`。服务器原始路径为 `g1:/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/`。
+
+#### 未闭环项与当前建议
+
+1. 中心静态 true hold strict 成功、empty gripper 不触发；但 `x=+25 mm` 双侧前缘接触在 close-only 回归中触发 gate。原回归没有完整 lift 负例，现已加全任务 strict scorer 负例与 `y=+15 mm` 单指位置样本，待 g1 实测。新版固定 contact window 为 1.0 s，仍不改成功定义。
+2. R1 两个动态 rollout 只到 `0.4 m/s`，且 strict hold 被旧窗口右删失。先完成新 gate 的负例/真实抓持验证，再用新配置跑小规模各速度及左右/中央 episode；不得复用 R1 的 `success=false` 作为失败或旧 oracle 统计作为新 gate 结果。
+3. 因前缘负例尚未闭环，未运行 strict oracle gate regression 或 learned Direct-HDR R2。禁止把 R0.7 2/3 或这两个 censored rollout 代称为新版通过。
+4. 1/2 kHz causal five-bin 状态/TTC/动作差异仍不足以冻结采样率；必要时只在关键 close-decision 窗口补采更高频参考。
+5. Ours/V2E sensor-response 差异需在正式生成器训练前冻结解释边界。建议统一响应参数后才把结果解释为时间重建/插帧差异；否则明确是 full-pipeline comparison。核心目录未改，本阶段无大规模数据或排名。

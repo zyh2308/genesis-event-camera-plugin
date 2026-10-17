@@ -1,0 +1,243 @@
+{
+  "phase": "small official V2E cached-display-RGB events event-state development fit; not a generator comparison or model ranking",
+  "code_commit": "3bef1684824acbe1db6de8aa215429eeee46dab0",
+  "branch": "",
+  "config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "source_results_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training",
+  "source_manifest_sha256": "76457f3beb77f8f6824d6294b68e3c8e89fe85cf2a698067463d158f6c415be7",
+  "source_input_sha256": {
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training/episodes/episode_000/episode.csv": "b2607852e131e48664624adbbf77d12b9944e6004d6143392fb547930eaef378",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training/episodes/episode_000/state_control_trace.jsonl": "0c3ae20c631889e1550d422cb0656b5d9a9e47b3ad28f9c014fcffe6a6752b5a",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training/episodes/episode_000/direct_hdr_events_1khz_2khz.npz": "f105d8ca7f18e92016d538a6dc91952a024a30089484c9b2a0fd260631007caf",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training/episodes/episode_001/episode.csv": "0254a22069e75f2deb440e5030fe8b7819d5c4fc30ed32a99d25da1781ab42e8",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training/episodes/episode_001/state_control_trace.jsonl": "33a1dc1bbc2a05b5d6609ab0538109406ef6eab5c354e41bd900bf16917d720e",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r0_8-7134f27/benchmark/robot_closed_loop/results/r0_8_paired_pipeline_smoke_20261017b/v2e_training/episodes/episode_001/direct_hdr_events_1khz_2khz.npz": "661e87f43559ebcaeecd0427b22bfb15743b4fc111ea9724b5c5b334eae9c5bb"
+  },
+  "train_episodes": [
+    0
+  ],
+  "validation_episodes": [
+    1
+  ],
+  "episode_level_split_only": true,
+  "split_rationale": "both splits contain every launch speed and every lateral position; distinct speed-position combinations are held out",
+  "all_nine_episodes_are_development_material": true,
+  "model_architecture": "event-heatmap64-aux-z-velocity-v2",
+  "model_parameter_count": 35261,
+  "input_contract": "causal five 5ms bins, two polarities, 64x64, log1p counts; output state at cutoff",
+  "training_labels": "simulator object position and velocity at each causal observation cutoff",
+  "model_inputs": "only official V2E cached-display-RGB events raw events binned into causal five-bin tensors; no RGB, segmentation, depth, or GT at inference",
+  "sampling": {
+    "bin_ms": 5,
+    "bins": 5,
+    "window_ms": 25,
+    "cadence_ms": 10,
+    "observation_latency_ms": 10.0,
+    "poll_timestamp": "labels and model state use observation_cutoff_s, not wall/poll time"
+  },
+  "training": {
+    "device": "cpu",
+    "threads": 2,
+    "seed": 606,
+    "max_epochs": 3,
+    "best_epoch": 1,
+    "patience": 3,
+    "batch_size": 32,
+    "training_wall_s": 6.849394084885716,
+    "best_validation_phase_balanced_objective": 3.0834591388702393,
+    "phase_reweighting": "equal aggregate weight per episode-phase group within each split"
+  },
+  "validity_policy": {
+    "minimum_events": 12,
+    "minimum_nonempty_5ms_bins": 3,
+    "maximum_state_age_s": 0.03,
+    "missing_or_stale_state_action": "hold lateral command and do not start closure; existing controller behavior"
+  },
+  "train_metrics": {
+    "n_windows": 107,
+    "position_xy_error_m": {
+      "n": 107,
+      "mean": 0.05462479097709844,
+      "p50": 0.04356299489151781,
+      "p95": 0.12332062269022616
+    },
+    "velocity_xy_error_m_s": {
+      "n": 107,
+      "mean": 0.18332434008200546,
+      "p50": 0.17373985995375524,
+      "p95": 0.265471842379737
+    },
+    "event_state_valid_fraction": 1.0,
+    "event_state_valid_windows": 107,
+    "event_state_age_ms_when_valid": {
+      "n": 107,
+      "mean": 10.0,
+      "p50": 10.0,
+      "p95": 10.0
+    },
+    "phase": {
+      "pre_contact": {
+        "n": 58,
+        "position_xy_error_m": {
+          "n": 58,
+          "mean": 0.07204172257883032,
+          "p50": 0.07106901983318399,
+          "p95": 0.12631351552889003
+        },
+        "velocity_xy_error_m_s": {
+          "n": 58,
+          "mean": 0.15398356763709242,
+          "p50": 0.1542862221958728,
+          "p95": 0.17911654906455707
+        },
+        "event_state_valid_fraction": 1.0,
+        "event_state_age_ms_p95": 10.0
+      },
+      "contact_to_lift": {
+        "n": 7,
+        "position_xy_error_m": {
+          "n": 7,
+          "mean": 0.07327944332773986,
+          "p50": 0.0801547991124414,
+          "p95": 0.0897637266368443
+        },
+        "velocity_xy_error_m_s": {
+          "n": 7,
+          "mean": 0.21926405721588307,
+          "p50": 0.21266197009831336,
+          "p95": 0.25111281960717624
+        },
+        "event_state_valid_fraction": 1.0,
+        "event_state_age_ms_p95": 10.0
+      },
+      "post_lift": {
+        "n": 42,
+        "position_xy_error_m": {
+          "n": 42,
+          "mean": 0.02746372908769513,
+          "p50": 0.024045889942514317,
+          "p95": 0.061264397047429024
+        },
+        "velocity_xy_error_m_s": {
+          "n": 42,
+          "mean": 0.21785259679314384,
+          "p50": 0.21228724352146583,
+          "p95": 0.29606737874141953
+        },
+        "event_state_valid_fraction": 1.0,
+        "event_state_age_ms_p95": 10.0
+      }
+    },
+    "pre_contact_same_fixed_predictor_reference": {
+      "reachable_prediction_pairs": 52,
+      "absolute_intercept_arrival_error_s": {
+        "n": 52,
+        "mean": 0.3073467282454353,
+        "p50": 0.2647255298209074,
+        "p95": 0.6369691613119414
+      },
+      "absolute_intercept_y_error_m": {
+        "n": 52,
+        "mean": 0.011372638844796603,
+        "p50": 0.010111166724403754,
+        "p95": 0.023984829369562442
+      },
+      "reference_definition": "both estimated and GT state at the causal cutoff are passed through the same frozen FixedDecelerationPredictor with the configured observation latency; future GT arrival is not an input"
+    }
+  },
+  "validation_metrics": {
+    "n_windows": 108,
+    "position_xy_error_m": {
+      "n": 108,
+      "mean": 0.06673874840857258,
+      "p50": 0.059353993776313285,
+      "p95": 0.11268402295359937
+    },
+    "velocity_xy_error_m_s": {
+      "n": 108,
+      "mean": 0.1817883242121703,
+      "p50": 0.17251409374158821,
+      "p95": 0.25450946125820123
+    },
+    "event_state_valid_fraction": 1.0,
+    "event_state_valid_windows": 108,
+    "event_state_age_ms_when_valid": {
+      "n": 108,
+      "mean": 10.0,
+      "p50": 10.0,
+      "p95": 10.0
+    },
+    "phase": {
+      "pre_contact": {
+        "n": 59,
+        "position_xy_error_m": {
+          "n": 59,
+          "mean": 0.0687292764737631,
+          "p50": 0.06861365009123735,
+          "p95": 0.1111804046585313
+        },
+        "velocity_xy_error_m_s": {
+          "n": 59,
+          "mean": 0.15251800948759858,
+          "p50": 0.1515684760159427,
+          "p95": 0.1791556881294614
+        },
+        "event_state_valid_fraction": 1.0,
+        "event_state_age_ms_p95": 10.0
+      },
+      "contact_to_lift": {
+        "n": 7,
+        "position_xy_error_m": {
+          "n": 7,
+          "mean": 0.07401662618011975,
+          "p50": 0.07501317361433911,
+          "p95": 0.08514823704071303
+        },
+        "velocity_xy_error_m_s": {
+          "n": 7,
+          "mean": 0.2121892247612896,
+          "p50": 0.21375285344087694,
+          "p95": 0.215367240057315
+        },
+        "event_state_valid_fraction": 1.0,
+        "event_state_age_ms_p95": 10.0
+      },
+      "post_lift": {
+        "n": 42,
+        "position_xy_error_m": {
+          "n": 42,
+          "mean": 0.06272955078364231,
+          "p50": 0.04913801098133551,
+          "p95": 0.11819894539572355
+        },
+        "velocity_xy_error_m_s": {
+          "n": 42,
+          "mean": 0.21783933051945367,
+          "p50": 0.21151995791453276,
+          "p95": 0.2941511843874645
+        },
+        "event_state_valid_fraction": 1.0,
+        "event_state_age_ms_p95": 10.0
+      }
+    },
+    "pre_contact_same_fixed_predictor_reference": {
+      "reachable_prediction_pairs": 53,
+      "absolute_intercept_arrival_error_s": {
+        "n": 53,
+        "mean": 0.28392572467304283,
+        "p50": 0.19534953062424476,
+        "p95": 0.6002474813820005
+      },
+      "absolute_intercept_y_error_m": {
+        "n": 53,
+        "mean": 0.0277783194420951,
+        "p50": 0.02581307154719651,
+        "p95": 0.04074176095358459
+      },
+      "reference_definition": "both estimated and GT state at the causal cutoff are passed through the same frozen FixedDecelerationPredictor with the configured observation latency; future GT arrival is not an input"
+    }
+  },
+  "metric_boundary": "position/velocity and same-fixed-predictor arrival/intercept metrics use GT only after inference as evaluator; arrival is compared at the causal cutoff and does not use future GT arrival",
+  "spatial_output_head": "explicit 64x64 image-coordinate target heatmap with softargmax, calibrated ray-plane backprojection using predicted height, and separate normalized height/velocity head",
+  "checkpoint_sha256": "e18b48b586b12c11c67cedf198120364c1dfa38a45e8b591d5ddcc7779b74b46"
+}

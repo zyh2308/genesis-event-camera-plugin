@@ -125,6 +125,30 @@ def main() -> int:
             "score": row.get("score"),
         } for row in positive_trace]
 
+        # Exercise the gate's front-edge false positive through the actual
+        # lift and strict scorer. The offset selects the evaluator fixture; it
+        # is never passed into the gate.
+        front_edge_trial, front_edge_trace, front_edge_frames = run_static_trial(
+            env, 1, args.seed + 1, capture=True,
+            target_offset_xy_m=(0.025, 0.0),
+        )
+        front_edge_trial["scenario"] = "front_edge_x_plus_25mm_full_lift"
+        save_gif(out / "front_edge_x_plus_25mm_full_lift.gif", front_edge_frames)
+        with (out / "front_edge_x_plus_25mm_full_lift_trace.jsonl").open("w", encoding="utf-8") as stream:
+            for row in front_edge_trace:
+                stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
+
+        # A one-finger offset is a second diagnostic negative. The evaluator
+        # reports contact topology; the gate still only sees finger q/qd.
+        one_finger_trial, one_finger_trace, _ = run_static_trial(
+            env, 2, args.seed + 2, capture=False,
+            target_offset_xy_m=(0.0, 0.015),
+        )
+        one_finger_trial["scenario"] = "one_finger_side_offset_y_plus_15mm_full_trial"
+        with (out / "one_finger_side_offset_y_plus_15mm_trace.jsonl").open("w", encoding="utf-8") as stream:
+            for row in one_finger_trace:
+                stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
+
         target_size = float(scene_cfg["target"]["size_m"][0])
         intercept_x = float(scene_cfg["controller"]["intercept_x_m"])
         negative_specs = [
@@ -139,10 +163,20 @@ def main() -> int:
         with (out / "grip_gate_trace.jsonl").open("w", encoding="utf-8") as stream:
             for row in trace_rows:
                 stream.write(json.dumps(jsonable(row), ensure_ascii=False) + "\n")
+        edge_false_positive = bool(front_edge_trial["lift_trigger_s"] is not None and not front_edge_trial["success"])
+        one_finger_false_positive = bool(one_finger_trial["lift_trigger_s"] is not None and not one_finger_trial["success"])
+        empty_false_positive = any(
+            row["scenario"] == "empty_close" and row["false_positive"] for row in negatives
+        )
         result = {
-            "status": "PASS" if positive["success"] and not any(row["false_positive"] for row in negatives) else "FAIL",
+            "status": "PASS" if positive["success"] and not empty_false_positive
+                      and not edge_false_positive and not one_finger_false_positive else "FAIL",
             "score_version": positive["score_version"],
             "true_hold": positive,
+            "front_edge_full_lift_trial": front_edge_trial,
+            "front_edge_gate_false_positive": edge_false_positive,
+            "one_finger_full_trial": one_finger_trial,
+            "one_finger_gate_false_positive": one_finger_false_positive,
             "negative_scenarios": negatives,
             "gate_input_boundary": "gate receives only finger joint position/velocity and close-command timestamp; contacts are evaluator labels only",
             "strict_scorer_modified": False,

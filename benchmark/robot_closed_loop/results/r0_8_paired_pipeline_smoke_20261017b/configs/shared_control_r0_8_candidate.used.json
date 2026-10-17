@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "status": "r0_8_shared_control_candidate_not_frozen",
+  "provenance": {
+    "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "r0_7_gripper_evidence": "successful episodes settle near 19 mm/finger; missed low-speed rollout reached about 11 mm aperture and did not hold bilateral contact",
+    "research_approval": "same GT-free proprioceptive completion gate may be shared by GT and event paths; strict scorer unchanged"
+  },
+  "close_time_estimator": {
+    "heatmap_world_height_m": 0.02,
+    "velocity_source": "causal rolling least-squares slope of decoded target-plane XY over recent valid observations",
+    "velocity_window_s": 0.05,
+    "minimum_regression_samples": 4,
+    "status": "candidate; evaluate at matched 1 kHz/2 kHz five-bin decision windows"
+  },
+  "proprioceptive_grip_gate": {
+    "min_close_command_elapsed_s": 0.05,
+    "finger_joint_position_range_m": [0.012, 0.029],
+    "max_finger_joint_asymmetry_m": 0.004,
+    "max_abs_finger_joint_velocity_m_s": 0.03,
+    "stable_dwell_s": 0.03,
+    "status": "candidate; negative and real-hold contact regressions required before strict oracle rollout"
+  },
+  "diagnostic_windows": {
+    "after_first_contact_s": 0.5,
+    "task_success_score": "unchanged r0_5_strict_continuous_contact_clearance_slip"
+  }
+}

@@ -123,13 +123,16 @@ def _settle_free_slide(env: FreeSlideScene, duration_s: float = 0.05) -> None:
 
 def run_static_trial(
     env: RobotScene, episode_id: int, seed: int, *, capture: bool = False,
+    target_offset_xy_m: Sequence[float] = (0.0, 0.0),
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
     target_y = float(rng.uniform(-0.002, 0.002))
     yaw = float(np.deg2rad(rng.uniform(-1.0, 1.0)))
     size = float(cfg["target"]["size_m"][2])
-    x = float(cfg["controller"]["intercept_x_m"])
+    offset = np.asarray(target_offset_xy_m, dtype=np.float64).reshape(2)
+    x = float(cfg["controller"]["intercept_x_m"]) + float(offset[0])
+    target_y += float(offset[1])
     _set_episode_origin(env, (x, target_y, size / 2), yaw)
     _settle(env)
     trial_start_t = get_sim_time(env)
@@ -235,7 +238,8 @@ def run_static_trial(
     success = bool(scorer.success_at(env.dt_s) and bottom >= cfg["success"]["target_bottom_clearance_m"])
     result = {
         "episode_id": episode_id, "seed": seed, "phase": "static", "speed_m_s": 0.0,
-        "target_initial_y_m": target_y, "target_yaw_deg": float(np.rad2deg(yaw)),
+        "target_initial_x_m": x, "target_initial_y_m": target_y,
+        "target_offset_xy_m": offset.tolist(), "target_yaw_deg": float(np.rad2deg(yaw)),
         "target_mass_kg": float(as_numpy(env.target.get_mass()).reshape(-1)[0]),
         "first_contact_s": first_contact_s, "bilateral_contact": bilateral,
         "measured_net_opening_initial_m": float(cfg["robot"]["initial_net_opening_m"]),

@@ -404,6 +404,20 @@ def main() -> None:
     val_predictions = _predict(model, x_val, label_mean, label_scale, architecture, geometry)
     train_metrics = _score_rows(train_predictions, y_train_np, train_meta, config)
     val_metrics = _score_rows(val_predictions, y_val_np, val_meta, config)
+    def _split_coverage(episode_ids, metadata):
+        rows = []
+        for episode_id in episode_ids:
+            selected = [item for item in metadata if item["episode_id"] == episode_id]
+            if not selected:
+                raise RuntimeError(f"episode {episode_id} has no windows in its declared split")
+            first = selected[0]
+            rows.append({
+                "episode_id": int(episode_id),
+                "launch_speed_m_s": float(first["speed_m_s"]),
+                "launch_y_m": float(first["launch_y_m"]),
+                "window_count": len(selected),
+            })
+        return rows
 
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -445,8 +459,12 @@ def main() -> None:
         "train_episodes": train_ids,
         "validation_episodes": validation_ids,
         "episode_level_split_only": True,
-        "split_rationale": "both splits contain every launch speed and every lateral position; distinct speed-position combinations are held out",
-        "all_nine_episodes_are_development_material": True,
+        "split_rationale": "explicit episode assignments; actual speed, lateral position, and window coverage are recorded below",
+        "split_coverage": {
+            "train": _split_coverage(train_ids, train_meta),
+            "validation": _split_coverage(validation_ids, val_meta),
+        },
+        "all_available_episodes_are_development_material": True,
         "model_architecture": architecture,
         "model_parameter_count": sum(parameter.numel() for parameter in model.parameters()),
         "input_contract": INPUT_CONTRACT,
