@@ -1,0 +1,34 @@
+{
+  "schema": "stage4_resume_cuda_nondeterminism_diagnostic_v1",
+  "observed_utc": "2026-10-17T18:53:56Z",
+  "status": "CONFIRMED_OPERATIONAL_LIMITATION",
+  "environment": {
+    "server": "g1.pkuml.org",
+    "pytorch": "2.5.1+cu121",
+    "cuda_build": "12.1",
+    "server_cuda": "12.2",
+    "trainer_source_commit": "567eec285551cc3054f54a7974a4112cfbb41d97"
+  },
+  "diagnostic": {
+    "method": "Run the actual Stage-4 STE-FlowNet trainer with torch.use_deterministic_algorithms(True), starting from a valid update-20 checkpoint and attempting the next optimizer update.",
+    "result": "The actual graph fails during backward because CUDA grid_sample backward has no deterministic implementation in this PyTorch build.",
+    "exception": "RuntimeError: grid_sampler_2d_backward_cuda does not have a deterministic implementation, but you set torch.use_deterministic_algorithms(True)",
+    "exit_code": 1,
+    "training_metrics_written": false,
+    "model_or_training_protocol_changed": false
+  },
+  "raw_evidence": {
+    "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/determinism_diagnostic_01",
+    "sitecustomize_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/determinism_diagnostic_01/sitecustomize.py",
+    "sitecustomize_bytes": 135,
+    "sitecustomize_sha256": "91ea795ffecdc0efcb0d853584ba6999a7ba5de7df4af09710ceafd97e07b322",
+    "stderr_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/determinism_diagnostic_01/stderr.log",
+    "stderr_bytes": 1676,
+    "stderr_sha256": "8c8b74eed7acaddb2e4a51ab1e792706790132a1f0473ddd53d79b7affbd0e26",
+    "exit_code_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/determinism_diagnostic_01/exit_code.txt",
+    "exit_code_bytes": 2,
+    "exit_code_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "consequence": "A separate full-seed replay is not a valid strict resume oracle for this CUDA execution because nondeterministic grid_sample backward causes trajectory drift even with the same sample IDs, augmentation seeds, LR, checkpoint RNG fields, code, config, and data. Keep the failed strict comparison as failed evidence; validate exact boundary checkpoint restoration, independently reconstructed next inputs, one real resumed optimizer update, and a separate forward-only metric computed from the source checkpoint.",
+  "guardrail": "No EventGenesis/V2E events, shared GT/valid labels, simulator settings, model, objective, augmentation, or optimizer protocol were changed to satisfy this diagnostic."
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "stage4_resume_full_replay_failure_v1",
+  "observed_utc": "2026-10-17T18:53:56Z",
+  "run_id": "20261017-stage4-flowdt1-seed0-corrected-v5",
+  "training_source_commit": "567eec285551cc3054f54a7974a4112cfbb41d97",
+  "attempt_started_utc": "2026-10-17T18:20:52Z",
+  "attempt_finished_utc": "2026-10-17T18:45:46Z",
+  "attempt_exit_code": 1,
+  "failed_assertion": "The separate continuous-from-seed and process-exit/resumed trajectories were required to match update-199 scalar metrics within 1e-6.",
+  "evidence": {
+    "same_update199_sample_ids": true,
+    "same_update199_augmentation_seed_sequences": true,
+    "same_learning_rate": true,
+    "continuous_update199": {
+      "loss": 1016.85498046875,
+      "photometric_loss": 1016.300537109375,
+      "smoothness_loss": 0.055442094802856445,
+      "gradient_l2_norm": 519.7161987296101
+    },
+    "resumed_update199": {
+      "loss": 1040.1470947265625,
+      "photometric_loss": 1039.587890625,
+      "smoothness_loss": 0.05591649189591408,
+      "gradient_l2_norm": 643.1707617476117
+    },
+    "absolute_errors": {
+      "loss": 23.2921142578125,
+      "photometric_loss": 23.287353515625,
+      "smoothness_loss": 0.00047439709305763245,
+      "gradient_l2_norm": 123.45456301800152
+    },
+    "first_loss_drift_observed_at_update": 3,
+    "update20_loss_abs_difference": 41.46551513671875,
+    "update100_model_state_max_abs_difference": 0.012712046504020691,
+    "update100_model_state_rms_difference": 0.00031690575278001164,
+    "update100_rng_states_equal": true,
+    "source_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/pilot/eventgenesis/last.pt",
+    "source_checkpoint_bytes": 580035686,
+    "source_checkpoint_sha256": "db23a06178622e121ad2d2eda78ab611579faf9b8386f08e06f59ee88a0ad109",
+    "actual_resumed_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/runs/process_exit_resume_from_update198/eventgenesis/last.pt",
+    "actual_resumed_checkpoint_bytes": 580035686,
+    "actual_resumed_checkpoint_sha256": "2dd595a177a769afc2392c3c0fa349629fd3f2146b175c41ff3fd6b65d1531d7",
+    "actual_resumed_update": 199,
+    "actual_resumed_process_exit_code": 0,
+    "actual_resumed_update199_metrics_sha256": "edad03dfd0d8a0951226e4be3afecd8e9861c0a007c00a962b183e508b1b033a"
+  },
+  "raw_evidence": {
+    "equivalence_command_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/formal_resume_equivalence.command.txt",
+    "equivalence_command_bytes": 1256,
+    "equivalence_command_sha256": "3a7f36eacdac607ddd4f459f687664977ca8408cb150751da76c563b5f9e885d",
+    "equivalence_stdout_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/formal_resume_equivalence.stdout.log",
+    "equivalence_stdout_bytes": 0,
+    "equivalence_stderr_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/formal_resume_equivalence.stderr.log",
+    "equivalence_stderr_bytes": 626,
+    "equivalence_stderr_sha256": "428c978366b8a2051fab76da8d5fefa738e906116e1500b4c487ad3e3bf3916b",
+    "continuous_metrics_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/runs/continuous_from_seed0/eventgenesis/training_metrics.jsonl",
+    "continuous_metrics_bytes": 167213,
+    "continuous_metrics_sha256": "331d5be37d6e5861935eff5fc17b5608e07b9e2b2c3f3aee4a61335bf56faf52",
+    "resumed_metrics_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence/runs/process_exit_resume_from_update198/eventgenesis/training_metrics.jsonl",
+    "resumed_metrics_bytes": 809,
+    "resumed_metrics_sha256": "edad03dfd0d8a0951226e4be3afecd8e9861c0a007c00a962b183e508b1b033a"
+  },
+  "interpretation": "The resumed process exited successfully after one optimizer update and used the same independently visible sample IDs/augmentation schedule. The comparison failed because the separate 199-step continuous trajectory had already drifted from the pilot trajectory by update 3. A deterministic-algorithm diagnostic below identifies a CUDA backward operation without a deterministic implementation. The strict whole-trajectory replay is therefore not a valid checkpoint-resume oracle on this environment; it is preserved as a failed check and is not relabeled PASS.",
+  "long_training_started": false
+}
