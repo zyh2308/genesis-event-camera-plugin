@@ -521,7 +521,15 @@ g1 使用代码 commit `98ee643750e5a8cfc3e7b3578657e94e297962fe`、场景 SHA25
 
 此前独立 strict oracle 已证明 `0.08 - 0.10·(v−0.30)` s（截断 `[0.05,0.10]`）在三档有效，预期 close lead 为约 `80/70/60 ms`；R0.8 中改到 `150/140/130 ms` 后九集全失败。故当前配置候选回退至先前经验证的速度规则；新控制文件 SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，机械值未动，只改早闭合 lead 参数。须先用新 seed 三档中心各一集确认与 shared gate 兼容，再跑三档 × 左/中/右开发回归；不得将旧 300/300 直接算作新 gate 统计。
 
-**R0.8 下一步：**先完成回退 lead 的三速度中心小回归，通过后再完成横向 9 集新 episode strict oracle；然后用既有两档 raw events 按 causal five-bin 决策窗口重做 1/2 kHz TTC/close-action 回放；运行共享 physical/robot cache 的 Ours/V2E 同架构三 epoch R1 smoke 与两 checkpoint 的 Direct-HDR R2 smoke。只验收调用链、公平性边界和实测成本，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 与双方共用因果 gate 边界不变。Ours ideal pixel response 与 V2E frozen sensor/noise/cutoff/refractory 配置不同，R1/R2 smoke 差异不能解释为生成器算法优劣。
+#### R0.8.5：回退闭合时序的三速度中心先导
+
+代码 commit `4ac34c63908de5af81e737562b3a5a4c38514161`，control SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，scene SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，每档新种子一集，初始 y=0，g1 exit 0。0.30 和 0.50 m/s 为 strict success，0.40 m/s 在 full-lift monitor 中止；这是 `2/3` 开发先导，不是统计结论。三集实际 close lead 与自由滑动预测到达时差为 `76.4/67.0/57.4 ms`；三集接触后夹爪净开口约 `39.78 mm`，证实回退已避免 9 集早闭合中的 0.79–11.68 mm 夹死状态。
+
+失败 seed `2026104321`（0.40 m/s）probe 于 `0.705 s` 开始；CSV 记录 lift start `1.125 s`、monitor abort `1.4105 s`。abort 时关节基线漂移 `45.69 µm`，strict relative slip `2.878 mm`，已连续 qualified hold `0.154 s`。由于它在 strict 10 mm slip 上限前停止，现有轨迹无法判断这属于真实早期失稳，还是 0.4 m/s 动态载荷造成的 q 漂移误报。下一步只做一次统一阈值敏感性诊断，并用既有前缘不稳定样本验证负例仍能及时 abort；阈值候选不按 seed 特化。strict scorer 保持不变。
+
+结果目录 [`r0_8_closure_rollback_center_pilot_20261017a/`](../../benchmark/robot_closed_loop/results/r0_8_closure_rollback_center_pilot_20261017a/) 和 `SHA256SUMS` 全项通过。CSV SHA256 `6c3dda222aa3fc6e8d4454404828e3903c868a7cbf766475b02d575aaefb17b8`；summary `37c78688e8f1f9c7dead3051cf774bd25b9b423b54e7d28c803fa0bcb859adf6`；manifest `e7a0d96c874f666a0f9283835b97c5c6744c869cedacd7b13e47211b18cc1073`；目录清单 `d89d6535aad169dac47a69f4f8c4f503c63cdee06e0364162f67dff5402d552c`。runtime Genesis 1.2.2/Torch 2.8 CPU；wall/user/system/max RSS `141.99/132.95/5.25 s / 1,489,600 KB`。运行 log/runtime/launcher SHA256 `34752565ae7fb781b68cb7a91ede9143df72d9ef4d8acc5d2cb081742a9dc932 / 6ea7ae0ad94a7729877013e09c99a79223eefea67e0daee8189241b0514a37e3 / 4c3d34ef8f2e062ed5d236a7cb0d86377518f17080d9d76394449c924cd0a80e`，exit 0。
+
+**R0.8 下一步：**先复核共同 lift monitor 的阈值是否误拒 0.40 m/s 稳定候选、同时能否识别前缘失败，再决定是否运行三档 × 左/中/右九集 strict oracle；随后按 causal five-bin 决策回放既有 1/2 kHz raw events，并做 Ours/V2E 同缓存 rollout、同架构三 epoch R1 与共同 Direct-HDR R2 smoke。只验收调用链、公平性边界和实测成本，不排名、不启动正式多 seed。固定任务、相机、0.5 ms 物理步、frozen core、strict scorer 和双方共用因果 gate 边界不变。两生成器当前 sensor response 不匹配，R1/R2 smoke 不作生成器算法排名。
 
 回退 lead 的中心先导与后续完整横向回归启动器分别为：
 
