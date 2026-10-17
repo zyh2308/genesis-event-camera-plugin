@@ -468,8 +468,8 @@ R1 两集均有双侧接触与抬升，第一次接触相对固定预测到达�
 
 #### 未闭环项与当前建议
 
-1. 中心静态 true hold strict 成功、empty gripper 不触发；但 `x=+25 mm` 双侧前缘接触在 close-only 回归中触发 gate。原回归没有完整 lift 负例，现已加全任务 strict scorer 负例与 `y=+15 mm` 单指位置样本，待 g1 实测。新版固定 contact window 为 1.0 s，仍不改成功定义。
-2. R1 两个动态 rollout 只到 `0.4 m/s`，且 strict hold 被旧窗口右删失。先完成新 gate 的负例/真实抓持验证，再用新配置跑小规模各速度及左右/中央 episode；不得复用 R1 的 `success=false` 作为失败或旧 oracle 统计作为新 gate 结果。
+1. g1 新回归 `r0_8_grip_gate_regression_20261017c`（代码 `48523b0f3323853fe73b68d60553181031a9bb33`、scene `aa97f6f...`、control `227ec27d...`、seed `2026104100`）exit 0。中心 true hold strict 成功：连续合格保持 0.5 s、hold 窗最低真实净空 `80.063 mm`、最大相对滑移 `0.994 mm`；empty gripper 无误触发。`x=+25 mm` close-only 案例在 close 后 `84 ms` 候选 eligible，但完整 lift 后 strict 也成功（hold 窗最低净空 `80.034 mm`、最大滑移 `6.294 mm`），所以它不是有效的“前缘顶住但未抓住”负例。`y=+15 mm` 全任务也 strict 成功（最低净空 `80.018 mm`、最大滑移 `1.992 mm`），不能称为单指负例。原回归 status `PASS` 仅表示正例通过、空夹爪和这些已证实负例未导致 strict 假成功；真正的前缘推挡负例仍未构造，下一轮加密 `x=+30/+35 mm` 和侧向偏置接触拓扑扫描。新版固定 contact window 为 1.0 s，仍不改成功定义。
+2. R1 两个动态 rollout 只到 `0.4 m/s`，且 strict hold 被旧窗口右删失。先构造有效前缘推挡负例，再用新配置跑小规模各速度及左右/中央 episode；不得复用 R1 的 `success=false` 作为失败或旧 oracle 统计作为新 gate 结果。
 3. 因前缘负例尚未闭环，未运行 strict oracle gate regression 或 learned Direct-HDR R2。禁止把 R0.7 2/3 或这两个 censored rollout 代称为新版通过。
 4. 1/2 kHz causal five-bin 状态/TTC/动作差异仍不足以冻结采样率；必要时只在关键 close-decision 窗口补采更高频参考。
 5. Ours/V2E sensor-response 差异需在正式生成器训练前冻结解释边界。建议统一响应参数后才把结果解释为时间重建/插帧差异；否则明确是 full-pipeline comparison。核心目录未改，本阶段无大规模数据或排名。
