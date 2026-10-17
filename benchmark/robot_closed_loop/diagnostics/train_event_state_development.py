@@ -309,6 +309,10 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=606)
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--architecture", choices=("spatial_mlp_v1", "heatmap_v2"), default="spatial_mlp_v1")
+    parser.add_argument(
+        "--source-label", default="direct_hdr_reference",
+        help="event-source provenance label; default preserves legacy Direct-HDR wording",
+    )
     args = parser.parse_args()
 
     train_ids = [int(value) for value in args.train_episodes.split(",")]
@@ -430,7 +434,7 @@ def main() -> None:
 
     input_hashes = {**train_hashes, **val_hashes}
     summary = {
-        "phase": "small Direct-HDR event-state development fit; not a generator comparison or model ranking",
+        "phase": f"small {args.source_label} event-state development fit; not a generator comparison or model ranking",
         "code_commit": _git_value("rev-parse", "HEAD"),
         "branch": _git_value("branch", "--show-current"),
         "config_sha256": _sha256(args.config),
@@ -446,7 +450,7 @@ def main() -> None:
         "model_parameter_count": sum(parameter.numel() for parameter in model.parameters()),
         "input_contract": INPUT_CONTRACT,
         "training_labels": "simulator object position and velocity at each causal observation cutoff",
-        "model_inputs": "only Direct-HDR raw events binned into causal five-bin tensors; no RGB, segmentation, depth, or GT at inference",
+        "model_inputs": f"only {args.source_label} raw events binned into causal five-bin tensors; no RGB, segmentation, depth, or GT at inference",
         "sampling": {"bin_ms": 5, "bins": 5, "window_ms": 25, "cadence_ms": 10,
                      "observation_latency_ms": float(config["controller"]["observation_latency_s"]) * 1000.0,
                      "poll_timestamp": "labels and model state use observation_cutoff_s, not wall/poll time"},
