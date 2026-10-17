@@ -174,7 +174,7 @@ def build_fingerprint(repo: Path, config: Path, bank: Path, v2e: Path,
         if not path.is_file():
             raise FileNotFoundError(f"required data manifest/artifact missing: {path}")
     bank_manifest = json.loads(bank_manifest_path.read_text())
-    if bank_manifest.get("schema") != "stage4_shared_flow_bank_v2_geometry_corrected":
+    if bank_manifest.get("schema") != "stage4_shared_flow_bank_v3_geometry_corrected":
         raise RuntimeError(f"unaccepted shared bank schema {bank_manifest.get('schema')}")
     if sha256(h5_path) != bank_manifest.get("bank_sha256"):
         raise RuntimeError("shared bank content hash does not match its manifest")

@@ -25,6 +25,7 @@ sys.path.insert(0, str(REPO / "benchmark/sim2real/compat"))
 
 from generate_stage4_flow_bank import (
     GeometryCameraProxy, as_numpy, geometry_intrinsics, renderer_segmentation_index_map,
+    segmentation_index_map_to_link_ids, segmentation_indexed_labels_to_link_ids,
     segmentation_render_to_link,
     registered_episodes, trajectory_pose,
 )
@@ -88,8 +89,9 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
         _, _, _, _ = camera.render(rgb=True, depth=False, segmentation=False, radiance=True, force_render=True)
         _, depth_raw, seg_raw, _ = camera.render(rgb=False, depth=True, segmentation=True, force_render=True)
         raw_seg = as_numpy(seg_raw).astype(np.int32)
-        render_to_link = {int(k): int(v) for k, v in renderer_segmentation_index_map(camera).items()}
-        seg = segmentation_render_to_link(raw_seg, render_to_link)
+        renderer_segmentation_keys = renderer_segmentation_index_map(camera)
+        render_to_link = segmentation_index_map_to_link_ids(renderer_segmentation_keys)
+        seg = segmentation_render_to_link(raw_seg, renderer_segmentation_keys)
         if render_to_link.get(0) != -1:
             raise RuntimeError("actual renderer background did not map to physical background -1")
         plane_id = int(plane.links[0].idx)
@@ -100,7 +102,8 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
         # Independent synthetic mapping fixture proves mapping is dictionary
         # based and supports non-contiguous physical IDs.
         fixture = np.asarray([[0, 1, 2, 3]], dtype=np.int32)
-        mapped_fixture = segmentation_render_to_link(fixture, {0: -1, 1: 17, 2: 5, 3: 42})
+        fixture_renderer_keys = {0: -1, 1: (101, 17), 2: (204, 5), 3: (319, 42)}
+        mapped_fixture = segmentation_render_to_link(fixture, fixture_renderer_keys)
         if mapped_fixture.tolist() != [[-1, 17, 5, 42]]:
             raise RuntimeError(f"non-contiguous renderer mapping fixture failed: {mapped_fixture}")
 
@@ -206,7 +209,10 @@ def check_renderer(device_name: str, event_config: dict) -> tuple[dict, dict]:
         report = {
             "status": "PASS", "genesis_version": getattr(gs, "__version__", "unknown"),
             "renderer_segmentation_idxc_to_link": render_to_link,
+            "renderer_segmentation_idxc_to_key": {str(k): (list(v) if isinstance(v, (tuple, list, np.ndarray)) else int(v))
+                                                   for k, v in renderer_segmentation_keys.items()},
             "renderer_mapping_api": "Camera._visualizer.segmentation_idx_dict (pinned Genesis 1.2.2)",
+            "renderer_mapping_value_contract": "segmentation_level=link: idxc -> (entity.idx, link.idx); use tuple[1]",
             "physical_link_ids": {"plane": plane_id, "objects": object_ids},
             "noncontiguous_mapping_fixture": mapped_fixture.tolist(),
             "depth_only_pass": True, "renderer_K": K_renderer.tolist(), "geometry_K": K_geometry.tolist(),
@@ -294,10 +300,12 @@ def check_cuda_warps(model_root: Path) -> tuple[dict, dict]:
             raise RuntimeError(f"CUDA STE warp contract failed: {rows[-1]}")
 
     # Exercise the actual photometric loss with a one-pixel translated texture.
-    prev = torch.zeros((1, 1, 32, 40), device=device)
-    prev[:, :, 6:26, 7:33] = torch.rand((1, 1, 20, 26), device=device)
+    # The pinned upstream photometric resize code passes (height,width) to
+    # cv2.resize, so its registered square training inputs are required here.
+    prev = torch.zeros((1, 1, 32, 32), device=device)
+    prev[:, :, 6:26, 4:28] = torch.rand((1, 1, 20, 24), device=device)
     nxt = torch.zeros_like(prev); nxt[:, :, :, 1:] = prev[:, :, :, :-1]
-    flow_zero = torch.zeros((1, 2, 32, 40), device=device, requires_grad=True)
+    flow_zero = torch.zeros((1, 2, 32, 32), device=device, requires_grad=True)
     flow_known = torch.zeros_like(flow_zero, requires_grad=True)
     with torch.no_grad():
         flow_known[:, 0] = 1.
@@ -327,7 +335,7 @@ def check_cuda_warps(model_root: Path) -> tuple[dict, dict]:
 
 def check_bank(bank: Path, v2e: Path, data: Path) -> tuple[dict, dict]:
     bank_manifest = json.loads((bank / "bank_manifest.json").read_text())
-    if bank_manifest.get("schema") != "stage4_shared_flow_bank_v2_geometry_corrected":
+    if bank_manifest.get("schema") != "stage4_shared_flow_bank_v3_geometry_corrected":
         raise RuntimeError(f"wrong bank schema: {bank_manifest.get('schema')}")
     if sha256(bank / "shared_trajectory.h5") != bank_manifest.get("bank_sha256"):
         raise RuntimeError("bank h5 hash mismatch")
@@ -347,14 +355,18 @@ def check_bank(bank: Path, v2e: Path, data: Path) -> tuple[dict, dict]:
     initial_pose_errors = {}
     event_windows = 0
     with h5py.File(bank / "shared_trajectory.h5", "r") as h5:
-        if h5.attrs.get("schema") != "stage4_shared_flow_bank_v2_geometry_corrected":
+        if h5.attrs.get("schema") != "stage4_shared_flow_bank_v3_geometry_corrected":
             raise RuntimeError("HDF5 schema does not match corrected geometry bank")
         for rollout in sorted(h5["episodes"].keys()):
             group = h5[f"episodes/{rollout}"]
             raw = np.asarray(group["segmentation_render_idx"], dtype=np.int32)
             physical = np.asarray(group["segmentation_link_idx"], dtype=np.int32)
             mapping = json.loads(bytes(group["segmentation_render_to_link_json"][()]).decode())
-            rebuilt = segmentation_render_to_link(raw, mapping)
+            renderer_keys = json.loads(bytes(group["segmentation_render_to_renderer_key_json"][()]).decode())
+            normalized = {str(k): int(v) for k, v in segmentation_index_map_to_link_ids(renderer_keys).items()}
+            if mapping != normalized:
+                raise RuntimeError(f"{rollout}: stored renderer-key and physical-link mappings differ")
+            rebuilt = segmentation_indexed_labels_to_link_ids(raw, mapping)
             if not np.array_equal(rebuilt, physical):
                 raise RuntimeError(f"{rollout}: stored segmentation is not the renderer mapping")
             K_raw = np.asarray(group["camera_intrinsics_K_renderer"], dtype=np.float64)

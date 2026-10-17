@@ -36,7 +36,7 @@ STRATA = (
 WIDTH, HEIGHT = 346, 260
 FPS, DT, DURATION = 100, 0.001, 2.0
 FRAMES = int(FPS * DURATION) + 1
-BANK_SCHEMA = "stage4_shared_flow_bank_v2_geometry_corrected"
+BANK_SCHEMA = "stage4_shared_flow_bank_v3_geometry_corrected"
 
 
 class GeometryCameraProxy:
@@ -49,8 +49,32 @@ class GeometryCameraProxy:
         return getattr(self._camera, name)
 
 
-def segmentation_render_to_link(raw_seg: np.ndarray, render_to_link: dict) -> np.ndarray:
-    """Map renderer-local segmentation indices to physical Genesis link IDs."""
+def segmentation_index_map_to_link_ids(render_to_key: dict) -> dict[int, int]:
+    """Convert seg_idxc -> runtime seg_key into seg_idxc -> physical link ID.
+
+    With ``segmentation_level='link'``, pinned Genesis 1.2.2 uses
+    ``seg_key=(entity.idx, link.idx)``. Its dictionary values are therefore
+    tuples, not link IDs themselves.
+    """
+    mapping = {}
+    for render_id, seg_key in render_to_key.items():
+        render_id = int(render_id)
+        is_pair = isinstance(seg_key, (tuple, list, np.ndarray))
+        if render_id == 0 and not is_pair and int(seg_key) == -1:
+            mapping[render_id] = -1
+            continue
+        if not is_pair or len(seg_key) != 2:
+            raise RuntimeError(
+                f"Genesis link-level segmentation key must be (entity_id, link_id), "
+                f"got render_id={render_id} value={seg_key!r}"
+            )
+        mapping[render_id] = int(seg_key[1])
+    if mapping.get(0) != -1:
+        raise RuntimeError(f"renderer background must map 0 -> -1, got {mapping.get(0)}")
+    return mapping
+
+
+def segmentation_indexed_labels_to_link_ids(raw_seg: np.ndarray, render_to_link: dict) -> np.ndarray:
     raw = np.asarray(raw_seg)
     mapping = {int(k): int(v) for k, v in render_to_link.items()}
     if not np.issubdtype(raw.dtype, np.integer) or (raw.size and int(raw.min()) < 0):
@@ -68,6 +92,13 @@ def segmentation_render_to_link(raw_seg: np.ndarray, render_to_link: dict) -> np
     for render_id, physical_link_id in mapping.items():
         lut[render_id] = physical_link_id
     return lut[raw.astype(np.int64, copy=False)]
+
+
+def segmentation_render_to_link(raw_seg: np.ndarray, render_to_key: dict) -> np.ndarray:
+    """Map renderer-local seg_idxc values through runtime keys to physical links."""
+    return segmentation_indexed_labels_to_link_ids(
+        raw_seg, segmentation_index_map_to_link_ids(render_to_key)
+    )
 
 
 def geometry_intrinsics(camera) -> tuple[np.ndarray, np.ndarray]:
@@ -248,7 +279,11 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             rgb=False, depth=True, segmentation=True, force_render=True
         )
         render_to_link = renderer_segmentation_index_map(active_camera)
-        normalized_mapping = {str(k): int(v) for k, v in render_to_link.items()}
+        normalized_mapping = {str(k): int(v) for k, v in segmentation_index_map_to_link_ids(render_to_link).items()}
+        renderer_key_mapping = {
+            str(k): (list(v) if isinstance(v, (tuple, list, np.ndarray)) else int(v))
+            for k, v in render_to_link.items()
+        }
         if segmentation_map_cache and segmentation_map_cache != normalized_mapping:
             raise RuntimeError(f"renderer segmentation mapping changed inside rollout {episode['id']}")
         segmentation_map_cache.update(normalized_mapping)
@@ -257,7 +292,8 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
                    "depth": as_numpy(depth).astype(np.float32),
                    "seg": segmentation_render_to_link(raw_seg, render_to_link),
                    "seg_render_idx": raw_seg,
-                   "seg_render_to_link": normalized_mapping}
+                   "seg_render_to_link": normalized_mapping,
+                   "seg_render_to_renderer_key": renderer_key_mapping}
         frame_cache["last"] = payload
         return payload
 
@@ -383,7 +419,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     group.attrs["flow_contract"] = "forward source-pixel displacement from endpoint i to i+3; px per 30 ms interval"
     group.attrs["validity_contract"] = "source geometry, in-bounds target projection, and nearest-target-depth agreement within max(2 cm, 2%); common to both generators"
     group.attrs["v2e_display_mapping"] = "Rec.709 linear Y, exposure 1, Reinhard, sRGB transfer, uint8 round-to-nearest; fixed across endpoints"
-    group.attrs["segmentation_contract"] = "renderer segmentation_idxc mapped through camera.visualizer.segmentation_idx_dict; background -1; segmentation_link_idx stores physical Genesis link IDs"
+    group.attrs["segmentation_contract"] = "renderer seg_idxc mapped through Camera._visualizer.segmentation_idx_dict; at segmentation_level=link, runtime (entity.idx, link.idx) tuple is reduced to physical link.idx; background -1"
     group.attrs["depth_contract"] = "depth-only renderer pass with MSAA disabled; radiance captured separately"
     group.attrs["pixel_center_contract"] = "renderer K principal point shifted by -0.5 px for integer-index ray grid; same K used by EventGenesis and physical GT"
     group.attrs["trajectory_initialization_contract"] = "rigid object bodies are instantiated at trajectory_pose(t=0) before first capture"
@@ -398,6 +434,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     group.create_dataset("camera_intrinsics_K_px", data=K)
     group.create_dataset("camera_intrinsics_K_renderer", data=K_renderer)
     group.create_dataset("segmentation_render_to_link_json", data=np.bytes_(json.dumps(frame_cache["last"]["seg_render_to_link"], sort_keys=True)))
+    group.create_dataset("segmentation_render_to_renderer_key_json", data=np.bytes_(json.dumps(frame_cache["last"]["seg_render_to_renderer_key"], sort_keys=True)))
     group.create_dataset("camera_to_world_cv", data=np.stack(camera_poses).astype(np.float64))
     group.create_dataset("object_segmentation_link_ids", data=np.asarray(all_seg_ids, dtype=np.int32))
     group.create_dataset("object_to_world", data=object_pose_array)
