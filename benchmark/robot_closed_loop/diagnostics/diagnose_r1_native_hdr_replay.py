@@ -488,6 +488,15 @@ def main() -> int:
             "unmatched_snapshots": unmatched_snapshots,
             "extra_snapshot_rows": extra_snapshot_rows, "cutoff_row": cutoff_row,
         }
+    print(json.dumps({
+        "phase": "preflight_passed", "source_times_s": SOURCE_TIMES,
+        "dense_direct_times_s": dense_times,
+        "exact_cutoff_s": cutoff,
+        "episodes": {f"episode_{key:03d}": {
+            "matched_snapshots": len(value["matched_snapshot_indices"]),
+            "unmatched_snapshots": value["unmatched_snapshots"],
+        } for key, value in preloaded.items()},
+    }, indent=2), flush=True)
     output.mkdir(parents=True, exist_ok=False)
     scene_cfg["shared_control"] = json.loads((ROOT / "benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json").read_text())
     width, height = (int(v) for v in scene_cfg["camera"]["resolution_wh"])
@@ -499,6 +508,7 @@ def main() -> int:
     records = {}
 
     import genesis as gs
+    print("[genesis] initializing renderer scene", flush=True)
     gs.init(backend=gs.cpu, logging_level="warning")
     env = None
     try:
@@ -538,10 +548,12 @@ def main() -> int:
             for row in source_rows + dense_rows + extra_snapshot_rows + [cutoff_row]:
                 all_rows[round(float(row["time_s"]), 9)] = row
             rendered = {}
+            print(f"[render] episode_{episode_id:03d}: {len(all_rows)} exact logged states", flush=True)
             render_started = time.perf_counter()
             for time_s, row in sorted(all_rows.items()):
                 rendered[time_s] = render_state(env, row, pose_bodies)
             render_wall_s = time.perf_counter() - render_started
+            print(f"[render] episode_{episode_id:03d}: completed in {render_wall_s:.2f}s", flush=True)
 
             # Direct key-frame rerender is checked against saved Genesis HDR snapshots.
             snapshot_errors = []
@@ -630,6 +642,7 @@ def main() -> int:
                 frames_dir, cache_dir / "v2e_official", args.v2e_source.resolve(),
                 str(Path(args.v2e_python).resolve()), args.slomo_model.resolve(),
             )
+            print(f"[events] episode_{episode_id:03d}: native={len(native_events)} legacy={len(legacy_events)} v2e={len(v2e_events)}", flush=True)
             voxel_inputs = {
                 "ours_native_hdr": five_bin_tensor(native_events, cutoff, width, height),
                 "ours_legacy_display_gray": five_bin_tensor(legacy_events, cutoff, width, height),
@@ -746,6 +759,7 @@ def main() -> int:
             }
             (cache_dir / "episode_diagnostic.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
             records[f"episode_{episode_id:03d}"] = record
+            print(f"[episode] episode_{episode_id:03d}: diagnostics saved", flush=True)
     finally:
         gs.destroy()
 
