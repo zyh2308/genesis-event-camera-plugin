@@ -77,6 +77,32 @@ def truth_rows_at_times(trace: list[dict[str, Any]], times: list[float]) -> list
     return rows
 
 
+def interpolate_trace_label(trace: list[dict[str, Any]], time_s: float) -> dict[str, Any]:
+    """Interpolate only the post-inference scoring label; never a rendered frame."""
+    trace_times = np.asarray([float(row["time_s"]) for row in trace], dtype=np.float64)
+    if time_s < trace_times[0] or time_s > trace_times[-1]:
+        raise ValueError(f"scoring cutoff {time_s:.9f}s is outside the logged state trace")
+    hi = int(np.searchsorted(trace_times, time_s, side="left"))
+    if hi < len(trace_times) and abs(float(trace_times[hi]) - time_s) <= 1e-9:
+        row = trace[hi]
+        return {
+            "position_m": np.asarray(row["object"]["position_m"], dtype=np.float64),
+            "velocity_m_s": np.asarray(row["object"]["velocity_m_s"], dtype=np.float64),
+            "label_method": "exact logged physical state row",
+            "bracket_times_s": [float(trace_times[hi]), float(trace_times[hi])],
+        }
+    lo = hi - 1
+    alpha = float((time_s - trace_times[lo]) / (trace_times[hi] - trace_times[lo]))
+    positions = np.asarray([trace[lo]["object"]["position_m"], trace[hi]["object"]["position_m"]], dtype=np.float64)
+    velocities = np.asarray([trace[lo]["object"]["velocity_m_s"], trace[hi]["object"]["velocity_m_s"]], dtype=np.float64)
+    return {
+        "position_m": positions[0] + alpha * (positions[1] - positions[0]),
+        "velocity_m_s": velocities[0] + alpha * (velocities[1] - velocities[0]),
+        "label_method": "linear interpolation between adjacent logged GT rows for offline scoring only",
+        "bracket_times_s": [float(trace_times[lo]), float(trace_times[hi])],
+    }
+
+
 def verify_source_hashes(root: Path, paths: list[Path]) -> dict[str, str]:
     expected = {}
     for line in (root / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
@@ -477,7 +503,7 @@ def main() -> int:
              "reason": "no exact physical-state row exists in the immutable trace"}
             for idx in range(len(snapshot_times)) if idx not in matched_snapshot_indices
         ]
-        cutoff_row = truth_rows_at_times(trace, [cutoff])[0]
+        cutoff_label = interpolate_trace_label(trace, cutoff)
         preloaded[episode_id] = {
             "label": label, "episode_dir": ep_dir, "event_path": event_path,
             "trace_path": trace_path, "episode_path": episode_path,
@@ -486,15 +512,17 @@ def main() -> int:
             "snapshot_times": snapshot_times, "snapshot_data": snapshot_data,
             "matched_snapshot_indices": matched_snapshot_indices,
             "unmatched_snapshots": unmatched_snapshots,
-            "extra_snapshot_rows": extra_snapshot_rows, "cutoff_row": cutoff_row,
+            "extra_snapshot_rows": extra_snapshot_rows, "cutoff_label": cutoff_label,
         }
     print(json.dumps({
         "phase": "preflight_passed", "source_times_s": SOURCE_TIMES,
-        "dense_direct_times_s": dense_times,
-        "exact_cutoff_s": cutoff,
+            "dense_direct_times_s": dense_times,
+            "scoring_cutoff_s": cutoff,
         "episodes": {f"episode_{key:03d}": {
             "matched_snapshots": len(value["matched_snapshot_indices"]),
             "unmatched_snapshots": value["unmatched_snapshots"],
+                "cutoff_gt_label": {"method": value["cutoff_label"]["label_method"],
+                                    "bracket_times_s": value["cutoff_label"]["bracket_times_s"]},
         } for key, value in preloaded.items()},
     }, indent=2), flush=True)
     output.mkdir(parents=True, exist_ok=False)
@@ -536,7 +564,7 @@ def main() -> int:
             verified = pre["verified"]
             source_rows = pre["source_rows"]
             dense_rows = pre["dense_rows"]
-            cutoff_row = pre["cutoff_row"]
+            cutoff_label = pre["cutoff_label"]
             with episode_path.open("r", newline="", encoding="utf-8") as stream:
                 episode = next(csv.DictReader(stream))
             snapshot_data = pre["snapshot_data"]
@@ -545,7 +573,7 @@ def main() -> int:
             unmatched_snapshots = pre["unmatched_snapshots"]
             extra_snapshot_rows = pre["extra_snapshot_rows"]
             all_rows: dict[float, dict[str, Any]] = {}
-            for row in source_rows + dense_rows + extra_snapshot_rows + [cutoff_row]:
+            for row in source_rows + dense_rows + extra_snapshot_rows:
                 all_rows[round(float(row["time_s"]), 9)] = row
             rendered = {}
             print(f"[render] episode_{episode_id:03d}: {len(all_rows)} exact logged states", flush=True)
@@ -663,8 +691,8 @@ def main() -> int:
                 "v2e_official": v2e_events,
                 "common_direct_hdr_reference": reference_window,
             }
-            truth_position = np.asarray(cutoff_row["object"]["position_m"], dtype=np.float64)
-            truth_velocity = np.asarray(cutoff_row["object"]["velocity_m_s"], dtype=np.float64)
+            truth_position = np.asarray(cutoff_label["position_m"], dtype=np.float64)
+            truth_velocity = np.asarray(cutoff_label["velocity_m_s"], dtype=np.float64)
             gt_uv = project_world(truth_position, camera_pose, intrinsics)
             inference = {}
             for event_name, event_stream in event_sources.items():
@@ -690,6 +718,8 @@ def main() -> int:
                         "position_xyz_m": truth_position.tolist(),
                         "velocity_xy_m_s": truth_velocity[:2].tolist(),
                         "projected_uv_px": gt_uv.tolist(),
+                        "label_method": cutoff_label["label_method"],
+                        "trace_bracket_times_s": cutoff_label["bracket_times_s"],
                     },
                     "diagnostic_transfer_only": "The legacy-trained checkpoints evaluated on native HDR bins are probes, not complete HDR-trained-method utility.",
                     "results": inference,
