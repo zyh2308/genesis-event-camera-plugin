@@ -50,13 +50,14 @@ def load_generator_events(generator: str, episode: h5py.Group, v2e_root: Path):
     elif generator == "v2e":
         path, status_path = locate_shard_artifacts(v2e_root, str(episode.name.rsplit("/", 1)[-1]))
         status = json.loads(status_path.read_text())
-        if int(status.get("exit_code", -1)) != 0 or status.get("raw_h5_sha256") != sha256(path):
+        event_file_hash = sha256(path)
+        if int(status.get("exit_code", -1)) != 0 or status.get("raw_h5_sha256") != event_file_hash:
             raise RuntimeError(f"V2E shard status/hash mismatch: {path}")
         with h5py.File(path, "r") as src:
             raw = np.asarray(src["events"], dtype=np.uint32).reshape(-1, 4)
         times = raw[:, 0].astype(np.float64) * 1e-6
         xs, ys, polarity = raw[:, 1], raw[:, 2], raw[:, 3].astype(np.uint8)
-        metadata = {"source": str(path), "source_sha256": sha256(path), "time_unit": "microseconds converted to seconds", "polarity": "OFF=0, ON=1"}
+        metadata = {"source": str(path), "source_sha256": event_file_hash, "time_unit": "microseconds converted to seconds", "polarity": "OFF=0, ON=1"}
     else:
         raise ValueError(generator)
     events = np.column_stack((times, xs, ys, polarity)).reshape(-1, 4)

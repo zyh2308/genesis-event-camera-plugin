@@ -39,9 +39,15 @@ def audit_capture_partition(
     if moved[-1] != 0:
         raise ValueError(f"capture/timestamp count mismatch is not balanced: {delta.tolist()}")
 
+    # Resolve all exact endpoint ties with two vectorized binary searches.
+    # Counting across the entire event stream once per endpoint is O(N*T) and
+    # made the 32-rollout reconstruction adapter effectively unusable.
     tied_at_endpoint = np.zeros(interval_count + 1, dtype=np.int64)
-    for endpoint_index in range(1, interval_count):
-        tied_at_endpoint[endpoint_index] = int(np.count_nonzero(timestamps == endpoints[endpoint_index]))
+    internal_endpoints = endpoints[1:interval_count]
+    if len(internal_endpoints):
+        tie_left = np.searchsorted(timestamps, internal_endpoints, side="left")
+        tie_right = np.searchsorted(timestamps, internal_endpoints, side="right")
+        tied_at_endpoint[1:interval_count] = tie_right - tie_left
     for endpoint_index in range(1, interval_count):
         if moved[endpoint_index] < 0 or moved[endpoint_index] > tied_at_endpoint[endpoint_index]:
             raise ValueError(
