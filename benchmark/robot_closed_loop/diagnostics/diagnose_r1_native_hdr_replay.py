@@ -282,14 +282,14 @@ def render_diagnostic_montage(path: Path, data: dict[str, np.ndarray], interp: n
     labels = ["display gray", "native HDR luma (display only)", "direct replay @0.595s",
               "Ours warp @0.595s", "abs log residual", "hold/invalid mask"]
     images = [display, hdr_luma, direct_image, interp_image, error_image, invalid]
-    canvas = Image.new("RGB", (480, 300), (20, 22, 25))
+    canvas = Image.new("RGB", (480, 360), (20, 22, 25))
     draw = ImageDraw.Draw(canvas)
     for idx, (label, image) in enumerate(zip(labels, images)):
         x = (idx % 3) * 160
         y = (idx // 3) * 150
         draw.text((x + 3, y + 3), label, fill=(245, 245, 245))
         canvas.paste(image, (x, y + 20))
-    row3_y = 252
+    row3_y = 300
     for col, (label, voxel) in enumerate(event_voxels.items()):
         counts = np.log1p(np.asarray(voxel).sum(axis=(0, 1)))
         counts = np.clip(counts / max(float(np.percentile(counts, 99.5)), 1e-6), 0, 1)
