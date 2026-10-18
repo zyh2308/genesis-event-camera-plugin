@@ -1,0 +1,390 @@
+{
+  "status": "PASS",
+  "purpose": "small development diagnosis of one +55 mm Ours localization failure and a center control; no ranking or formal test claim",
+  "code_commit": "e58ed7560bd02af07ba454fd406b29a999970877",
+  "config_sha256": "c0391f951eb66b0f4d862d61d320415c14b0f3a20424a2bb9eae9c273355dd1d",
+  "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "reference_manifest_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+  "checkpoint": {
+    "ours": {
+      "sha256": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/ours_fit/spatial_event_state.pt"
+    },
+    "v2e": {
+      "sha256": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/v2e_fit/spatial_event_state.pt"
+    }
+  },
+  "episodes": [
+    {
+      "episode_id": 4,
+      "label": "center_control",
+      "seed": 2026103424,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "contact_s": 0.616,
+      "event_sha256": "354b13c1b13c1ca9e085ae2768a53fecb606ad410d9cc5d9b529393ab93132a6",
+      "trace_sha256": "caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947",
+      "query_count": 58
+    },
+    {
+      "episode_id": 5,
+      "label": "plus55_failure",
+      "seed": 2026103425,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.055,
+      "contact_s": 0.614,
+      "event_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+      "trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+      "query_count": 58
+    }
+  ],
+  "causal_input_contract": {
+    "input": "same Direct-HDR 2 kHz raw event file and timestamps for Ours/V2E checkpoints",
+    "voxel": "causal five x 5 ms x 2 polarity x 64 x 64 count tensor, log1p before network",
+    "network_height": "fixed target-center plane from the shared scene configuration",
+    "gt_usage": "only after inference, for offline position/velocity/TTC errors"
+  },
+  "runtime_s": 12.735845508053899,
+  "summary_by_episode_source": {
+    "episode_004_ours": {
+      "label": "center_control",
+      "polls": 58,
+      "fresh_count": 58,
+      "fresh_fraction": 1.0,
+      "position_error_xy_mm": {
+        "n": 58,
+        "mean": 9.341222507161351,
+        "p50": 6.885249952405249,
+        "p95": 23.244466794584014
+      },
+      "direct_network_head": {
+        "available_count": 58,
+        "coverage_over_all_polls": 1.0,
+        "velocity_error_m_s": {
+          "n": 58,
+          "mean": 0.07681813131270607,
+          "p50": 0.07773042221451414,
+          "p95": 0.12106259351266245
+        },
+        "ttc_abs_error_ms": {
+          "n": 58,
+          "mean": 115.90933100546039,
+          "p50": 89.17652014217305,
+          "p95": 285.7903983072659
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 58,
+          "mean": 8.815364956299003,
+          "p50": 8.941066157500332,
+          "p95": 13.577521714796656
+        },
+        "reachable_fraction_all_polls": 1.0
+      },
+      "existing_history_ols": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 0.2197407479599836,
+          "p50": 0.1758032760200573,
+          "p95": 0.4907618604288107
+        },
+        "ttc_abs_error_ms": {
+          "n": 48,
+          "mean": 155.43139501192027,
+          "p50": 111.47998198270406,
+          "p95": 503.85101429663683
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 48,
+          "mean": 27.639819446004125,
+          "p50": 19.17908428528566,
+          "p95": 71.90016773097186
+        },
+        "reachable_fraction_all_polls": 0.8275862068965517
+      },
+      "robust_pairwise_median": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 0.22942636356632687,
+          "p50": 0.16940453352403378,
+          "p95": 0.6203823205852937
+        },
+        "ttc_abs_error_ms": {
+          "n": 46,
+          "mean": 152.2368610528353,
+          "p50": 126.36348464128014,
+          "p95": 438.15565548386485
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 46,
+          "mean": 25.62223980005657,
+          "p50": 17.934708608004485,
+          "p95": 69.39123760349233
+        },
+        "reachable_fraction_all_polls": 0.7931034482758621
+      }
+    },
+    "episode_004_v2e": {
+      "label": "center_control",
+      "polls": 58,
+      "fresh_count": 58,
+      "fresh_fraction": 1.0,
+      "position_error_xy_mm": {
+        "n": 58,
+        "mean": 3.770670026782835,
+        "p50": 3.477307660842459,
+        "p95": 7.467325368775556
+      },
+      "direct_network_head": {
+        "available_count": 58,
+        "coverage_over_all_polls": 1.0,
+        "velocity_error_m_s": {
+          "n": 58,
+          "mean": 0.20605874121428044,
+          "p50": 0.21325387965279058,
+          "p95": 0.2541435634488534
+        },
+        "ttc_abs_error_ms": {
+          "n": 37,
+          "mean": 476.8089586076591,
+          "p50": 428.0085249360906,
+          "p95": 870.2384432987867
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 37,
+          "mean": 2.7438289229990835,
+          "p50": 2.1264479721739726,
+          "p95": 5.222856072547858
+        },
+        "reachable_fraction_all_polls": 0.6379310344827587
+      },
+      "existing_history_ols": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 0.09741426089931174,
+          "p50": 0.08898602177077598,
+          "p95": 0.17685457722735584
+        },
+        "ttc_abs_error_ms": {
+          "n": 55,
+          "mean": 115.42013216080397,
+          "p50": 64.02603126862694,
+          "p95": 310.1097735092207
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 55,
+          "mean": 18.56134490938792,
+          "p50": 8.848218437513887,
+          "p95": 44.317480382932864
+        },
+        "reachable_fraction_all_polls": 0.9482758620689655
+      },
+      "robust_pairwise_median": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 0.09765772645229524,
+          "p50": 0.07184445996925558,
+          "p95": 0.20544781136366955
+        },
+        "ttc_abs_error_ms": {
+          "n": 55,
+          "mean": 130.81925649553526,
+          "p50": 52.15167069623916,
+          "p95": 497.7655384689323
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 55,
+          "mean": 18.90324737061704,
+          "p50": 11.58944056519133,
+          "p95": 38.917807084362856
+        },
+        "reachable_fraction_all_polls": 0.9482758620689655
+      }
+    },
+    "episode_005_ours": {
+      "label": "plus55_failure",
+      "polls": 58,
+      "fresh_count": 58,
+      "fresh_fraction": 1.0,
+      "position_error_xy_mm": {
+        "n": 58,
+        "mean": 127.36661536769547,
+        "p50": 31.366804172897176,
+        "p95": 414.5604197368593
+      },
+      "direct_network_head": {
+        "available_count": 58,
+        "coverage_over_all_polls": 1.0,
+        "velocity_error_m_s": {
+          "n": 58,
+          "mean": 0.060372964578120504,
+          "p50": 0.05847702647228195,
+          "p95": 0.11570837255929946
+        },
+        "ttc_abs_error_ms": {
+          "n": 34,
+          "mean": 109.64914931133815,
+          "p50": 59.15702594084837,
+          "p95": 315.80023670574445
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 34,
+          "mean": 5.076616940790287,
+          "p50": 3.8075739294464555,
+          "p95": 13.60465861157564
+        },
+        "reachable_fraction_all_polls": 0.5862068965517241
+      },
+      "existing_history_ols": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 2.0365201306502567,
+          "p50": 1.0441810624351313,
+          "p95": 7.843178263745165
+        },
+        "ttc_abs_error_ms": {
+          "n": 24,
+          "mean": 195.34742472747493,
+          "p50": 161.28052874382632,
+          "p95": 361.34331904483315
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 24,
+          "mean": 29.531694512494102,
+          "p50": 15.308434530713434,
+          "p95": 100.93200353398213
+        },
+        "reachable_fraction_all_polls": 0.41379310344827586
+      },
+      "robust_pairwise_median": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 1.8521769022447732,
+          "p50": 0.5317594199347941,
+          "p95": 7.7554882516987975
+        },
+        "ttc_abs_error_ms": {
+          "n": 25,
+          "mean": 205.11901453342503,
+          "p50": 185.2521894608854,
+          "p95": 419.7483844041236
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 25,
+          "mean": 27.054983214050548,
+          "p50": 13.999389651498626,
+          "p95": 91.16707102869695
+        },
+        "reachable_fraction_all_polls": 0.43103448275862066
+      }
+    },
+    "episode_005_v2e": {
+      "label": "plus55_failure",
+      "polls": 58,
+      "fresh_count": 58,
+      "fresh_fraction": 1.0,
+      "position_error_xy_mm": {
+        "n": 58,
+        "mean": 4.135035741321073,
+        "p50": 3.2366005470638486,
+        "p95": 10.085458066959307
+      },
+      "direct_network_head": {
+        "available_count": 58,
+        "coverage_over_all_polls": 1.0,
+        "velocity_error_m_s": {
+          "n": 58,
+          "mean": 0.14429755951840992,
+          "p50": 0.14806330853564206,
+          "p95": 0.20981816326830707
+        },
+        "ttc_abs_error_ms": {
+          "n": 55,
+          "mean": 292.52547024763317,
+          "p50": 212.94360510981514,
+          "p95": 844.2178507558356
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 55,
+          "mean": 5.100787173820646,
+          "p50": 5.282375440836859,
+          "p95": 9.051325908685923
+        },
+        "reachable_fraction_all_polls": 0.9482758620689655
+      },
+      "existing_history_ols": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 0.12088049820700134,
+          "p50": 0.11318475277394677,
+          "p95": 0.2894719952463391
+        },
+        "ttc_abs_error_ms": {
+          "n": 52,
+          "mean": 115.53643756689206,
+          "p50": 62.942370808931784,
+          "p95": 347.3951678033058
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 52,
+          "mean": 10.424949093357316,
+          "p50": 8.452926354552543,
+          "p95": 26.10534543114637
+        },
+        "reachable_fraction_all_polls": 0.896551724137931
+      },
+      "robust_pairwise_median": {
+        "available_count": 55,
+        "coverage_over_all_polls": 0.9482758620689655,
+        "velocity_error_m_s": {
+          "n": 55,
+          "mean": 0.11655187018188139,
+          "p50": 0.0948171190320707,
+          "p95": 0.2894609430897639
+        },
+        "ttc_abs_error_ms": {
+          "n": 53,
+          "mean": 106.48217742225991,
+          "p50": 73.31978294701958,
+          "p95": 268.0886698760553
+        },
+        "intercept_y_abs_error_mm": {
+          "n": 53,
+          "mean": 11.408224773134291,
+          "p50": 8.830357701968266,
+          "p95": 28.928946913057285
+        },
+        "reachable_fraction_all_polls": 0.9137931034482759
+      }
+    }
+  },
+  "velocity_strategies": {
+    "direct_network_head": "heatmap model's auxiliary planar velocity at the same causal cutoff",
+    "existing_history_ols": {
+      "window_s": 0.05,
+      "minimum_samples": 4,
+      "rule": "centered least-squares slope over valid network positions"
+    },
+    "robust_pairwise_median": {
+      "window_s": 0.05,
+      "minimum_samples": 4,
+      "minimum_pair_separation_s": 0.01,
+      "rule": "component-wise median of all causal pairwise position slopes"
+    }
+  },
+  "interpretation": "Velocity-only strategy comparison holds each model's position output fixed. It cannot repair a wrong heatmap localization and is not a grasp-success result."
+}

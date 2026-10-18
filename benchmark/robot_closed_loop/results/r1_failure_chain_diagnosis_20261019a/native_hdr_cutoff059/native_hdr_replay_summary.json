@@ -1,0 +1,1335 @@
+{
+  "status": "PASS",
+  "purpose": "exact failing query cutoff replay for native HDR input and the first-error-chain diagnosis; development only",
+  "code_commit": "59c756eb1e77f9e14f475fa3c923bcc6a9ee859e",
+  "config_sha256": "242d6063bb136092b2c29bc12a7fb54db5e6233bf6b73506d163c8cfcbb8d96b",
+  "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "shared_control_config_sha256": "3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80",
+  "reference_manifest_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+  "v2e_wrapper_sha256": "8686d11cd8be02acfac412a65df07328c8bdfb22e22278b050adb1560c0eebfd",
+  "v2e_default_config_sha256": "155f0ef7305bac9c52aa09e485d4c5a1feeaf448f1279a2cccf04097b290add4",
+  "v2e_source": "/home/zhaoyuhan/Eventbased_WAM/code/v2e_source",
+  "slomo_checkpoint_sha256": "d4d3070431eff774a1c27038930121ffeae59ede3a7d184118c539b443ea27cb",
+  "event_state_checkpoints": {
+    "ours_fit": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/ours_fit/spatial_event_state.pt",
+      "sha256": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9"
+    },
+    "v2e_fit": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/v2e_fit/spatial_event_state.pt",
+      "sha256": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45"
+    }
+  },
+  "source_frame_contract": {
+    "count": 8,
+    "rate_hz": 100.0,
+    "absolute_times_s": [
+      0.5505,
+      0.5605,
+      0.5705,
+      0.5805,
+      0.5905,
+      0.6005,
+      0.6105,
+      0.6205
+    ],
+    "dense_direct_times_s": [
+      0.5815,
+      0.5825,
+      0.5835,
+      0.5845,
+      0.5855,
+      0.5865,
+      0.5875,
+      0.5885,
+      0.5895,
+      0.5905
+    ],
+    "all requested states exist exactly in source traces": true
+  },
+  "renderer_overlay": "installed Genesis 1.2.2 HDR overlay in .venv-robot; radiance=True returns linear float32 RGB",
+  "renderer_replay_is_offline": true,
+  "frozen_core_modified": false,
+  "episodes": {
+    "episode_004": {
+      "label": "center_control",
+      "episode_id": 4,
+      "seed": 2026103424,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "first_contact_s": 0.616,
+      "reference_inputs_sha256": {
+        "episodes/episode_004/direct_hdr_events_1khz_2khz.npz": "354b13c1b13c1ca9e085ae2768a53fecb606ad410d9cc5d9b529393ab93132a6",
+        "episodes/episode_004/state_control_trace.jsonl": "caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947",
+        "episodes/episode_004/episode.csv": "fe5dbc822e073929234ce2953ce3b34775f3f0b451b1497dd3f22b9da16d308a",
+        "episodes/episode_004/direct_hdr_key_snapshots.npz": "0fbbeaf8a4f8b033f3dc8f553e50f14fc37207312efa26c3625e70c6948b4bed"
+      },
+      "renderer_snapshot_replay": [
+        {
+          "label": "first_contact",
+          "time_s": 0.616,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        },
+        {
+          "label": "bilateral_contact",
+          "time_s": 0.616,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        },
+        {
+          "label": "lift_start",
+          "time_s": 0.6845,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        },
+        {
+          "label": "strict_hold_complete",
+          "time_s": 1.3565,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        }
+      ],
+      "renderer_snapshot_not_replayed": [
+        {
+          "label": "launch",
+          "time_s": 0.0,
+          "reason": "no exact physical-state row exists in the immutable trace"
+        }
+      ],
+      "native_hdr_source_range_rgb": [
+        0.01280975341796875,
+        1.3740234375
+      ],
+      "native_hdr_luminance_percentiles": [
+        0.03626156970858574,
+        0.1495436280965805,
+        1.0234375
+      ],
+      "dense_render_frame_count": 10,
+      "dense_render_wall_s": 0.533070663921535,
+      "dense_render_wall_scope": "scene-state setters plus HDR/display/depth/seg camera renders for all selected source, dense, snapshot, and cutoff timestamps in this episode",
+      "reconstruction": {
+        "sampler_config": 10,
+        "sample_count": 10,
+        "metrics": [
+          {
+            "time_s": 0.5815,
+            "target_visible_pixels": 1150,
+            "robot_pixels": 11079,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.010158046148717403,
+            "log_abs_error_p95_all": 5.449056698125787e-05,
+            "log_abs_error_mean_valid": 0.010158046148717403,
+            "log_abs_error_mean_target": 0.010500865988433361,
+            "log_abs_error_mean_robot": 0.04604697227478027,
+            "log_abs_error_mean_background": 0.003994169645011425
+          },
+          {
+            "time_s": 0.5825,
+            "target_visible_pixels": 1150,
+            "robot_pixels": 11079,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.010044648312032223,
+            "log_abs_error_p95_all": 4.556030035018921e-05,
+            "log_abs_error_mean_valid": 0.010044648312032223,
+            "log_abs_error_mean_target": 0.010503720492124557,
+            "log_abs_error_mean_robot": 0.04587005451321602,
+            "log_abs_error_mean_background": 0.0038896005135029554
+          },
+          {
+            "time_s": 0.5835,
+            "target_visible_pixels": 1149,
+            "robot_pixels": 11078,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009962583892047405,
+            "log_abs_error_p95_all": 4.00543212890625e-05,
+            "log_abs_error_mean_valid": 0.009962583892047405,
+            "log_abs_error_mean_target": 0.008283602073788643,
+            "log_abs_error_mean_robot": 0.045787300914525986,
+            "log_abs_error_mean_background": 0.0038464516401290894
+          },
+          {
+            "time_s": 0.5845,
+            "target_visible_pixels": 1118,
+            "robot_pixels": 11078,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009870773181319237,
+            "log_abs_error_p95_all": 3.9577484130859375e-05,
+            "log_abs_error_mean_valid": 0.009870773181319237,
+            "log_abs_error_mean_target": 0.004575224593281746,
+            "log_abs_error_mean_robot": 0.04550245404243469,
+            "log_abs_error_mean_background": 0.00385245680809021
+          },
+          {
+            "time_s": 0.5855,
+            "target_visible_pixels": 1117,
+            "robot_pixels": 11078,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009828664362430573,
+            "log_abs_error_p95_all": 3.933906555175781e-05,
+            "log_abs_error_mean_valid": 0.009828664362430573,
+            "log_abs_error_mean_target": 0.004476986825466156,
+            "log_abs_error_mean_robot": 0.045808445662260056,
+            "log_abs_error_mean_background": 0.003751639509573579
+          },
+          {
+            "time_s": 0.5865,
+            "target_visible_pixels": 1116,
+            "robot_pixels": 11078,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009686836041510105,
+            "log_abs_error_p95_all": 3.921985626220703e-05,
+            "log_abs_error_mean_valid": 0.009686836041510105,
+            "log_abs_error_mean_target": 0.0038148502353578806,
+            "log_abs_error_mean_robot": 0.04567030444741249,
+            "log_abs_error_mean_background": 0.0036181763280183077
+          },
+          {
+            "time_s": 0.5875,
+            "target_visible_pixels": 1116,
+            "robot_pixels": 11078,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009651357308030128,
+            "log_abs_error_p95_all": 3.898143768310547e-05,
+            "log_abs_error_mean_valid": 0.009651357308030128,
+            "log_abs_error_mean_target": 0.0037632628809660673,
+            "log_abs_error_mean_robot": 0.04562444984912872,
+            "log_abs_error_mean_background": 0.003584756748750806
+          },
+          {
+            "time_s": 0.5885,
+            "target_visible_pixels": 1144,
+            "robot_pixels": 11078,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009569378569722176,
+            "log_abs_error_p95_all": 3.337860107421875e-05,
+            "log_abs_error_mean_valid": 0.009569378569722176,
+            "log_abs_error_mean_target": 0.006067901849746704,
+            "log_abs_error_mean_robot": 0.045619018375873566,
+            "log_abs_error_mean_background": 0.00344729027710855
+          },
+          {
+            "time_s": 0.5895,
+            "target_visible_pixels": 1143,
+            "robot_pixels": 11077,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.009511847048997879,
+            "log_abs_error_p95_all": 2.2917985916137695e-05,
+            "log_abs_error_mean_valid": 0.009511847048997879,
+            "log_abs_error_mean_target": 0.002597945276647806,
+            "log_abs_error_mean_robot": 0.04555986449122429,
+            "log_abs_error_mean_background": 0.0034511268604546785
+          },
+          {
+            "time_s": 0.5905,
+            "target_visible_pixels": 1142,
+            "robot_pixels": 11077,
+            "unknown_hold_pixels": 0,
+            "unknown_hold_fraction": 0.0,
+            "log_abs_error_mean_all": 0.003167036222293973,
+            "log_abs_error_p95_all": 0.0,
+            "log_abs_error_mean_valid": 0.003167036222293973,
+            "log_abs_error_mean_target": 0.0,
+            "log_abs_error_mean_robot": 0.021314237266778946,
+            "log_abs_error_mean_background": 0.0001104127150028944
+          }
+        ],
+        "recommend_render": true,
+        "uncertainty": {
+          "invalid_fraction": 0.0,
+          "high_gradient_invalid_fraction": 0.0,
+          "endpoint_radiance_residual_max": 4.0804033279418945,
+          "endpoint_radiance_residual_p99": 0.6408711075782776,
+          "constant_twist_endpoint_assumption": true,
+          "recommend_render": true,
+          "radiometric_calibration_status": "provided_by_caller",
+          "disocclusion_domain": "projected_target_image",
+          "depth_correspondence_method": "source_material_point"
+        },
+        "disocclusion_policy": "hold"
+      },
+      "generator_info": {
+        "ours_native_hdr": {
+          "response_mode": "physical_log",
+          "input_endpoint": "native Genesis HDR linear RGB converted to linear luminance by plugin",
+          "radiance_input_forced_by_frozen_plugin": true,
+          "radiance_rgb_range": [
+            0.01280975341796875,
+            1.3740234375
+          ],
+          "radiance_luma_range": [
+            0.01280975341796875,
+            1.3740235567092896
+          ],
+          "gray_png_range": [
+            35.0,
+            255.0
+          ],
+          "event_count": 51391,
+          "runtime_s": 10.72957225330174,
+          "response": {
+            "threshold_on_off": 0.2,
+            "threshold_units": "log-response contrast units; uncalibrated",
+            "native_hdr_transform": "log(max(1.0 * linear_luminance, 1e-6))",
+            "display_gray_transform": "frozen plugin routes forced radiance_input through legacy lin_log knee=20 on the OpenCV [0,255] display-gray values",
+            "mismatch_noise_bandwidth_refractory": "disabled"
+          }
+        },
+        "ours_legacy_display_gray": {
+          "response_mode": "video_linlog",
+          "input_endpoint": "display PNG read by OpenCV grayscale [0,255]",
+          "radiance_input_forced_by_frozen_plugin": true,
+          "radiance_rgb_range": null,
+          "radiance_luma_range": null,
+          "gray_png_range": [
+            35.0,
+            255.0
+          ],
+          "event_count": 15475,
+          "runtime_s": 4.948271653614938,
+          "response": {
+            "threshold_on_off": 0.2,
+            "threshold_units": "log-response contrast units; uncalibrated",
+            "native_hdr_transform": "log(max(1.0 * linear_luminance, 1e-6))",
+            "display_gray_transform": "frozen plugin routes forced radiance_input through legacy lin_log knee=20 on the OpenCV [0,255] display-gray values",
+            "mismatch_noise_bandwidth_refractory": "disabled"
+          }
+        },
+        "v2e_official": {
+          "event_count": 3218,
+          "runtime_s": 21.644212507642806,
+          "time_offset_s": 0.5505,
+          "pixel_model": "official V2E defaults",
+          "super_slomo": "/home/zhaoyuhan/Eventbased_WAM/code/v2e_source/input/SuperSloMo39.ckpt",
+          "official_config": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/configs/v2e.yaml",
+          "official_config_sha256": "155f0ef7305bac9c52aa09e485d4c5a1feeaf448f1279a2cccf04097b290add4"
+        }
+      },
+      "checkpoint_sha256": {
+        "ours_fit": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9",
+        "v2e_fit": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45"
+      },
+      "event_state_inference": {
+        "ours_native_hdr": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 13647,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "b064df6545c828ed1e249c7e41247d7a1fa14ad5412c8403f1565c97f388b2ce",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5707747340202332,
+              0.003924199845641851,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.10995827615261078,
+              -0.0008993404917418957
+            ],
+            "heatmap_uv_px": [
+              162.8712615966797,
+              98.47126007080078
+            ],
+            "position_error_xy_mm": 6.150284480535954,
+            "velocity_error_xy_m_s": 0.23216678583974792,
+            "heatmap_uv_error_px": 2.4344816805251126,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 13647,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "b064df6545c828ed1e249c7e41247d7a1fa14ad5412c8403f1565c97f388b2ce",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5791827440261841,
+              0.007141105830669403,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.14745979011058807,
+              -0.005231812596321106
+            ],
+            "heatmap_uv_px": [
+              165.29254150390625,
+              100.50745391845703
+            ],
+            "position_error_xy_mm": 6.697170257610597,
+            "velocity_error_xy_m_s": 0.19477899340497262,
+            "heatmap_uv_error_px": 4.52241811242874,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        },
+        "ours_legacy_display_gray": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 4027,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "92a1133281ef5f0a4e47ed883462b50444a9f22e47dd37e81bec5b926dd9595a",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5763634443283081,
+              0.0006388942711055279,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.19526496529579163,
+              0.003566098865121603
+            ],
+            "heatmap_uv_px": [
+              160.47146606445312,
+              99.81884002685547
+            ],
+            "position_error_xy_mm": 0.49527609951858337,
+            "velocity_error_xy_m_s": 0.146852681165523,
+            "heatmap_uv_error_px": 0.3563621269347255,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 4027,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "92a1133281ef5f0a4e47ed883462b50444a9f22e47dd37e81bec5b926dd9595a",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5684900879859924,
+              0.0022373460233211517,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.09753838926553726,
+              -0.0028593000024557114
+            ],
+            "heatmap_uv_px": [
+              161.63140869140625,
+              97.92694091796875
+            ],
+            "position_error_xy_mm": 7.838761157031039,
+            "velocity_error_xy_m_s": 0.2446160958286837,
+            "heatmap_uv_error_px": 2.032193780979464,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        },
+        "v2e_official": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 321,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "6ae8aefc9689dca58170e8c941d1a256732d011cc934296ce61038a48762dac4",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5628430247306824,
+              0.012433645315468311,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.14298926293849945,
+              0.00825378205627203
+            ],
+            "heatmap_uv_px": [
+              168.9893341064453,
+              96.59747314453125
+            ],
+            "position_error_xy_mm": 17.541366966201878,
+            "velocity_error_xy_m_s": 0.1992202878799096,
+            "heatmap_uv_error_px": 8.765696668549808,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 321,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "6ae8aefc9689dca58170e8c941d1a256732d011cc934296ce61038a48762dac4",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5740501880645752,
+              0.0009365208097733557,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.30173683166503906,
+              0.0014689472736790776
+            ],
+            "heatmap_uv_px": [
+              160.68865966796875,
+              99.25828552246094
+            ],
+            "position_error_xy_mm": 2.2064303126670044,
+            "velocity_error_xy_m_s": 0.04037365499508731,
+            "heatmap_uv_error_px": 0.5523977159056669,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        },
+        "common_direct_hdr_reference": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 2255,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "d3edad3da67304849cb9d091e559a3d132871d7e861630aae7507d97e3ec9e54",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5601475238800049,
+              0.0035422691144049168,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.27813178300857544,
+              0.013392074033617973
+            ],
+            "heatmap_uv_px": [
+              162.55078125,
+              95.97086334228516
+            ],
+            "position_error_xy_mm": 16.282461037607607,
+            "velocity_error_xy_m_s": 0.06500044788553874,
+            "heatmap_uv_error_px": 4.193008050208303,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 2255,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "d3edad3da67304849cb9d091e559a3d132871d7e861630aae7507d97e3ec9e54",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5759221315383911,
+              -0.0024871579371392727,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.09972474724054337,
+              -0.002897366415709257
+            ],
+            "heatmap_uv_px": [
+              158.16586303710938,
+              99.71161651611328
+            ],
+            "position_error_xy_mm": 3.6226728500257277,
+            "velocity_error_xy_m_s": 0.24243090559247854,
+            "heatmap_uv_error_px": 2.6622822638067047,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        }
+      },
+      "event_state_inference_boundary": "Both existing checkpoints receive the same causal tensor contract for each listed event stream; GT is joined only after the forward pass. Cross-generator outputs are development transfer probes, not retraining results.",
+      "raw_event_temporal_counts": {
+        "ours_native_hdr": {
+          "event_count": 51391,
+          "seams": {
+            "0.5605": {
+              "boundary_window_count_pm_1ms": 3939,
+              "inter_seam_midpoint_time_s": 0.5655,
+              "inter_seam_midpoint_count_pm_1ms": 0,
+              "boundary_to_midpoint_ratio": null
+            },
+            "0.5705": {
+              "boundary_window_count_pm_1ms": 4056,
+              "inter_seam_midpoint_time_s": 0.5755,
+              "inter_seam_midpoint_count_pm_1ms": 0,
+              "boundary_to_midpoint_ratio": null
+            },
+            "0.5805": {
+              "boundary_window_count_pm_1ms": 4663,
+              "inter_seam_midpoint_time_s": 0.5855,
+              "inter_seam_midpoint_count_pm_1ms": 2,
+              "boundary_to_midpoint_ratio": 2331.5
+            },
+            "0.5905": {
+              "boundary_window_count_pm_1ms": 4564,
+              "inter_seam_midpoint_time_s": 0.5955,
+              "inter_seam_midpoint_count_pm_1ms": 3,
+              "boundary_to_midpoint_ratio": 1521.3333333333333
+            },
+            "0.6005": {
+              "boundary_window_count_pm_1ms": 5636,
+              "inter_seam_midpoint_time_s": 0.6055,
+              "inter_seam_midpoint_count_pm_1ms": 1264,
+              "boundary_to_midpoint_ratio": 4.458860759493671
+            },
+            "0.6105": {
+              "boundary_window_count_pm_1ms": 10523,
+              "inter_seam_midpoint_time_s": 0.6155,
+              "inter_seam_midpoint_count_pm_1ms": 77,
+              "boundary_to_midpoint_ratio": 136.66233766233765
+            }
+          },
+          "event_rate_hz_equiv": 735134.8592778003,
+          "time_range_s": [
+            0.5505930987676374,
+            0.6205
+          ],
+          "boundary_count_sum": 33381,
+          "midpoint_count_sum": 1346,
+          "boundary_to_midpoint_total_ratio": 24.800148588410103
+        },
+        "ours_legacy_display_gray": {
+          "event_count": 15475,
+          "seams": {
+            "0.5605": {
+              "boundary_window_count_pm_1ms": 575,
+              "inter_seam_midpoint_time_s": 0.5655,
+              "inter_seam_midpoint_count_pm_1ms": 0,
+              "boundary_to_midpoint_ratio": null
+            },
+            "0.5705": {
+              "boundary_window_count_pm_1ms": 524,
+              "inter_seam_midpoint_time_s": 0.5755,
+              "inter_seam_midpoint_count_pm_1ms": 0,
+              "boundary_to_midpoint_ratio": null
+            },
+            "0.5805": {
+              "boundary_window_count_pm_1ms": 450,
+              "inter_seam_midpoint_time_s": 0.5855,
+              "inter_seam_midpoint_count_pm_1ms": 2,
+              "boundary_to_midpoint_ratio": 225.0
+            },
+            "0.5905": {
+              "boundary_window_count_pm_1ms": 534,
+              "inter_seam_midpoint_time_s": 0.5955,
+              "inter_seam_midpoint_count_pm_1ms": 0,
+              "boundary_to_midpoint_ratio": null
+            },
+            "0.6005": {
+              "boundary_window_count_pm_1ms": 1515,
+              "inter_seam_midpoint_time_s": 0.6055,
+              "inter_seam_midpoint_count_pm_1ms": 506,
+              "boundary_to_midpoint_ratio": 2.994071146245059
+            },
+            "0.6105": {
+              "boundary_window_count_pm_1ms": 3200,
+              "inter_seam_midpoint_time_s": 0.6155,
+              "inter_seam_midpoint_count_pm_1ms": 52,
+              "boundary_to_midpoint_ratio": 61.53846153846154
+            }
+          },
+          "event_rate_hz_equiv": 222177.27349872843,
+          "time_range_s": [
+            0.5508484115776567,
+            0.6204999999525972
+          ],
+          "boundary_count_sum": 6798,
+          "midpoint_count_sum": 560,
+          "boundary_to_midpoint_total_ratio": 12.139285714285714
+        },
+        "v2e_official": {
+          "event_count": 3218,
+          "seams": {
+            "0.5605": {
+              "boundary_window_count_pm_1ms": 22,
+              "inter_seam_midpoint_time_s": 0.5655,
+              "inter_seam_midpoint_count_pm_1ms": 33,
+              "boundary_to_midpoint_ratio": 0.6666666666666666
+            },
+            "0.5705": {
+              "boundary_window_count_pm_1ms": 29,
+              "inter_seam_midpoint_time_s": 0.5755,
+              "inter_seam_midpoint_count_pm_1ms": 26,
+              "boundary_to_midpoint_ratio": 1.1153846153846154
+            },
+            "0.5805": {
+              "boundary_window_count_pm_1ms": 21,
+              "inter_seam_midpoint_time_s": 0.5855,
+              "inter_seam_midpoint_count_pm_1ms": 30,
+              "boundary_to_midpoint_ratio": 0.7
+            },
+            "0.5905": {
+              "boundary_window_count_pm_1ms": 24,
+              "inter_seam_midpoint_time_s": 0.5955,
+              "inter_seam_midpoint_count_pm_1ms": 29,
+              "boundary_to_midpoint_ratio": 0.8275862068965517
+            },
+            "0.6005": {
+              "boundary_window_count_pm_1ms": 32,
+              "inter_seam_midpoint_time_s": 0.6055,
+              "inter_seam_midpoint_count_pm_1ms": 233,
+              "boundary_to_midpoint_ratio": 0.13733905579399142
+            },
+            "0.6105": {
+              "boundary_window_count_pm_1ms": 217,
+              "inter_seam_midpoint_time_s": 0.6155,
+              "inter_seam_midpoint_count_pm_1ms": 369,
+              "boundary_to_midpoint_ratio": 0.5880758807588076
+            }
+          },
+          "event_rate_hz_equiv": 47746.93235603956,
+          "time_range_s": [
+            0.553103,
+            0.6205
+          ],
+          "boundary_count_sum": 345,
+          "midpoint_count_sum": 720,
+          "boundary_to_midpoint_total_ratio": 0.4791666666666667
+        }
+      },
+      "five_bin_event_counts": {
+        "ours_native_hdr": 13647,
+        "ours_legacy_display_gray": 4027,
+        "v2e_official": 321,
+        "common_direct_hdr_reference": 2255
+      },
+      "five_bin_nonempty_bins": {
+        "ours_native_hdr": 5,
+        "ours_legacy_display_gray": 5,
+        "v2e_official": 5,
+        "common_direct_hdr_reference": 5
+      },
+      "frozen_core_modified": false,
+      "dense_direct_render_scope": "offline visual replay from exact logged physical-state rows; not a new dynamics rollout and not real event-camera ground truth",
+      "display_and_hdr_are_not_claimed_as_shared_pixel_response": true
+    },
+    "episode_005": {
+      "label": "plus55_failure",
+      "episode_id": 5,
+      "seed": 2026103425,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.055,
+      "first_contact_s": 0.614,
+      "reference_inputs_sha256": {
+        "episodes/episode_005/direct_hdr_events_1khz_2khz.npz": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+        "episodes/episode_005/state_control_trace.jsonl": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+        "episodes/episode_005/episode.csv": "91ed585502ada54d1d918a6425da56134da393684b330a3baa40d467a7c1cf50",
+        "episodes/episode_005/direct_hdr_key_snapshots.npz": "d28c52a260eb82746b560e4c9435ae39b67842cc61f02377a7c6c59901e5f97b"
+      },
+      "renderer_snapshot_replay": [
+        {
+          "label": "first_contact",
+          "time_s": 0.614,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        },
+        {
+          "label": "bilateral_contact",
+          "time_s": 0.617,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        },
+        {
+          "label": "strict_hold_complete",
+          "time_s": 1.3585,
+          "mae": 0.0,
+          "p95_abs": 0.0,
+          "max_abs": 0.0
+        }
+      ],
+      "renderer_snapshot_not_replayed": [
+        {
+          "label": "launch",
+          "time_s": 0.0,
+          "reason": "no exact physical-state row exists in the immutable trace"
+        },
+        {
+          "label": "lift_start",
+          "time_s": 0.6859999999999999,
+          "reason": "no exact physical-state row exists in the immutable trace"
+        }
+      ],
+      "native_hdr_source_range_rgb": [
+        0.0044097900390625,
+        1.373046875
+      ],
+      "native_hdr_luminance_percentiles": [
+        0.03626156970858574,
+        0.14950886368751526,
+        1.0224609375
+      ],
+      "dense_render_frame_count": 10,
+      "dense_render_wall_s": 0.37137466575950384,
+      "dense_render_wall_scope": "scene-state setters plus HDR/display/depth/seg camera renders for all selected source, dense, snapshot, and cutoff timestamps in this episode",
+      "reconstruction": {
+        "sampler_config": 10,
+        "sample_count": 10,
+        "metrics": [
+          {
+            "time_s": 0.5815,
+            "target_visible_pixels": 1217,
+            "robot_pixels": 11312,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.009504075162112713,
+            "log_abs_error_p95_all": 0.00132351357024163,
+            "log_abs_error_mean_valid": 0.009504199028015137,
+            "log_abs_error_mean_target": 0.01324758492410183,
+            "log_abs_error_mean_robot": 0.04689733311533928,
+            "log_abs_error_mean_background": 0.002851801225915551
+          },
+          {
+            "time_s": 0.5825,
+            "target_visible_pixels": 1185,
+            "robot_pixels": 11312,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.009370255284011364,
+            "log_abs_error_p95_all": 0.0009760856628417969,
+            "log_abs_error_mean_valid": 0.009370377287268639,
+            "log_abs_error_mean_target": 0.00905073992908001,
+            "log_abs_error_mean_robot": 0.0467829667031765,
+            "log_abs_error_mean_background": 0.002794606378301978
+          },
+          {
+            "time_s": 0.5835,
+            "target_visible_pixels": 1184,
+            "robot_pixels": 11314,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.00923803262412548,
+            "log_abs_error_p95_all": 0.0009275734191760421,
+            "log_abs_error_mean_valid": 0.009238152764737606,
+            "log_abs_error_mean_target": 0.008421982638537884,
+            "log_abs_error_mean_robot": 0.04682257026433945,
+            "log_abs_error_mean_background": 0.002640022896230221
+          },
+          {
+            "time_s": 0.5845,
+            "target_visible_pixels": 1184,
+            "robot_pixels": 11310,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.0090597840026021,
+            "log_abs_error_p95_all": 0.0008536920067854226,
+            "log_abs_error_mean_valid": 0.009059901349246502,
+            "log_abs_error_mean_target": 0.008197869174182415,
+            "log_abs_error_mean_robot": 0.04658425599336624,
+            "log_abs_error_mean_background": 0.002475929679349065
+          },
+          {
+            "time_s": 0.5855,
+            "target_visible_pixels": 1212,
+            "robot_pixels": 11311,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.008978894911706448,
+            "log_abs_error_p95_all": 0.0007353691034950316,
+            "log_abs_error_mean_valid": 0.00897901225835085,
+            "log_abs_error_mean_target": 0.00951291061937809,
+            "log_abs_error_mean_robot": 0.04689262434840202,
+            "log_abs_error_mean_background": 0.002297043101862073
+          },
+          {
+            "time_s": 0.5865,
+            "target_visible_pixels": 1211,
+            "robot_pixels": 11312,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.008859335444867611,
+            "log_abs_error_p95_all": 0.0005538031691685319,
+            "log_abs_error_mean_valid": 0.008859451860189438,
+            "log_abs_error_mean_target": 0.008844573982059956,
+            "log_abs_error_mean_robot": 0.04656193405389786,
+            "log_abs_error_mean_background": 0.002224399009719491
+          },
+          {
+            "time_s": 0.5875,
+            "target_visible_pixels": 1210,
+            "robot_pixels": 11312,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.008796144276857376,
+            "log_abs_error_p95_all": 0.0005024072015658021,
+            "log_abs_error_mean_valid": 0.008796258829534054,
+            "log_abs_error_mean_target": 0.006054025609046221,
+            "log_abs_error_mean_robot": 0.0468599908053875,
+            "log_abs_error_mean_background": 0.002149076433852315
+          },
+          {
+            "time_s": 0.5885,
+            "target_visible_pixels": 1209,
+            "robot_pixels": 11313,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.008592602796852589,
+            "log_abs_error_p95_all": 0.0004640888364519924,
+            "log_abs_error_mean_valid": 0.008592714555561543,
+            "log_abs_error_mean_target": 0.003948914352804422,
+            "log_abs_error_mean_robot": 0.04641607776284218,
+            "log_abs_error_mean_background": 0.0020229709334671497
+          },
+          {
+            "time_s": 0.5895,
+            "target_visible_pixels": 1208,
+            "robot_pixels": 11314,
+            "unknown_hold_pixels": 1,
+            "unknown_hold_fraction": 1.3020833333333334e-05,
+            "log_abs_error_mean_all": 0.008606317453086376,
+            "log_abs_error_p95_all": 7.845424261176959e-05,
+            "log_abs_error_mean_valid": 0.008606428280472755,
+            "log_abs_error_mean_target": 0.0026970647741109133,
+            "log_abs_error_mean_robot": 0.04667478799819946,
+            "log_abs_error_mean_background": 0.0020166856702417135
+          },
+          {
+            "time_s": 0.5905,
+            "target_visible_pixels": 1206,
+            "robot_pixels": 11314,
+            "unknown_hold_pixels": 2,
+            "unknown_hold_fraction": 2.604166666666667e-05,
+            "log_abs_error_mean_all": 0.0024849907495081425,
+            "log_abs_error_p95_all": 0.0,
+            "log_abs_error_mean_valid": 0.0024850559420883656,
+            "log_abs_error_mean_target": 0.0,
+            "log_abs_error_mean_robot": 0.014774912968277931,
+            "log_abs_error_mean_background": 0.00036844995338469744
+          }
+        ],
+        "recommend_render": true,
+        "uncertainty": {
+          "invalid_fraction": 2.604166666666667e-05,
+          "high_gradient_invalid_fraction": 0.00013020833333333333,
+          "endpoint_radiance_residual_max": 4.130878448486328,
+          "endpoint_radiance_residual_p99": 0.6654067039489746,
+          "constant_twist_endpoint_assumption": true,
+          "recommend_render": true,
+          "radiometric_calibration_status": "provided_by_caller",
+          "disocclusion_domain": "projected_target_image",
+          "depth_correspondence_method": "source_material_point"
+        },
+        "disocclusion_policy": "hold"
+      },
+      "generator_info": {
+        "ours_native_hdr": {
+          "response_mode": "physical_log",
+          "input_endpoint": "native Genesis HDR linear RGB converted to linear luminance by plugin",
+          "radiance_input_forced_by_frozen_plugin": true,
+          "radiance_rgb_range": [
+            0.0044097900390625,
+            1.373046875
+          ],
+          "radiance_luma_range": [
+            0.01280975341796875,
+            1.373046875
+          ],
+          "gray_png_range": [
+            35.0,
+            255.0
+          ],
+          "event_count": 47515,
+          "runtime_s": 12.14102849829942,
+          "response": {
+            "threshold_on_off": 0.2,
+            "threshold_units": "log-response contrast units; uncalibrated",
+            "native_hdr_transform": "log(max(1.0 * linear_luminance, 1e-6))",
+            "display_gray_transform": "frozen plugin routes forced radiance_input through legacy lin_log knee=20 on the OpenCV [0,255] display-gray values",
+            "mismatch_noise_bandwidth_refractory": "disabled"
+          }
+        },
+        "ours_legacy_display_gray": {
+          "response_mode": "video_linlog",
+          "input_endpoint": "display PNG read by OpenCV grayscale [0,255]",
+          "radiance_input_forced_by_frozen_plugin": true,
+          "radiance_rgb_range": null,
+          "radiance_luma_range": null,
+          "gray_png_range": [
+            35.0,
+            255.0
+          ],
+          "event_count": 14797,
+          "runtime_s": 5.495268166065216,
+          "response": {
+            "threshold_on_off": 0.2,
+            "threshold_units": "log-response contrast units; uncalibrated",
+            "native_hdr_transform": "log(max(1.0 * linear_luminance, 1e-6))",
+            "display_gray_transform": "frozen plugin routes forced radiance_input through legacy lin_log knee=20 on the OpenCV [0,255] display-gray values",
+            "mismatch_noise_bandwidth_refractory": "disabled"
+          }
+        },
+        "v2e_official": {
+          "event_count": 3566,
+          "runtime_s": 21.77433036826551,
+          "time_offset_s": 0.5505,
+          "pixel_model": "official V2E defaults",
+          "super_slomo": "/home/zhaoyuhan/Eventbased_WAM/code/v2e_source/input/SuperSloMo39.ckpt",
+          "official_config": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/configs/v2e.yaml",
+          "official_config_sha256": "155f0ef7305bac9c52aa09e485d4c5a1feeaf448f1279a2cccf04097b290add4"
+        }
+      },
+      "checkpoint_sha256": {
+        "ours_fit": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9",
+        "v2e_fit": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45"
+      },
+      "event_state_inference": {
+        "ours_native_hdr": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 14515,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "f4335a0cac9f529cfd3b197c372d02a56482bec7e8fddd75a85ad633dbe35e50",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5724585652351379,
+              0.05948735773563385,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.23055267333984375,
+              0.0005412454484030604
+            ],
+            "heatmap_uv_px": [
+              203.637451171875,
+              98.87488555908203
+            ],
+            "position_error_xy_mm": 3.0367168881488182,
+            "velocity_error_xy_m_s": 0.11179096473998275,
+            "heatmap_uv_error_px": 1.1310383048570043,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 14515,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "f4335a0cac9f529cfd3b197c372d02a56482bec7e8fddd75a85ad633dbe35e50",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.44722384214401245,
+              0.1371074914932251,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.27491480112075806,
+              -0.0022698736283928156
+            ],
+            "heatmap_uv_px": [
+              244.485595703125,
+              73.59471130371094
+            ],
+            "position_error_xy_mm": 149.31096731432066,
+            "velocity_error_xy_m_s": 0.06806711555811747,
+            "heatmap_uv_error_px": 47.6616803922474,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        },
+        "ours_legacy_display_gray": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 4462,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "c84f38549c9c4b072f490d70247236b8b3c7a50f871ef37515b10adf8fef6aea",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5740386247634888,
+              0.060874056071043015,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.24286846816539764,
+              0.006110320333391428
+            ],
+            "heatmap_uv_px": [
+              204.7622528076172,
+              99.2554931640625
+            ],
+            "position_error_xy_mm": 1.377983929286426,
+            "velocity_error_xy_m_s": 0.09918708329364813,
+            "heatmap_uv_error_px": 0.39608969696586643,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 4462,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "c84f38549c9c4b072f490d70247236b8b3c7a50f871ef37515b10adf8fef6aea",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5808194279670715,
+              0.05883138254284859,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.15573103725910187,
+              -0.003963992930948734
+            ],
+            "heatmap_uv_px": [
+              203.71206665039062,
+              100.90995788574219
+            ],
+            "position_error_xy_mm": 5.704742106858256,
+            "velocity_error_xy_m_s": 0.18674127087367795,
+            "heatmap_uv_error_px": 1.564806860246653,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        },
+        "v2e_official": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 510,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "c500f062857df64bdf510b6e485ed941243d325d0f9577fe6007d33d00299ab5",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5615290999412537,
+              0.0682198628783226,
+              0.019999980926513672
+            ],
+            "velocity_xy_m_s": [
+              -0.1479823738336563,
+              0.012823970057070255
+            ],
+            "heatmap_uv_px": [
+              209.22508239746094,
+              96.29137420654297
+            ],
+            "position_error_xy_mm": 15.85838240185301,
+            "velocity_error_xy_m_s": 0.19405847332981876,
+            "heatmap_uv_error_px": 5.731514388731996,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 510,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "c500f062857df64bdf510b6e485ed941243d325d0f9577fe6007d33d00299ab5",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5722138285636902,
+              0.0640765056014061,
+              0.02000001072883606
+            ],
+            "velocity_xy_m_s": [
+              -0.27367502450942993,
+              0.0011013321345672011
+            ],
+            "heatmap_uv_px": [
+              206.98638916015625,
+              98.81609344482422
+            ],
+            "position_error_xy_mm": 4.803382823199197,
+            "velocity_error_xy_m_s": 0.06881135852770935,
+            "heatmap_uv_error_px": 2.5738352990060904,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        },
+        "common_direct_hdr_reference": {
+          "ours_fit": {
+            "state_available": true,
+            "event_count_25ms": 3753,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "f5092413b0e67febcdeae807bd6097ffc29a60fc4806b9750a59c3eb6228c989",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.3930344581604004,
+              0.024577967822551727,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.34147214889526367,
+              0.015225657261908054
+            ],
+            "heatmap_uv_px": [
+              174.16439819335938,
+              65.00084686279297
+            ],
+            "position_error_xy_mm": 185.8021684829917,
+            "velocity_error_xy_m_s": 0.006041133538421219,
+            "heatmap_uv_error_px": 46.01261053336848,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          },
+          "v2e_fit": {
+            "state_available": true,
+            "event_count_25ms": 3753,
+            "nonempty_5ms_bins": 5,
+            "input_tensor_sha256": "f5092413b0e67febcdeae807bd6097ffc29a60fc4806b9750a59c3eb6228c989",
+            "state_status": "fresh",
+            "position_xyz_m": [
+              0.5771549940109253,
+              0.060570742934942245,
+              0.019999995827674866
+            ],
+            "velocity_xy_m_s": [
+              -0.06932416558265686,
+              -0.005632827058434486
+            ],
+            "heatmap_uv_px": [
+              204.7518310546875,
+              100.0115966796875
+            ],
+            "position_error_xy_mm": 1.8160006747135216,
+            "velocity_error_xy_m_s": 0.2730865676705354,
+            "heatmap_uv_error_px": 0.49224589635382504,
+            "input_contract": "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+          }
+        }
+      },
+      "event_state_inference_boundary": "Both existing checkpoints receive the same causal tensor contract for each listed event stream; GT is joined only after the forward pass. Cross-generator outputs are development transfer probes, not retraining results.",
+      "raw_event_temporal_counts": {
+        "ours_native_hdr": {
+          "event_count": 47515,
+          "seams": {
+            "0.5605": {
+              "boundary_window_count_pm_1ms": 4756,
+              "inter_seam_midpoint_time_s": 0.5655,
+              "inter_seam_midpoint_count_pm_1ms": 23,
+              "boundary_to_midpoint_ratio": 206.7826086956522
+            },
+            "0.5705": {
+              "boundary_window_count_pm_1ms": 6154,
+              "inter_seam_midpoint_time_s": 0.5755,
+              "inter_seam_midpoint_count_pm_1ms": 16,
+              "boundary_to_midpoint_ratio": 384.625
+            },
+            "0.5805": {
+              "boundary_window_count_pm_1ms": 5200,
+              "inter_seam_midpoint_time_s": 0.5855,
+              "inter_seam_midpoint_count_pm_1ms": 14,
+              "boundary_to_midpoint_ratio": 371.42857142857144
+            },
+            "0.5905": {
+              "boundary_window_count_pm_1ms": 2660,
+              "inter_seam_midpoint_time_s": 0.5955,
+              "inter_seam_midpoint_count_pm_1ms": 16,
+              "boundary_to_midpoint_ratio": 166.25
+            },
+            "0.6005": {
+              "boundary_window_count_pm_1ms": 4577,
+              "inter_seam_midpoint_time_s": 0.6055,
+              "inter_seam_midpoint_count_pm_1ms": 960,
+              "boundary_to_midpoint_ratio": 4.767708333333333
+            },
+            "0.6105": {
+              "boundary_window_count_pm_1ms": 7769,
+              "inter_seam_midpoint_time_s": 0.6155,
+              "inter_seam_midpoint_count_pm_1ms": 472,
+              "boundary_to_midpoint_ratio": 16.459745762711865
+            }
+          },
+          "event_rate_hz_equiv": 679566.9157694716,
+          "time_range_s": [
+            0.5505804690496169,
+            0.6205
+          ],
+          "boundary_count_sum": 31116,
+          "midpoint_count_sum": 1501,
+          "boundary_to_midpoint_total_ratio": 20.730179880079948
+        },
+        "ours_legacy_display_gray": {
+          "event_count": 14797,
+          "seams": {
+            "0.5605": {
+              "boundary_window_count_pm_1ms": 758,
+              "inter_seam_midpoint_time_s": 0.5655,
+              "inter_seam_midpoint_count_pm_1ms": 9,
+              "boundary_to_midpoint_ratio": 84.22222222222223
+            },
+            "0.5705": {
+              "boundary_window_count_pm_1ms": 769,
+              "inter_seam_midpoint_time_s": 0.5755,
+              "inter_seam_midpoint_count_pm_1ms": 5,
+              "boundary_to_midpoint_ratio": 153.8
+            },
+            "0.5805": {
+              "boundary_window_count_pm_1ms": 756,
+              "inter_seam_midpoint_time_s": 0.5855,
+              "inter_seam_midpoint_count_pm_1ms": 4,
+              "boundary_to_midpoint_ratio": 189.0
+            },
+            "0.5905": {
+              "boundary_window_count_pm_1ms": 409,
+              "inter_seam_midpoint_time_s": 0.5955,
+              "inter_seam_midpoint_count_pm_1ms": 8,
+              "boundary_to_midpoint_ratio": 51.125
+            },
+            "0.6005": {
+              "boundary_window_count_pm_1ms": 1114,
+              "inter_seam_midpoint_time_s": 0.6055,
+              "inter_seam_midpoint_count_pm_1ms": 447,
+              "boundary_to_midpoint_ratio": 2.4921700223713645
+            },
+            "0.6105": {
+              "boundary_window_count_pm_1ms": 2414,
+              "inter_seam_midpoint_time_s": 0.6155,
+              "inter_seam_midpoint_count_pm_1ms": 235,
+              "boundary_to_midpoint_ratio": 10.272340425531915
+            }
+          },
+          "event_rate_hz_equiv": 212352.68479349161,
+          "time_range_s": [
+            0.5508187523929395,
+            0.6204999999570556
+          ],
+          "boundary_count_sum": 6220,
+          "midpoint_count_sum": 708,
+          "boundary_to_midpoint_total_ratio": 8.785310734463277
+        },
+        "v2e_official": {
+          "event_count": 3566,
+          "seams": {
+            "0.5605": {
+              "boundary_window_count_pm_1ms": 31,
+              "inter_seam_midpoint_time_s": 0.5655,
+              "inter_seam_midpoint_count_pm_1ms": 38,
+              "boundary_to_midpoint_ratio": 0.8157894736842105
+            },
+            "0.5705": {
+              "boundary_window_count_pm_1ms": 44,
+              "inter_seam_midpoint_time_s": 0.5755,
+              "inter_seam_midpoint_count_pm_1ms": 53,
+              "boundary_to_midpoint_ratio": 0.8301886792452831
+            },
+            "0.5805": {
+              "boundary_window_count_pm_1ms": 39,
+              "inter_seam_midpoint_time_s": 0.5855,
+              "inter_seam_midpoint_count_pm_1ms": 38,
+              "boundary_to_midpoint_ratio": 1.0263157894736843
+            },
+            "0.5905": {
+              "boundary_window_count_pm_1ms": 36,
+              "inter_seam_midpoint_time_s": 0.5955,
+              "inter_seam_midpoint_count_pm_1ms": 48,
+              "boundary_to_midpoint_ratio": 0.75
+            },
+            "0.6005": {
+              "boundary_window_count_pm_1ms": 44,
+              "inter_seam_midpoint_time_s": 0.6055,
+              "inter_seam_midpoint_count_pm_1ms": 195,
+              "boundary_to_midpoint_ratio": 0.22564102564102564
+            },
+            "0.6105": {
+              "boundary_window_count_pm_1ms": 236,
+              "inter_seam_midpoint_time_s": 0.6155,
+              "inter_seam_midpoint_count_pm_1ms": 386,
+              "boundary_to_midpoint_ratio": 0.6113989637305699
+            }
+          },
+          "event_rate_hz_equiv": 54281.97400066975,
+          "time_range_s": [
+            0.554806,
+            0.6205
+          ],
+          "boundary_count_sum": 430,
+          "midpoint_count_sum": 758,
+          "boundary_to_midpoint_total_ratio": 0.5672823218997362
+        }
+      },
+      "five_bin_event_counts": {
+        "ours_native_hdr": 14515,
+        "ours_legacy_display_gray": 4462,
+        "v2e_official": 510,
+        "common_direct_hdr_reference": 3753
+      },
+      "five_bin_nonempty_bins": {
+        "ours_native_hdr": 5,
+        "ours_legacy_display_gray": 5,
+        "v2e_official": 5,
+        "common_direct_hdr_reference": 5
+      },
+      "frozen_core_modified": false,
+      "dense_direct_render_scope": "offline visual replay from exact logged physical-state rows; not a new dynamics rollout and not real event-camera ground truth",
+      "display_and_hdr_are_not_claimed_as_shared_pixel_response": true
+    }
+  },
+  "wall_s": 155.36099883262068,
+  "interpretation": "The old model weights are not retrained on native HDR. Their output on native-HDR-generated bins is only a diagnostic transfer probe, not the downstream utility of a complete HDR-trained method. Ours uses native Genesis scene-linear radiance; V2E retains the official display-frame plus SuperSloMo input path. Their different pixel-response models are explicit."
+}

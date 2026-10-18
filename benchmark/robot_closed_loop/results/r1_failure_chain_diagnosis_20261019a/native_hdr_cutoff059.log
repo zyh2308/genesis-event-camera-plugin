@@ -1,0 +1,109 @@
+{
+  "phase": "preflight_passed",
+  "source_times_s": [
+    0.5505,
+    0.5605,
+    0.5705,
+    0.5805,
+    0.5905,
+    0.6005,
+    0.6105,
+    0.6205
+  ],
+  "dense_direct_times_s": [
+    0.5815,
+    0.5825,
+    0.5835,
+    0.5845,
+    0.5855,
+    0.5865,
+    0.5875,
+    0.5885,
+    0.5895,
+    0.5905
+  ],
+  "scoring_cutoff_s": 0.59,
+  "episodes": {
+    "episode_004": {
+      "matched_snapshots": 4,
+      "unmatched_snapshots": [
+        {
+          "label": "launch",
+          "time_s": 0.0,
+          "reason": "no exact physical-state row exists in the immutable trace"
+        }
+      ],
+      "cutoff_gt_label": {
+        "method": "linear interpolation between adjacent logged GT rows for offline scoring only",
+        "bracket_times_s": [
+          0.5895,
+          0.5904999999999999
+        ]
+      }
+    },
+    "episode_005": {
+      "matched_snapshots": 3,
+      "unmatched_snapshots": [
+        {
+          "label": "launch",
+          "time_s": 0.0,
+          "reason": "no exact physical-state row exists in the immutable trace"
+        },
+        {
+          "label": "lift_start",
+          "time_s": 0.6859999999999999,
+          "reason": "no exact physical-state row exists in the immutable trace"
+        }
+      ],
+      "cutoff_gt_label": {
+        "method": "linear interpolation between adjacent logged GT rows for offline scoring only",
+        "bracket_times_s": [
+          0.5895,
+          0.5904999999999999
+        ]
+      }
+    }
+  }
+}
+[genesis] initializing renderer scene
+[38;5;226m[Genesis] [17:08:52] [WARNING] (MJCF) Approximating tendon by joint actuator for `finger_joint1`[0m
+[38;5;226m[Genesis] [17:08:52] [WARNING] (MJCF) Approximating tendon by joint actuator for `finger_joint2`[0m
+[W 10/18/26 17:08:53.274 241620] [kernel_compilation_manager.cpp:KernelCompilationManager@59] Lock /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock failed. Please run 'ti cache clean -p /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager' and try again.
+[38;5;226m[Genesis] [17:08:54] [WARNING] Neutral robot position (qpos0) exceeds joint limits.[0m
+[38;5;226m[Genesis] [17:09:01] [WARNING] Filtered out geometry pairs causing self-collision for the neutral configuration (qpos0): (7, 12), (8, 12), (15, 22), (16, 21), (17, 24), (18, 23). Consider tuning Morph option 'decompose_robot_error_threshold' or specify dedicated collision meshes. This behavior can be disabled by setting Morph option 'enable_neutral_collision=True'.[0m
+[render] episode_004: 20 exact logged states
+[render] episode_004: completed in 0.53s
+[events] episode_004: native=51391 legacy=15475 v2e=3218
+[episode] episode_004: diagnostics saved
+[render] episode_005: 20 exact logged states
+[render] episode_005: completed in 0.37s
+[events] episode_005: native=47515 legacy=14797 v2e=3566
+[episode] episode_005: diagnostics saved
+[W 10/18/26 17:11:16.045 241620] [offline_cache.h:run@165] Lock /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock failed. You can run 'ti cache clean -p /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager' and try again.
+[W 10/18/26 17:11:16.248 241620] [kernel_compilation_manager.cpp:dump@88] Lock /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager/ticache.lock failed. Please run 'ti cache clean -p /home/zhaoyuhan/.cache/quadrants/qdcache/kernel_compilation_manager' and try again.
+{
+  "output": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059",
+  "wall_s": 155.36099883262068,
+  "episodes": {
+    "episode_004": {
+      "snapshot_exact": true,
+      "events": {
+        "ours_native_hdr": 13647,
+        "ours_legacy_display_gray": 4027,
+        "v2e_official": 321,
+        "common_direct_hdr_reference": 2255
+      },
+      "interpolation_unknown_fraction_mean": 0.0
+    },
+    "episode_005": {
+      "snapshot_exact": true,
+      "events": {
+        "ours_native_hdr": 14515,
+        "ours_legacy_display_gray": 4462,
+        "v2e_official": 510,
+        "common_direct_hdr_reference": 3753
+      },
+      "interpolation_unknown_fraction_mean": 1.4322916666666666e-05
+    }
+  }
+}

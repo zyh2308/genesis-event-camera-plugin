@@ -1,8 +1,28 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-18（Asia/Tokyo）
-**阶段：** R0.5 strict oracle 已核验三档各 100/100；R0.6 感知 smoke 与 R2 抓取闭环问题仍按历史批次报告。R1 的九集共同理想响应配对训练和共同 Direct-HDR 开发评估已在 g1 完成，两个模型共用 581 个接触前查询；这满足 R1 最小可复核开发链路，但九集参考全是开发资料，不作正式测试或生成器排名。R2 不阻塞 R1。任务、相机、物理时钟、frozen core 与 strict scorer 均未因本轮修改。
+**更新时间：** 2026-10-19（Asia/Tokyo）
+**阶段：** R1 失效链路诊断已完成短窗口重放，原生 HDR 小规模条件匹配开发重训正在 g1 CPU 上运行（9 集生成中，当前完成 1 集）。此前 `7fb72dc` 及其审核结果原样保留；新增输出写入独立目录。场景、相机、物理时钟、frozen core、strict scorer 和共同 Direct-HDR 参考未改变。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
+
+## R1 原生 HDR 与失效链路诊断（2026-10-19；小规模开发批次）
+
+- 代码在 `exp/robot-closed-loop-v1`：诊断数据脚本提交 `cea174a6caf2db581e87ed47126b3fb647fe835e`；原生 HDR 单独开发重训配置及 runner 提交 `bc999fb`、`dbdc3bf`，launcher 输出保护修正在 `4c5f5f29d4c46dd50401c0aa9079874f97afcbc6`。本地分支已推送至 GitHub；服务器用隔离 worktree 运行，无主仓库切换。
+- **已证实：** 原 R1 Ours 配对训练路径实际读取缓存显示 PNG 灰度并使用视频 `lin_log`，没有使用 `trajectory_cache.h5/radiance`。诊断已单独走原生 HDR float radiance → frozen plugin `physical_log`，未把显示灰度标成 HDR；该开发响应未做 EVK4 标定。
+- 在 +55 mm 已知失败和中心对照的同一因果查询（cutoff 0.5900 s），旧 Ours checkpoint 在共同 Direct-HDR 输入上分别为 185.8 mm 与 16.3 mm 平面位置误差；在新原生 HDR Ours 事件上为 3.04 mm 与 6.15 mm。旧权重来自显示灰度训练，因此这些是输入域转移诊断，不能代替原生 HDR 重训效果。目标在源画面可见；精确 trace 状态重渲染的快照与原始图像逐像素相同。十帧离线密集直接渲染中，+55 mm 平均 log-radiance 绝对误差为 0.00835（目标区域 0.00700、背景 0.00218）；中心为 0.00915（目标区域 0.00546、背景 0.00335）。+55 mm 窗口 unknown/hold 像素仅 0.0014%。这些图像对照是缓存状态离线重放，不是新动力学轨迹或真实事件真值。
+- **已证实的时序异常、未定位根因：** +55 mm 原生 Ours raw events 在 100 Hz 源帧边界 ±1 ms 共 31,116 个事件；等宽 seam 中点窗共 1,501 个，比例 20.73×。中心对应比例 24.80×。该短窗口 unknown/hold 比例极低，hold 补全不足以解释本片段的边界集中。边界突发已由缓存 raw-event 原样离线重放复现；尚未证明 frozen core 中具体哪个环节负责，未修改核心。
+- **速度隔离：** 在精确失败 query，固定 checkpoint 与输入下，Ours 网络速度头误差为 0.0060 m/s，而现有 50 ms 历史 OLS 误差为 2.625 m/s、稳健 pairwise median 为 2.167 m/s。位置输出仍错 185.8 mm，且该状态下预测器不可达，故没有 arrival/TTC 指标。改速度策略不能修复定位错误，只证明历史回归会放大位置跳变。
+- g1 上已启动一次固定预算开发重训：原始 9 集物理缓存/标签/时间戳、原训练/验证 episode split、`heatmap_v2`、seed 606、40 epoch/patience 预算不变；复用 SHA256 完全相同的官方 V2E 事件文件，只从原生 HDR 重生成 Ours。两边随后在完全相同的 Direct-HDR 参考文件和查询时刻上评估。此比较的传感器路径有意保持方法原生差异，不声称共享像素响应或公平的理想化传感器响应。
+- 当前运行：g1 tmux `r1_native_hdr_small9_retrain_20261019a`，launcher PID `263207`；CPU-only，未使用其他训练所占的 GPU。首集已生成 1,664,645 个 HDR Ours events，用时 288.24 s；其余 episode、拟合和共同评估仍在运行。实时日志位于服务器 `repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/runtime_logs/r1_native_hdr_small9_retrain_20261019a.log`。
+- 当前已归档诊断入口：[`R1 failure-chain report`](../../benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/README.md)；+55 mm 与中心截图/原始小窗口事件在 `native_hdr_cutoff059/episode_005/` 和 `episode_004/`，速度对照在 `velocity/per_query_velocity_comparison.csv`，原样 timing replay 在 `native_hdr_timing/`。
+- 核心结果 manifests：`native_hdr_cutoff059/SHA256SUMS` 文件 SHA256 `f143910056dbf407fb7a2808412f5dc9c9bb8554ea37a4a54f7d5449b4628291`；`native_hdr_timing/SHA256SUMS` SHA256 `80060a6bef480b10b5e56e8e2b0d6f3913a691be299076ebff37f77a05285882`；`velocity/SHA256SUMS` SHA256 `1f115fc7d488f4a1eb6c5edca94e078e146306bdbc2bc60f06ba00a8856b742f`。新重训配置 SHA256 `351c09ae190f41e27ce2262cdf4bd5eaa932a96e685191ae9a309ffc3c1d5e1b`；Direct-HDR 参考 manifest SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`。
+- 复跑（g1，必须使用新的 run ID；默认数据根与配置均在 launcher 中声明）：
+
+  ```bash
+  cd ~/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a
+  bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1_native_hdr_small9_retrain_<new_id>
+  ```
+
+- **待结论：** 原生 HDR 新权重是否降低共同参考上的定位错误；事件 seam burst 是否足以解释旧模型跨域定位失败；全量 9 集 generation、拟合和 evaluation 的实际端到端成本。需等本轮日志、checkpoint、逐集/逐时刻 CSV 完整后更新，不得据当前首集或旧 transfer probe 宣告 R1 通过/失败。
 
 ## 当前进度
 
