@@ -1,0 +1,59 @@
+{
+  "schema": "epose_public_metadata_recheck_v1",
+  "checked_utc": "2026-10-18T17:26:00Z",
+  "checked_local": "2026-10-19 02:26 Asia/Tokyo",
+  "scope": "public metadata and access-route recheck only; no data archive retrieved, no sample parsed, no model inference, no real score",
+  "verified_public_article": {
+    "url": "https://www.nature.com/articles/s41597-025-04536-5",
+    "dataset_doi": "https://doi.org/10.6084/m9.figshare.28106717",
+    "sensor": "DAVIS346c, 346 x 260",
+    "reported_event_window": "10 ms (100 Hz)",
+    "published_raw_archive_format": "HDF5",
+    "published_per_frame_mat_fields": [
+      "Pose=T_dvs^obj",
+      "IntrinsicMatrix",
+      "cameraPose=T_base^dvs",
+      "time",
+      "keypointprojections"
+    ],
+    "paper_event_input_representation": [
+      "positive polarity count",
+      "negative polarity count",
+      "most recent event timestamp"
+    ],
+    "paper_benchmarked_methods": [
+      "YOLO-6D",
+      "PoseCNN",
+      "DGECN"
+    ],
+    "ycb_categories_include_wood_block": true
+  },
+  "access_attempts": [
+    {
+      "route": "local WSL Figshare landing URL",
+      "observed": "HTTP 202, empty body; captured AWS WAF challenge header in earlier request"
+    },
+    {
+      "route": "local WSL Figshare v2 article API",
+      "observed": "HTTP 403, 118-byte body"
+    },
+    {
+      "route": "browser publisher Figshare article",
+      "observed": "HTTP 403"
+    },
+    {
+      "route": "browser Figshare API/DOI",
+      "observed": "not accessible through browser fetch tool; no successful archive/file list"
+    },
+    {
+      "route": "public web search for DOI, title, mirrors and file listings",
+      "observed": "canonical record and paper/code found; no verifiable mirror or sample file located"
+    }
+  ],
+  "interpretation": "E-POSE is publicly described and cited; this route audit does not prove the dataset is globally unavailable. No original sample/CAD pairing has been verified.",
+  "sources": [
+    "https://www.nature.com/articles/s41597-025-04536-5",
+    "https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717",
+    "https://github.com/oussamaabdulhay/E_Pose"
+  ]
+}

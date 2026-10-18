@@ -1,0 +1,341 @@
+{
+  "status": "completed",
+  "scope": "two-window synthetic training fixture only; no independent rollout, real data, or checkpoint selection",
+  "source_commit": "2c282619101f9f31666dd18b42393375bea1600f",
+  "source_verification": {
+    "repository": "SingleShotPose",
+    "commit": "2c282619101f9f31666dd18b42393375bea1600f",
+    "verification": "clean_git_checkout"
+  },
+  "python": "3.14.6",
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "device": "NVIDIA GeForce RTX 2050",
+  "seed": 2718,
+  "sample_ids": [
+    "rollout_fixture/interval_000",
+    "rollout_fixture/interval_001"
+  ],
+  "same_rollout": true,
+  "model_inference_inputs": [
+    "full-frame synthetic event ON/OFF/total count channels"
+  ],
+  "forbidden_inputs_used": [],
+  "training_updates": {
+    "warmup_with_official_confidence_exclusion": 16,
+    "confidence_supervised": 64,
+    "warmup_loss_first_last_min": [
+      10.586750030517578,
+      16.445335388183594,
+      0.880709171295166
+    ],
+    "confidence_phase_loss_first_last_min": [
+      5.106048107147217,
+      0.020106229931116104,
+      0.018161550164222717
+    ]
+  },
+  "bn_calibration_passes": [
+    {
+      "applied": true,
+      "source": "all fixed synthetic train event tensors; no labels, validation, or real data",
+      "sample_count": 2,
+      "sample_ids_sha256": "b4e24393b8bd27b7479e831b579611dfab2be4a52617b59ae28ed12236a12fa4",
+      "optimizer_updates": 0,
+      "model_parameters_updated": false,
+      "model_inference_mode_after_calibration": "eval",
+      "batchnorm_layer_count": 22,
+      "num_batches_tracked_per_layer": [
+        2
+      ]
+    },
+    {
+      "applied": true,
+      "source": "all fixed synthetic train event tensors; no labels, validation, or real data",
+      "sample_count": 2,
+      "sample_ids_sha256": "b4e24393b8bd27b7479e831b579611dfab2be4a52617b59ae28ed12236a12fa4",
+      "optimizer_updates": 0,
+      "model_parameters_updated": false,
+      "model_inference_mode_after_calibration": "eval",
+      "batchnorm_layer_count": 22,
+      "num_batches_tracked_per_layer": [
+        2
+      ]
+    }
+  ],
+  "bn_calibration_changed_parameters": false,
+  "checkpoint_restore": {
+    "state_sha256": "2d4f349620883f735a9224fdecfba650c61affe8cccb21299205e6fe2a44e247",
+    "restored_state_sha256": "2d4f349620883f735a9224fdecfba650c61affe8cccb21299205e6fe2a44e247",
+    "state_hash_equal": true,
+    "ordinary_eval_outputs_equal": true,
+    "checkpoint_stored_only_in_temporary_directory": true
+  },
+  "eval_reports": {
+    "after_16_updates_before_bn_calibration": {
+      "model_training_flag_after_inference": false,
+      "mean_keypoint_epe_px": 23431.244140625,
+      "details": [
+        {
+          "sample_id": "rollout_fixture/interval_000",
+          "event_start_s": 0.0,
+          "event_end_s": 0.1,
+          "label_time_s": 0.1,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            5,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": false,
+          "selected_confidence": 0.9999979734420776,
+          "keypoint_mean_epe_px": 24108.65234375,
+          "prediction_xy_min_max": [
+            -53.222843170166016,
+            101.58892822265625
+          ],
+          "prediction_outside_unit_square_count": 16,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 47.71806045678903,
+          "translation_error_m": 1403.8427521466258,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        },
+        {
+          "sample_id": "rollout_fixture/interval_001",
+          "event_start_s": 0.1,
+          "event_end_s": 0.2,
+          "label_time_s": 0.2,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            5,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": false,
+          "selected_confidence": 0.999996542930603,
+          "keypoint_mean_epe_px": 22753.8359375,
+          "prediction_xy_min_max": [
+            -50.22002029418945,
+            95.90924072265625
+          ],
+          "prediction_outside_unit_square_count": 16,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 52.48667440031332,
+          "translation_error_m": 1156.20982941887,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        }
+      ]
+    },
+    "after_train_only_bn_calibration_before_confidence_phase": {
+      "model_training_flag_after_inference": false,
+      "mean_keypoint_epe_px": 28.431720733642578,
+      "details": [
+        {
+          "sample_id": "rollout_fixture/interval_000",
+          "event_start_s": 0.0,
+          "event_end_s": 0.1,
+          "label_time_s": 0.1,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            5,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": false,
+          "selected_confidence": 0.7074882984161377,
+          "keypoint_mean_epe_px": 28.837631225585938,
+          "prediction_xy_min_max": [
+            0.3690483868122101,
+            0.6234841346740723
+          ],
+          "prediction_outside_unit_square_count": 0,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 156.79802771363921,
+          "translation_error_m": 1.0476427460182929,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        },
+        {
+          "sample_id": "rollout_fixture/interval_001",
+          "event_start_s": 0.1,
+          "event_end_s": 0.2,
+          "label_time_s": 0.2,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            5,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": false,
+          "selected_confidence": 0.694879412651062,
+          "keypoint_mean_epe_px": 28.02581024169922,
+          "prediction_xy_min_max": [
+            0.367887943983078,
+            0.6172586679458618
+          ],
+          "prediction_outside_unit_square_count": 0,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 154.15878918345143,
+          "translation_error_m": 1.047664692919077,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        }
+      ]
+    },
+    "after_64_confidence_updates_before_final_bn_calibration": {
+      "model_training_flag_after_inference": false,
+      "mean_keypoint_epe_px": 2.499850809574127,
+      "details": [
+        {
+          "sample_id": "rollout_fixture/interval_000",
+          "event_start_s": 0.0,
+          "event_end_s": 0.1,
+          "label_time_s": 0.1,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            6,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": true,
+          "selected_confidence": 0.929135799407959,
+          "keypoint_mean_epe_px": 4.162710189819336,
+          "prediction_xy_min_max": [
+            0.4438784420490265,
+            0.5447997450828552
+          ],
+          "prediction_outside_unit_square_count": 0,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 8.490614278122107,
+          "translation_error_m": 0.01282093765079578,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        },
+        {
+          "sample_id": "rollout_fixture/interval_001",
+          "event_start_s": 0.1,
+          "event_end_s": 0.2,
+          "label_time_s": 0.2,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            6,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": true,
+          "selected_confidence": 0.9072372913360596,
+          "keypoint_mean_epe_px": 0.8369914293289185,
+          "prediction_xy_min_max": [
+            0.4539041221141815,
+            0.5435698628425598
+          ],
+          "prediction_outside_unit_square_count": 0,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 1.8250376105752246,
+          "translation_error_m": 0.0029927153392178877,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        }
+      ]
+    },
+    "after_64_confidence_updates_and_final_train_only_bn_calibration": {
+      "model_training_flag_after_inference": false,
+      "mean_keypoint_epe_px": 1.4209556877613068,
+      "details": [
+        {
+          "sample_id": "rollout_fixture/interval_000",
+          "event_start_s": 0.0,
+          "event_end_s": 0.1,
+          "label_time_s": 0.1,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            6,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": true,
+          "selected_confidence": 0.9143646359443665,
+          "keypoint_mean_epe_px": 1.8765192031860352,
+          "prediction_xy_min_max": [
+            0.4508006274700165,
+            0.5437108278274536
+          ],
+          "prediction_outside_unit_square_count": 0,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 3.9520581924248956,
+          "translation_error_m": 0.004001552021398924,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        },
+        {
+          "sample_id": "rollout_fixture/interval_001",
+          "event_start_s": 0.1,
+          "event_end_s": 0.2,
+          "label_time_s": 0.2,
+          "event_count": 3,
+          "inference_mode": "model.eval()",
+          "decoder": "normal global confidence argmax",
+          "confidence_argmax_cell_yx": [
+            6,
+            6
+          ],
+          "gt_center_cell_yx_for_metric_only": [
+            6,
+            6
+          ],
+          "selected_cell_matches_gt_center_cell": true,
+          "selected_confidence": 0.8884953260421753,
+          "keypoint_mean_epe_px": 0.9653921723365784,
+          "prediction_xy_min_max": [
+            0.4554000496864319,
+            0.545309841632843
+          ],
+          "prediction_outside_unit_square_count": 0,
+          "pnp_succeeded": true,
+          "rotation_error_deg": 1.8257869838175995,
+          "translation_error_m": 0.01362893856904373,
+          "translation_unit": "synthetic fixture world unit (metre)",
+          "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K"
+        }
+      ]
+    }
+  },
+  "interpretation": "The run isolates two fixable training-state causes: the 16-update warmup leaves confidence largely unsupervised, while recalibrating BN buffers from synthetic train event tensors restores ordinary eval behavior on the tiny training fixture. This is only an overfit/mechanism check; held-out-rollout eval must pass before pose training is considered ready."
+}

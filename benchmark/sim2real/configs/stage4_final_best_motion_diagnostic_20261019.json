@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "diagnostic_id": "stage4-synthetic-best-motion-20261019",
+  "status": "candidate_ready_for_g1_execution_after_live_artifact_refresh",
+  "real_data_used": false,
+  "training_or_checkpoint_selection_changed": false,
+  "asynchronous_checkpoint_pairing": true,
+  "fixed_diagnostic_source": {
+    "script": "benchmark/sim2real/scripts/stage4_motion_learning_diagnostic.py",
+    "script_sha256": "fcb01a225a5c6b6095d987f8804e595703349ca860a4549355d09b85c8d43fee",
+    "plan": "benchmark/sim2real/evidence/S4/20261018-motion-diagnostic/DIAGNOSTIC_PLAN.md",
+    "plan_sha256": "e6ddae9266a5b3ccd831caa91f039b967551c46e43db569d7742b63a9e14b4d7",
+    "fixed_sample_adapter_indices_per_rollout": [0, 9, 18, 27, 36, 45, 54, 65],
+    "expected_sample_ids_per_rollout": [
+      "dt1_000", "dt1_027", "dt1_054", "dt1_081",
+      "dt1_108", "dt1_135", "dt1_162", "dt1_195"
+    ],
+    "expected_rollout_count": 8,
+    "expected_paired_window_count": 64,
+    "flow_unit": "px_per_30ms_interval",
+    "interval_seconds": 0.03,
+    "regions": [
+      "full_valid",
+      "shared_event_active_union",
+      "gt_motion_ge_0_5",
+      "gt_motion_ge_1_0"
+    ],
+    "strata": [
+      "camera_motion_static_scene",
+      "independent_rigid_motion_static_camera",
+      "camera_and_independent_rigid_motion",
+      "combined_motion_with_occlusion"
+    ],
+    "shared_event_active_union_rule": "flow_valid AND spatial pixels with any nonzero value in either paired generator's fixed five-bin representation; one union mask shared by both predictions",
+    "gt_motion_thresholds_px_per_30ms": [0.5, 1.0],
+    "near_zero_prediction_thresholds_px_per_30ms": [0.1, 0.5],
+    "direction_is_reported_only_when_prediction_magnitude_at_least_px": 0.1,
+    "input_is_event_only": true,
+    "output_contract": "[1,2,352,352] then crop y=46:306,x=3:349 to [2,260,346], no u/v rescaling"
+  },
+  "run": {
+    "model_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet",
+    "data_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms",
+    "shared_bank": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s/shared_trajectory.h5",
+    "training_config": "benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+    "device": "cuda:0",
+    "output": "benchmark/sim2real/evidence/S4/20261019-final-best-motion-diagnostic/motion_diagnostic.json"
+  },
+  "checkpoints": {
+    "eventgenesis": {
+      "generator": "eventgenesis",
+      "seed": 0,
+      "synthetic_best_epoch": 33,
+      "completed_epoch_in_checkpoint": 32,
+      "optimizer_update": 6534,
+      "next_epoch": 33,
+      "scheduler_last_epoch": 33,
+      "initial_state_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+      "best_synthetic_validation_epe_px_per_30ms": 0.2832538118,
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/synthetic_best.pt",
+      "sha256": "a4e6c7e1d10a4d76562a046c364a5e17de6452d5b648fc8ccbaa3bd43c824a8e",
+      "sha256_note": "Refreshed directly from the g1 synthetic-best artifact at 2026-10-19; the diagnostic recomputes and checks this hash before loading."
+    },
+    "v2e": {
+      "generator": "v2e",
+      "seed": 0,
+      "synthetic_best_epoch": 20,
+      "completed_epoch_in_checkpoint": 19,
+      "optimizer_update": 3960,
+      "next_epoch": 20,
+      "scheduler_last_epoch": 20,
+      "initial_state_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+      "best_synthetic_validation_epe_px_per_30ms": 0.2828732346,
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/synthetic_best.pt",
+      "sha256": "11041863685b417306f534b8e12a1177b1337fc2818d255ec7b76fa6e20cd474",
+      "sha256_note": "Refreshed directly from the g1 synthetic-best artifact at 2026-10-19; the diagnostic recomputes and checks this hash before loading."
+    }
+  },
+  "constraints": {
+    "do_not_require_equal_checkpoint_update_or_epoch": true,
+    "do_require_seed_and_initial_state_match": true,
+    "do_require_each_checkpoint_update_epoch_and_synthetic_best_metadata_match_its_own_registration": true,
+    "scheduler_validation": "validate each scheduler boundary against that checkpoint's own next_epoch; do not require the two scheduler states to match",
+    "retain_epoch23_result_and_plan": true,
+    "do_not_overwrite_epoch23_result": true,
+    "do_not_use_real_data_or_change_generator_or_checkpoint_selection": true
+  },
+  "checkpoint_metadata_convention": "In the existing Stage 4 serializer, human best epoch E corresponds to saved zero-based epoch E-1, next_epoch E, and scheduler.last_epoch E; optimizer_update remains 198*E. Confirmed by the retained update4554 checkpoint metadata (epoch22,next_epoch23,scheduler23)."
+}

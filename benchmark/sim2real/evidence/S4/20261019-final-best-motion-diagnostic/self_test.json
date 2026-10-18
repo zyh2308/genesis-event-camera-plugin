@@ -1,0 +1,41 @@
+{
+  "status": "pass",
+  "scope": "self-contained static registration check; no torch, CUDA, data, checkpoint, or model loaded",
+  "fixed_script_sha256": "fcb01a225a5c6b6095d987f8804e595703349ca860a4549355d09b85c8d43fee",
+  "fixed_plan_sha256": "e6ddae9266a5b3ccd831caa91f039b967551c46e43db569d7742b63a9e14b4d7",
+  "sample_indices_per_rollout": [
+    0,
+    9,
+    18,
+    27,
+    36,
+    45,
+    54,
+    65
+  ],
+  "expected_paired_windows": 64,
+  "units": "px_per_30ms_interval",
+  "event_active_rule": "flow_valid AND spatial pixels with any nonzero value in either paired generator's fixed five-bin representation; one union mask shared by both predictions",
+  "checkpoint_pair": {
+    "eventgenesis": {
+      "synthetic_best_epoch": 33,
+      "completed_epoch_in_checkpoint": 32,
+      "optimizer_update": 6534,
+      "next_epoch": 33,
+      "best_synthetic_validation_epe_px_per_30ms": 0.2832538118
+    },
+    "v2e": {
+      "synthetic_best_epoch": 20,
+      "completed_epoch_in_checkpoint": 19,
+      "optimizer_update": 3960,
+      "next_epoch": 20,
+      "best_synthetic_validation_epe_px_per_30ms": 0.2828732346
+    }
+  },
+  "different_epochs_and_updates_accepted": true,
+  "negative_controls": [
+    "incorrect per-arm scheduler boundary rejected",
+    "incorrect per-arm optimizer update rejected"
+  ],
+  "epoch23_output_preserved": true
+}

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import random
 import signal
@@ -70,8 +71,10 @@ def rng_state() -> dict:
 def restore_rng(value: dict) -> None:
     random.setstate(value["python"])
     np.random.set_state(value["numpy"])
-    torch.set_rng_state(value["torch_cpu"])
-    torch.cuda.set_rng_state_all(value["torch_cuda"])
+    # Checkpoints are loaded with map_location=device; explicitly move RNG
+    # ByteTensors back to CPU because torch.set_rng_state requires CPU state.
+    torch.set_rng_state(value["torch_cpu"].cpu())
+    torch.cuda.set_rng_state_all([state.cpu() for state in value["torch_cuda"]])
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -122,6 +125,7 @@ def main() -> None:
     if not model_root.is_dir() or not data_root.is_dir() or not config_path.is_file():
         raise FileNotFoundError("model, data, or config path missing")
     run_root.mkdir(parents=True, exist_ok=True)
+    trainer_script_sha = sha256(Path(__file__).resolve())
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required for the registered E2VID+ path")
     device = torch.device(args.device)
@@ -141,12 +145,37 @@ def main() -> None:
         sys.modules["IPython"] = stub
 
     from data_loader import dataset as dataset_module
+    import data_loader.data_loaders as data_loaders_module
     from data_loader.data_loaders import HDF5DataLoader
-    from data_loader.dataset import DynamicH5Dataset
+    from data_loader.dataset import DynamicH5Dataset, SequenceDataset
     from model.loss import perceptual_loss, temporal_consistency_loss
     from model.model import E2VIDRecurrent
     from trainer.trainer import Trainer
     from utils.data import data_sources
+
+    class Stage4SequenceDataset(SequenceDataset):
+        """Permit one full-rollout validation sequence at an exact-length boundary.
+
+        The pinned upstream SequenceDataset returns length zero when
+        ``sequence_length >= dataset.length``. For this fixed validation case,
+        one sequence of 200 samples is well-defined: sample indices 0..199
+        cover all 200 labelled 10 ms intervals without using the terminal
+        duplicate image at index 200. Keep the upstream train behavior intact.
+        """
+
+        def __init__(self, *sequence_args, **sequence_kwargs):
+            super().__init__(*sequence_args, **sequence_kwargs)
+            self.stage4_full_rollout_override = False
+            if self.L == 200:
+                if self.dataset.length != 200 or self.step_size != 200 or self.length != 0:
+                    raise RuntimeError(
+                        "unexpected upstream full-rollout validation boundary: "
+                        f"dataset_length={self.dataset.length}, step={self.step_size}, sequences={self.length}"
+                    )
+                self.length = 1
+                self.stage4_full_rollout_override = True
+
+    data_loaders_module.SequenceDataset = Stage4SequenceDataset
 
     config = json.loads(config_path.read_text())
     cfg = config["reconstruction"]
@@ -244,6 +273,22 @@ def main() -> None:
                                 pin_memory=True, sequence_kwargs=val_kwargs)
     if len(train_loader.dataset) != 120 or len(val_loader.dataset) != 8:
         raise RuntimeError(f"expected 120 train clips / 8 validation rollouts, got {len(train_loader.dataset)}/{len(val_loader.dataset)}")
+    validation_sequence = val_loader.dataset[0]
+    validation_ids = [item["sample_id"] for item in validation_sequence]
+    if (len(validation_sequence) != 200 or validation_ids[0].rsplit(":", 1)[-1] != "000"
+            or validation_ids[-1].rsplit(":", 1)[-1] != "199"
+            or len({item["rollout_id"] for item in validation_sequence}) != 1):
+        raise RuntimeError(
+            "full-rollout validation probe must cover one rollout's 200 labelled intervals 000..199"
+        )
+    atomic_json(run_root / "loader_preflight.json", {
+        "status": "pass", "train_clips": len(train_loader.dataset),
+        "validation_rollouts": len(val_loader.dataset), "validation_sequence_length": len(validation_sequence),
+        "validation_first_sample_id": validation_ids[0], "validation_last_sample_id": validation_ids[-1],
+        "upstream_exact_length_boundary_overridden": True,
+        "rule": "for L=200 and dataset.length=200 only, expose one sequence of indices 0..199; leave terminal duplicate frame index 200 unused",
+        "real_data_used": False,
+    })
 
     model_args = dict(cfg["model_args"])
     if int(model_args["num_bins"]) != 5:
@@ -299,6 +344,11 @@ def main() -> None:
             raise RuntimeError("resume code/config/data fingerprints do not match")
         if (ckpt.get("generator"), ckpt.get("seed")) != (args.generator, args.seed):
             raise RuntimeError("resume generator/seed does not match")
+        saved_script_sha = ckpt.get("trainer_script_sha256")
+        if saved_script_sha and saved_script_sha != trainer_script_sha:
+            raise RuntimeError(
+                f"resume trainer fingerprint differs: {saved_script_sha} != {trainer_script_sha}"
+            )
         model.load_state_dict(ckpt["model"]); optimizer.load_state_dict(ckpt["optimizer"])
         if state_sha256(model) != ckpt["model_sha256"]:
             raise RuntimeError("restored E2VID model-state hash mismatch")
@@ -327,6 +377,8 @@ def main() -> None:
         resume_oracle = {
             "status": "pending_first_resumed_update", "checkpoint_path": str(resume_path),
             "checkpoint_sha256": sha256(resume_path), "source_update": update,
+            "source_checkpoint_trainer_script_sha256": ckpt.get("trainer_script_sha256"),
+            "resumed_trainer_script_sha256": trainer_script_sha,
             "next_epoch_zero_based": next_epoch, "next_batch_in_epoch": next_batch,
             "next_clip_indices": indices, "probe_sample_sha256": probe_hashes,
             "probe_loss_components_total": probe_losses, "rng_restored_before_training": True,
@@ -372,6 +424,7 @@ def main() -> None:
             "optimizer_update": update, "next_epoch": epoch_cursor, "next_batch_in_epoch": batch_cursor,
             "best_synthetic_validation_lpips_vgg": best_lpips, "best_epoch": best_epoch,
             "rng_state": rng_state(), "config_sha256": config_sha, "data_manifest_sha256": data_manifest_sha,
+            "trainer_script_sha256": trainer_script_sha,
             "train_rollouts": train_ids, "validation_rollouts": val_ids,
             "event": event, "saved_utc": datetime.now(timezone.utc).isoformat(),
         }
@@ -391,6 +444,7 @@ def main() -> None:
         "started_utc": run_started_utc, "device": str(device),
         "resume_from": str(resume_path) if resume_path else None,
         "config_sha256": config_sha, "data_manifest_sha256": data_manifest_sha,
+        "trainer_script_sha256": trainer_script_sha,
         "real_scoring_enabled": False,
     })
 
@@ -478,7 +532,7 @@ def main() -> None:
                         "tc_valid_calls_last_update": record["temporal_consistency_valid_calls"],
                         "gradient_l2_norm": grad_norm, "finite_gradient_tensors": grad_tensors,
                         "last_checkpoint": checkpoint_info, "updated_utc": datetime.now(timezone.utc).isoformat(),
-                        "real_scoring_enabled": False,
+                        "real_scoring_enabled": False, "trainer_script_sha256": trainer_script_sha,
                     })
                     print(json.dumps(record, sort_keys=True), flush=True)
                 if (args.max_updates and update >= args.max_updates) or update >= total_budget or STOP_REQUESTED:
@@ -543,11 +597,13 @@ def main() -> None:
             "status": "complete" if complete else ("interrupted_at_safe_boundary" if STOP_REQUESTED else "stopped_at_requested_boundary"),
             "generator": args.generator, "seed": args.seed, "optimizer_update": update,
             "optimizer_budget": total_budget, "completed_epochs": update // updates_per_epoch,
-            "best_epoch": best_epoch, "best_synthetic_validation_lpips_vgg": best_lpips,
+            "best_epoch": best_epoch,
+            "best_synthetic_validation_lpips_vgg": best_lpips if math.isfinite(best_lpips) else None,
             "final_checkpoint": str(run_root / "last.pt"), "final_checkpoint_sha256": sha256(run_root / "last.pt"),
             "started_utc": run_started_utc, "finished_utc": datetime.now(timezone.utc).isoformat(),
             "wall_seconds": time.monotonic() - run_started, "real_scoring_enabled": False,
             "initial_model_sha256": initial_hash, "config_sha256": config_sha,
+            "trainer_script_sha256": trainer_script_sha,
             "data_manifest_sha256": data_manifest_sha, "resume_from": str(resume_path) if resume_path else None,
             "resume_oracle": resume_oracle,
         }

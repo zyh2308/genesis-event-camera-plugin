@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import cv2
 
 from verify_pinned_source import verify_pinned_source
 
@@ -58,6 +59,32 @@ def eval_report(runner, model, samples, device) -> dict:
             )
             gt = sample["uv_normalized"]
             epe = float(np.linalg.norm((prediction[1:] - gt[1:]) * scale, axis=1).mean())
+            pnp_metrics = {"pnp_succeeded": False}
+            try:
+                pnp_ok, rotation_vector, translation = cv2.solvePnP(
+                    sample["keypoints_obj"][1:].astype(np.float64),
+                    (prediction[1:] * scale).astype(np.float64),
+                    sample["camera_matrix_416"].astype(np.float64),
+                    np.zeros((4, 1), dtype=np.float64),
+                    flags=cv2.SOLVEPNP_ITERATIVE,
+                )
+            except cv2.error as exc:
+                pnp_ok = False
+                pnp_metrics["pnp_error"] = str(exc)
+            pnp_metrics["pnp_succeeded"] = bool(pnp_ok)
+            if pnp_ok:
+                rotation, _ = cv2.Rodrigues(rotation_vector)
+                gt_transform = sample["camera_from_object"]
+                rotation_delta = rotation @ gt_transform[:3, :3].T
+                cosine = np.clip((np.trace(rotation_delta) - 1.0) / 2.0, -1.0, 1.0)
+                pnp_metrics.update({
+                    "rotation_error_deg": float(np.degrees(np.arccos(cosine))),
+                    "translation_error_m": float(np.linalg.norm(
+                        translation.reshape(3) - gt_transform[:3, 3]
+                    )),
+                    "translation_unit": "synthetic fixture world unit (metre)",
+                    "input_contract": "ordinary eval-mode confidence-argmax corners, fixed synthetic CAD points, fixed synthetic K",
+                })
             gt_center_cell = [
                 min(grid_shape[0] - 1, int(float(gt[0, 1]) * grid_shape[0])),
                 min(grid_shape[1] - 1, int(float(gt[0, 0]) * grid_shape[1])),
@@ -79,6 +106,7 @@ def eval_report(runner, model, samples, device) -> dict:
                 "prediction_outside_unit_square_count": int(
                     np.count_nonzero((prediction < 0.0) | (prediction >= 1.0))
                 ),
+                **pnp_metrics,
             })
     return {
         "model_training_flag_after_inference": bool(model.training),

@@ -1,0 +1,86 @@
+{
+  "schema": "e2vid_parallel_live_observation_v1",
+  "observed_utc": "2026-10-18T17:29:29Z",
+  "observed_jst": "2026-10-19T02:29:29+09:00",
+  "host": "g1",
+  "repository": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real",
+  "branch": "exp/public-sim2real-v1",
+  "repository_head_at_observation": "b4f671b85ba1c2cf672c75afca71d108b4aa51a2",
+  "training_status": "running",
+  "optimizer_budget_per_arm": 12000,
+  "status_json_writer_lag_note": "Append-only training_metrics.jsonl latest optimizer_update rows are newer than live_status.json; progress counts below use metrics logs.",
+  "arms": {
+    "eventgenesis": {
+      "latest_optimizer_update": 392,
+      "latest_recorded_utc": "2026-10-18T17:29:29.130664+00:00",
+      "epoch": 7,
+      "batch_in_epoch": 32,
+      "loss_components": {
+        "loss": 0.14477235078811646,
+        "perceptual_loss": 0.13715790957212448,
+        "temporal_consistency_loss": 0.007614444475620985
+      },
+      "tc_valid_calls": 76,
+      "finite_gradient_tensors": 30,
+      "live_status_last_update": 390,
+      "metrics_log_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/eventgenesis/training_metrics.jsonl",
+      "metrics_log_size_bytes": 332180,
+      "metrics_log_sha256": "8e97c80c8355d6657e9caa83f9790a8d2c50583d5d13eeff89e6f42176bce7c8",
+      "last_saved_checkpoint_update": 300,
+      "last_checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/eventgenesis/last.pt",
+      "last_checkpoint_size_bytes": 171427970,
+      "last_checkpoint_sha256": "a4c0cc92b4883864d812dec1f0bd9379bea2457f388c0a096507f392cc3a8918",
+      "tmux_session": "s4e2vid_eg_resume_20261019",
+      "tmux_pane_pid": 246943,
+      "python_pid": 246981,
+      "physical_gpu": 2,
+      "gpu_memory_used_mib": 3252
+    },
+    "v2e": {
+      "latest_optimizer_update": 395,
+      "latest_recorded_utc": "2026-10-18T17:29:29.239618+00:00",
+      "epoch": 7,
+      "batch_in_epoch": 35,
+      "loss_components": {
+        "loss": 0.18588940054178238,
+        "perceptual_loss": 0.17517220601439476,
+        "temporal_consistency_loss": 0.010717194527387619
+      },
+      "tc_valid_calls": 76,
+      "finite_gradient_tensors": 30,
+      "live_status_last_update": 390,
+      "metrics_log_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/v2e/training_metrics.jsonl",
+      "metrics_log_size_bytes": 331177,
+      "metrics_log_sha256": "cdc1219ac14cb39b008f6aa056ea10379a5a52e5dff0bd9afe0c89632f80d7c4",
+      "last_saved_checkpoint_update": 300,
+      "last_checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/v2e/last.pt",
+      "last_checkpoint_size_bytes": 171427970,
+      "last_checkpoint_sha256": "956e7520064ba20077305812edc624ca0ba342e74a637778d41c68e786f38e6d",
+      "tmux_session": "s4e2vid_v2e_resume_20261019",
+      "tmux_pane_pid": 246948,
+      "python_pid": 246982,
+      "physical_gpu": 4,
+      "gpu_memory_used_mib": 3252
+    }
+  },
+  "gpu_snapshot_mib_used": {
+    "0": 2,
+    "1": 2,
+    "2": 3252,
+    "3": 1,
+    "4": 3252,
+    "5": 1
+  },
+  "source_bank": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/training_bank_v3_geometry_corrected_20261017_32x2s/shared_trajectory.h5",
+    "size_bytes": 1767229910,
+    "sha256": "cca882ba912fda3b3243d49bc7e29e28186046e3b6591c424f385b0506047884"
+  },
+  "adapter_manifest": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/e2vid_corrected_10ms_20261019_v1/adapter_manifest.json",
+    "size_bytes": 383448,
+    "sha256": "06ecadb1b4e90bc434ce30148c5d50704385cdab15a24e88ff9366f7c58edcb3"
+  },
+  "full_logs_and_weights_retained_on_g1": true,
+  "real_scoring_enabled": false
+}

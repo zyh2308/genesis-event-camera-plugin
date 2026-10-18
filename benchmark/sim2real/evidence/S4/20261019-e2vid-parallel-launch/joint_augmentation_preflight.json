@@ -1,0 +1,64 @@
+{
+  "status": "pass",
+  "source": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal",
+  "source_module": "utils.data_augmentation.Compose(RandomCrop(112x112), RandomFlip(0.5,0.5))",
+  "input_hw": [
+    260,
+    346
+  ],
+  "seed_count": 4,
+  "results": [
+    {
+      "seed": 0,
+      "checks": {
+        "events_image": true,
+        "events_validity": true,
+        "events_flow_x_spatial": true,
+        "events_flow_y_spatial": true,
+        "all_expected_shapes": true
+      },
+      "event_marker_sha256": "3a190ae91b00977d1b2190f3507fd7d761ef7e2183e426b7afce2f98b18f82a1"
+    },
+    {
+      "seed": 1,
+      "checks": {
+        "events_image": true,
+        "events_validity": true,
+        "events_flow_x_spatial": true,
+        "events_flow_y_spatial": true,
+        "all_expected_shapes": true
+      },
+      "event_marker_sha256": "76524b57577c960eef17d9041e94fe4fe7d7db74defe436c47d665c4f5cc589d"
+    },
+    {
+      "seed": 271828,
+      "checks": {
+        "events_image": true,
+        "events_validity": true,
+        "events_flow_x_spatial": true,
+        "events_flow_y_spatial": true,
+        "all_expected_shapes": true
+      },
+      "event_marker_sha256": "18526abe7bba6dfbecb16758a1f17bfcd29434371f7c54744610354f7eab0246"
+    },
+    {
+      "seed": 20261019,
+      "checks": {
+        "events_image": true,
+        "events_validity": true,
+        "events_flow_x_spatial": true,
+        "events_flow_y_spatial": true,
+        "all_expected_shapes": true
+      },
+      "event_marker_sha256": "06b3207de1dcb8ac78195d58b99a0355484cd5da780c905b753ca309012320d1"
+    }
+  ],
+  "trainer_script_sha256": "73cc8a1bfc2d8a4cdcf86e32ca4bdeaa0091239e93f499108aaac02cf7da2d58",
+  "upstream_dataset_script_sha256": "b5c87129809c2b4fd0cdbc56b9cde29a8a521ad911a47cfe8e64b2b1fba5f4f0",
+  "adapter_seed_contract": {
+    "upstream sequence sampler passes one shared seed": true,
+    "stage4 adapter forwards same seed to events/images": true,
+    "stage4 adapter reuses same seed for flow": true,
+    "stage4 adapter reseeds validity transform identically": true
+  }
+}
