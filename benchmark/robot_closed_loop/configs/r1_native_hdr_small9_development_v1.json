@@ -1,0 +1,38 @@
+{
+  "experiment_id": "r1_native_hdr_small9_development_v1",
+  "purpose": "One isolated development retrain to measure native scene-linear HDR Ours utility against unchanged official V2E events. Not a ranking or formal test.",
+  "source_batch": "r1_shared_ideal_small9_20261018a/b",
+  "ours_input_endpoint": {
+    "source": "trajectory_cache.h5/radiance captured through Genesis camera.render(radiance=True)",
+    "dtype": "float32",
+    "units": "scene-linear renderer radiance; values are not display grayscale or 8-bit DN",
+    "conversion": "Genesis frozen plugin physical_log response; natural logarithm of positive radiance with the plugin radiance floor",
+    "threshold": 0.2,
+    "noise_filters_refractory": "disabled for this ideal deterministic development profile",
+    "geometry_inputs": "cached depth, segmentation, camera pose, object pose used internally for motion/disocclusion reconstruction only"
+  },
+  "v2e_input_endpoint": {
+    "source": "reuse exact official V2E + SuperSloMo event archives from the paired small9 development batch",
+    "events_regenerated": false,
+    "source_manifest_sha256": "74d42e3c822ddfe12f5f154b8628a7b0054c0b7d98eb76da666443402c70ff0a",
+    "boundary": "V2E retains its complete display-video input, official SuperSloMo interpolation, and its already-frozen ideal response overlay; no events are deleted or post-filtered"
+  },
+  "training": {
+    "network": "heatmap_v2",
+    "seed": 606,
+    "max_epochs": 40,
+    "patience": 40,
+    "batch_size": 32,
+    "threads": 2,
+    "train_episode_ids": [0, 1, 2, 3, 7, 8],
+    "validation_episode_ids": [4, 5, 6],
+    "split_unit": "episode",
+    "checkpoint_selection": "same validation loss and early-stopping rule for both methods"
+  },
+  "evaluation": {
+    "reference": "same existing nine-episode 2 kHz Direct-HDR reference events and exact same pre-contact poll timestamps for both checkpoints",
+    "status": "development only; episodes were already inspected and are not a held-out test set",
+    "metrics": ["position_xy_error", "velocity_xy_error", "same_fixed_predictor_arrival_error", "same_fixed_predictor_intercept_xy_error", "missing_state_coverage", "unreachable_decision_coverage"]
+  },
+  "frozen_core_modified": false
+}

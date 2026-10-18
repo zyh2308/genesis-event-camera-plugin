@@ -271,6 +271,9 @@ def _make_ours_events(
     with h5py.File(cache_path, "r") as h5:
         timestamps = h5["timestamps_s"][:]
         radiance = h5["radiance"]
+        radiance_dtype = str(radiance.dtype)
+        radiance_min = float(np.min(radiance))
+        radiance_max = float(np.max(radiance))
         display = h5["display_rgb"]
         depth = h5["depth"]
         seg = h5["segmentation"]
@@ -359,8 +362,21 @@ def _make_ours_events(
         "input_cache": str(cache_path), "input_cache_sha256": _sha256(cache_path),
         "input_frames": len(timestamps), "input_timestamps_sha256": hashlib.sha256(timestamps.tobytes()).hexdigest(),
         "event_count": len(result), "event_schema": "[t_seconds_from_launch, x_px, y_px, polarity]",
-        "pixel_response": "legacy ideal DvsEmulator response" if response_config is None else response_config,
-        "input_endpoint": "cached HDR radiance" if grayscale_frames is None else "same cached PNGs read by OpenCV grayscale as official V2E; display-derived, not scene-linear HDR",
+        "pixel_response": ({
+            "mode": "physical_log", "gain": 1.0, "offset": 0.0, "floor": 1e-6,
+            "positive_threshold": float(response.get("pos_thres", 0.2)),
+            "negative_threshold": float(response.get("neg_thres", 0.2)),
+            "noise_filters_refractory": "disabled",
+            "calibration_status": "uncalibrated ideal development profile",
+        } if grayscale_frames is None else response_config),
+        "input_endpoint": ({
+            "source": "trajectory_cache.h5/radiance from Genesis camera.render(radiance=True)",
+            "dtype": radiance_dtype, "range": [radiance_min, radiance_max],
+            "units": "scene-linear renderer radiance; not display grayscale or 8-bit DN",
+        } if grayscale_frames is None else {
+            "source": "same cached PNGs read by OpenCV grayscale as official V2E",
+            "representation": "display-derived uint8 DN cast to float32; not scene-linear HDR",
+        }),
         "plugin_wall_ms": plugin_ms,
     }, indent=2), encoding="utf-8")
     return result
