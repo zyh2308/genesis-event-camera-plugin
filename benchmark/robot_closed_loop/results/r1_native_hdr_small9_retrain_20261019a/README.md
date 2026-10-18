@@ -44,7 +44,7 @@ g1 开发诊断，2026-10-19。目标是查明 Ours 在共同 Direct-HDR 事件�
 
 ## 成本、复跑与剩余检查
 
-g1 运行代码 commit `4c5f5f29d4c46dd50401c0aa9079874f97afcbc6`，CPU only。native HDR event generation phase `2472.67 s`（逐 episode 插件调用累计 `2453.48 s`）；两组等预算 fit phase `1434.39 s`；共同 reference evaluation `13.74 s`；本进程端到端 `3920.80 s`，GNU time wall `1:05:23`，最大 RSS `5,114,596 KB`。该成本不含原始 physics/cache capture、已完成的 V2E event generation 和现成 reference capture。结果完整留存 g1：`/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/`；原生 Ours event payload 约 105 MB、复用的 V2E source 约 72 MB，未复制入 Git。g1 的原始 110 项 `SHA256SUMS` 已全项验证；本目录 `PORTABLE_SHA256SUMS` 校验仓库收录的结果文件（不包含 README 本身），manifest SHA256 `755b80a68d433fd9996392c98b00bb7c9639692cd35984beecdf2576391be143`。
+g1 运行代码 commit `4c5f5f29d4c46dd50401c0aa9079874f97afcbc6`，CPU only。native HDR event generation phase `2472.67 s`（逐 episode 插件调用累计 `2453.48 s`）；两组等预算 fit phase `1434.39 s`；共同 reference evaluation `13.74 s`；本进程端到端 `3920.80 s`，GNU time wall `1:05:23`，最大 RSS `5,114,596 KB`。该成本不含原始 physics/cache capture、已完成的 V2E event generation 和现成 reference capture。结果完整留存 g1：`/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/`；原生 Ours event payload 约 105 MB、复用的 V2E source 约 72 MB，未复制入 Git。g1 的原始 110 项 `SHA256SUMS` 已全项验证，manifest 文件 SHA256 `b7698cc2579d510aff5f353125dd9f3488b9c5109cb1ef65b7e19323c7a3fc5c`；本目录 `PORTABLE_SHA256SUMS` 校验仓库收录的结果文件（不包含 README 本身），manifest SHA256 `755b80a68d433fd9996392c98b00bb7c9639692cd35984beecdf2576391be143`。
 
 复跑（须使用新 RUN_ID；launcher 拒绝覆盖结果）：
 
