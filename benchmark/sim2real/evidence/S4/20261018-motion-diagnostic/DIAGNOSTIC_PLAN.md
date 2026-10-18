@@ -6,7 +6,7 @@
 
 - 只读取本轮 Stage 4 合成验证 split，不读取训练样本或真实数据。
 - EventGenesis 与 V2E 使用同一 seed 0、optimizer update 4554、epoch 23 验证完成后的 checkpoint；二者配置、初始化、验证 adapter manifest 和 scheduler epoch 必须匹配。缺少 post-validation checkpoint 时不计算配对结果。
-- 使用全部 8 条登记验证 rollout。每条固定取 sample index `0, 9, 18, 27, 36, 45, 54, 65`，共 64 个配对窗口；不按模型预测或误差筛选样本。
+- 使用全部 8 条登记验证 rollout。每条固定取 adapter 行号 `0, 9, 18, 27, 36, 45, 54, 65`，共 64 个配对窗口；adapter 的 ID 使用物理端点偏移，因此对应 `dt1_000, dt1_027, dt1_054, dt1_081, dt1_108, dt1_135, dt1_162, dt1_195`。不按模型预测或误差筛选样本。
 - 四个场景层为 `camera_motion_static_scene`、`independent_rigid_motion_static_camera`、`camera_and_independent_rigid_motion`、`combined_motion_with_occlusion`。每层固定两个验证 rollout。
 
 ## 固定区域和阈值

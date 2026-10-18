@@ -397,7 +397,8 @@ def main() -> None:
             raise RuntimeError(f"{rollout_id}: selected windows do not all span 30ms: {dt}")
         if not np.array_equal(eg["sample_ids"].astype(str), v2["sample_ids"].astype(str)):
             raise RuntimeError(f"{rollout_id}: paired sample IDs differ")
-        if not np.array_equal(eg["sample_ids"].astype(str), np.asarray([f"{rollout_id}/dt1_{i:03d}" for i in SAMPLE_INDICES])):
+        expected_sample_ids = np.asarray([f"{rollout_id}/dt1_{i * 3:03d}" for i in SAMPLE_INDICES])
+        if not np.array_equal(eg["sample_ids"].astype(str), expected_sample_ids):
             raise RuntimeError(f"{rollout_id}: sample index order does not match preregistered selection")
         # Verify event timestamps, grayscale endpoints, labels, validity, and K
         # against the underlying shared physical bank for these exact windows.
