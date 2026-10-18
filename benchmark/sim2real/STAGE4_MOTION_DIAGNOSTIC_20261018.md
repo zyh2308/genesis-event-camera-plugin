@@ -1,10 +1,10 @@
 # Stage 4 运动学习诊断与配对训练状态
 
-状态快照：**2026-10-18 01:52:44 UTC / 10:52:44 JST**，由 g1 训练日志和 GPU 状态刷新。训练仍在进行。固定合成诊断在 **01:44:51–01:46:09 UTC / 10:44:51–10:46:09 JST** 完成。诊断只使用固定 synthetic validation 子集；未读真实数据，未改变训练、验证、模型选择或 generator 配置。
+状态快照：**2026-10-18 01:59:27 UTC / 10:59:27 JST**，由 g1 训练日志和 GPU 状态刷新。训练仍在进行。固定合成诊断在 **01:44:51–01:46:09 UTC / 10:44:51–10:46:09 JST** 完成。诊断只使用固定 synthetic validation 子集；未读真实数据，未改变训练、验证、模型选择或 generator 配置。
 
 ## 结论
 
-- **训练正常推进。** g1 上 EventGenesis/V2E 两个训练进程仍运行于 GPU 2/GPU 4。实时记录为 4,761/8,910 与 4,836/8,910 次更新，约 53.5% 与 54.3%。预算仍为每组 45 epoch、每 epoch 198 次更新。
+- **训练正常推进。** g1 上 EventGenesis/V2E 两个训练进程仍运行于 GPU 2/GPU 4。实时记录为 4,871/8,910 与 4,948/8,910 次更新，约 54.7% 与 55.5%。预算仍为每组 45 epoch、每 epoch 198 次更新。
 - **当前模型没有学到足够稠密的有用光流。** 固定 64 个验证窗口中，全有效区预测幅值中位数仅为 0.000219/0.000232 px per 30ms，GT 中位数为 0.202197；98.93%/98.38% 的预测幅值小于 0.1 px。全有效 EPE 几乎等于零流。
 - **观察到局部运动信号，但覆盖很小。** 双方共用事件活跃区的 EPE 比零流低 6.19%/6.57%，该区域只覆盖有效像素的 0.487%。独立刚体运动、静止相机的 GT 动态前景（幅值 ≥0.5 px/30ms）仅占该类别有效区 0.138%；此处 EPE 比零流低 12.54%/11.11%。这是部分局部学习信号，不足以证明已学会稳定稠密光流。
 - **没有发现新的确定性工程错误。** 配对时间、灰度端点、K、标签、有效区、单位、方向、输出裁剪及物理标签来源通过固定样本契约核对。弱表现的底层原因仍未确定，不能仅凭此诊断归因于数据稀疏或训练不足。
@@ -16,8 +16,8 @@
 
 | Generator | 实时 optimizer update | 最近完整验证 | 最近验证 EPE | 零流 EPE | 当前最佳验证 EPE |
 |---|---:|---:|---:|---:|---:|
-| EventGenesis | 4,761 / 8,910 | epoch 24 / update 4,752 | 0.2838378343 | 0.2842080520 | 0.2838365008（epoch 19） |
-| V2E | 4,836 / 8,910 | epoch 24 / update 4,752 | 0.2831938486 | 0.2842080520 | 0.2828732346（epoch 20） |
+| EventGenesis | 4,871 / 8,910 | epoch 24 / update 4,752 | 0.2838378343 | 0.2842080520 | 0.2838365008（epoch 19） |
+| V2E | 4,948 / 8,910 | epoch 24 / update 4,752 | 0.2831938486 | 0.2842080520 | 0.2828732346（epoch 20） |
 
 单位为 px per 30ms。最佳值分别只比零流低约 0.13% 和 0.47%。主验证值来自各自最近一次完整验证，实时更新数来自更晚的训练记录。固定子集诊断只覆盖 64 个窗口并使用像素池化，统计口径不同，不应与完整验证 EPE 直接横比。
 
@@ -26,7 +26,7 @@
 - /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/training_metrics.jsonl
 - /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/training_metrics.jsonl
 
-01:52:44 UTC 读取时，两日志大小与 SHA256 分别为 3,886,531 B / 4f283aa9b8f7168e3a8308cdb5a3146fa3d2d144c2e2015fd10d13f9eed90dc5，以及 3,939,208 B / 2654724064b9b90943352429e29b2fec58dac6eb4b9822fef2fda4b2df18e5c6。日志还会持续追加，这些摘要只标识该次快照，并非最终摘要。
+01:59:27 UTC 读取时，两日志大小与 SHA256 分别为 3,980,171 B / a6f57f3f7cda4d2de184e91a3884137655b864bc666594eeca86599c7157d114，以及 4,035,035 B / 55d7312f4901737b3116591951512f84b912ec80d56944cac153cb06ca2c0e96。日志还会持续追加，这些摘要只标识该次快照，并非最终摘要。
 
 ## 固定 synthetic 诊断
 
@@ -74,6 +74,8 @@
 第一次诊断在任何模型 forward 前被 ID 断言拒绝：脚本把 adapter 行号当成物理 window ID，未乘以 3。没有模型输出或训练变化。修正映射并提交后，第二次固定样本运行在 RTX 3090 GPU 1 上耗时 77.751 秒、退出码 0。代码和数据未改变，也没有重新挑样本。
 
 严格整段 CUDA 轨迹逐位复现仍保留为失败证据；安装版 PyTorch 的 grid_sampler_2d_backward_cuda 没有确定性实现。恢复门禁的 resume_equivalence_epoch_boundary 实际核验 checkpoint 边界恢复、下一 batch 重建、一次真实 optimizer 更新和 forward loss 对照；它**不等价于严格整段轨迹恢复**，也没有独立重写 Adam 以比较完整参数更新。determinism 诊断报告里的日志文件名已修正，嵌套索引记录了实际路径、大小和哈希。
+
+另在独立 GPU 1 上补齐了 V2E 的 checkpoint 边界恢复核验，没有中断 GPU 2/4 的主训练。通过正式 resume-check launcher 从 V2E pilot update 198 启动，gate exit 0，真实恢复进程推进到 update 199 后正常暂停；独立 oracle 检查样本 ID、增强 seed、70 个 Adam step counter（198→199）、scheduler 边界、模型状态变化及 source-checkpoint forward loss。三项 loss 的绝对差均为 0，oracle PASS。第一次补充尝试因 Python 环境路径写错在进入 launcher 前以 127 退出，stderr 保留在 g1；修正路径后的第二次尝试成功。逐项结果见 [v2e_resume_checkpoint_oracle.json](evidence/S4/20261018-motion-diagnostic/v2e_resume_checkpoint_oracle.json)，两次运行的日志路径与摘要列在 run_receipt.json。该补充仍是边界恢复核验，不会改变严格整段复现失败的结论。
 
 本诊断没有访问 HQF、MVSEC、E-POSE 或任何真实 GT，不进行真实域排名。
 

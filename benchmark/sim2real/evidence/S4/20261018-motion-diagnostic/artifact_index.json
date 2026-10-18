@@ -1,6 +1,6 @@
 {
   "schema": "stage4_motion_diagnostic_artifact_index_v1",
-  "observed_utc": "2026-10-18T01:52:44Z",
+  "observed_utc": "2026-10-18T01:59:27Z",
   "local_artifacts": [
     {
       "path": "benchmark/sim2real/evidence/S4/20261018-motion-diagnostic/DIAGNOSTIC_PLAN.md",
@@ -8,19 +8,19 @@
       "sha256": "e6ddae9266a5b3ccd831caa91f039b967551c46e43db569d7742b63a9e14b4d7"
     },
     {
-      "path": "benchmark/sim2real/scripts/stage4_motion_learning_diagnostic.py",
-      "size_bytes": 37117,
-      "sha256": "fcb01a225a5c6b6095d987f8804e595703349ca860a4549355d09b85c8d43fee"
-    },
-    {
       "path": "benchmark/sim2real/evidence/S4/20261018-motion-diagnostic/motion_diagnostic.json",
       "size_bytes": 361645,
       "sha256": "31c8c5fc9c977ac5a88fa6f35db64b0423525fa18571f4e9f102ea4234f6c59f"
     },
     {
+      "path": "benchmark/sim2real/evidence/S4/20261018-motion-diagnostic/v2e_resume_checkpoint_oracle.json",
+      "size_bytes": 4049,
+      "sha256": "5e99635c5a23939a665a37eabd98fc2889d4fd33065fd70ac6e99cd9dd62e8a4"
+    },
+    {
       "path": "benchmark/sim2real/evidence/S4/20261018-motion-diagnostic/run_receipt.json",
-      "size_bytes": 296275,
-      "sha256": "91e2e5d036ad586c96f482534029a42606f4a6c99e70b0cf39ca49963293df6a"
+      "size_bytes": 300492,
+      "sha256": "6742e6b406c6936cbc5010b46fc66b2a602b9738189402f6ccf936e374649c93"
     }
   ],
   "external_artifacts": {
@@ -70,16 +70,16 @@
     "training_metrics_live_snapshots": {
       "eventgenesis": {
         "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/eventgenesis/training_metrics.jsonl",
-        "size_bytes": 3886531,
-        "sha256": "4f283aa9b8f7168e3a8308cdb5a3146fa3d2d144c2e2015fd10d13f9eed90dc5"
+        "size_bytes": 3980171,
+        "sha256": "a6f57f3f7cda4d2de184e91a3884137655b864bc666594eeca86599c7157d114"
       },
       "v2e": {
         "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/v2e/training_metrics.jsonl",
-        "size_bytes": 3939208,
-        "sha256": "2654724064b9b90943352429e29b2fec58dac6eb4b9822fef2fda4b2df18e5c6"
+        "size_bytes": 4035035,
+        "sha256": "55d7312f4901737b3116591951512f84b912ec80d56944cac153cb06ca2c0e96"
       }
     },
-    "attempt_logs": {
+    "diagnostic_attempt_logs": {
       "attempt_01": {
         "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/motion_diagnostic_epoch23_update4554/attempt_01",
         "exit_code": 1,
@@ -102,6 +102,101 @@
         "stderr_sha256": "3a7e3e350bd73c130808afbe0e8526b6e455052b5283377afea94c41a1a82e18",
         "command_sha256": "ed5ec252e797771b4a77371c552807306b2d5b880b295a38539216527d68b849",
         "gpu": "physical GPU 1, NVIDIA RTX 3090"
+      }
+    },
+    "v2e_resume_supplement": {
+      "status": "PASS",
+      "source_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/pilot/v2e/last.pt",
+      "source_checkpoint_size_bytes": 580035686,
+      "source_checkpoint_sha256": "4e9dfdb5213c1fcbc0409795a256c7fd56e6e5a911c882c0ddbe4fc964251762",
+      "resumed_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/attempt_02/run/v2e/last.pt",
+      "resumed_checkpoint_size_bytes": 580035686,
+      "resumed_checkpoint_sha256": "6f676986c2d989dbeb46c7cbda40df1281d0c1a268b697af75cd8afe1f79ebc4",
+      "boundary": {
+        "source_update": 198,
+        "source_next_epoch": 1,
+        "source_next_position_samples": 0,
+        "resumed_update": 199,
+        "resumed_next_epoch": 1,
+        "resumed_next_position_samples": 8
+      },
+      "forward_abs_errors": {
+        "loss": 0.0,
+        "photometric_loss": 0.0,
+        "smoothness_loss": 0.0
+      },
+      "optimizer_step_counters_before_after": {
+        "min": [
+          198,
+          199
+        ],
+        "max": [
+          198,
+          199
+        ],
+        "parameter_states": [
+          70,
+          70
+        ]
+      },
+      "scheduler_last_epoch_before_after": [
+        1,
+        1
+      ],
+      "model_state_changed_after_update": true,
+      "real_data_used": false,
+      "launcher_phase": "resume-check",
+      "launcher_fingerprint_sha256": "cf7aa53677b0b2b3b010171d0a8d0c7899562ee2ce48538ee31f4854056f8145",
+      "launcher_started_utc": "2026-10-18T01:56:14Z",
+      "launcher_finished_utc": "2026-10-18T01:57:04Z",
+      "launcher_exit_code": 0,
+      "oracle_created_utc": "2026-10-18T01:58:40.460995+00:00",
+      "oracle_exit_code": 0,
+      "oracle_result": {
+        "path": "benchmark/sim2real/evidence/S4/20261018-motion-diagnostic/v2e_resume_checkpoint_oracle.json",
+        "size_bytes": 4049,
+        "sha256": "5e99635c5a23939a665a37eabd98fc2889d4fd33065fd70ac6e99cd9dd62e8a4"
+      },
+      "supplement_run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018",
+      "attempt_01": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018",
+        "exit_code": 127,
+        "exit_code_file_sha256": "743c7850cccfba5e53a9002663ec1ddd1079315a98bdbfdde10e6044f56abefe",
+        "stderr_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/stderr.log",
+        "stderr_bytes": 111,
+        "stderr_sha256": "b82bd718f0dbe70ed47a6725fd220992a6ce7dcd0357c06c5f2eaf98452824cf",
+        "reason": "The runner used a nonexistent $PROJECT/miniconda3 path; Python did not start and the launcher/trainer did not run."
+      },
+      "attempt_02": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/attempt_02",
+        "tmux": "stage4-v2e-resume-check-20261018-a2",
+        "runner_pane_pid": 3853839,
+        "started_utc": "2026-10-18T01:56:14Z",
+        "finished_utc": "2026-10-18T01:57:04Z",
+        "exit_code": 0,
+        "command_sha256": "ce99016bdbc48ac81dced91f50660d1f7b3f7acffae7668fea77673501dc6be7",
+        "stdout": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/attempt_02/stdout.log",
+          "size_bytes": 2701,
+          "sha256": "eaaedbd5cd0e6271e9aa6fba6badd6994e0811154d121fafaee454e292acb49e"
+        },
+        "stderr": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/attempt_02/stderr.log",
+          "size_bytes": 233,
+          "sha256": "3a7e3e350bd73c130808afbe0e8526b6e455052b5283377afea94c41a1a82e18"
+        },
+        "oracle_stdout": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/attempt_02/oracle.stdout.log",
+          "size_bytes": 4049,
+          "sha256": "5e99635c5a23939a665a37eabd98fc2889d4fd33065fd70ac6e99cd9dd62e8a4"
+        },
+        "oracle_stderr": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/resume_equivalence_v2e_supplement_20261018/attempt_02/oracle.stderr.log",
+          "size_bytes": 233,
+          "sha256": "3a7e3e350bd73c130808afbe0e8526b6e455052b5283377afea94c41a1a82e18"
+        },
+        "main_training_interrupted": false,
+        "gpu": "physical GPU 1 NVIDIA RTX 3090"
       }
     },
     "corrected_determinism_evidence": [
