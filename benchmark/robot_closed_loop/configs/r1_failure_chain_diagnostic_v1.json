@@ -1,0 +1,35 @@
+{
+  "experiment_id": "r1_failure_chain_diagnostic_v1",
+  "purpose": "small development diagnosis of one +55 mm Ours localization failure and a center control; no ranking or formal test claim",
+  "episodes": {
+    "center_control": 4,
+    "plus55_failure": 5
+  },
+  "query": {
+    "first_poll_s": 0.04,
+    "poll_period_s": 0.01,
+    "observation_latency_s": 0.01,
+    "decision_cutoff_s": 0.59
+  },
+  "velocity_strategies": {
+    "direct_network_head": "heatmap model's auxiliary planar velocity at the same causal cutoff",
+    "existing_history_ols": {
+      "window_s": 0.05,
+      "minimum_samples": 4,
+      "rule": "centered least-squares slope over valid network positions"
+    },
+    "robust_pairwise_median": {
+      "window_s": 0.05,
+      "minimum_samples": 4,
+      "minimum_pair_separation_s": 0.01,
+      "rule": "component-wise median of all causal pairwise position slopes"
+    }
+  },
+  "inference_contract": {
+    "input": "same Direct-HDR 2 kHz raw event file and timestamps for Ours/V2E checkpoints",
+    "voxel": "causal five x 5 ms x 2 polarity x 64 x 64 count tensor, log1p before network",
+    "network_height": "fixed target-center plane from the shared scene configuration",
+    "gt_usage": "only after inference, for offline position/velocity/TTC errors"
+  },
+  "scope": "Two old development episodes only. No retraining, generator ranking, control rollout, or formal test claim."
+}
