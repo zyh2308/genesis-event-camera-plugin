@@ -226,13 +226,40 @@ def generate_ours(cache_path: Path, output_dir: Path, response_mode: str,
         plugin.attach(fake_scene, fake_camera)
         plugin.start_episode()
         chunks = []
+        interval_diagnostics = []
         start = time.perf_counter()
         for i, t in enumerate(timestamps):
             state["i"] = i
             fake_scene.cur_t = float(t)
             result = plugin.capture()
+            interval_events = np.asarray(result, dtype=np.float64).reshape(-1, 4)
             if len(result):
-                chunks.append(np.asarray(result, dtype=np.float64))
+                chunks.append(interval_events)
+            if i > 0:
+                interval_start = float(timestamps[i - 1])
+                interval_dt = float(t) - interval_start
+                relative_alpha = (
+                    (interval_events[:, 0] - interval_start) / interval_dt
+                    if len(interval_events) else np.empty((0,), dtype=np.float64)
+                )
+                sampling = plugin.interpolator.last_sampling
+                unknown = np.asarray(
+                    plugin.interpolator.last_visibility.get("intermediate_unknown", np.empty((0,))),
+                    dtype=bool,
+                )
+                interval_diagnostics.append({
+                    "source_interval_s": [interval_start, float(t)],
+                    "dt_s": interval_dt,
+                    "adaptive_sample_count": None if sampling is None else int(sampling.samples),
+                    "adaptive_sampling": None if sampling is None else dict(vars(sampling)),
+                    "unknown_or_hold_fraction": None if unknown.size == 0 else float(unknown.mean()),
+                    "event_count": int(len(interval_events)),
+                    "event_alpha_p10_p50_p90": None if not len(relative_alpha) else np.percentile(relative_alpha, [10, 50, 90]).tolist(),
+                    "event_count_first_1ms": int(np.count_nonzero(relative_alpha <= 0.1)),
+                    "event_count_last_1ms": int(np.count_nonzero(relative_alpha >= 0.9)),
+                    "event_fraction_first_1ms": None if not len(relative_alpha) else float(np.mean(relative_alpha <= 0.1)),
+                    "event_fraction_last_1ms": None if not len(relative_alpha) else float(np.mean(relative_alpha >= 0.9)),
+                })
         plugin.end_episode()
         plugin.close()
         elapsed_s = time.perf_counter() - start
@@ -249,6 +276,7 @@ def generate_ours(cache_path: Path, output_dir: Path, response_mode: str,
         "gray_png_range": gray_range,
         "event_count": int(len(events)),
         "runtime_s": elapsed_s,
+        "source_interval_diagnostics": interval_diagnostics,
         "response": {
             "threshold_on_off": 0.2, "threshold_units": "log-response contrast units; uncalibrated",
             "native_hdr_transform": "log(max(1.0 * linear_luminance, 1e-6))",
