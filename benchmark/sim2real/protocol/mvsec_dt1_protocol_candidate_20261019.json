@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "protocol_id": "mvsec-steflownet-dt1-20261019-candidate",
+  "status": "candidate_pending_research_freeze",
+  "real_scores_authorized": false,
+  "task": "synthetic-trained EventGenesis vs V2E STE-FlowNet on public MVSEC left-camera data",
+  "model": {
+    "architecture": "pinned official STE-FlowNet",
+    "repository": "https://github.com/ruizhao26/STE-FlowNet.git",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "checkpoint_rule": "synthetic validation best from the completed corrected-v2 dt1 seed0 run; real results cannot select or change weights",
+    "checkpoint_index": {
+      "eventgenesis": {
+        "run_arm": "EventGenesis",
+        "selected_epoch": 33,
+        "path_on_g1": null,
+        "size_bytes": null,
+        "sha256": null,
+        "status": "must be filled from current g1 artifact audit before test registration"
+      },
+      "v2e": {
+        "run_arm": "V2E",
+        "selected_epoch": 20,
+        "path_on_g1": null,
+        "size_bytes": null,
+        "sha256": null,
+        "status": "must be filled from current g1 artifact audit before test registration"
+      }
+    }
+  },
+  "sequences": [
+    "indoor_flying1",
+    "indoor_flying2",
+    "indoor_flying3",
+    "outdoor_day1"
+  ],
+  "sequence_specs": {
+    "indoor_flying1": {
+      "evaluation_rows": 260,
+      "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
+      "official_source_crop": "full 260x346 raster (no is_car crop)"
+    },
+    "indoor_flying2": {
+      "evaluation_rows": 260,
+      "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
+      "official_source_crop": "full 260x346 raster (no is_car crop)"
+    },
+    "indoor_flying3": {
+      "evaluation_rows": 260,
+      "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
+      "official_source_crop": "full 260x346 raster (no is_car crop)"
+    },
+    "outdoor_day1": {
+      "evaluation_rows": 190,
+      "candidate_aps_index_rule": "pinned STE-FlowNet outdoor_day1 validation intervals [9200,9600) and [10500,10900), intersected with loader boundary rule and complete event/APS/flow-GT common timestamp coverage",
+      "official_source_crop": "top 190 rows of the 260-row sensor raster, matching flow_error_dense(is_car=True)"
+    }
+  },
+  "dt": 1,
+  "time_and_events": {
+    "endpoint_definition": "APS endpoint i to i+1; actual interval duration is timestamp[i+1]-timestamp[i] seconds",
+    "raw_event_window": "(APS timestamp[i], APS timestamp[i+1]]",
+    "event_polarity_mapping": "preserve +1 ON; map source OFF encoding 0 to -1 only as required by the pinned STE encoder",
+    "event_representation": "pinned STE-style equal-event-count Gaussian-weighted ON/OFF tensor; 5 slices per APS interval",
+    "inference_inputs": ["real events only"],
+    "pairing": "both models receive bit-identical event representation from the same MVSEC interval; evaluation support is common and shared"
+  },
+  "flow_gt": {
+    "dataset_fields": ["davis/left/flow_dist", "davis/left/flow_dist_ts"],
+    "association": "pinned estimate_corresponding_gt_flow semantics: each GT map is displacement to next GT timestamp; propagate/interpolate across APS endpoints using nearest-neighbor flow sampling",
+    "unit": "px_per_interval (endpoint displacement in native sensor pixel coordinates)",
+    "invalid_gt": "exclude any pixel where either component is non-finite or vector magnitude is zero",
+    "orientation": "native DAVIS left raster, [u,v] == [x,y] displacement, arrays [2,260,346]"
+  },
+  "input_output_geometry": {
+    "native_sensor_hw": [260, 346],
+    "model_input": "Stage 3 real adapter representation, centered zero-pad event tensor to 352x352; do not resize event coordinates or scale counts",
+    "model_output": "require finite [1,2,352,352], crop the same recorded (y=46,x=3) pad offset back to [2,260,346]",
+    "metric_crop": "apply official dataset-specific evaluation row crop after restoring the native raster; do not crop/resize GT independently"
+  },
+  "support_mask": {
+    "rule": "finite nonzero GT vector AND pixel active in the common real event representation AND within the sequence-specific evaluation crop",
+    "event_active": "any positive ON/OFF count in any of the five dt1 bins; EventGenesis and V2E artifacts must have bit-identical real event tensors, otherwise fail",
+    "common_mask": "one mask per sequence/window reused for both predictions",
+    "empty_support": "undefined window; preserve APS index and interval in common exclusion manifest, never convert to zero error or drop from registration"
+  },
+  "metrics": {
+    "primary": {
+      "name": "AEE",
+      "definition": "mean sqrt((u_pred-u_gt)^2+(v_pred-v_gt)^2) over the common valid mask",
+      "unit": "pixels per dt1 APS interval"
+    },
+    "secondary": {
+      "outlier_name": "Outlier-3px-and-5-percent",
+      "outlier_definition": "100 * mean(EPE > 3 px AND EPE > 0.05 * GT_vector_magnitude) over the same common valid mask",
+      "legacy_reference_only": "STE flow_error_dense reports fraction EPE < 3 px; report only as reference compatibility, not as the candidate Outlier metric",
+      "all_valid_gt_aee": "optional diagnostic on finite nonzero GT without event-support intersection; cannot replace primary support"
+    },
+    "per_sequence": "mean per-window AEE and Outlier over non-empty common-support windows; record count and excluded empty windows",
+    "dataset_aggregate": "equal weight across the four registered sequences, irrespective of frame count",
+    "empty_sequence": "fail closed; no four-sequence aggregate if any registered sequence has no scored support"
+  },
+  "scope_and_isolation": {
+    "training_and_checkpoint_selection": "synthetic train/validation only",
+    "real_scores_for_training_selection_or_generator_changes": false,
+    "status": "candidate only; research review must freeze protocol and authorize scoring before real metric artifacts are opened"
+  },
+  "primary_source_files": {
+    "evaluator_and_timestamp_propagation": "https://github.com/ruizhao26/STE-FlowNet/blob/eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6/multiscaleloss.py",
+    "dt1_sequence_selection_and_outdoor_ranges": "https://github.com/ruizhao26/STE-FlowNet/blob/eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6/main_steflow_dt1.py",
+    "MVSEC_download_and_dataset_description": "https://daniilidis-group.github.io/mvsec/"
+  }
+}

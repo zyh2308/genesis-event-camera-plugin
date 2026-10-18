@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "manifest_id": "mvsec-steflownet-dt1-fixed-test-20261019-candidate",
+  "status": "candidate_pending_research_freeze_and_data_resolution",
+  "real_scores_authorized": false,
+  "protocol": "benchmark/sim2real/protocol/mvsec_dt1_protocol_candidate_20261019.json",
+  "candidate_sequences": [
+    "indoor_flying1",
+    "indoor_flying2",
+    "indoor_flying3",
+    "outdoor_day1"
+  ],
+  "data_root_on_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/real/MVSEC",
+  "source_file_pattern": {
+    "data": "<sequence>/<sequence>_data.hdf5",
+    "ground_truth": "<sequence>/<sequence>_gt.hdf5",
+    "calibration": "indoor_flying/indoor_flying_calib.zip"
+  },
+  "files": {
+    "indoor_flying1": {"data_path_on_g1": null, "data_size_bytes": null, "data_sha256": null, "gt_path_on_g1": null, "gt_size_bytes": null, "gt_sha256": null},
+    "indoor_flying2": {"data_path_on_g1": null, "data_size_bytes": null, "data_sha256": null, "gt_path_on_g1": null, "gt_size_bytes": null, "gt_sha256": null},
+    "indoor_flying3": {"data_path_on_g1": null, "data_size_bytes": null, "data_sha256": null, "gt_path_on_g1": null, "gt_size_bytes": null, "gt_sha256": null},
+    "outdoor_day1": {"data_path_on_g1": null, "data_size_bytes": null, "data_sha256": null, "gt_path_on_g1": null, "gt_size_bytes": null, "gt_sha256": null},
+    "calibration_zip": {"path_on_g1": null, "size_bytes": null, "sha256": null}
+  },
+  "registered_aps_start_indices": {
+    "indoor_flying1": [],
+    "indoor_flying2": [],
+    "indoor_flying3": [],
+    "outdoor_day1": []
+  },
+  "registration_rule": "Before loading either candidate checkpoint, resolve every APS start index satisfying the pinned sequence rule, common event/APS/flow-GT time coverage, and dt1 endpoint condition; save exact timestamps, event index bounds, GT maps used, and source file SHA-256. Keep every eligible index, including zero-event/empty-support windows, in this manifest.",
+  "windows": [],
+  "checkpoint_binding": {
+    "eventgenesis": {"expected_epoch": 33, "path_on_g1": null, "size_bytes": null, "sha256": null},
+    "v2e": {"expected_epoch": 20, "path_on_g1": null, "size_bytes": null, "sha256": null}
+  },
+  "old_stage3_candidate_outputs": {
+    "status": "not_eligible_for_final_test",
+    "reason": "they were fixed-fragment interface smokes using earlier checkpoints, not the corrected-v2 synthetic-best weights selected for this Stage 4 test candidate"
+  },
+  "score_gate": {
+    "real_scores_authorized": false,
+    "requires": [
+      "research review freezes protocol and manifest",
+      "exact data and calibration hashes are registered",
+      "exact corrected-v2 synthetic-best checkpoint paths, epochs, and hashes are registered",
+      "research authorization JSON binds exact protocol and manifest SHA-256"
+    ]
+  }
+}

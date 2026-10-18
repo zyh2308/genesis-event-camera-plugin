@@ -102,6 +102,68 @@ def restore_batchnorm_buffers(
             module.num_batches_tracked.copy_(batches)
 
 
+def recalibrate_batchnorm_from_synthetic_train(
+    model: torch.nn.Module,
+    train_samples: list[dict],
+    device: torch.device,
+) -> dict:
+    """Recompute BN running statistics from event-only synthetic train inputs.
+
+    The model remains in eval mode except for each BatchNorm module, so this
+    pass cannot become train-mode inference and does not update parameters.
+    It reads no labels, validation samples, or real data.
+    """
+    if not train_samples:
+        raise ValueError("BatchNorm calibration needs synthetic train samples")
+    batchnorms = [
+        module for module in model.modules()
+        if isinstance(module, torch.nn.modules.batchnorm._BatchNorm)
+    ]
+    if not batchnorms:
+        return {"applied": False, "reason": "model_has_no_batchnorm", "samples": 0}
+
+    original_momentum = [module.momentum for module in batchnorms]
+    model.eval()
+    for module in batchnorms:
+        if not module.track_running_stats:
+            raise RuntimeError("BatchNorm calibration requires tracked running statistics")
+        module.reset_running_stats()
+        module.momentum = None  # cumulative average across the fixed train split
+        module.train(True)
+
+    seen_ids = []
+    try:
+        with torch.no_grad():
+            for sample in train_samples:
+                image = np.asarray(sample["image"], dtype=np.float32)
+                if image.ndim != 3 or not np.isfinite(image).all():
+                    raise ValueError(f"{sample.get('sample_id', '<unknown>')}: malformed BN input")
+                tensor = torch.from_numpy(image).unsqueeze(0).to(device)
+                model(tensor)
+                seen_ids.append(str(sample.get("sample_id", len(seen_ids))))
+    finally:
+        for module, momentum in zip(batchnorms, original_momentum):
+            module.momentum = momentum
+            module.eval()
+        model.eval()
+
+    return {
+        "applied": True,
+        "source": "all fixed synthetic train event tensors; no labels, validation, or real data",
+        "sample_count": len(seen_ids),
+        "sample_ids_sha256": hashlib.sha256(
+            "\n".join(seen_ids).encode("utf-8")
+        ).hexdigest(),
+        "optimizer_updates": 0,
+        "model_parameters_updated": False,
+        "model_inference_mode_after_calibration": "eval",
+        "batchnorm_layer_count": len(batchnorms),
+        "num_batches_tracked_per_layer": sorted({
+            int(module.num_batches_tracked.detach().cpu()) for module in batchnorms
+        }),
+    }
+
+
 def box_keypoints(size_xyz: list[float]) -> np.ndarray:
     hx, hy, hz = (float(value) / 2.0 for value in size_xyz)
     # SingleShotPose label_file_creation.md order: object centroid then the
@@ -417,7 +479,8 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
     init_hash = state_sha256(model.state_dict())
     loss_layer = RegionLoss(
         num_keypoints=NUM_KEYPOINTS, num_classes=NUM_CLASSES,
-        anchors=[], num_anchors=1, pretrain_num_epochs=15,
+        anchors=[], num_anchors=1,
+        pretrain_num_epochs=args.confidence_pretrain_epochs,
     )
     optimizer = torch.optim.SGD(
         model.parameters(), lr=args.learning_rate, momentum=args.momentum,
@@ -474,8 +537,13 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
     torch.cuda.synchronize(device)
     train_seconds = time.perf_counter() - started
     peak_memory_mib = torch.cuda.max_memory_allocated(device) / (1024.0 ** 2)
+    bn_before_calibration_snapshot = batchnorm_state_snapshot(model)
+    calibration_started = time.perf_counter()
+    bn_calibration = recalibrate_batchnorm_from_synthetic_train(model, train_samples, device)
+    torch.cuda.synchronize(device)
+    bn_calibration_seconds = time.perf_counter() - calibration_started
     final_hash = state_sha256(model.state_dict())
-    bn_after_training_snapshot = batchnorm_state_snapshot(model)
+    bn_after_calibration_snapshot = batchnorm_state_snapshot(model)
     if final_hash == init_hash:
         raise RuntimeError(f"{generator}: model parameters did not change")
 
@@ -516,7 +584,7 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         )
         restore_batchnorm_buffers(model, bn_before_train_mode_probe)
         model.eval()
-        if batchnorm_state_snapshot(model) != bn_after_training_snapshot:
+        if batchnorm_state_snapshot(model) != bn_after_calibration_snapshot:
             raise RuntimeError("train-mode BN diagnostic changed the saved running-stat snapshot")
         pnp_metrics = {"pnp_succeeded": False}
         try:
@@ -610,7 +678,10 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         "train_wall_seconds": train_seconds,
         "peak_allocated_gpu_mib": peak_memory_mib,
         "batchnorm_initial_state": bn_initial_snapshot,
-        "batchnorm_after_training_state": bn_after_training_snapshot,
+        "batchnorm_before_train_only_calibration": bn_before_calibration_snapshot,
+        "batchnorm_after_train_only_calibration": bn_after_calibration_snapshot,
+        "batchnorm_calibration": bn_calibration,
+        "batchnorm_calibration_wall_seconds": bn_calibration_seconds,
         "batchnorm_after_validation_diagnostics_state": batchnorm_state_snapshot(model),
         "train_loss_mean": float(np.mean([row["loss_total"] for row in records])),
         "train_gradient_norm_min_max": [
@@ -621,6 +692,9 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         "validation_detail": validation,
         "checkpoint_restore_hash_equal": restored_hash == final_hash,
         "training_detail": records,
+        "confidence_supervised_update_count": sum(
+            1 for row in records if row["confidence_supervision_included"]
+        ),
         "objective": "pinned SingleShotPose RegionLoss coordinate pretraining phase; default first-15-epoch confidence exclusion retained",
     }
 
@@ -654,8 +728,14 @@ def main() -> None:
     input_config = pilot_config["input"]
     args.seed = training_config["seed"] if args.seed is None else args.seed
     args.epochs = training_config["epochs"] if args.epochs is None else args.epochs
+    args.confidence_pretrain_epochs = int(training_config.get("confidence_pretrain_epochs", 15))
+    args.min_confidence_supervised_updates = int(
+        training_config.get("min_confidence_supervised_updates", 0)
+    )
     if args.epochs < 1:
         raise ValueError("--epochs must be positive")
+    if args.confidence_pretrain_epochs < 0 or args.min_confidence_supervised_updates < 0:
+        raise ValueError("confidence training limits must be non-negative")
     if input_config["resize_hw"] != [NETWORK_SIZE, NETWORK_SIZE]:
         raise ValueError(f"pilot resize_hw must match pinned model size {[NETWORK_SIZE, NETWORK_SIZE]}")
     args.learning_rate = training_config["learning_rate"]
@@ -693,6 +773,14 @@ def main() -> None:
             if sample["event_end_s"] != sample["label_time_s"]:
                 raise RuntimeError(f"{sample['sample_id']}: event end and label time differ")
 
+    planned_confidence_updates = max(0, args.epochs - args.confidence_pretrain_epochs) * len(ev_rows["train"])
+    if planned_confidence_updates < args.min_confidence_supervised_updates:
+        raise RuntimeError(
+            "pose training refused before model initialization: planned confidence-supervised "
+            f"updates {planned_confidence_updates} < required "
+            f"{args.min_confidence_supervised_updates}"
+        )
+
     results = []
     for generator in ("eventgenesis", "v2e"):
         results.append(train_generator(
@@ -720,6 +808,9 @@ def main() -> None:
         "pilot_config_sha256": sha256_file(args.pilot_config),
         "seed": args.seed,
         "epochs": args.epochs,
+        "confidence_pretrain_epochs": args.confidence_pretrain_epochs,
+        "planned_confidence_supervised_updates": planned_confidence_updates,
+        "minimum_required_confidence_supervised_updates": args.min_confidence_supervised_updates,
         "model_inference_inputs": ["raw-event-derived full-frame three-channel count tensor only"],
         "training_supervision": ["shared Genesis object pose and camera K projected cuboid keypoints"],
         "forbidden_inputs_not_used": ["RGB", "GT mask", "GT crop", "GT box", "segmented events", "depth", "segmentation", "pose at inference"],

@@ -1,0 +1,5 @@
+curl -L --max-time 20 -sS -o /tmp/epose_figshare_api.json -w 'figshare_api_status=%{http_code} bytes=%{size_download}\n' https://api.figshare.com/v2/articles/28106717
+curl -L --max-time 20 -sS -o /tmp/epose_figshare_article.html -w 'figshare_article_status=%{http_code} bytes=%{size_download}\n' 'https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717'
+curl -L --max-time 20 -sS -o /tmp/pose-audit-single/wood_block.obj -w 'author_CAD_status=%{http_code} bytes=%{size_download}\n' https://raw.githubusercontent.com/oussamaabdulhay/E_Pose/b96ae783fcb6de84e1e9c602e91bce941cab0234/obj_files/wood_block/google_16k/textured.obj
+git hash-object /tmp/pose-audit-single/wood_block.obj
+sha256sum /tmp/pose-audit-single/wood_block.obj

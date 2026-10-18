@@ -1,0 +1,83 @@
+{
+  "schema_version": 2,
+  "scope": "paired synthetic-only event-only SingleShotPose seed-0 candidate with confidence phase and synthetic-train BN calibration",
+  "purpose": "replay the repaired per-interval event windows and reach the pinned SingleShotPose confidence-loss phase after its 15-epoch coordinate pretrain",
+  "upstream_model": {
+    "repository": "https://github.com/microsoft/singleshotpose",
+    "commit": "2c282619101f9f31666dd18b42393375bea1600f",
+    "config": "cfg/yolo-pose.cfg",
+    "initialization": "random paired initialization; LINEMOD weights are not used"
+  },
+  "input": {
+    "source": "raw events from the paired EventGenesis or V2E stream",
+    "window": "(t_i,t_i+1], with the right endpoint exactly equal to the shared pose-label time",
+    "channels": [
+      "ON log-count",
+      "OFF log-count",
+      "total log-count"
+    ],
+    "fixed_count_scale_per_channel": 8,
+    "normalization": "min(log1p(pixel_event_count)/log1p(8),1), no per-image maximum normalization",
+    "resize_hw": [
+      416,
+      416
+    ],
+    "inference_inputs": "event-derived full-frame tensor only"
+  },
+  "labels": {
+    "source": "shared Genesis target pose, camera pose, actual camera K, and configured box dimensions",
+    "time_reference": "right endpoint of event window; persisted for every sample",
+    "single_shot_pose_format": "class, projected centroid, eight projected 3D cuboid corners, normalized x/y extent",
+    "training_only_supervision": true
+  },
+  "training": {
+    "seed": 0,
+    "epochs": 31,
+    "windows_per_physical_rollout": 2,
+    "batch_size": 1,
+    "optimizer": "SGD",
+    "learning_rate": 0.001,
+    "momentum": 0.9,
+    "weight_decay": 0.0005,
+    "loss": "pinned SingleShotPose RegionLoss coordinate warmup for epochs 1-15 followed by confidence-supervised coordinate loss for epochs 16-31",
+    "confidence_pretrain_epochs": 15,
+    "paired_initialization": true,
+    "validation": "synthetic validation rollouts only",
+    "budget_note": "Preserves the pinned 15-epoch coordinate warmup, then supplies at least 128 confidence-supervised optimizer updates when 8 train windows are available; script refuses to train if the actual paired train split yields fewer.",
+    "min_confidence_supervised_updates": 128,
+    "batchnorm_calibration": "After optimizer updates, reset and cumulatively estimate all BN running stats using each event-only synthetic train input once; no labels, validation, or real data; model returned to eval before validation/inference."
+  },
+  "controls": {
+    "train_rollouts": [
+      "train_00",
+      "train_01",
+      "train_02",
+      "train_03"
+    ],
+    "validation_rollouts": [
+      "validation_00",
+      "validation_01"
+    ],
+    "forbidden_model_inputs": [
+      "RGB",
+      "GT mask",
+      "GT crop",
+      "GT box",
+      "segmented events",
+      "depth",
+      "segmentation",
+      "pose"
+    ],
+    "real_data_accessed": false
+  },
+  "diagnostics": {
+    "primary_validation": "ordinary model.eval() confidence-argmax inference after train-only BN calibration",
+    "additional_synthetic_only_checks": [
+      "synthetic train-only BN buffer recalibration",
+      "record BN calibration sample IDs/hash and per-layer num_batches_tracked",
+      "record confidence-supervised optimizer update count",
+      "normal eval mode confidence argmax on held-out physical rollouts",
+      "checkpoint restore followed by same normal eval inference"
+    ]
+  }
+}
