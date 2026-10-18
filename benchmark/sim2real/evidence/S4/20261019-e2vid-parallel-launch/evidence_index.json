@@ -1,13 +1,13 @@
 {
   "schema": "stage4_e2vid_parallel_launch_evidence_v1",
-  "created_utc": "2026-10-18T17:37:55Z",
+  "created_utc": "2026-10-18T17:43:00Z",
   "scope": "paired seed-0 reconstruction launch, 20-update pilot, checkpoint-boundary resume oracle, and live continuation snapshot; no real data scoring",
-  "latest_observation": "evidence/S4/20261019-e2vid-parallel-launch/live_observation_20261018T173755Z.json",
+  "latest_observation": "evidence/S4/20261019-e2vid-parallel-launch/live_observation_20261018T174300Z.json",
   "local_files": [
     {
       "path": "benchmark/sim2real/evidence/S4/20261019-e2vid-parallel-launch/README.md",
-      "size_bytes": 6109,
-      "sha256": "01fad5020f9adcffb2b4bfd4781289145bfdde27f7c7fc30af81408e093ab80b"
+      "size_bytes": 6373,
+      "sha256": "fbe2e7f76e59cf7605b61f4a343f5191ca2e02edda57bb7dcec53ea5cd6bdb41"
     },
     {
       "path": "benchmark/sim2real/evidence/S4/20261019-e2vid-parallel-launch/attempt_v1/build_v3.log",
@@ -143,6 +143,11 @@
       "path": "benchmark/sim2real/evidence/S4/20261019-e2vid-parallel-launch/v2e/resume_stdout.log",
       "size_bytes": 28117,
       "sha256": "8d9ff62f074fcaf838b50f30d7bea19b1aa7a98289c04ba9497422b116299a25"
+    },
+    {
+      "path": "benchmark/sim2real/evidence/S4/20261019-e2vid-parallel-launch/live_observation_20261018T174300Z.json",
+      "size_bytes": 5939,
+      "sha256": "913c67bbb4cd2bc950aba5939301a1d53992784ea6494bc4f8864d2277371a6e"
     }
   ],
   "external_artifacts": [
@@ -233,11 +238,54 @@
       "model_state_sha256": "f0967b8600e6080fbdbbb46cb2b03de2364cf13cfb8ec6ee2918b9fb89dac4f3",
       "observed_utc": "2026-10-18T17:37:55Z",
       "role": "saved update 600 checkpoint"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/eventgenesis/training_metrics.jsonl",
+      "size_bytes": 611543,
+      "sha256": "5d111500024d41f248085d371be23e82fe79085557f906a326f57ceb566add42",
+      "observed_utc": "2026-10-18T17:43:00Z",
+      "role": "eventgenesis: append-only training metrics at latest optimizer record"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/eventgenesis/resume_stdout.log",
+      "size_bytes": 63673,
+      "sha256": "2c159e08077ad33a2006d509f8b4b7bb40e964f002b50d731f7d27803479520f",
+      "observed_utc": "2026-10-18T17:43:00Z",
+      "role": "eventgenesis: active resumed trainer stdout snapshot"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/eventgenesis/last.pt",
+      "size_bytes": 171427906,
+      "sha256": "b8de3a5483a267d757779a1415528e6132d70acecc2b7a68b035163abff3e7ee7",
+      "observed_utc": "2026-10-18T17:43:00Z",
+      "role": "eventgenesis: current last.pt file hash; internal optimizer cursor not inspected"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/v2e/training_metrics.jsonl",
+      "size_bytes": 611736,
+      "sha256": "2cd988af92c742d1ab350d81fc39618e3f07b45dc7dd8342357db92a456be55c",
+      "observed_utc": "2026-10-18T17:43:00Z",
+      "role": "v2e: append-only training metrics at latest optimizer record"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/v2e/resume_stdout.log",
+      "size_bytes": 63134,
+      "sha256": "fcd1bb04e9c1664f3ff0fd0a79c9329f2e2705cc715343ee316c6690323c99cf",
+      "observed_utc": "2026-10-18T17:43:00Z",
+      "role": "v2e: active resumed trainer stdout snapshot"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage4-e2vid-seed0-corrected-v2/v2e/last.pt",
+      "size_bytes": 171427906,
+      "sha256": "48e18fccb5c3f9f4e73a52c2b9f6bbc2076987bc05754abb90c7a772a56e1247",
+      "observed_utc": "2026-10-18T17:43:00Z",
+      "role": "v2e: current last.pt file hash; internal optimizer cursor not inspected"
     }
   ],
   "notes": [
     "Full stdout logs remain at each external run directory on g1.",
     "Checkpoint hashes identify the saved update-300 files; the current in-memory optimizers have progressed beyond those saved checkpoints.",
-    "The model and config fingerprints are in the paired launch report."
+    "The model and config fingerprints are in the paired launch report.",
+    "The 17:43 UTC direct refresh found both trainers alive. Append-only logs reached 721 (EventGenesis) and 729 (V2E); live_status.json remained at 720. Both values are preserved in the timestamped snapshot."
   ]
 }
