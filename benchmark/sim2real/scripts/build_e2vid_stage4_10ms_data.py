@@ -175,7 +175,7 @@ def export_h5(source: h5py.File, labels: dict, generator: str, episode_id: str,
     if len(events) and ends[-2] != len(events):
         raise RuntimeError(f"{generator}/{episode_id}: event endpoint partition omitted events")
     if generator == "eventgenesis":
-        capture_counts = np.asarray(episode["eventgenesis_interval_event_counts_10ms"], dtype=np.int64)[1:]
+        capture_counts = np.asarray(episode["eventgenesis_interval_counts_10ms"], dtype=np.int64)
         audit = audit_capture_partition(events[:, 0], times, counts[:-1], capture_counts)
     else:
         audit = None
