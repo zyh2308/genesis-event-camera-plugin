@@ -465,7 +465,18 @@ def main() -> int:
         with np.load(snapshot_path, allow_pickle=False) as archive:
             snapshot_times = np.asarray(archive["times_s"], dtype=np.float64)
             snapshot_data = {key: np.asarray(archive[key]) for key in archive.files}
-        extra_snapshot_rows = truth_rows_at_times(trace, snapshot_times.tolist())
+        exact_trace_times = {round(float(row["time_s"]), 9) for row in trace}
+        matched_snapshot_indices = [
+            idx for idx, value in enumerate(snapshot_times)
+            if round(float(value), 9) in exact_trace_times
+        ]
+        matched_snapshot_times = [float(snapshot_times[idx]) for idx in matched_snapshot_indices]
+        extra_snapshot_rows = truth_rows_at_times(trace, matched_snapshot_times)
+        unmatched_snapshots = [
+            {"label": str(snapshot_data["labels"][idx]), "time_s": float(snapshot_times[idx]),
+             "reason": "no exact physical-state row exists in the immutable trace"}
+            for idx in range(len(snapshot_times)) if idx not in matched_snapshot_indices
+        ]
         cutoff_row = truth_rows_at_times(trace, [cutoff])[0]
         preloaded[episode_id] = {
             "label": label, "episode_dir": ep_dir, "event_path": event_path,
@@ -473,6 +484,8 @@ def main() -> int:
             "snapshot_path": snapshot_path, "verified": verified, "trace": trace,
             "source_rows": source_rows, "dense_rows": dense_rows,
             "snapshot_times": snapshot_times, "snapshot_data": snapshot_data,
+            "matched_snapshot_indices": matched_snapshot_indices,
+            "unmatched_snapshots": unmatched_snapshots,
             "extra_snapshot_rows": extra_snapshot_rows, "cutoff_row": cutoff_row,
         }
     output.mkdir(parents=True, exist_ok=False)
@@ -518,6 +531,8 @@ def main() -> int:
                 episode = next(csv.DictReader(stream))
             snapshot_data = pre["snapshot_data"]
             snapshot_times = pre["snapshot_times"]
+            matched_snapshot_indices = pre["matched_snapshot_indices"]
+            unmatched_snapshots = pre["unmatched_snapshots"]
             extra_snapshot_rows = pre["extra_snapshot_rows"]
             all_rows: dict[float, dict[str, Any]] = {}
             for row in source_rows + dense_rows + extra_snapshot_rows + [cutoff_row]:
@@ -530,7 +545,8 @@ def main() -> int:
 
             # Direct key-frame rerender is checked against saved Genesis HDR snapshots.
             snapshot_errors = []
-            for idx, time_s in enumerate(snapshot_times):
+            for idx in matched_snapshot_indices:
+                time_s = float(snapshot_times[idx])
                 frame = rendered[round(float(time_s), 9)]
                 current = frame["hdr_rgb"]
                 original = np.asarray(snapshot_data["hdr"][idx], dtype=np.float32)
@@ -670,7 +686,7 @@ def main() -> int:
             # Store only the measured narrow replay region plus source frames and labels.
             with h5py.File(cache_dir / "rendered_frame_evidence.h5", "w") as handle:
                 handle.attrs["purpose"] = "offline direct camera render from logged robot/target state; no physics advanced"
-                handle.attrs["direct_hdr_render_matches_saved_snapshots_exactly"] = all(item["mae"] == 0 for item in snapshot_errors)
+                handle.attrs["direct_hdr_render_matches_saved_snapshots_exactly"] = bool(snapshot_errors) and all(item["mae"] == 0 for item in snapshot_errors)
                 handle.attrs["source_state_trace_sha256"] = verified[str(trace_path.relative_to(reference))]
                 handle.create_dataset("source_times_s", data=SOURCE_TIMES)
                 handle.create_dataset("source_hdr_rgb", data=np.stack([f["hdr_rgb"] for f in source_frames]), compression="gzip", compression_opts=1)
@@ -703,6 +719,7 @@ def main() -> int:
                 "first_contact_s": float(episode["first_contact_s"]),
                 "reference_inputs_sha256": verified,
                 "renderer_snapshot_replay": snapshot_errors,
+                "renderer_snapshot_not_replayed": unmatched_snapshots,
                 "native_hdr_source_range_rgb": [float(min(f["hdr_rgb"].min() for f in source_frames)), float(max(f["hdr_rgb"].max() for f in source_frames))],
                 "native_hdr_luminance_percentiles": np.percentile(np.stack([f["radiance_luma"] for f in source_frames]), [1, 50, 99]).tolist(),
                 "dense_render_frame_count": len(dense_times), "dense_render_wall_s": render_wall_s,
