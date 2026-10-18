@@ -1,14 +1,14 @@
 # Stage 4 paired flow training: live status
 
-**Live snapshot:** 2026-10-18 01:59:27 UTC / 10:59:27 JST, read from g1 training logs while both jobs were active. Earlier status records in Git history are historical, not current observations.
+**Live snapshot:** 2026-10-18 02:01:22 UTC / 11:01:22 JST, read from g1 training logs while both jobs were active. Earlier status records in Git history are historical, not current observations.
 
 ## Current run
 
 - Campaign: 20261017-stage4-flowdt1-seed0-corrected-v5; 45 epochs × 198 optimizer updates = 8,910 per generator.
-- EventGenesis: update **4,871 / 8,910**; latest complete synthetic validation epoch 24 at update 4,752, EPE **0.2838378343** px/30ms; best **0.2838365008** at epoch 19.
-- V2E: update **4,948 / 8,910**; latest complete synthetic validation epoch 24 at update 4,752, EPE **0.2831938486** px/30ms; best **0.2828732346** at epoch 20.
+- EventGenesis: update **4,900 / 8,910**; latest complete synthetic validation epoch 24 at update 4,752, EPE **0.2838378343** px/30ms; best **0.2838365008** at epoch 19.
+- V2E: update **4,950 / 8,910**; latest complete synthetic validation epoch 24 at update 4,752, EPE **0.2831938486** px/30ms; best **0.2828732346** at epoch 20.
 - Zero-flow full-validation EPE: **0.2842080520** px/30ms for both. Model selection remains synthetic-validation-only.
-- Supervisor tmux stage4-flow-corrected-20261017-v7 PID 3590105; trainer PIDs 3594965 (EventGenesis, GPU 2) and 3594967 (V2E, GPU 4) were alive. GPU 2/4 utilization was 100%/100%; the isolated V2E resume supplement has completed and GPU 1 is idle again.
+- Supervisor tmux stage4-flow-corrected-20261017-v7 PID 3590105; trainer PIDs 3594965 (EventGenesis, GPU 2) and 3594967 (V2E, GPU 4) were alive. GPU 2/4 utilization was 100%/83%; the isolated V2E resume supplement has completed and GPU 1 is idle again.
 - Both groups remain on the registered data, model, configuration, optimizer budget, sampling, augmentation and checkpoint selection protocol. Synthetic-only training; real-data scoring disabled.
 
 ## Interpretation
@@ -19,9 +19,9 @@ See [STAGE4_MOTION_DIAGNOSTIC_20261018.md](STAGE4_MOTION_DIAGNOSTIC_20261018.md)
 
 ## External log snapshot
 
-Full growing logs remain on g1 under /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/{eventgenesis,v2e}/training_metrics.jsonl. At 01:59:27 UTC, their sizes and hashes were:
+Full growing logs remain on g1 under /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261017-stage4-flowdt1-seed0-corrected-v5/full_training_retry1/{eventgenesis,v2e}/training_metrics.jsonl. At 02:01:22 UTC, their sizes and hashes were:
 
-- EventGenesis: 3,980,171 bytes; SHA256 a6f57f3f7cda4d2de184e91a3884137655b864bc666594eeca86599c7157d114.
-- V2E: 4,035,035 bytes; SHA256 55d7312f4901737b3116591951512f84b912ec80d56944cac153cb06ca2c0e96.
+- EventGenesis: 4,006,813 bytes; SHA256 a04de0598594661764f936afbbc8a1dd6a3819866a2409590a4ff249e08eb6f0.
+- V2E: 4,036,751 bytes; SHA256 873059b30d717085b59d59f0b37e22a86165ee3fffdac8659ecbec3019fc609f.
 
 These are append-only live snapshots and will change before the final report. The full training remains supervised by the existing detached tmux session.
