@@ -1,0 +1,169 @@
+run_id=r1_native_hdr_small9_retrain_20261019a
+code_commit=4c5f5f29d4c46dd50401c0aa9079874f97afcbc6
+root=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a
+cache_root=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache
+v2e_training_source=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/v2e_training
+direct_hdr_reference=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016
+robot_python=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
+device_policy=CPU only; CUDA_VISIBLE_DEVICES is empty
+{"episode_id": 0, "ours_event_count": 1664645, "ours_generation_wall_s": 288.23849060293287}
+{"episode_id": 1, "ours_event_count": 1467264, "ours_generation_wall_s": 362.1337662693113}
+{"episode_id": 2, "ours_event_count": 1877911, "ours_generation_wall_s": 292.64409897569567}
+{"episode_id": 3, "ours_event_count": 1209488, "ours_generation_wall_s": 217.06805593241006}
+{"episode_id": 4, "ours_event_count": 1274497, "ours_generation_wall_s": 274.25495400093496}
+{"episode_id": 5, "ours_event_count": 985229, "ours_generation_wall_s": 192.70382784865797}
+{"episode_id": 6, "ours_event_count": 1524285, "ours_generation_wall_s": 271.806440028362}
+{"episode_id": 7, "ours_event_count": 1327918, "ours_generation_wall_s": 320.034001997672}
+{"episode_id": 8, "ours_event_count": 992270, "ours_generation_wall_s": 234.59532399196178}
+{
+  "status": "PASS",
+  "output": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a",
+  "cost_s": {
+    "cached_native_hdr_event_generation_all_episodes": 2472.674566393718,
+    "two_equal_budget_cpu_model_fits": 1434.3924811845645,
+    "common_reference_evaluation": 13.735543324612081,
+    "end_to_end_this_process": 3920.8025909028947,
+    "excludes": "original physical rollouts, V2E generation, and original Direct-HDR reference capture"
+  },
+  "checkpoint_sha256": {
+    "ours_native_hdr": "6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2",
+    "v2e_official": "a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0"
+  },
+  "evaluation_summary": {
+    "ours": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 315,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 315,
+        "false_unreachable": 266,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.5421686746987951
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.08380023855153079,
+          "p50": 0.014401358834745547,
+          "p95": 0.4448802919997428
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 1.776651285568463,
+          "p50": 0.3398052453251008,
+          "p95": 7.667055171491703
+        },
+        "intercept_xy_error_m": {
+          "n": 315,
+          "mean": 0.03314057736141721,
+          "p50": 0.01574486907261128,
+          "p95": 0.09215671635833962
+        },
+        "intercept_y_signed_error_m": {
+          "n": 315,
+          "mean": 0.01672607460510141,
+          "p50": 0.007190612628677881,
+          "p95": 0.08384633263967892
+        },
+        "arrival_signed_error_s": {
+          "n": 315,
+          "mean": -0.07606201343260932,
+          "p50": -0.1079350570691609,
+          "p95": 0.614383230529243
+        },
+        "arrival_abs_error_s": {
+          "n": 315,
+          "mean": 0.24433593418485355,
+          "p50": 0.1773642460514527,
+          "p95": 0.7463360424330285
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    },
+    "v2e": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 514,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 514,
+        "false_unreachable": 67,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.8846815834767642
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.00483729818454521,
+          "p50": 0.004089354818698791,
+          "p95": 0.011258517929327071
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 0.1266205478024714,
+          "p50": 0.10773864725069765,
+          "p95": 0.2974091210708824
+        },
+        "intercept_xy_error_m": {
+          "n": 514,
+          "mean": 0.017134279847073927,
+          "p50": 0.011140705409492229,
+          "p95": 0.05087108673354392
+        },
+        "intercept_y_signed_error_m": {
+          "n": 514,
+          "mean": 0.00404633290837661,
+          "p50": 0.0014397351482824553,
+          "p95": 0.04422331555881276
+        },
+        "arrival_signed_error_s": {
+          "n": 514,
+          "mean": 0.035762282475238064,
+          "p50": -0.015232133356602201,
+          "p95": 0.590461372931713
+        },
+        "arrival_abs_error_s": {
+          "n": 514,
+          "mean": 0.16579545760657208,
+          "p50": 0.0879114701314549,
+          "p95": 0.6033363147242562
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    }
+  }
+}
+native HDR development retrain completed: /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a

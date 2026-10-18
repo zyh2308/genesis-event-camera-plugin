@@ -688,3 +688,33 @@ seed 4344 的 60 µm 结果中，monitor 于 1.7395 s abort，届时 qualified h
   ```
 
 本轮 R1 开发通过标准——相同响应配置、episode 配对训练、共同 reference、四类指标与 missing/reachable coverage 可复现——已完成；**正式 R1 测试集、正式 ranking、多 seed training 均未启动**。建议进入正式实验前先对 Ours `+55 mm` 全速度失效簇做小范围生成事件/五-bin 输入对照，确认 event-domain 对齐；只有在因果上仍无法区分时，再由研究会决定是否加小批训练轨迹或改动生成路径。正式测试必须另留未经挑 checkpoint/调参/预算的 episodes。R2 的 60 µm 动态负例与 monitor 收敛继续独立推进，不再作 R1 前置。
+
+
+#### R1 原生 HDR 输入恢复与失败链路收尾（g1，2026-10-19）
+
+本阶段沿用 `exp/robot-closed-loop-v1`，保留 `7fb72dc` 已审计批次和全部旧结果；使用隔离 g1 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a`，没有覆盖后续提交。长任务实际运行代码 commit `4c5f5f29d4c46dd50401c0aa9079874f97afcbc6`，冻结 simulator core 未修改。
+
+**输入路径已核实并恢复到 native HDR 候选：**旧 Ours 配对训练使用缓存 display PNG 的 OpenCV grayscale + `video_linlog`，不是 native HDR。新 Ours 事件读取 `trajectory_cache.h5/radiance`（Genesis `camera.render(radiance=True)` 的 float32 scene-linear renderer radiance），走插件 `physical_log`：亮度自然对数、`1e-6` floor、gain 1、ON/OFF threshold 0.2，无噪声/滤波/refractory。HDR 数值不是显示灰度；renderer 未提供绝对物理辐射标定，阈值也未声称按 EVK4 实物校准。V2E 保留官方 display-video + SuperSloMo 路径，训练事件从已审计来源逐字节复用；没有后处理删事件。深度/分割/位姿只给 Ours 生成器内部重建用，模型输入仍只有因果五-bin 事件张量。两组事件响应/重建路径仍不同，以下只能作开发诊断。
+
+**最先出错的位置：网络定位。**在已知 +55 mm 失败截点，旧 Ours checkpoint 的 Direct-HDR XY 定位误差为 185.8 mm，中心对照为 16.3 mm；之后的 50 ms 历史 OLS 易被位置跳变放大。精确状态重渲染关键帧与原参考像素一致；短窗离线密集 HDR 重放的 log-radiance 误差很小（+55 目标区域 mean 0.00700、背景 0.00218），unknown/hold 占比平均 0.00143%。dense replay 来自缓存精确状态，不是新动力学、事件真值或插值冒充 direct render。
+
+确认 raw Ours events 在 100 Hz source frame seam 有明显 burst：+55 mm seam ±1 ms 为 31,116 events，等长帧间窗口 1,501（20.73×）；中心为 33,381/1,346（24.80×）。时间/坐标/极性/five-bin 转换已核对。**帧边界聚集已证实，是否为定位误差的原因、责任是否在 frozen plugin 内仍未证实。**同一旧 checkpoint +55 截点上网络 velocity head error 0.006 m/s，历史 OLS 2.625 m/s、pairwise median 2.167 m/s；整段 58 polls 对应 mean 0.060、2.037、1.852 m/s。但位置误差仍 185.8 mm。V2E 的速度头在相同对照中并不优于其历史估速，因此不应只给 Ours 改接口。详见[失败链诊断报告与代表图](../../benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/README.md)。
+
+**原生 HDR 小规模重训已完成，但共同参考仍不通过。**九集 Ours 生成 12,323,507 events；保持 `heatmap_v2`、seed 606、最多 40 epochs、batch 32、episode split `[0,1,2,3,7,8]/[4,5,6]`。两组各有 566 own-domain validation windows；Ours native HDR validation XY P95 38.8 mm。可是同一 581 poll、已看过的 Direct-HDR 开发参考上，新 Ours checkpoint 定位 P95 444.9 mm、可达覆盖 315/581（54.2%）；V2E 为 11.3 mm、514/581（88.5%）。特别是 +55 mm 三档仍有明显定位错误。这说明恢复 HDR 输入和等预算重训仍不足以恢复 Ours 对共同参考域的能力；不能称为生成器排名，因为两组像素响应/重建路径不同，测试也是旧开发集。状态均 fresh `581/581`；该参考没有 GT-unreachable query，因此无法估计正确拒绝率。arrival/intercept 仅是同一冻结 predictor 对查询 cutoff GT state 的输出差，不是实测过线时间。
+
+| 速度 | Ours native HDR：可达覆盖 / XY P95 / 速度 P95 | V2E：可达覆盖 / XY P95 / 速度 P95 |
+|---:|---:|---:|
+| 0.30 m/s | 140/275 (50.9%) / 428.3 mm / 7.532 m/s | 217/275 (78.9%) / 12.5 mm / 0.318 m/s |
+| 0.40 m/s | 87/174 (50.0%) / 409.0 mm / 8.353 m/s | 165/174 (94.8%) / 11.2 mm / 0.279 m/s |
+| 0.50 m/s | 88/132 (66.7%) / 460.7 mm / 7.257 m/s | 132/132 (100%) / 8.4 mm / 0.283 m/s |
+
+运行配置 [`r1_native_hdr_small9_development_v1.json`](../../benchmark/robot_closed_loop/configs/r1_native_hdr_small9_development_v1.json) SHA256 `351c09ae190f41e27ce2262cdf4bd5eaa932a96e685191ae9a309ffc3c1d5e1b`；scene SHA `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，control SHA `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`，split SHA `0d45dbc930f76d73409f2b5d6b29f4676cb68c4394675039d8aac264cb7e6e56`，reference manifest SHA `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`。Ours/V2E checkpoint SHA `6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2 / a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0`；共同 eval summary/poll CSV SHA `ae6db79403eb134ba79460225579a75ecd822e57b54f1be2b455ee8ed38aee4c / 8189910cd1eb7ddb17240eb0ab58e3a35f1b5ca2bc6c7f99a50fc62b0e7fa4c2`。Ours source manifest SHA `83b09e3e20fc86631da17336a73cc1ead2926a77eaac7618c3d76b48411714e8`，V2E 原 source manifest SHA `74d42e3c822ddfe12f5f154b8628a7b0054c0b7d98eb76da666443402c70ff0a`。每集 cache/input/event hashes 在 native retrain summary；g1 完整输出 `SHA256SUMS` 的 110 项均通过。
+
+端到端 CPU 成本：native HDR event generation phase 2,472.67 s（逐 episode 插件计时合计 2,453.48 s），两模型 fit phase 1,434.39 s，common reference eval 13.74 s，总计 3,920.80 s；GNU wall 1:05:23，peak RSS 5,114,596 KB。成本不含已有物理 rollout cache、V2E 事件生成和 Direct-HDR reference capture。完整大产物仍在 g1：`/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/`；其中 Ours 事件目录约 105 MB、V2E source 约 72 MB。仓库提交小型子集、两个 checkpoint、训练预测、共同 poll CSV、summary 和 log；[本地结果说明](../../benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/README.md) 与 `PORTABLE_SHA256SUMS`（SHA256 `755b80a68d433fd9996392c98b00bb7c9639692cd35984beecdf2576391be143`）可复核。复跑命令：
+
+~~~bash
+cd ~/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a
+bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1_native_hdr_small9_retrain_<new_id>
+~~~
+
+**状态与建议：**HDR 输入转换、有限数值、事件坐标/极性/分箱检查未发现显示灰度误标或接口错误；源帧 seam burst 是已观察到的数值异常，但根因仍待隔离。native-HDR retrain 没恢复共同参考能力，因此目前**不具备恢复后续生成器比较的条件**。不建议立即扩大训练；最小下一步是固定 +55 mm 与中心缓存状态，比较现有插件事件与精确状态高频 direct-render 参考的 seam、raw event、五-bin 和 localization，确认 seam burst 是否为主要域差异。若修复必须改 frozen core，先将最小复现、影响面和方案提交研究会审议；正式测试集/排名保持未启动。
