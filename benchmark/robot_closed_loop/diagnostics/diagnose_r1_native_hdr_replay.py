@@ -42,6 +42,12 @@ from genesis_event_plugin.adaptive_sampler import AdaptiveSamplingConfig  # noqa
 from genesis_event_plugin.noise_model import DvsNoiseConfig  # noqa: E402
 from genesis_event_plugin.physics_interpolator import PhysicsInterpolator  # noqa: E402
 from genesis_event_plugin.radiometry import linear_luminance  # noqa: E402
+from benchmark.robot_closed_loop.event_state_model import (  # noqa: E402
+    HeatmapEventStateNet,
+    decode_heatmap_state,
+    five_bin_tensor,
+    load_checkpoint,
+)
 
 
 class ReplayScene:
@@ -119,7 +125,7 @@ def write_source_cache(path: Path, frames: list[dict[str, Any]], pose_ids: np.nd
     with h5py.File(path, "w") as handle:
         handle.attrs["camera_resolution_wh"] = np.asarray([width, height], dtype=np.int32)
         handle.attrs["vertical_fov_deg"] = float(fov_deg)
-        handle.attrs["frame_timestamp_contract"] = "offline exact-state replay at original 100 Hz source keyframe times"
+        handle.attrs["frame_timestamp_contract"] = "offline exact-state replay at trace rows sampled on a 100 Hz grid; absolute start offset retained"
         handle.attrs["radiance_source"] = "Genesis HDR overlay camera.render(radiance=True), native float32 linear RGB"
         handle.attrs["rollout_id"] = path.parent.name
         handle.create_dataset("timestamps_s", data=np.asarray([f["time_s"] for f in selected], dtype=np.float64))
@@ -149,6 +155,11 @@ def generate_ours(cache_path: Path, output_dir: Path, response_mode: str,
                 raise RuntimeError("cannot recover displayed PNG grayscale")
             gray.append(reread.astype(np.float32))
         gray = np.stack(gray)
+        gray_range = [float(np.min(gray)), float(np.max(gray))]
+        radiance_rgb_range = [float(np.min(hdr)), float(np.max(hdr))]
+        radiance_luma_range = [
+            float(np.min(h5["radiance_luma"])), float(np.max(h5["radiance_luma"]))
+        ]
         depth, seg = h5["depth"], h5["segmentation"]
         ids = h5["segmentation_pose_ids"][:].astype(int)
         poses = h5["object_poses"]
@@ -207,11 +218,17 @@ def generate_ours(cache_path: Path, output_dir: Path, response_mode: str,
         "response_mode": response_mode,
         "input_endpoint": "display PNG read by OpenCV grayscale [0,255]" if display_gray else "native Genesis HDR linear RGB converted to linear luminance by plugin",
         "radiance_input_forced_by_frozen_plugin": True,
-        "radiance_luma_range": None if display_gray else [float(np.min(hdr)), float(np.max(hdr))],
-        "gray_png_range": [float(np.min(gray)), float(np.max(gray))],
+        "radiance_rgb_range": None if display_gray else radiance_rgb_range,
+        "radiance_luma_range": None if display_gray else radiance_luma_range,
+        "gray_png_range": gray_range,
         "event_count": int(len(events)),
         "runtime_s": elapsed_s,
-        "response": {"threshold_on_off": 0.2, "mismatch_noise_bandwidth_refractory": "disabled"},
+        "response": {
+            "threshold_on_off": 0.2, "threshold_units": "log-response contrast units; uncalibrated",
+            "native_hdr_transform": "log(max(1.0 * linear_luminance, 1e-6))",
+            "display_gray_transform": "frozen plugin routes forced radiance_input through legacy lin_log knee=20 on the OpenCV [0,255] display-gray values",
+            "mismatch_noise_bandwidth_refractory": "disabled",
+        },
     }
     (output_dir / "generation.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
     return events, info
@@ -244,7 +261,8 @@ def run_v2e(frames_dir: Path, output_dir: Path, source: Path, python: str, slomo
     return events, info
 
 
-def event_boundary_counts(events: np.ndarray, seams: list[float], width_s: float = 0.001) -> dict[str, Any]:
+def event_boundary_counts(events: np.ndarray, seams: list[float], width_s: float = 0.001,
+                          control_offset_s: float = 0.005) -> dict[str, Any]:
     result = {"event_count": int(len(events)), "seams": {}}
     if len(events):
         result["event_rate_hz_equiv"] = float(len(events) / max(events[:, 0].max() - events[:, 0].min(), 1e-9))
@@ -252,9 +270,100 @@ def event_boundary_counts(events: np.ndarray, seams: list[float], width_s: float
     else:
         result["event_rate_hz_equiv"] = None
         result["time_range_s"] = None
+    controls = []
     for seam in seams:
-        result["seams"][f"{seam:.3f}"] = int(np.count_nonzero(np.abs(events[:, 0] - seam) <= width_s)) if len(events) else 0
+        seam_count = int(np.count_nonzero(np.abs(events[:, 0] - seam) <= width_s)) if len(events) else 0
+        control_t = seam + control_offset_s
+        control_count = int(np.count_nonzero(np.abs(events[:, 0] - control_t) <= width_s)) if len(events) else 0
+        controls.append(control_count)
+        result["seams"][f"{seam:.4f}"] = {
+            "boundary_window_count_pm_1ms": seam_count,
+            "inter_seam_midpoint_time_s": control_t,
+            "inter_seam_midpoint_count_pm_1ms": control_count,
+            "boundary_to_midpoint_ratio": None if control_count == 0 else seam_count / control_count,
+        }
+    result["boundary_count_sum"] = int(sum(value["boundary_window_count_pm_1ms"] for value in result["seams"].values()))
+    result["midpoint_count_sum"] = int(sum(controls))
+    result["boundary_to_midpoint_total_ratio"] = None if not sum(controls) else sum(
+        value["boundary_window_count_pm_1ms"] for value in result["seams"].values()
+    ) / sum(controls)
     return result
+
+
+def project_world(point_world: np.ndarray, camera_to_world: np.ndarray,
+                  intrinsics: np.ndarray) -> np.ndarray:
+    camera = np.linalg.inv(camera_to_world) @ np.append(point_world, 1.0)
+    fx, fy, cx, cy = intrinsics
+    return np.asarray([fx * camera[0] / camera[2] + cx,
+                       fy * camera[1] / camera[2] + cy], dtype=np.float64)
+
+
+def load_event_models(paths: dict[str, Path], camera_to_world: np.ndarray,
+                      intrinsics: np.ndarray, resolution_wh: tuple[int, int]):
+    import torch
+    torch.set_num_threads(1)
+    result = {}
+    hashes = {}
+    for name, path in paths.items():
+        model, label_mean, label_scale, checkpoint = load_checkpoint(str(path), device="cpu")
+        if model.__class__ is not HeatmapEventStateNet:
+            raise ValueError(f"expected heatmap_v2 checkpoint for {name}, got {checkpoint.get('architecture')}")
+        calibration = checkpoint["spatial_calibration"]
+        if not np.allclose(np.asarray(calibration["camera_to_world_cv"]), camera_to_world, atol=1e-5, rtol=0):
+            raise ValueError(f"{name} checkpoint camera extrinsics do not match rendered camera")
+        if list(calibration["resolution_wh"]) != list(resolution_wh):
+            raise ValueError(f"{name} checkpoint resolution differs from rendered camera")
+        result[name] = (model, label_mean, label_scale, checkpoint)
+        hashes[name] = _sha256(path)
+    return result, hashes
+
+
+def infer_event_state(events: np.ndarray, model_record, cutoff: float, width: int, height: int,
+                      camera_to_world: np.ndarray, intrinsics: np.ndarray,
+                      fixed_height_m: float) -> tuple[dict[str, Any], np.ndarray]:
+    import torch
+    model, label_mean, label_scale, checkpoint = model_record
+    voxel = five_bin_tensor(events, cutoff, width, height)
+    event_count = int(voxel.sum())
+    nonempty_bins = int(np.count_nonzero(voxel.sum(axis=(1, 2, 3))))
+    policy = checkpoint.get("validity_policy", {})
+    minimum_events = int(policy.get("minimum_events", 12))
+    minimum_bins = int(policy.get("minimum_nonempty_5ms_bins", 3))
+    available = event_count >= minimum_events and nonempty_bins >= minimum_bins
+    result: dict[str, Any] = {
+        "state_available": available, "event_count_25ms": event_count,
+        "nonempty_5ms_bins": nonempty_bins,
+        "input_tensor_sha256": hashlib.sha256(np.ascontiguousarray(voxel).tobytes()).hexdigest(),
+    }
+    if not available:
+        result["state_status"] = "insufficient_events_or_temporal_coverage"
+        return result, voxel
+    input_tensor = torch.as_tensor(np.log1p(voxel).reshape(1, 10, 64, 64), dtype=torch.float32)
+    with torch.no_grad():
+        raw = model(input_tensor)
+        decoded = decode_heatmap_state(
+            raw, label_mean, label_scale,
+            torch.as_tensor(camera_to_world, dtype=torch.float32),
+            torch.as_tensor(intrinsics, dtype=torch.float32), (width, height),
+            fixed_height_m=fixed_height_m,
+        )[0]
+        probability = torch.softmax(raw[0][0].reshape(-1) / 0.5, dim=0)
+        grid_x = (torch.arange(64, dtype=torch.float32) + 0.5) * (width / 64.0)
+        grid_y = (torch.arange(64, dtype=torch.float32) + 0.5) * (height / 64.0)
+        gy, gx = torch.meshgrid(grid_y, grid_x, indexing="ij")
+        predicted_uv = np.asarray([
+            float((probability * gx.flatten()).sum()),
+            float((probability * gy.flatten()).sum()),
+        ])
+    state = decoded.cpu().numpy().astype(np.float64)
+    if not np.isfinite(state).all():
+        result.update({"state_available": False, "state_status": "nonfinite"})
+        return result, voxel
+    result.update({
+        "state_status": "fresh", "position_xyz_m": state[:3].tolist(),
+        "velocity_xy_m_s": state[3:5].tolist(), "heatmap_uv_px": predicted_uv.tolist(),
+    })
+    return result, voxel
 
 
 def render_diagnostic_montage(path: Path, data: dict[str, np.ndarray], interp: np.ndarray,
@@ -279,10 +388,11 @@ def render_diagnostic_montage(path: Path, data: dict[str, np.ndarray], interp: n
     interp_image = gray(rec, 0.0, max(float(np.percentile(dense, 99.5)), 1e-6))
     error_image = gray(log_diff, 0.0, max(float(np.percentile(log_diff, 99.5)), 1e-6))
     invalid = Image.fromarray(np.uint8(unknown[dense_idx]) * 255).resize((160, 120), Image.Resampling.NEAREST).convert("RGB")
-    labels = ["display gray", "native HDR luma (display only)", "direct replay @0.595s",
-              "Ours warp @0.595s", "abs log residual", "hold/invalid mask"]
+    dense_label = f"@{float(data['dense_times'][dense_idx]):.4f}s"
+    labels = ["display gray", "native HDR luma (visualization)", f"direct replay {dense_label}",
+              f"Ours warp {dense_label}", "abs log residual", "hold/invalid mask"]
     images = [display, hdr_luma, direct_image, interp_image, error_image, invalid]
-    canvas = Image.new("RGB", (480, 360), (20, 22, 25))
+    canvas = Image.new("RGB", (640, 360), (20, 22, 25))
     draw = ImageDraw.Draw(canvas)
     for idx, (label, image) in enumerate(zip(labels, images)):
         x = (idx % 3) * 160
@@ -311,12 +421,15 @@ def main() -> int:
     parser.add_argument("--v2e-source", type=Path, required=True)
     parser.add_argument("--v2e-python", required=True)
     parser.add_argument("--slomo-model", type=Path, required=True)
+    parser.add_argument("--ours-checkpoint", type=Path, required=True)
+    parser.add_argument("--v2e-checkpoint", type=Path, required=True)
     args = parser.parse_args()
     config = json.loads(args.config.read_text(encoding="utf-8"))
     scene_cfg = json.loads(args.scene_config.read_text(encoding="utf-8"))
     reference = args.reference_root.resolve()
     output = args.output.resolve()
-    output.mkdir(parents=True, exist_ok=False)
+    if output.exists():
+        raise FileExistsError(f"output must be a new, empty experiment path: {output}")
     cutoff = float(config["decision_cutoff_s"])
     start = float(config["source_time_start_s"])
     end = float(config["source_time_end_s"])
@@ -327,12 +440,48 @@ def main() -> int:
     # PhysicsInterpolator emits alpha=k/N (k=1..N); the direct source
     # keyframe at dense_start is not an interpolated sample.
     dense_times = [round(value, 9) for value in np.arange(dense_start + dense_period, dense_end + dense_period / 2, dense_period)]
+    if len(SOURCE_TIMES) < 3 or not np.allclose(np.diff(SOURCE_TIMES), period, atol=1e-8, rtol=0):
+        raise ValueError("V2E source timestamps must be at least three exact, uniformly spaced keyframes")
+    if round(dense_start, 9) not in SOURCE_TIMES or round(dense_end, 9) not in SOURCE_TIMES:
+        raise ValueError("dense reconstruction endpoints must be exact source keyframes")
+    if len(dense_times) != int(config["debug_reconstruction_samples"]):
+        raise ValueError("dense direct sample count does not match the fixed reconstruction sample count")
+    if len(dense_times) and not np.allclose(np.diff([dense_start, *dense_times]), dense_period, atol=1e-8, rtol=0):
+        raise ValueError("dense direct timestamps do not match the declared direct-render rate")
     episode_cfg = {int(ep_id): name for name, ep_id in config["episodes"].items()}
+    # Validate every requested timestamp against the immutable trace before
+    # starting Genesis (which can take over a minute to compile kernels).
+    preloaded: dict[int, dict[str, Any]] = {}
+    for episode_id, label in sorted(episode_cfg.items()):
+        ep_dir = reference / "episodes" / f"episode_{episode_id:03d}"
+        event_path = ep_dir / "direct_hdr_events_1khz_2khz.npz"
+        trace_path = ep_dir / "state_control_trace.jsonl"
+        episode_path = ep_dir / "episode.csv"
+        snapshot_path = ep_dir / "direct_hdr_key_snapshots.npz"
+        verified = verify_source_hashes(reference, [event_path, trace_path, episode_path, snapshot_path])
+        trace = read_trace(trace_path)
+        source_rows = truth_rows_at_times(trace, SOURCE_TIMES)
+        dense_rows = truth_rows_at_times(trace, dense_times)
+        with np.load(snapshot_path, allow_pickle=False) as archive:
+            snapshot_times = np.asarray(archive["times_s"], dtype=np.float64)
+            snapshot_data = {key: np.asarray(archive[key]) for key in archive.files}
+        extra_snapshot_rows = truth_rows_at_times(trace, snapshot_times.tolist())
+        cutoff_row = truth_rows_at_times(trace, [cutoff])[0]
+        preloaded[episode_id] = {
+            "label": label, "episode_dir": ep_dir, "event_path": event_path,
+            "trace_path": trace_path, "episode_path": episode_path,
+            "snapshot_path": snapshot_path, "verified": verified, "trace": trace,
+            "source_rows": source_rows, "dense_rows": dense_rows,
+            "snapshot_times": snapshot_times, "snapshot_data": snapshot_data,
+            "extra_snapshot_rows": extra_snapshot_rows, "cutoff_row": cutoff_row,
+        }
+    output.mkdir(parents=True, exist_ok=False)
     scene_cfg["shared_control"] = json.loads((ROOT / "benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json").read_text())
     width, height = (int(v) for v in scene_cfg["camera"]["resolution_wh"])
     fov = float(scene_cfg["camera"]["vertical_fov_deg"])
     fx = height / (2 * np.tan(np.deg2rad(fov) / 2))
     K = np.asarray([[fx, 0, width / 2], [0, fx, height / 2], [0, 0, 1]], dtype=np.float64)
+    intrinsics = np.asarray([fx, fx, width / 2, height / 2], dtype=np.float64)
     started = time.perf_counter()
     records = {}
 
@@ -348,38 +497,46 @@ def main() -> int:
         camera_pose = np.asarray(camera_to_world_cv(env.camera), dtype=np.float64)
         target_seg_ids = [seg_id for seg_id, body in pose_bodies.items() if body is env.target]
         robot_seg_ids = [seg_id for seg_id, body in pose_bodies.items() if body is not env.target]
+        fixed_height_m = float(scene_cfg["target"]["size_m"][2]) / 2.0
+        model_records, checkpoint_hashes = load_event_models(
+            {"ours_fit": args.ours_checkpoint.resolve(), "v2e_fit": args.v2e_checkpoint.resolve()},
+            camera_pose, intrinsics, (width, height),
+        )
 
         for episode_id, label in sorted(episode_cfg.items()):
-            ep_dir = reference / "episodes" / f"episode_{episode_id:03d}"
-            event_path = ep_dir / "direct_hdr_events_1khz_2khz.npz"
-            trace_path = ep_dir / "state_control_trace.jsonl"
-            episode_path = ep_dir / "episode.csv"
-            snapshot_path = ep_dir / "direct_hdr_key_snapshots.npz"
-            verified = verify_source_hashes(reference, [event_path, trace_path, episode_path, snapshot_path])
-            trace = read_trace(trace_path)
-            source_rows = truth_rows_at_times(trace, SOURCE_TIMES)
-            dense_rows = truth_rows_at_times(trace, dense_times)
+            pre = preloaded[episode_id]
+            ep_dir = pre["episode_dir"]
+            event_path = pre["event_path"]
+            trace_path = pre["trace_path"]
+            episode_path = pre["episode_path"]
+            trace = pre["trace"]
+            verified = pre["verified"]
+            source_rows = pre["source_rows"]
+            dense_rows = pre["dense_rows"]
+            cutoff_row = pre["cutoff_row"]
             with episode_path.open("r", newline="", encoding="utf-8") as stream:
                 episode = next(csv.DictReader(stream))
-            snapshot_archive = np.load(snapshot_path)
-            snapshot_times = np.asarray(snapshot_archive["times_s"], dtype=np.float64)
-            extra_snapshot_rows = truth_rows_at_times(trace, snapshot_times.tolist())
+            snapshot_data = pre["snapshot_data"]
+            snapshot_times = pre["snapshot_times"]
+            extra_snapshot_rows = pre["extra_snapshot_rows"]
             all_rows: dict[float, dict[str, Any]] = {}
-            for row in source_rows + dense_rows + extra_snapshot_rows:
+            for row in source_rows + dense_rows + extra_snapshot_rows + [cutoff_row]:
                 all_rows[round(float(row["time_s"]), 9)] = row
             rendered = {}
+            render_started = time.perf_counter()
             for time_s, row in sorted(all_rows.items()):
                 rendered[time_s] = render_state(env, row, pose_bodies)
+            render_wall_s = time.perf_counter() - render_started
 
             # Direct key-frame rerender is checked against saved Genesis HDR snapshots.
             snapshot_errors = []
             for idx, time_s in enumerate(snapshot_times):
                 frame = rendered[round(float(time_s), 9)]
                 current = frame["hdr_rgb"]
-                original = np.asarray(snapshot_archive["hdr"][idx], dtype=np.float32)
+                original = np.asarray(snapshot_data["hdr"][idx], dtype=np.float32)
                 diff = np.abs(current - original)
                 snapshot_errors.append({
-                    "label": str(snapshot_archive["labels"][idx]), "time_s": float(time_s),
+                    "label": str(snapshot_data["labels"][idx]), "time_s": float(time_s),
                     "mae": float(diff.mean()), "p95_abs": float(np.percentile(diff, 95)),
                     "max_abs": float(diff.max()),
                 })
@@ -393,7 +550,7 @@ def main() -> int:
             cache_path = cache_dir / "same_state_source_cache.h5"
             write_source_cache(cache_path, source_frames, pose_ids, camera_pose, width, height, fov)
 
-            # A dense direct-render window uses logged 0.5 ms states exactly. It is not
+            # A dense direct-render window uses logged 1 ms states exactly. It is not
             # interpolation and does not advance or alter the episode's physics.
             dense_frames = [rendered[t] for t in dense_times]
             source_ids = {round(t, 9): i for i, t in enumerate(SOURCE_TIMES)}
@@ -413,7 +570,10 @@ def main() -> int:
                 camera_pose, camera_pose, delta, dense_start, dense_end, input_space="linear",
                 object_world0=object0, object_world1=object1,
             )
-            recon_luma = np.stack(recon_frames).astype(np.float32)
+            recon_luma = np.stack([
+                linear_luminance(np.asarray(frame, dtype=np.float32))
+                for frame in recon_frames
+            ]).astype(np.float32)
             if len(recon_times) != len(dense_times) or not np.allclose(recon_times, dense_times, atol=1e-8, rtol=0):
                 raise RuntimeError(f"debug reconstruction samples do not align to direct renderer times: {recon_times}")
             direct_luma = np.stack([frame["radiance_luma"] for frame in dense_frames])
@@ -454,18 +614,58 @@ def main() -> int:
                 frames_dir, cache_dir / "v2e_official", args.v2e_source.resolve(),
                 str(Path(args.v2e_python).resolve()), args.slomo_model.resolve(),
             )
-            from benchmark.robot_closed_loop.event_state_model import five_bin_tensor
             voxel_inputs = {
                 "ours_native_hdr": five_bin_tensor(native_events, cutoff, width, height),
                 "ours_legacy_display_gray": five_bin_tensor(legacy_events, cutoff, width, height),
                 "v2e_official": five_bin_tensor(v2e_events, cutoff, width, height),
             }
-            np.savez_compressed(cache_dir / "five_bin_inputs_at_cutoff.npz", **voxel_inputs)
-
             # Preserve the exact shared-reference model input as a compact raw-event slice.
             reference_events = np.asarray(np.load(event_path)["events_2000hz"], dtype=np.float64)
             keep = ((reference_events[:, 0] >= cutoff - 0.025) & (reference_events[:, 0] < cutoff))
-            np.savez_compressed(cache_dir / "common_reference_event_window.npz", events=reference_events[keep])
+            reference_window = reference_events[keep]
+            np.savez_compressed(cache_dir / "common_reference_event_window.npz", events=reference_window)
+            voxel_inputs["common_direct_hdr_reference"] = five_bin_tensor(
+                reference_window, cutoff, width, height,
+            )
+            np.savez_compressed(cache_dir / "five_bin_inputs_at_cutoff.npz", **voxel_inputs)
+            event_sources = {
+                "ours_native_hdr": native_events,
+                "ours_legacy_display_gray": legacy_events,
+                "v2e_official": v2e_events,
+                "common_direct_hdr_reference": reference_window,
+            }
+            truth_position = np.asarray(cutoff_row["object"]["position_m"], dtype=np.float64)
+            truth_velocity = np.asarray(cutoff_row["object"]["velocity_m_s"], dtype=np.float64)
+            gt_uv = project_world(truth_position, camera_pose, intrinsics)
+            inference = {}
+            for event_name, event_stream in event_sources.items():
+                inference[event_name] = {}
+                for model_name, model_record in model_records.items():
+                    estimate, _ = infer_event_state(
+                        event_stream, model_record, cutoff, width, height,
+                        camera_pose, intrinsics, fixed_height_m,
+                    )
+                    if estimate.get("state_available"):
+                        pred_xyz = np.asarray(estimate["position_xyz_m"], dtype=np.float64)
+                        pred_velocity = np.asarray(estimate["velocity_xy_m_s"], dtype=np.float64)
+                        pred_uv = np.asarray(estimate["heatmap_uv_px"], dtype=np.float64)
+                        estimate["position_error_xy_mm"] = float(np.linalg.norm(pred_xyz[:2] - truth_position[:2]) * 1000)
+                        estimate["velocity_error_xy_m_s"] = float(np.linalg.norm(pred_velocity - truth_velocity[:2]))
+                        estimate["heatmap_uv_error_px"] = float(np.linalg.norm(pred_uv - gt_uv))
+                    estimate["input_contract"] = "five causal 5 ms bins x 2 polarity x 64x64, log1p counts; no target GT/depth/segmentation provided"
+                    inference[event_name][model_name] = estimate
+            (cache_dir / "event_state_inference.json").write_text(
+                json.dumps({
+                    "cutoff_s": cutoff, "checkpoint_sha256": checkpoint_hashes,
+                    "ground_truth_used_only_after_inference": {
+                        "position_xyz_m": truth_position.tolist(),
+                        "velocity_xy_m_s": truth_velocity[:2].tolist(),
+                        "projected_uv_px": gt_uv.tolist(),
+                    },
+                    "diagnostic_transfer_only": "The legacy-trained checkpoints evaluated on native HDR bins are probes, not complete HDR-trained-method utility.",
+                    "results": inference,
+                }, indent=2), encoding="utf-8",
+            )
 
             # Store only the measured narrow replay region plus source frames and labels.
             with h5py.File(cache_dir / "rendered_frame_evidence.h5", "w") as handle:
@@ -499,19 +699,23 @@ def main() -> int:
             seam_times = [t for t in SOURCE_TIMES[1:-1]]
             record = {
                 "label": label, "episode_id": episode_id, "seed": int(episode["seed"]),
-                "speed_m_s": float(episode["speed_m_s"]), "launch_y_m": float(episode["launch_y_m"]),
+                "speed_m_s": float(episode["launch_speed_m_s"]), "launch_y_m": float(episode["start_y_m"]),
                 "first_contact_s": float(episode["first_contact_s"]),
                 "reference_inputs_sha256": verified,
                 "renderer_snapshot_replay": snapshot_errors,
                 "native_hdr_source_range_rgb": [float(min(f["hdr_rgb"].min() for f in source_frames)), float(max(f["hdr_rgb"].max() for f in source_frames))],
                 "native_hdr_luminance_percentiles": np.percentile(np.stack([f["radiance_luma"] for f in source_frames]), [1, 50, 99]).tolist(),
-                "dense_render_frame_count": len(dense_times), "dense_render_wall_scope": "scene-state setters plus HDR/depth/seg camera renders for selected source/dense timestamps; includes startup/JIT amortized across both episodes",
+                "dense_render_frame_count": len(dense_times), "dense_render_wall_s": render_wall_s,
+                "dense_render_wall_scope": "scene-state setters plus HDR/display/depth/seg camera renders for all selected source, dense, snapshot, and cutoff timestamps in this episode",
                 "reconstruction": {"sampler_config": config["debug_reconstruction_samples"],
                                    "sample_count": len(recon_times), "metrics": frame_metrics,
                                    "recommend_render": bool(interpolator.last_uncertainty.get("recommend_render")),
                                    "uncertainty": interpolator.last_uncertainty,
                                    "disocclusion_policy": "hold"},
                 "generator_info": {"ours_native_hdr": native_info, "ours_legacy_display_gray": legacy_info, "v2e_official": v2e_info},
+                "checkpoint_sha256": checkpoint_hashes,
+                "event_state_inference": inference,
+                "event_state_inference_boundary": "Both existing checkpoints receive the same causal tensor contract for each listed event stream; GT is joined only after the forward pass. Cross-generator outputs are development transfer probes, not retraining results.",
                 "raw_event_temporal_counts": {
                     "ours_native_hdr": event_boundary_counts(native_events, seam_times),
                     "ours_legacy_display_gray": event_boundary_counts(legacy_events, seam_times),
@@ -520,7 +724,7 @@ def main() -> int:
                 "five_bin_event_counts": {name: int(vox.sum()) for name, vox in voxel_inputs.items()},
                 "five_bin_nonempty_bins": {name: int(np.count_nonzero(vox.sum(axis=(1, 2, 3)))) for name, vox in voxel_inputs.items()},
                 "frozen_core_modified": False,
-                "dense_direct_render_scope": "offline visual replay from the exact logged 2 kHz state trace; not a new dynamics rollout and not real event-camera ground truth",
+                "dense_direct_render_scope": "offline visual replay from exact logged physical-state rows; not a new dynamics rollout and not real event-camera ground truth",
                 "display_and_hdr_are_not_claimed_as_shared_pixel_response": True,
             }
             (cache_dir / "episode_diagnostic.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
@@ -537,10 +741,19 @@ def main() -> int:
         "v2e_wrapper_sha256": _sha256(ROOT / "benchmark/scripts/v2e_official_pipeline_smoke.py"),
         "v2e_default_config_sha256": _sha256(ROOT / "benchmark/configs/v2e.yaml"),
         "v2e_source": str(args.v2e_source.resolve()), "slomo_checkpoint_sha256": _sha256(args.slomo_model.resolve()),
+        "event_state_checkpoints": {
+            name: {"path": str(path.resolve()), "sha256": checkpoint_hashes[name]}
+            for name, path in (("ours_fit", args.ours_checkpoint), ("v2e_fit", args.v2e_checkpoint))
+        },
+        "source_frame_contract": {
+            "count": len(SOURCE_TIMES), "rate_hz": float(config["keyframe_source_rate_hz"]),
+            "absolute_times_s": SOURCE_TIMES, "dense_direct_times_s": dense_times,
+            "all requested states exist exactly in source traces": True,
+        },
         "renderer_overlay": "installed Genesis 1.2.2 HDR overlay in .venv-robot; radiance=True returns linear float32 RGB",
         "renderer_replay_is_offline": True, "frozen_core_modified": False,
         "episodes": records, "wall_s": time.perf_counter() - started,
-        "interpretation": "The old model weights are not retrained on native HDR. Their output on native-HDR-generated bins is only a diagnostic transfer probe, not the downstream utility of a complete HDR-trained method.",
+        "interpretation": "The old model weights are not retrained on native HDR. Their output on native-HDR-generated bins is only a diagnostic transfer probe, not the downstream utility of a complete HDR-trained method. Ours uses native Genesis scene-linear radiance; V2E retains the official display-frame plus SuperSloMo input path. Their different pixel-response models are explicit.",
     }
     (output / "native_hdr_replay_summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False), encoding="utf-8")
     _write_hash_manifest(output)
