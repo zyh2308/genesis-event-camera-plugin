@@ -1,0 +1,41 @@
+{
+  "experiment_id": "r1_native_hdr_failure_replay_v1",
+  "purpose": "same-state short-window generator and reconstruction diagnosis for the center episode and known +55 mm failure episode",
+  "episodes": {
+    "center_control": 4,
+    "plus55_failure": 5
+  },
+  "keyframe_source_rate_hz": 100,
+  "source_time_start_s": 0.57,
+  "decision_cutoff_s": 0.6,
+  "source_time_end_s": 0.62,
+  "dense_direct_interval_s": [0.59, 0.6],
+  "dense_direct_rate_hz": 2000,
+  "debug_reconstruction_samples": 20,
+  "ours_native_hdr": {
+    "input": "Genesis HDR overlay radiance, linear RGB, converted with BT.709 luminance weights",
+    "response_mode": "physical_log",
+    "radiometric_gain": 1.0,
+    "radiometric_offset": 0.0,
+    "radiometric_floor": 0.000001,
+    "calibration_status": "uncalibrated",
+    "threshold_on_off": 0.2,
+    "threshold_mismatch_noise_bandwidth_refractory": "disabled for this deterministic input-route diagnostic"
+  },
+  "legacy_r1_route": {
+    "input": "display PNG read by OpenCV as grayscale values [0,255]",
+    "response_mode_argument": "video_linlog",
+    "note": "reproduces the prior caller path; the frozen plugin sets radiance_input and applies the DN=20 piecewise lin_log branch"
+  },
+  "v2e": {
+    "input": "same timestamped Genesis display RGB PNGs",
+    "pipeline": "official V2E image-folder path with SuperSloMo and repository official-default YAML",
+    "config": "benchmark/configs/v2e.yaml"
+  },
+  "boundaries": {
+    "geometry_and_GT": "used only inside Ours generation and offline visual scoring; never passed to learned inference",
+    "dense_direct_render": "offline cached-state visual replay, not a new closed-loop physics rollout or real sensor ground truth",
+    "pixel_models": "Ours native HDR response and V2E official defaults are different and reported separately; no matched-response claim",
+    "frozen_core_modified": false
+  }
+}
