@@ -13,14 +13,13 @@ LOG_ROOT="$ROOT/benchmark/robot_closed_loop/results/runtime_logs"
 LOG_PATH="$LOG_ROOT/$RUN_ID.log"
 PID_PATH="$LOG_ROOT/$RUN_ID.pid"
 EXIT_PATH="$LOG_ROOT/$RUN_ID.exit"
-TIME_PATH="$RUN_ROOT/experiment.time"
+TIME_PATH="$LOG_ROOT/$RUN_ID.runtime"
 
 mkdir -p "$LOG_ROOT"
 if [[ -e "$RUN_ROOT" || -e "$LOG_PATH" || -e "$PID_PATH" || -e "$EXIT_PATH" ]]; then
   echo "refusing to overwrite existing native HDR run: $RUN_ID" >&2
   exit 2
 fi
-mkdir -p "$RUN_ROOT"
 exec >"$LOG_PATH" 2>&1
 printf '%s\n' "$$" > "$PID_PATH"
 trap 'status=$?; printf "%s\n" "$status" > "$EXIT_PATH"; exit "$status"' EXIT
