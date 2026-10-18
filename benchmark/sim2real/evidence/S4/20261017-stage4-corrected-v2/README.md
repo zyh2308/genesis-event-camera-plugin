@@ -6,6 +6,8 @@ The original strict continuous-versus-process-resumed trajectory comparison fail
 
 The actual checkpoint resume from update 198 to 199 passed a state-boundary oracle. The oracle independently reconstructed the next eight sample IDs and augmentation sequences, verified the source model state, all 70 Adam step counters (198→199), unchanged scheduler position, changed model weights, finite gradients, and an independent forward-only loss from the source checkpoint. All three loss components matched the resumed log exactly. The paired EventGenesis and V2E update-199 logs used identical sample IDs and augmentation seeds.
 
+The gate receipt key `resume_equivalence_epoch_boundary` names this checkpoint-boundary/next-step oracle. It does **not** establish strict full-trajectory equivalence, and the oracle does not independently reimplement Adam's parameter update. The strict continuous-versus-process-resumed replay remains a preserved failure; the boundary result is narrower evidence about checkpoint restoration and the next-step inputs/state.
+
 The formal retry reran the complete preflight against current code, config, simulator, model, and synthetic-data fingerprints. All 16 checks passed. The production gate's five negative scenarios each exited 1 before creating a run root or reaching the trainer. Full-phase gate verification exited 0. The paired 45-epoch budget resumed from update 198 into new isolated directories and was active at the last check.
 
 `resume_retry1_gate_verification.json` records the gate receipt, resume oracle, negative controls, PIDs, GPU assignment, observed update-200 checkpoints and latest metric snapshot. `artifact_index.json` gives server paths, sizes, and hashes for large artifacts and raw logs.
