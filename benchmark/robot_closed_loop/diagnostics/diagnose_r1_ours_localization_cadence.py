@@ -144,6 +144,38 @@ def generate_dense_direct(frames: list[dict[str, Any]]) -> tuple[np.ndarray, flo
     return events, elapsed
 
 
+def select_exact_frames_for_cadence(frames: list[dict[str, Any]], rate_hz: float,
+                                    start_s: float, end_s: float) -> tuple[list[dict[str, Any]], list[float]]:
+    """Select only recorded/rendered states nearest a requested endpoint grid.
+
+    No image or state is interpolated here. Actual selected timestamps are
+    returned so cadence jitter and missing rows remain visible in the report.
+    """
+    if rate_hz <= 0:
+        raise ValueError("cadence rates must be positive")
+    duration = end_s - start_s
+    count = int(np.floor(duration * rate_hz + 1e-9))
+    requested = [start_s + idx / rate_hz for idx in range(count + 1)]
+    if not requested or end_s - requested[-1] > 1e-8:
+        requested.append(end_s)
+    else:
+        requested[-1] = end_s
+    exact_times = np.asarray([float(frame["time_s"]) for frame in frames], dtype=np.float64)
+    trace_steps = np.diff(exact_times)
+    tolerance = max(1e-8, 0.51 * float(np.median(trace_steps)))
+    selected_indices: list[int] = []
+    for t in requested:
+        idx = int(np.argmin(np.abs(exact_times - t)))
+        if abs(float(exact_times[idx]) - t) > tolerance:
+            raise RuntimeError(f"no exact logged state close enough to {t:.9f}s at requested {rate_hz:g}Hz cadence")
+        if not selected_indices or idx != selected_indices[-1]:
+            selected_indices.append(idx)
+    if selected_indices[0] != 0 or selected_indices[-1] != len(frames) - 1:
+        raise RuntimeError("cadence selection must preserve exact window endpoints")
+    selected = [frames[idx] for idx in selected_indices]
+    return selected, [float(frame["time_s"]) for frame in selected]
+
+
 def event_viz(voxel: np.ndarray, path: Path, title: str, gt_uv: np.ndarray,
               pred_uv: np.ndarray | None, error_mm: float | None) -> None:
     pos = np.asarray(voxel[:, 0].sum(axis=0), dtype=np.float32)
@@ -193,6 +225,7 @@ def main() -> int:
         raise ValueError("sparse HDR endpoint grid must end exactly at the causal query cutoff")
 
     episode_cfg = {int(ep_id): label for label, ep_id in config["episodes"].items()}
+    cadence_sweep_hz = sorted({float(rate) for rate in config.get("cadence_sweep_hz", [])})
     preloaded: dict[int, dict[str, Any]] = {}
     for ep_id, label in sorted(episode_cfg.items()):
         ep_dir = reference / "episodes" / f"episode_{ep_id:03d}"
@@ -252,13 +285,37 @@ def main() -> int:
             sparse_events, interval_diagnostics, sparse_wall_s = generate_sparse_plugin(
                 sparse_frames, pose_ids, camera_pose, width, height, fov)
             dense_events, dense_wall_s = generate_dense_direct(frames)
+            cadence_sweep_events: dict[str, np.ndarray] = {}
+            cadence_sweep_diagnostics: dict[str, Any] = {}
+            for cadence_hz in cadence_sweep_hz:
+                selected_frames, selected_times = select_exact_frames_for_cadence(
+                    frames, cadence_hz, start_s, end_s)
+                sweep_events, sweep_intervals, sweep_wall_s = generate_sparse_plugin(
+                    selected_frames, pose_ids, camera_pose, width, height, fov)
+                source_name = f"plugin_{cadence_hz:g}hz_exact_rows"
+                cadence_sweep_events[source_name] = sweep_events
+                actual_intervals = np.diff(np.asarray(selected_times, dtype=np.float64))
+                cadence_sweep_diagnostics[source_name] = {
+                    "requested_rate_hz": cadence_hz,
+                    "selected_frame_count": len(selected_frames),
+                    "selected_exact_times_s": selected_times,
+                    "actual_interval_s": {
+                        "min": None if actual_intervals.size == 0 else float(actual_intervals.min()),
+                        "median": None if actual_intervals.size == 0 else float(np.median(actual_intervals)),
+                        "max": None if actual_intervals.size == 0 else float(actual_intervals.max()),
+                        "effective_mean_rate_hz": None if actual_intervals.size == 0 else float(1.0 / actual_intervals.mean()),
+                    },
+                    "raw_event_count_in_selected_time_interval": int(len(sweep_events)),
+                    "plugin_wall_s": sweep_wall_s,
+                    "interval_diagnostics": sweep_intervals,
+                }
             reference_events_all = pre["reference_events"]
             reference_events = reference_events_all[
                 (reference_events_all[:, 0] >= start_s)
                 & (reference_events_all[:, 0] <= end_s)
             ]
             sources = {"sparse_100hz_ours": sparse_events, "direct_logged_states_ours": dense_events,
-                       "archived_2khz_reference": reference_events}
+                       "archived_2khz_reference": reference_events, **cadence_sweep_events}
             logged_dts = np.diff(np.asarray(pre["trace_times"], dtype=np.float64))
             gt_pos = np.asarray(pre["scoring_label"]["position_m"], dtype=np.float64)
             gt_vel = np.asarray(pre["scoring_label"]["velocity_m_s"], dtype=np.float64)
@@ -325,6 +382,7 @@ def main() -> int:
                 "direct_logged_states_emulator_wall_s": dense_wall_s,
                 "generation_response": "same physical_log gain=1 floor=1e-6 threshold=0.2; no noise/bandwidth/refractory; uncalibrated",
                 "sparse_plugin_intervals": interval_diagnostics,
+                "cadence_sweep": cadence_sweep_diagnostics,
                 "raw_event_and_five_bin_counts": {
                     name: {"raw_total_in_selected_time_interval": int(len(stream)),
                            "raw_in_query_window": int(np.count_nonzero((stream[:, 0] >= cutoff - 0.025) & (stream[:, 0] < cutoff))),
@@ -358,7 +416,7 @@ def main() -> int:
         "reference_manifest_sha256": _sha256(reference / "SHA256SUMS"),
         "checkpoint_sha256": checkpoint_hashes, "episodes": episode_records,
         "wall_s": None,
-        "scope": "two selected cached development episodes; same rollout and camera; direct HDR uses every exact trace row in the selected window with measured irregular cadence; no synthetic states, new rollout, or ranking",
+        "scope": "two selected cached development episodes; same rollout and camera; direct HDR uses every exact trace row in the selected window with measured irregular cadence; cadence sweep selects only exact saved states; no synthetic states, new rollout, or ranking",
     }
     # Measure only the overall script wall clock using a stable run-start value.
     summary["wall_s"] = round(float(time.perf_counter() - SCRIPT_START), 3)
