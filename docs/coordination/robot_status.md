@@ -794,3 +794,26 @@ cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ca
 ~~~
 
 **决策状态：**目前不建议切换 frozen core。先获得两缓存的准确端点/亮度/遮挡对照及成本；若候选通过一般性控制，再整理最小 Torch/NumPy core diff、旧产物失效范围交研究审查。之后建议固定现有 split/网络/预算/seed 做一次小规模 Ours 重训，并在未用于 checkpoint 选择的新开发 episodes 上报告完整 21 phase queries；如改网络或窗口增强，两组采用相同方案。稳定感知仍需证明修复后跨相位定位改善且 render 成本可接受；闭环还需少量新 learned rollout 验证接触、夹持、抬升和 strict hold。旧 checkpoint 不要求在修正输入上立即改善。
+
+#### R1.5 g1 缓存回放续跑（2026-10-19；CPU 诊断准备完成，结果待运行）
+
+- g1 单次只读复核成功：用户指定的既有 worktree `genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 原为干净 `d1572dd3c2f28645c9f6494126100275068f350f`，现仅 fast-forward 到代码 commit `e1fd8d535d97e77ba46cde102ca4c9a8b20ea17b`，工作区干净；未创建/覆盖 worktree。source cache、逐状态 1 kHz HDR evidence、共同 Direct-HDR episode 与两 checkpoint 均可访问。输出目录 `r1_5_consistency_candidates_20261019a_cached_cpu_g1` 在启动前不存在。
+- 启动前资源快照：g1 总内存可用约 400 GiB，项目盘可用约 12 TiB，系统 load average 约 22/128 核。GPU 0–5 均由其他进程占用（GPU 2 有两个训练进程），本阶段不申请 GPU，采用单线程 CPU cached-evidence runner；没有改动或干扰已有进程。启动前环境检查命令在 20 s 内未返回 Python 版本行，后续改由已知 `/repositories/gec-robot/.venv-robot` 直接运行，若启动失败会记录并排查。
+- 新增 [`diagnose_r1_5_cached_evidence.py`](../../benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cached_evidence.py) 与独立配置 [`r1_5_cached_evidence_cpu_20261019a.json`](../../benchmark/robot_closed_loop/configs/r1_5_cached_evidence_cpu_20261019a.json)，代码/配置 commit `e1fd8d535d97e77ba46cde102ca4c9a8b20ea17b`，SHA256 分别 `6a62c8117a8d97aa5a29de259694b1eb19dbf000d575ed2843d992591cd27207 / d978863d123771397901504b6479cf2f093e65156b71682333139d6a8f43e467`。该路径完全不初始化 Genesis renderer，不推进物理，只读取 exact-state source/dense HDR caches 和真实状态行；比较冻结、端点投影恒等、准确端点、log-radiance 请求候选，在 `.585–.595 s` 每 `0.5 ms` 对两旧模型做诊断，并把 unmatched render requests 明确记为未解析。精确缓存直接帧仅覆盖 `.5815–.5905 s`；其余像素为保留 DVS 定义而暂用近端点值，不作为全路径通过证据。
+- 启动命令（已检查入口可编译；服务器运行尚未开始）：
+
+  ```bash
+  cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d
+  OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=. \
+    /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+    benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cached_evidence.py \
+    --config benchmark/robot_closed_loop/configs/r1_5_cached_evidence_cpu_20261019a.json \
+    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+    --reference-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
+    --evidence-root /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+    --ours-checkpoint benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
+    --v2e-checkpoint benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt \
+    --output benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019a_cached_cpu_g1
+  ```
+
+- 尚未有缓存回放结果、端到端耗时或结果哈希。独立 Direct-HDR 每物理行新渲染路径仍待 GPU 空闲后运行；R1.5 的 200/500/1000 Hz cadence comparison 也未开始。当前无 core diff，旧 checkpoint 不作为修复效果验收。
