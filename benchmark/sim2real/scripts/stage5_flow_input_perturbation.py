@@ -84,7 +84,7 @@ def load_checkpoint_model(path: Path, arm: str, model_root: Path, data_manifest_
 def predict(model, events: np.ndarray, device: torch.device) -> np.ndarray:
     if events.shape != (2, 260, 346, 5) or not np.isfinite(events).all():
         raise ValueError(f"expected finite events [2,260,346,5], got {events.shape}")
-    value = torch.from_numpy(events.astype(np.float32, copy=False)).unsqueeze(0)
+    value = torch.from_numpy(np.ascontiguousarray(events, dtype=np.float32)).unsqueeze(0)
     value = F.pad(value, (0, 0, 3, 3, 46, 46)).to(device)
     with torch.inference_mode():
         output = model(value, 352, use_dt4=False, flow_seq=False)
@@ -124,6 +124,7 @@ def main() -> None:
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--device", default="cuda:0")
     args = p.parse_args()
+    started_utc = datetime.now(timezone.utc).isoformat()
     if args.output.exists():
         raise FileExistsError(f"refusing to overwrite {args.output}")
     device = torch.device(args.device)
@@ -159,6 +160,11 @@ def main() -> None:
                 raise RuntimeError(f"registered synthetic adapter changed: {path}")
             pair[arm] = load_npz_selected(path, 0)
         eg, v2 = pair["eventgenesis"], pair["v2e"]
+        for arm, sample in pair.items():
+            if sample["flow_gt"].shape != (2, 260, 346) or not np.isfinite(sample["flow_gt"]).all():
+                raise RuntimeError(f"{arm} flow GT must be finite [u,v,260,346]")
+            if sample["flow_valid"].shape != (260, 346) or not np.isin(sample["flow_valid"], (0, 1)).all():
+                raise RuntimeError(f"{arm} flow validity must be binary [260,346]")
         if not (np.array_equal(eg["flow_gt"], v2["flow_gt"]) and np.array_equal(eg["flow_valid"], v2["flow_valid"])
                 and np.array_equal(eg["sample_ids"], v2["sample_ids"]) and np.array_equal(eg["label_sha256"], v2["label_sha256"])):
             raise RuntimeError(f"paired GT, validity, ID, or label hash mismatch for {rollout_id}")
@@ -238,7 +244,7 @@ def main() -> None:
     for row in rows:
         del row["_pair"], row["_variant_inputs"], row["_masks"]
     out = {"schema": "stage5_flow_input_perturbation_v1", "status": "completed",
-           "started_utc": datetime.now(timezone.utc).isoformat(), "device": str(device),
+           "started_utc": started_utc, "device": str(device),
            "model_source": source, "data_root": str(data_root), "data_manifest_sha256": manifest_sha,
            "training_config_sha256": config_sha,
            "fixed_window_rule": "dt1_000 from all eight registered validation rollouts; two per each of four fixed strata",
