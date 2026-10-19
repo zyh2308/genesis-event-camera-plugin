@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-19（Asia/Tokyo）
-**阶段：** R1 原生 HDR 小规模配对重训与 20261019c 定位/采样诊断均已完成。现有证据将首个明显失效点定位在 Ours 模型收到不同事件源后的图像定位输出；100 Hz Ours 事件存在强烈帧边界 burst，但它是否是主要原因仍未因果证明。未修改 frozen core，也未启动新一轮训练。此前 `7fb72dc` 及其审核结果原样保留；新增输出独立归档。场景、相机、物理时钟、strict scorer 和共同 Direct-HDR 参考未改变。
+**阶段：** R1 原生 HDR 小规模配对重训与 20261019c 定位/采样诊断均已完成；200/500/1000 Hz exact-row cadence sweep 代码和配置已提交，但 g1 检查因两次 SSH 超时暂停，尚未启动实验。现有证据将首个明显失效点定位在 Ours 模型收到不同事件源后的图像定位输出；100 Hz Ours 事件存在强烈帧边界 burst，但它是否是主要原因仍未因果证明。未修改 frozen core，也未启动新一轮训练。此前 `7fb72dc` 及其审核结果原样保留；新增输出独立归档。场景、相机、物理时钟、strict scorer 和共同 Direct-HDR 参考未改变。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1 原生 HDR 与失效链路诊断（2026-10-19；小规模开发批次）
@@ -722,7 +722,7 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 #### R1 Ours 定位失效：采样频率与事件源诊断（2026-10-19，g1 已完成）
 
-新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，使用缓存物理状态窗口 `.5505–.5905 s`。首个启动前置检查发现旧状态 trace 没有保存所有 0.5 ms 物理状态（例如 `.5510 s` 缺失），脚本在渲染前拒绝了该查询；失败退出码 1，不产生任何诊断结果。为保持物理轨迹不被合成，修正为离线精确渲染窗口内**实际保存的所有状态行**，并报告真实、不均匀的时间间隔；对比稀疏 100 Hz HDR 端点经 frozen 插件重建、这些精确状态直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference。首个完成的 pilot (`20261019b`) 显示强烈事件分布变化，但其 summary 把整集 archived raw-event 数与 40 ms 新生成片段放在同一 `raw_total` 列，口径不齐；保留在 g1 作历史诊断，不用于最终数量比较。修订批次 `20261019c` 会把三个来源先裁到相同 `.5505–.5905 s` 区间再统计。两个 checkpoint 在同一 `.5905 s` cutoff 上读取因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，不更改 frozen core，不将合成状态称作 direct render。此项只分辨当前可用输入采样/重建与网络定位的关系，不作方法排名。
+新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，使用缓存物理状态窗口 `.5505–.5905 s`。首个启动前置检查发现旧状态 trace 没有保存所有 0.5 ms 物理状态（例如 `.5510 s` 缺失），脚本在渲染前拒绝了该查询；失败退出码 1，不产生任何诊断结果。为保持物理轨迹不被合成，修正为离线精确渲染窗口内**实际保存的所有状态行**，并报告真实、不均匀的时间间隔；对比稀疏 100 Hz HDR 端点经 frozen 插件重建、这些精确状态直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference。首个完成的 pilot (`20261019b`) 显示强烈事件分布变化，但其 summary 把整集 archived raw-event 数与 40 ms 新生成片段放在同一 `raw_total` 列，口径不齐；保留在 g1 作历史诊断，不用于最终数量比较。最终 `20261019c` 已把三个来源先裁到相同 `.5505–.5905 s` 区间再统计。两个 checkpoint 在同一 `.5905 s` cutoff 上读取因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，不更改 frozen core，不将合成状态称作 direct render。此项只分辨当前可用输入采样/重建与网络定位的关系，不作方法排名。
 
 - 诊断代码初始提交 `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`；最终 g1 执行代码 commit 为 `458295f62cbe396ee861cc5ebbacc0cbbfff9cb0`。第一次执行前置校验的 commit `1c2ba91a86b076625bf88bab66f439ebc6331684` 在请求不存在的 `.5510 s` 状态时按预期 fail-fast，退出码 1，尚未启动 Genesis/渲染。成功的 provisional pilot `20261019b` 保留在 g1，但其 archived raw-event 总数与 40 ms 新生成事件片段的统计分母不一致，不作为最终数量证据。最终 `20261019c` 已对三个事件源统一裁到 `.5505–.5905 s` 后统计。配置 [`r1_ours_localization_cadence_ablation_20261019c.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019c.json) SHA256 `6845b34d6f22939dc5761c38cf82b0546ac70a907e78866131c05edf32171a1f`。新增稀疏/直接两条路径使用同一 physical-log 响应；归档参考仅在近黑像素 floor 约定 `log(luminance+1e-6)` vs `log(max(luminance,1e-6))` 不同。
 
@@ -749,3 +749,10 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 - g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。通过 `gec-robot/.venv-robot` 的 Genesis/PyTorch/dependency import；Genesis 1.2.2 对应 PyTorch `2.8.0+cpu`。conda 环境 PyTorch 2.5.1 会触发 Genesis 版本警告，因此未用于运行。临启动前 GPU 0 突然出现他人 PID `756955`（用户 `zyl` 的 `python train.py`，14.5 GiB、99% 利用率）；未触碰该进程。GPU 1 当时空闲（4 MiB、0%），故执行时将仅暴露 GPU 1 给 renderer，模型/事件计算仍显式使用 CPU。内存可用约 487 GiB；旧 R1 工作树保持原样。
 - g1 到 GitHub 的 `git fetch` 首次手动中断，60 秒退避后单次尝试也以 exit 124 超时；未继续重试。之后通过一次性 Git bundle 传输恢复分支：SHA256 `e7324460ab938080898a74c2059f710c7e69ad675f3c8e2f2b4af691db8801f1`，远端校验通过，并在隔离 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b` 检出提交 `1c2ba91a86b076625bf88bab66f439ebc6331684`。未触碰原始 R1 工作树和数据。
 - 复跑仍使用上面的 g1 命令并提供一个新的隔离输出目录名。结论目前适合提交研究会审阅的是：Ours 的错误由事件源变化触发的定位偏移，而高强度 100 Hz seam burst 是相关候选；需进一步做时序采样因果隔离后才能选择修复。该批次不表示机器人抓取性能、不作 Ours/V2E 排名，未修改 frozen core。
+
+#### Ours temporal cadence sensitivity follow-up（2026-10-19，g1 暂停）
+
+- 为判断 seam burst 是否随 endpoint cadence 消退，新增可选 `cadence_sweep_hz=[200,500,1000]`：每个频率只选窗口内**已经记录并已 direct-render 的精确 trace 行**，保留真实不规则间隔，送入同一个 frozen reconstruction plugin；不插值出新状态、不改模型/标签/推理 query、不推进物理。此版本补充 100 Hz、exact logged-state direct 和 archived 2 kHz 对照。诊断代码/配置 commit `d1572dd3c2f28645c9f6494126100275068f350f`；配置 [`r1_ours_localization_cadence_sweep_20261019d.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_sweep_20261019d.json) SHA256 `9b4f0c84ca2ec2615b2a3de7f6500e8b3ece9189a18989c15c036896f66bd329`；冻结 scene/control/reference/checkpoint 哈希沿用 20261019c。
+- 运行前 g1 资源快照：GPU 0 由其他用户 PID `783655` 使用 14.47 GiB / 99%，未触碰；GPU 1 空闲 4 MiB / 0%，GPU 2–5 空闲；内存可用约 485 GiB，项目盘约 12 TiB 可用。诊断预期沿用 CPU 模型/事件处理，只让 renderer 使用空闲 GPU 1。g1 环境 `Genesis 1.2.2 / Torch 2.8.0+cpu` 存在且原 20261019c worktree 未变。
+- 本地 Git bundle SHA256 `2e30d55225a41fbb5318a4c5d67bfeddc9caef5f967ae8bd11d3a3030c2b964f` 已在 g1 校验并 fetch 到 `refs/codex/robot-cadence-sweep-20261019d`。创建新隔离 worktree 的 SSH 命令在 30 s 处超时，输出显示 checkout 到 38%；之后一次只读状态检查也超时。按 g1 SSH 保护规则退避后已停止所有远程操作。worktree 是否创建完成、当前是否有 Git checkout 子进程均**未确认**；未启动 cadence experiment，未清理任何文件/进程。不要直接在原始 R1 worktree 或 g1 原仓库继续运行。
+- g1 恢复后第一步只做单次只读状态检查：查看 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 是否存在、HEAD 是否为 `d1572dd3c2f28645c9f6494126100275068f350f`、工作区状态以及该路径下是否存在未完成的 checkout；确认安全后才运行，不触碰其他用户作业。输出根路径拟为 `benchmark/robot_closed_loop/results/r1_ours_localization_cadence_sweep_20261019d`。本批次尚无实验结果或 runtime log。
