@@ -756,3 +756,41 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 - 运行前 g1 资源快照：GPU 0 由其他用户 PID `783655` 使用 14.47 GiB / 99%，未触碰；GPU 1 空闲 4 MiB / 0%，GPU 2–5 空闲；内存可用约 485 GiB，项目盘约 12 TiB 可用。诊断预期沿用 CPU 模型/事件处理，只让 renderer 使用空闲 GPU 1。g1 环境 `Genesis 1.2.2 / Torch 2.8.0+cpu` 存在且原 20261019c worktree 未变。
 - 本地 Git bundle SHA256 `2e30d55225a41fbb5318a4c5d67bfeddc9caef5f967ae8bd11d3a3030c2b964f` 已在 g1 校验并 fetch 到 `refs/codex/robot-cadence-sweep-20261019d`。**操作偏差：** 用户已说明目标 `genesis-event-camera-plugin-r1-cadence-sweep-20261019d` worktree 已存在；我第一次远端预检只核对了旧 20261019b worktree，没有核对用户指定的目标路径，随后错误地发起了 `git worktree add`。SSH 命令在 30 s 处超时，输出显示 checkout 到 38%；之后一次只读状态检查也超时。按 g1 SSH 保护规则退避后已停止所有远程操作。目标 worktree 当前状态以及是否有 checkout 子进程均**未确认**；没有启动 cadence experiment、没有覆盖运行结果，也没有清理或停止任何远端文件/进程。后续必须先只读确认目标路径与 Git worktree 状态；不得再次创建该 worktree 或直接在原始 R1 worktree/g1 原仓库运行。
 - g1 恢复后第一步只做单次只读状态检查：查看 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 是否存在、HEAD 是否为 `d1572dd3c2f28645c9f6494126100275068f350f`、工作区状态以及该路径下是否存在未完成的 checkout；确认安全后才运行，不触碰其他用户作业。输出根路径拟为 `benchmark/robot_closed_loop/results/r1_ours_localization_cadence_sweep_20261019d`。本批次尚无实验结果或 runtime log。
+
+#### R1.5 事件生成一致性候选（2026-10-19；解析控制已过，缓存轨迹执行待完成）
+
+本阶段依据研究审查 `C:/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_r1_5_audit_2026-10-19/REVIEW.md` 及同目录审计 JSON/脚本推进。审查确认至少有两个独立生成问题；Ours 旧 checkpoint 对 0.585–0.595 s 的 0.5 ms 读取相位也高度敏感，不能只凭单个时刻评估。
+
+**研究侧已有证据（未在本轮服务器复跑）：**episode 004/005 的真实端点缓存 alpha=1 时，source1 投影最大偏差分别为 `1.907e-6 / 3.052e-5 px`，冻结 NumPy warp 有 `343 / 613` 个可见像素 log 亮度误差超过 0.2。只将 source1 端点映射干预为精确恒等后，超过阈值像素归零且输出逐像素一致；静态重复帧误差为 0、事件为 0。这个同数据干预确认了端点数值问题的局部因果联系；“微小投影通过最近深度竞争排除主要像素贡献”仍需候选缓存运行中进一步检视。中间真实运动没有取整。
+
+静止平面 log 亮度 10 ms 内从 0 平滑增加至 0.5 的控制中，`next_primary` 第一张 1 ms 子帧就采用末端亮度，造成事件由正确的 `4/8 ms` 提前到 `0.4/0.8 ms`；像素模型直接读取平滑帧仍为 `4/8 ms`。这证明时间亮度处理存在局限，不代表机器人 seam 的唯一原因。研究侧对完整 archived Direct-HDR 输入作了 21 个时刻的相位诊断：Ours 误差范围中心 `20.2–204.5 mm`、+55 mm `13.9–170.0 mm`；V2E 分别约 `1.0–7.4 / 1.8–7.5 mm`。这些是旧 checkpoint 的传递诊断，不是修复成绩。
+
+**新实现仅在 benchmark diagnostics，frozen core 未改：**
+
+- [`r1_5_consistency_candidates.py`](../../benchmark/robot_closed_loop/diagnostics/r1_5_consistency_candidates.py) 分离精确端点返回、source1 精确身份投影，以及 log-radiance 区间候选；中间投影保持连续，不取整。亮度候选仅在两端同标签、深度一致且可见的区域插值，其余像素显式请求 direct render。
+- [`diagnose_r1_5_consistency.py`](../../benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_consistency.py) 复用既有中心/+55 mm HDR 源缓存、reference、checkpoint 和固定 scene/control。对 trace 中真实存在的中间状态行做离线 direct render，不推进物理、不造状态。对照原 100 Hz 插件、同状态行冻结 warp、仅 source1 身份投影、准确端点、带真实请求 render fill 的光度候选、exact-state direct-render 与 archived 2 kHz reference；报告图像分区误差、mask/成本、raw events、five-bin 及两模型在 `.585–.595 s` 每 `0.5 ms` 的定位。端点重渲染还会和已哈希缓存逐像素比对。
+- log-linear 亮度变化只是待证候选，不能自动代表真实阴影或遮挡。未知区域填充使用相同 exact trace state 的缓存/真实渲染图，并分别统计请求比例与完整帧渲染成本。GT 只用于生成几何和推理后评分，不输入网络。
+
+**已实测：**代码 commit `c427e574922aa5c9676151c3404437a74dce9f75` 的 NumPy `--analytic-control`。静态最大亮度误差 `0`、事件 `0`；10 ms ramp 首末 log 亮度 `0.05/0.50`，候选/直接输入均在 `4/8 ms` 产生事件、各 `512` 个；合成 alpha=1 投影身份和端点返回最大误差各为 `0`。中间合成物体运动最大 `2.156 px`，候选与冻结投影差为 `0 px`。这不是 episode 缓存通过结论，也未覆盖 Torch/CUDA。
+
+小型结果入口：[`R1.5 analytic controls`](../../benchmark/robot_closed_loop/results/r1_5_candidate_controls_20261019a/README.md)。解析输出 SHA256 `d4b7df4333a2e76d3076a82fcbd7fe3cfdf86c5db5b37eec67403afceef590e2`；目录 manifest SHA256 `c037fbf3e6e155207b143bb4a5360952f5df5df41728d96828829826efe53f69`。候选 config/module/cache runner SHA256 分别 `13efc23498f82c9e0f27539c06abc4554b831a9173ca5e8d5fc2bd603a326226 / 98ba537df324133fb9b93faba8f5f83a42f74161aab88fb6dfa1e4e26996a5cc / c12b65a24c7af00fc048658679a046a6ff6933a32c2daee146144965d9ccd8a5`。scene/control、Ours/V2E checkpoint SHA 沿用本节上游记录：`aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a / 3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80` 与 `6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2 / a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0`。原 reference manifest SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；中心/+55 mm source cache SHA256 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7 / 91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434`。
+
+**尚未完成：**g1 上的真实缓存 candidate-vs-direct 图像/事件/多时刻定位、render fallback 成本、200/500/1000 Hz cadence run 和 Torch 数值路径检查尚未执行。上一轮连续两次 SSH 超时后，按项目 `AGENTS.md` 停止远程连接；本轮没有再次连接，因此服务器上的指定 worktree 实时状态仍未确认。没有创建第二份 worktree、覆盖输出、清理文件或干预其他用户进程。
+
+恢复后先只读核对既有路径 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 的 HEAD/clean 状态、checkout 状态、GPU/进程 owner 和输出目录；确认安全后在该 worktree fast-forward 到新提交再运行。命令骨架如下：
+
+~~~bash
+cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d
+/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
+  benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_consistency.py \
+  --config benchmark/robot_closed_loop/configs/r1_5_consistency_candidates_20261019a.json \
+  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
+  --reference-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
+  --source-cache-root /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019a/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+  --ours-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
+  --v2e-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt \
+  --output benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019a_g1
+~~~
+
+**决策状态：**目前不建议切换 frozen core。先获得两缓存的准确端点/亮度/遮挡对照及成本；若候选通过一般性控制，再整理最小 Torch/NumPy core diff、旧产物失效范围交研究审查。之后建议固定现有 split/网络/预算/seed 做一次小规模 Ours 重训，并在未用于 checkpoint 选择的新开发 episodes 上报告完整 21 phase queries；如改网络或窗口增强，两组采用相同方案。稳定感知仍需证明修复后跨相位定位改善且 render 成本可接受；闭环还需少量新 learned rollout 验证接触、夹持、抬升和 strict hold。旧 checkpoint 不要求在修正输入上立即改善。
