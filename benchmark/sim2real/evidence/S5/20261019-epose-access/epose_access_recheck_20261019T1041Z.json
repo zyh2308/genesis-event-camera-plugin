@@ -1,0 +1,40 @@
+{
+  "schema": "epose_access_recheck_v1",
+  "checked_utc": "2026-10-19T10:41:48Z",
+  "method": "read-only HTTP HEAD probes from local WSL; no archive body downloaded; no author contacted",
+  "official_sources": [
+    {
+      "url": "https://api.figshare.com/v2/articles/28106717",
+      "status": 403,
+      "date_header": "Mon, 19 Oct 2026 10:41:48 GMT",
+      "content_type": "text/html",
+      "result": "API load balancer denied public metadata request"
+    },
+    {
+      "url": "https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717",
+      "status": 202,
+      "date_header": "Mon, 19 Oct 2026 10:41:47 GMT",
+      "waf_action": "challenge",
+      "content_length": 0,
+      "result": "publisher Figshare page not served past AWS WAF challenge"
+    },
+    {
+      "url": "https://springernature.figshare.com/ndownloader/articles/28106717/versions/1",
+      "status": 202,
+      "date_header": "Mon, 19 Oct 2026 10:41:47 GMT",
+      "waf_action": "challenge",
+      "content_length": 0,
+      "result": "direct archive downloader also stopped at WAF; no bytes retrieved"
+    }
+  ],
+  "official_paper": "https://www.nature.com/articles/s41597-025-04536-5",
+  "official_dataset_doi": "https://doi.org/10.6084/m9.figshare.28106717",
+  "official_code": "https://github.com/oussamaabdulhay/E_Pose",
+  "public_sample_acquired": false,
+  "required_minimum_to_unblock": [
+    "one original event HDF5 excerpt",
+    "the exact paired MAT annotation",
+    "sequence/object identity so matching CAD and units/transforms can be verified"
+  ],
+  "real_scoring_or_tuning_performed": false
+}

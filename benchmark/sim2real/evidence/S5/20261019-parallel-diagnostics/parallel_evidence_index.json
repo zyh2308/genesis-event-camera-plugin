@@ -1,0 +1,108 @@
+{
+  "schema": "stage5_parallel_evidence_index_v1",
+  "updated_utc": "2026-10-19T10:42:13+00:00",
+  "repository": {
+    "branch": "exp/public-sim2real-v1",
+    "source_commit": "e4b6cec453938bc6b6852d778f8c207c0917a5f8",
+    "remote": "https://github.com/zyh2308/genesis-event-camera-plugin.git",
+    "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1"
+  },
+  "latest_observations": {
+    "reconstruction": {
+      "observed_utc": "2026-10-19T10:42:01Z",
+      "eventgenesis_updates": 1390,
+      "v2e_updates": 1350,
+      "budget_per_arm": 12000,
+      "state": "running",
+      "run_root_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0"
+    },
+    "flow": {
+      "formal_training": "45 epochs / 8910 updates per arm, complete",
+      "gt_supervised_diagnostic": "8 windows, 80 updates per arm, completed",
+      "scene_coverage_pilot": "queued; no data generated; GPU0 had 8467 MiB used at 95% utilization at 2026-10-19T10:42:13Z; GPU2 reserved for reconstruction; preflight compile/import passed",
+      "real_scoring": "disabled"
+    },
+    "pose": {
+      "epose_sample_contract": "blocked: no original event HDF5 + paired MAT + object identity",
+      "generic_object_eval": "completed; not an E-POSE result",
+      "official_access_recheck_utc": "2026-10-19T10:41:48Z",
+      "endpoints": {
+        "figshare_api": 403,
+        "publisher_page": 202,
+        "direct_downloader": 202
+      }
+    }
+  },
+  "new_source_files": {
+    "benchmark/sim2real/configs/stage5_flow_scene_coverage_pilot_v1.json": {
+      "sha256": "0daa42a18629909a4d5e3937b1f283c44de3612d24040689c96d6b0717154645",
+      "size_bytes": 6625
+    },
+    "benchmark/sim2real/scripts/generate_stage5_flow_coverage_bank.py": {
+      "sha256": "7f4f374170d0bf13e271668dd16f11464986603b18665d5f2b0a8eaec7318242",
+      "size_bytes": 35676
+    },
+    "benchmark/sim2real/scripts/finalize_stage5_v2e_coverage_pilot.py": {
+      "sha256": "86bf6cd4c691410f7f3ad05944d4b442ba012e7aa90da6dc6d33880e180c2fd6",
+      "size_bytes": 4783
+    },
+    "benchmark/sim2real/scripts/stage5_flow_coverage_statistics.py": {
+      "sha256": "aa7641eda8733c3bbd83696881ee0847be482a687e6dfbfde9de1a96f99bf525",
+      "size_bytes": 14924
+    },
+    "benchmark/sim2real/scripts/stage5_flow_scale_target_audit.py": {
+      "sha256": "79a023d7d893c7c955819d51df1be332706e4ba5b12bce3f04120c9fdd3984ee",
+      "size_bytes": 13279
+    },
+    "benchmark/sim2real/scripts/stage5_flow_subset_active_eval.py": {
+      "sha256": "7b9be6c276c55ae4157d1ca9acb74a493a046d97f9ebc67bb7e5633dacc4b82d",
+      "size_bytes": 10698
+    }
+  },
+  "external_artifacts": {
+    "flow_gt_supervised_checkpoints": [
+      {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80/results/eventgenesis_last.pt",
+        "size_bytes": 580024698,
+        "sha256": "952de4a7503d291fb92aadea7be500749889283219b6c6255e9f48fd295586b1"
+      },
+      {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80/results/v2e_last.pt",
+        "size_bytes": 580022034,
+        "sha256": "c910932c9415838c903c7abf717e04dd9ba3e42665d0bf0323f98b0776b85eb0"
+      }
+    ],
+    "generic_pose_checkpoints": [
+      {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-pose-generic-31epoch/eventgenesis.pt",
+        "sha256": "24990ff398d3d758b883316ae1f14e2e6c7907643eaa1851486664511f6e3fa9"
+      },
+      {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-pose-generic-31epoch/v2e.pt",
+        "sha256": "12b78b810236e639ea52a5120fa1fea16db8eb7fa48daaec26ada2a2d3db245a"
+      }
+    ],
+    "pose_shared_bank": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/shared_trajectory.h5",
+      "sha256": "68011b77d292ca5600fb10b3464af26c958c785d2258e8a8cfea0db35b15763d"
+    },
+    "epose_mustard_xyz": {
+      "path": "/home/\u79d1\u7814/Eventbased_WAM/external_sources/E_Pose/xyz_data/mustard.xyz",
+      "size_bytes": 474668,
+      "sha256": "85c89f5eb25f25706e7ae1fa1acc17186c98c296fa0745e2e929f7c9125a9af1",
+      "identity_match_to_public_sample": "unverified"
+    },
+    "epose_access_recheck": {
+      "path": "/home/\u79d1\u7814/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261019-epose-access/epose_access_recheck_20261019T1041Z.json",
+      "sha256": "a59e959d64b420fc284efd9b716cccdb46168358a214ae7f714cdc41177f3cc9",
+      "size_bytes": 1659
+    },
+    "coverage_pilot_preflight": {
+      "path": "/home/\u79d1\u7814/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/coverage_pilot_preflight.json",
+      "sha256": "0979611623cfe8877fd5d4f493f4bdbb4b161abc0b0c004033a0dd5bc5e3993b",
+      "size_bytes": 2192
+    }
+  },
+  "real_data_scoring": "closed",
+  "simulator_core_modified": false
+}

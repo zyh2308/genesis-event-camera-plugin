@@ -1,0 +1,42 @@
+{
+  "schema": "stage5_flow_coverage_pilot_preflight_v1",
+  "g1_host": "g1.pkuml.org",
+  "remote_user": "zhaoyuhan",
+  "execution_checkout": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-stage5-coverage-exec-20261019",
+  "repository_commit": "e4b6cec453938bc6b6852d778f8c207c0917a5f8",
+  "config_path": "benchmark/sim2real/configs/stage5_flow_scene_coverage_pilot_v1.json",
+  "config_sha256": "0daa42a18629909a4d5e3937b1f283c44de3612d24040689c96d6b0717154645",
+  "generator_script_path": "benchmark/sim2real/scripts/generate_stage5_flow_coverage_bank.py",
+  "generator_script_sha256": "7f4f374170d0bf13e271668dd16f11464986603b18665d5f2b0a8eaec7318242",
+  "commands": [
+    "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python -m py_compile benchmark/sim2real/scripts/generate_stage5_flow_coverage_bank.py benchmark/sim2real/scripts/finalize_stage5_v2e_coverage_pilot.py benchmark/sim2real/scripts/stage5_flow_coverage_statistics.py",
+    "PYTHONPATH=\"$dst\" /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python -c \"import genesis as gs, torch; from genesis_event_plugin.physics_plugin import GenesisPhysicsEventPlugin; print(gs.__version__, torch.cuda.is_available())\""
+  ],
+  "results": {
+    "py_compile": "pass",
+    "Genesis_version": "1.2.2",
+    "torch_cuda_available": true,
+    "EventGenesis_plugin_import": "pass",
+    "GPU_kernel_or_scene_run": "not run"
+  },
+  "resource_observations": [
+    {
+      "observed_utc": "2026-10-19T10:32:49Z",
+      "gpu0": "37 MiB, 0%, no compute process; not launched because deployment/import checks were still running"
+    },
+    {
+      "observed_utc": "2026-10-19T10:36:30Z",
+      "gpu0": "non-owned process present; left untouched"
+    },
+    {
+      "observed_utc": "2026-10-19T10:42:13Z",
+      "gpu0": "8467 MiB used, 95% utilization; gpu2 allocated to L1 reconstruction PIDs 873967 and 873971"
+    }
+  ],
+  "pilot_status": "queued; no trajectories/events generated; no GPU resources consumed",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "sensor_thresholds_changed": false,
+  "receipt_recorded_utc": "2026-10-19T10:42:13Z",
+  "runtime_check_completed_no_later_than_utc": "2026-10-19T10:38:11Z"
+}
