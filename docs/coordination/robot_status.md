@@ -423,6 +423,7 @@ GT shadow sensor-reference 复跑命令（事件流只用于采样/状态评估�
 
 ~~~bash
 EGL_DEVICE_ID=2 CUDA_VISIBLE_DEVICES=2 PYOPENGL_PLATFORM=egl PYTHONPATH=. \
+  CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
   -m benchmark.robot_closed_loop.run --mode reference \
   --config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
@@ -739,6 +740,6 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
     --output benchmark/robot_closed_loop/results/r1_ours_localization_cadence_ablation_20261019b
   ```
 
-- g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。通过 `gec-robot/.venv-robot` 的 Genesis/PyTorch import；Genesis 1.2.2 对应 PyTorch `2.8.0+cpu`。conda 环境 PyTorch 2.5.1 会触发 Genesis 版本警告，因此未用于运行。GPU 检查时各卡显存占用约 1–2 MiB、利用率 0%，内存可用约 489 GiB；本实验只用 CPU。已有 R1 输出所在旧工作树保持原样。
+- g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。通过 `gec-robot/.venv-robot` 的 Genesis/PyTorch/dependency import；Genesis 1.2.2 对应 PyTorch `2.8.0+cpu`。conda 环境 PyTorch 2.5.1 会触发 Genesis 版本警告，因此未用于运行。临启动前 GPU 0 突然出现他人 PID `756955`（用户 `zyl` 的 `python train.py`，14.5 GiB、99% 利用率）；未触碰该进程。GPU 1 当时空闲（4 MiB、0%），故执行时将仅暴露 GPU 1 给 renderer，模型/事件计算仍显式使用 CPU。内存可用约 487 GiB；旧 R1 工作树保持原样。
 - g1 到 GitHub 的 `git fetch` 首次手动中断，60 秒退避后单次尝试也以 exit 124 超时；未继续重试。之后通过一次性 Git bundle 传输恢复分支：SHA256 `e7324460ab938080898a74c2059f710c7e69ad675f3c8e2f2b4af691db8801f1`，远端校验通过，并在隔离 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b` 检出提交 `1c2ba91a86b076625bf88bab66f439ebc6331684`。未触碰原始 R1 工作树和数据。
 - 运行后补记：实际运行代码 commit、scene/control/config/data/checkpoint 哈希，render/generation 成本，三个事件源逐 checkpoint 的 XY 定位/速度、五-bin 统计、可用性，原始窗口和代表图入口，以及是否观察到定位随稀疏/直接采样显著变化。
