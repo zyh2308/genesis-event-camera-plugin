@@ -1,0 +1,67 @@
+/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/scripts/audit_e2vid_tc_geometry.py:137: UserWarning: Default grid_sample and affine_grid behavior has changed to align_corners=False since 1.3.0. Please specify align_corners=True if the old behavior is desired. See the documentation of grid_sample for details.
+  old_default = F.grid_sample(checker, old_grid)  # intentionally exercises PyTorch default
+{
+  "checks": {
+    "boundary_support": {
+      "all_pixels_finite": true,
+      "expected_valid_pixels": 135,
+      "expected_valid_rule": "x + dx <= W-1; y + dy in [0,H-1]",
+      "invalid_right_columns": 2,
+      "status": "pass"
+    },
+    "independent_sampling_oracle": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-06
+    },
+    "invalid_boundary_zero_padding": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-06
+    },
+    "known_integer_translation_and_sign": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-05
+    },
+    "subpixel_displacement": {
+      "max_abs_error": 4.76837158203125e-07,
+      "status": "pass",
+      "tolerance": 2e-06
+    },
+    "translated_tc_loss": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-06
+    },
+    "valid_boundary_last_in_bounds_pixel": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-06
+    },
+    "zero_flow_identity": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-06
+    },
+    "zero_flow_tc_loss": {
+      "max_abs_error": 0.0,
+      "status": "pass",
+      "tolerance": 1e-06
+    }
+  },
+  "compat_sha256": "c678f270bb076f1ca75a9e0293eb6b3f00beaf17cba88ee18afdbf1cd85c66a4",
+  "compat_version": "e2vid_temporal_consistency_align_corners_true_v1",
+  "device": "cpu",
+  "finished_utc": "2026-10-19T08:41:44.477383+00:00",
+  "old_default_false_identity_error": 0.71875,
+  "schema": "e2vid_tc_geometry_preflight_v1",
+  "script_sha256": "f95eeb47df4deda68ae8c06dd08af6c86816c612154f05d4d105b83a210a482f",
+  "shape_hw": [
+    9,
+    17
+  ],
+  "started_utc": "2026-10-19T08:41:44.473925+00:00",
+  "status": "pass",
+  "torch_version": "2.13.0+cu130"
+}

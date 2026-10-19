@@ -1,0 +1,87 @@
+{
+  "scope": "synthetic-only disposable fixture; no real data/checkpoint read",
+  "self_test": {
+    "status": "pass",
+    "scope": "synthetic hand-calculated contract only; no real data or model artifacts read",
+    "manual_epe_px": [
+      0.0,
+      2.0,
+      4.0,
+      4.0
+    ],
+    "manual_gt_magnitude_px": [
+      5.0,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "expected_aee_px_per_interval": 2.5,
+    "observed_aee_px_per_interval": 2.5,
+    "expected_outlier_3px_and_5pct_percent": 25.0,
+    "observed_outlier_3px_and_5pct_percent": 25.0,
+    "legacy_ge3_percent_is_diagnostic_only": 50.0,
+    "support_counts": {
+      "sensor_pixels": 89960,
+      "finite_gt_pixels": 89959,
+      "finite_gt_pixels_within_evaluation_crop": 89959,
+      "nonzero_finite_gt_pixels": 4,
+      "common_event_active_pixels": 6,
+      "common_event_active_pixels_within_evaluation_crop": 6,
+      "evaluation_rows": 260,
+      "common_valid_pixels": 4,
+      "coverage_of_nonzero_finite_gt_within_evaluation_crop": 1.0
+    },
+    "outdoor_top190_crop_check": {
+      "valid_pixels": 1,
+      "row_189_included": true,
+      "row_190_excluded": true
+    },
+    "empty_common_support": {
+      "status": "undefined_empty_common_support",
+      "valid_pixels": 0,
+      "aee_px_per_interval": null,
+      "outlier_3px_and_5pct_percent": null,
+      "legacy_epe_ge_3px_percent": null,
+      "reference_epe_lt_3px_percent": null
+    },
+    "arm_input_mismatch": "rejected",
+    "component_broadcast": "rejected",
+    "real_score_authorization": "closed_without_review-linked authorization record"
+  },
+  "candidate_schema": {
+    "status": "failed",
+    "exception": "KeyError('checkpoint_index')",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\artifacts\\reproduce_mvsec_schema_issue.py\", line 27, in <module>\n    result=m.evaluate_pair_manifest(test_manifest,protocol,auth)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"\\\\wsl.localhost\\Ubuntu-22.04\\home\\\u79d1\u7814\\Eventbased_WAM\\repositories\\gec-sim2real\\benchmark\\sim2real\\scripts\\stage4_mvsec_dt1_metrics.py\", line 235, in evaluate_pair_manifest\n    if item.get(\"checkpoint_sha256\") != protocol[\"checkpoint_index\"][arm].get(\"sha256\"):\n                                        ~~~~~~~~^^^^^^^^^^^^^^^^^^^^\nKeyError: 'checkpoint_index'\n"
+  },
+  "temporary_top_level_alias_control": {
+    "status": "passed",
+    "summary": {
+      "eventgenesis": {
+        "per_sequence": {
+          "indoor_flying1": {
+            "scored_windows": 1,
+            "aee_px_per_interval": 0.0,
+            "outlier_3px_and_5pct_percent": 0.0,
+            "legacy_epe_ge_3px_percent": 0.0
+          }
+        },
+        "equal_sequence_mean_aee_px_per_interval": 0.0,
+        "equal_sequence_mean_outlier_3px_and_5pct_percent": 0.0,
+        "equal_sequence_mean_all_valid_gt_aee_px_per_interval": 0.0
+      },
+      "v2e": {
+        "per_sequence": {
+          "indoor_flying1": {
+            "scored_windows": 1,
+            "aee_px_per_interval": 0.0,
+            "outlier_3px_and_5pct_percent": 0.0,
+            "legacy_epe_ge_3px_percent": 0.0
+          }
+        },
+        "equal_sequence_mean_aee_px_per_interval": 0.0,
+        "equal_sequence_mean_outlier_3px_and_5pct_percent": 0.0,
+        "equal_sequence_mean_all_valid_gt_aee_px_per_interval": 0.0
+      }
+    }
+  }
+}
