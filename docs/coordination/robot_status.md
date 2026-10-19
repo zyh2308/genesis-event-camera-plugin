@@ -728,7 +728,7 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
   ```bash
   cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b
-  /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/.venv-robot/bin/python \
+  /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
     benchmark/robot_closed_loop/diagnostics/diagnose_r1_ours_localization_cadence.py \
     --config benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json \
     --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
@@ -739,6 +739,6 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
     --output benchmark/robot_closed_loop/results/r1_ours_localization_cadence_ablation_20261019b
   ```
 
-- g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。执行前各 GPU 显存占用约 1–2 MiB、利用率 0%，内存可用约 489 GiB；计划使用 CPU，不占 GPU。已有 R1 输出所在旧工作树保持原样。
-- 当前阻塞仅为 g1 到 GitHub 的 `git fetch` 无响应：首次手动中断，按服务器保护规则退避 60 秒后单次 `timeout 20s git fetch` 以 exit 124 超时。未启动实验；不再从 g1 重试 GitHub。下一步等足 60 秒后关闭当前 SSH shell，用单次受控传输把仅含既有分支后续 commits 的 Git bundle 上传到项目目录，再建隔离 worktree；绝不覆盖含旧 R1 结果的工作树。
+- g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。通过 `gec-robot/.venv-robot` 的 Genesis/PyTorch import；Genesis 1.2.2 对应 PyTorch `2.8.0+cpu`。conda 环境 PyTorch 2.5.1 会触发 Genesis 版本警告，因此未用于运行。GPU 检查时各卡显存占用约 1–2 MiB、利用率 0%，内存可用约 489 GiB；本实验只用 CPU。已有 R1 输出所在旧工作树保持原样。
+- g1 到 GitHub 的 `git fetch` 首次手动中断，60 秒退避后单次尝试也以 exit 124 超时；未继续重试。之后通过一次性 Git bundle 传输恢复分支：SHA256 `e7324460ab938080898a74c2059f710c7e69ad675f3c8e2f2b4af691db8801f1`，远端校验通过，并在隔离 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b` 检出提交 `1c2ba91a86b076625bf88bab66f439ebc6331684`。未触碰原始 R1 工作树和数据。
 - 运行后补记：实际运行代码 commit、scene/control/config/data/checkpoint 哈希，render/generation 成本，三个事件源逐 checkpoint 的 XY 定位/速度、五-bin 统计、可用性，原始窗口和代表图入口，以及是否观察到定位随稀疏/直接采样显著变化。
