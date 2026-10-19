@@ -740,5 +740,5 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
   ```
 
 - g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。执行前各 GPU 显存占用约 1–2 MiB、利用率 0%，内存可用约 489 GiB；计划使用 CPU，不占 GPU。已有 R1 输出所在旧工作树保持原样。
-- 当前阻塞仅为 g1 到 GitHub 的 `git fetch` 长时间无响应，已中断该次 fetch 并按服务器保护规则暂停重试；未启动实验。下次远程连接前先满足 60 秒退避，再最多尝试一次；若仍不通，改用已推送 commit 的安全单文件传输方案，不在 g1 重复连接或覆盖旧工作树。
+- 当前阻塞仅为 g1 到 GitHub 的 `git fetch` 无响应：首次手动中断，按服务器保护规则退避 60 秒后单次 `timeout 20s git fetch` 以 exit 124 超时。未启动实验；不再从 g1 重试 GitHub。下一步等足 60 秒后关闭当前 SSH shell，用单次受控传输把仅含既有分支后续 commits 的 Git bundle 上传到项目目录，再建隔离 worktree；绝不覆盖含旧 R1 结果的工作树。
 - 运行后补记：实际运行代码 commit、scene/control/config/data/checkpoint 哈希，render/generation 成本，三个事件源逐 checkpoint 的 XY 定位/速度、五-bin 统计、可用性，原始窗口和代表图入口，以及是否观察到定位随稀疏/直接采样显著变化。
