@@ -58,6 +58,8 @@ from benchmark.robot_closed_loop.event_state_model import five_bin_tensor  # noq
 from genesis_event_plugin.dvs_emulator import DvsEmulator  # noqa: E402
 from genesis_event_plugin.radiometry import linear_luminance  # noqa: E402
 
+SCRIPT_START = time.perf_counter()
+
 
 def _events_from_frames(frames: list[np.ndarray], times: list[float]) -> tuple[np.ndarray, float]:
     if len(frames) != len(times) or len(frames) < 2:
@@ -281,9 +283,23 @@ def main() -> int:
                     direct = render_state(env, row, bodies)
                     rendered_count += 1
                     rgb_error = np.abs(np.asarray(direct["hdr_rgb"]) - cached_frame["hdr_rgb"])
+                    direct_depth = np.asarray(direct["depth"], dtype=np.float32)
+                    cached_depth = np.asarray(cached_frame["depth"], dtype=np.float32)
+                    common_finite_depth = np.isfinite(direct_depth) & np.isfinite(cached_depth)
+                    depth_diff = np.abs(direct_depth[common_finite_depth] - cached_depth[common_finite_depth])
+                    pose_error = max(
+                        float(np.max(np.abs(np.asarray(direct["poses"][int(seg_id)]) -
+                                             np.asarray(cached_frame["poses"][int(seg_id)]))))
+                        for seg_id in bodies
+                    )
                     endpoint_cache_comparison.append({
                         "time_s": key, "renderer_cache_max_abs_radiance_error": float(rgb_error.max()),
                         "renderer_cache_mean_abs_radiance_error": float(rgb_error.mean()),
+                        "depth_finite_mask_mismatch_pixels": int(np.count_nonzero(np.isfinite(direct_depth) != np.isfinite(cached_depth))),
+                        "depth_max_abs_error_on_common_finite_pixels": float(depth_diff.max()) if depth_diff.size else None,
+                        "segmentation_mismatch_pixels": int(np.count_nonzero(
+                            np.asarray(direct["segmentation"]) != np.asarray(cached_frame["segmentation"]))),
+                        "pose_matrix_max_abs_error": pose_error,
                     })
                     direct_frames.append(cached_frame)
                 else:
@@ -428,6 +444,7 @@ def main() -> int:
             np.savez_compressed(episode_out / "archived_direct_hdr_2khz_reference_events.npz", events=archived)
 
             episode_query_rows: list[dict[str, Any]] = []
+            inference_started = time.perf_counter()
             for query in query_times:
                 label = interpolate_trace_label(pre["trace"], query)
                 gt_pos = np.asarray(label["position_m"], dtype=np.float64)
@@ -458,6 +475,7 @@ def main() -> int:
                             })
                         episode_query_rows.append(row)
                         query_rows.append(row)
+            inference_wall = time.perf_counter() - inference_started
 
             for source_name, stream in source_events.items():
                 voxel = five_bin_tensor(stream, float(config["query_diagnostic_cutoff_s"]), width, height)
@@ -496,6 +514,7 @@ def main() -> int:
                 "estimated_fallback_pixel_fraction_sum": float(requested_pixels_total / max(len(direct_frames) * height * width, 1)),
                 "candidate_reconstruction_wall_s": reconstructed_wall,
                 "original_sparse_plugin_wall_s": original_plugin_s,
+                "learned_model_inference_wall_s": inference_wall,
                 "original_sparse_plugin_interval_diagnostics": original_intervals,
                 "event_sources": image_event_summary,
                 "endpoint_projection_raw_vs_exact": endpoint_uv_rows,
@@ -538,6 +557,7 @@ def main() -> int:
         "checkpoint_sha256": checkpoint_hashes,
         "query_times_s": query_times,
         "episodes": episode_results,
+        "wall_s": round(float(time.perf_counter() - SCRIPT_START), 3),
         "scope": "bounded offline image/event/localization diagnostic on two previously inspected development episodes; no ranking, retraining, or new physics rollout",
         "frozen_core_modified": False,
     }
