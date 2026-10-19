@@ -1,0 +1,46 @@
+{
+  "experiment_id": "r1_5_cached_evidence_cpu_20261019a",
+  "purpose": "CPU-only bounded replay of endpoint and interval-radiance candidates using archived exact-state HDR evidence",
+  "episodes": {
+    "center_control": 4,
+    "plus55_failure": 5
+  },
+  "trace_time_s": [
+    0.5505,
+    0.6005
+  ],
+  "direct_state_sampling": "use only exact rows present in the immutable state_control_trace; the saved direct HDR evidence is at 1 kHz from 0.5815 through 0.5905 s",
+  "sparse_endpoint_rate_hz": 100,
+  "query_time_s": [
+    0.585,
+    0.595
+  ],
+  "query_step_s": 0.0005,
+  "query_diagnostic_cutoff_s": 0.5905,
+  "causal_input": {
+    "representation": "five causal 5 ms bins, two polarities, 64x64, log1p counts",
+    "window_s": 0.025,
+    "target_gt_available_to_model": false
+  },
+  "response": {
+    "mode": "physical_log",
+    "radiance_source": "saved Genesis native float32 scene-linear HDR frames",
+    "gain": 1.0,
+    "offset": 0.0,
+    "floor": 1e-6,
+    "threshold_on_off": 0.2,
+    "threshold_noise_bandwidth_refractory": "disabled",
+    "calibration_status": "uncalibrated renderer-linear ideal development response"
+  },
+  "render_request_fulfillment": {
+    "exact_saved_timestamp": "fill candidate-requested pixels from the exact saved direct HDR frame",
+    "timestamp_without_saved_direct_render": "fill from the nearer endpoint only to keep event emulation defined; count all such pixels as unresolved and do not treat these outputs as validated images"
+  },
+  "boundaries": {
+    "physics": "immutable logged states; no physics advance or synthetic state",
+    "renderer": "no new Genesis renderer or EGL/CUDA allocation",
+    "geometry_gt": "used inside Ours-style reconstruction and for post-inference scoring only",
+    "rank": "development diagnosis only",
+    "frozen_simulator_core_modified": false
+  }
+}
