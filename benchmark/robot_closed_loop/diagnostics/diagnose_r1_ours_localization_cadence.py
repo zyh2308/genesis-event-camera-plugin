@@ -72,7 +72,9 @@ def response_config() -> DvsNoiseConfig:
 
 def generate_sparse_plugin(frames: list[dict[str, Any]], pose_ids: np.ndarray,
                            camera_pose: np.ndarray, width: int, height: int,
-                           fov_deg: float) -> tuple[np.ndarray, list[dict[str, Any]], float]:
+                           fov_deg: float, *,
+                           exact_terminal_frame: bool = False
+                           ) -> tuple[np.ndarray, list[dict[str, Any]], float]:
     scene = ReplayScene()
     focal = height / (2 * np.tan(np.deg2rad(fov_deg) / 2))
     camera = ReplayCamera((width, height), np.asarray(
@@ -97,6 +99,25 @@ def generate_sparse_plugin(frames: list[dict[str, Any]], pose_ids: np.ndarray,
         response_mode="physical_log", disocclusion_policy="hold", device="cpu",
     )
     plugin.attach(scene, camera)
+    if exact_terminal_frame:
+        # Diagnostic-only candidate: keep every inferred intermediate frame,
+        # but replace the final alpha=1 child with the exact observed endpoint.
+        # This isolates endpoint photometric/geometry error without snapping
+        # or otherwise changing any intermediate motion.
+        interpolate = plugin.interpolator.interpolate
+
+        def interpolate_with_exact_terminal(*args, **kwargs):
+            interpolated, timestamps = interpolate(*args, **kwargs)
+            if not interpolated:
+                return interpolated, timestamps
+            frame1 = args[3] if len(args) > 3 else kwargs["frame1"]
+            input_space = kwargs.get("input_space", "linear")
+            exact = plugin.interpolator._luminance(frame1, input_space)
+            interpolated = list(interpolated)
+            interpolated[-1] = np.asarray(exact, dtype=np.float32)
+            return interpolated, timestamps
+
+        plugin.interpolator.interpolate = interpolate_with_exact_terminal
     plugin.start_episode()
     chunks: list[np.ndarray] = []
     intervals: list[dict[str, Any]] = []
@@ -309,6 +330,20 @@ def main() -> int:
                     "plugin_wall_s": sweep_wall_s,
                     "interval_diagnostics": sweep_intervals,
                 }
+                if bool(config.get("exact_terminal_frame_candidate", False)):
+                    endpoint_name = f"{source_name}_terminal_exact"
+                    endpoint_events, endpoint_intervals, endpoint_wall_s = generate_sparse_plugin(
+                        selected_frames, pose_ids, camera_pose, width, height, fov,
+                        exact_terminal_frame=True,
+                    )
+                    cadence_sweep_events[endpoint_name] = endpoint_events
+                    cadence_sweep_diagnostics[endpoint_name] = {
+                        **cadence_sweep_diagnostics[source_name],
+                        "raw_event_count_in_selected_time_interval": int(len(endpoint_events)),
+                        "plugin_wall_s": endpoint_wall_s,
+                        "interval_diagnostics": endpoint_intervals,
+                        "candidate": "replace only each interval's final alpha=1 reconstructed frame with exact current endpoint luminance; preserve all intermediate reconstructed frames",
+                    }
             reference_events_all = pre["reference_events"]
             reference_events = reference_events_all[
                 (reference_events_all[:, 0] >= start_s)

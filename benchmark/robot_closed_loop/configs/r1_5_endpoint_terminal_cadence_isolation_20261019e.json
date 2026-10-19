@@ -1,0 +1,50 @@
+{
+  "experiment_id": "r1_5_endpoint_terminal_cadence_isolation_20261019e",
+  "purpose": "isolate endpoint photometric/geometry contribution to cadence-dependent event inflation; exact recorded HDR/pose rows only",
+  "supersedes_pilot": "20261019b exploratory pass; this version filters archived reference raw events to the same selected time interval before count and seam summaries",
+  "episodes": {
+    "center_control": 4,
+    "plus55_failure": 5
+  },
+  "trace_time_s": [
+    0.5505,
+    0.5905
+  ],
+  "direct_state_sampling": "every exact state_control_trace row in the selected time window; no synthetic or interpolated states",
+  "sparse_endpoint_rate_hz": 100,
+  "decision_cutoff_s": 0.5905,
+  "causal_input_window_s": 0.025,
+  "ours_pixel_response": {
+    "mode": "physical_log",
+    "gain": 1.0,
+    "offset": 0.0,
+    "floor": 1e-06,
+    "threshold_on_off": 0.2,
+    "threshold_noise_bandwidth_refractory": "disabled",
+    "calibration_status": "uncalibrated renderer-linear ideal development response"
+  },
+  "paths": {
+    "sparse_ours": "100 Hz exact HDR endpoint renders passed through the existing frozen physics reconstruction plugin",
+    "dense_ours": "exact HDR direct renders of all available logged states passed sequentially through the same DVS response without geometric interpolation; irregular sample intervals are measured and reported",
+    "common_reference": "the already archived 2 kHz Direct-HDR raw event stream for the same episode and query; archived preprocessing uses log(luminance + 1e-6), while new physical_log paths use log(max(luminance, 1e-6)); threshold/noise settings match, with only this near-black floor convention differing",
+    "terminal_exact_candidate": "diagnostic-only: replace each interval final reconstructed frame with its exact endpoint luminance; preserve all intermediate reconstructed frames and frozen simulator core"
+  },
+  "models": {
+    "ours_native_hdr_checkpoint": "r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt",
+    "v2e_checkpoint": "r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt",
+    "shared_input": "same causal five-bin event tensor; checkpoints receive events only"
+  },
+  "boundaries": {
+    "physics": "immutable trace from the 0.5 ms physics rollout, but state rows are not stored at every physics step; render only exact rows present, with no new rollout or synthetic state",
+    "geometry_gt": "used by Ours generation and post-inference scoring only; not passed to models",
+    "dense_render": "exact logged states rendered offline; direct renderer reference for image/event simulation, not physical event-camera ground truth",
+    "frozen_simulator_core_modified": false,
+    "ranking": "not a method ranking; previously inspected episodes are development diagnostics only"
+  },
+  "cadence_sweep_hz": [
+    200,
+    500,
+    1000
+  ],
+  "exact_terminal_frame_candidate": true
+}
