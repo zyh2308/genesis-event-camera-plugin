@@ -44,8 +44,13 @@ def sha256(path: Path) -> str:
 
 def load_npz_selected(path: Path, index: int) -> dict[str, np.ndarray]:
     with np.load(path, allow_pickle=False) as archive:
-        return {key: np.asarray(archive[key][index]).copy() for key in (
-            "events", "flow_gt", "flow_valid", "sample_ids", "event_start_s", "event_end_s", "label_sha256")}
+        result = {}
+        for key in ("events", "flow_gt", "flow_valid", "sample_ids", "event_start_s", "event_end_s", "label_sha256"):
+            value = np.asarray(archive[key])
+            # Rollout-level label hashes are stored as zero-dimensional NPZ
+            # metadata; the sample arrays carry a leading window dimension.
+            result[key] = value.copy() if value.ndim == 0 else np.asarray(value[index]).copy()
+        return result
 
 
 def load_checkpoint_model(path: Path, arm: str, model_root: Path, data_manifest_sha: str,
