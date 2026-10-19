@@ -61,6 +61,7 @@ def common_valid_mask(
     v2e_events: np.ndarray,
     *,
     evaluation_rows: int = SENSOR_HW[0],
+    evaluation_roi_native_yxyx: tuple[int, int, int, int] | list[int] | None = None,
 ) -> tuple[np.ndarray, dict[str, int]]:
     """Build one pair-shared support; reject mismatched real event inputs.
 
@@ -88,16 +89,27 @@ def common_valid_mask(
     magnitude = np.hypot(finite_gt[0], finite_gt[1])
     nonzero = magnitude > 0
     active = eg_support  # equal to both-arm common support by the assertion above.
-    row_domain = np.arange(SENSOR_HW[0])[:, None] < int(evaluation_rows)
-    valid = finite & nonzero & active & row_domain
+    if evaluation_roi_native_yxyx is None:
+        y0, y1, x0, x1 = 0, int(evaluation_rows), 0, SENSOR_HW[1]
+    else:
+        if len(evaluation_roi_native_yxyx) != 4:
+            raise ValueError("native evaluation ROI must be [y0,y1,x0,x1]")
+        y0, y1, x0, x1 = (int(value) for value in evaluation_roi_native_yxyx)
+        if not (0 <= y0 < y1 <= SENSOR_HW[0] and 0 <= x0 < x1 <= SENSOR_HW[1]):
+            raise ValueError(f"native evaluation ROI {(y0,y1,x0,x1)} is outside sensor {SENSOR_HW}")
+    row_domain = (np.arange(SENSOR_HW[0])[:, None] >= y0) & (np.arange(SENSOR_HW[0])[:, None] < y1)
+    col_domain = (np.arange(SENSOR_HW[1])[None, :] >= x0) & (np.arange(SENSOR_HW[1])[None, :] < x1)
+    roi_domain = row_domain & col_domain
+    valid = finite & nonzero & active & roi_domain
     return valid, {
         "sensor_pixels": int(np.prod(SENSOR_HW)),
         "finite_gt_pixels": int(finite.sum()),
-        "finite_gt_pixels_within_evaluation_crop": int((finite & row_domain).sum()),
+        "finite_gt_pixels_within_evaluation_crop": int((finite & roi_domain).sum()),
         "nonzero_finite_gt_pixels": int((finite & nonzero).sum()),
         "common_event_active_pixels": int(active.sum()),
-        "common_event_active_pixels_within_evaluation_crop": int((active & row_domain).sum()),
-        "evaluation_rows": int(evaluation_rows),
+        "common_event_active_pixels_within_evaluation_crop": int((active & roi_domain).sum()),
+        "evaluation_rows": int(y1 - y0),
+        "evaluation_roi_native_yxyx": [y0, y1, x0, x1],
         "common_valid_pixels": int(valid.sum()),
         "coverage_of_nonzero_finite_gt_within_evaluation_crop": float(
             valid.sum() / max(1, int((finite & nonzero & row_domain).sum()))
@@ -159,7 +171,11 @@ def compute_window_metrics(
     }
 
 
-def all_valid_gt_mask(ground_truth: np.ndarray, evaluation_rows: int) -> np.ndarray:
+def all_valid_gt_mask(
+    ground_truth: np.ndarray,
+    evaluation_rows: int,
+    evaluation_roi_native_yxyx: tuple[int, int, int, int] | list[int] | None = None,
+) -> np.ndarray:
     """Optional diagnostic support: finite, nonzero GT within the official crop."""
     gt = np.asarray(ground_truth)
     if gt.shape != (2, *SENSOR_HW) or not np.issubdtype(gt.dtype, np.number):
@@ -169,8 +185,17 @@ def all_valid_gt_mask(ground_truth: np.ndarray, evaluation_rows: int) -> np.ndar
     finite = np.isfinite(gt).all(axis=0)
     safe = np.where(np.isfinite(gt), gt, 0.0)
     nonzero = np.hypot(safe[0], safe[1]) > 0
-    rows = np.arange(SENSOR_HW[0])[:, None] < int(evaluation_rows)
-    return finite & nonzero & rows
+    if evaluation_roi_native_yxyx is None:
+        y0, y1, x0, x1 = 0, int(evaluation_rows), 0, SENSOR_HW[1]
+    else:
+        if len(evaluation_roi_native_yxyx) != 4:
+            raise ValueError("native evaluation ROI must be [y0,y1,x0,x1]")
+        y0, y1, x0, x1 = (int(value) for value in evaluation_roi_native_yxyx)
+        if not (0 <= y0 < y1 <= SENSOR_HW[0] and 0 <= x0 < x1 <= SENSOR_HW[1]):
+            raise ValueError(f"native evaluation ROI {(y0,y1,x0,x1)} is outside sensor {SENSOR_HW}")
+    rows = (np.arange(SENSOR_HW[0])[:, None] >= y0) & (np.arange(SENSOR_HW[0])[:, None] < y1)
+    columns = (np.arange(SENSOR_HW[1])[None, :] >= x0) & (np.arange(SENSOR_HW[1])[None, :] < x1)
+    return finite & nonzero & rows & columns
 
 
 def authorize_real_evaluation(protocol_path: Path, manifest_path: Path, authorization_path: Path) -> None:
@@ -283,16 +308,19 @@ def evaluate_pair_manifest(manifest_path: Path, protocol_path: Path, authorizati
         eg, v2e = loaded["eventgenesis"], loaded["v2e"]
         if not np.array_equal(eg["gt_px_per_interval"], v2e["gt_px_per_interval"], equal_nan=True):
             raise ValueError(f"paired GT differs for {sequence} APS {row['aps_start_index']}")
-        evaluation_rows = int(sequence_spec["evaluation_rows"])
+        evaluation_rows = int(sequence_spec.get("evaluation_rows", SENSOR_HW[0]))
+        evaluation_roi = sequence_spec.get("candidate_metric_roi_native_yxyx")
         valid, counts = common_valid_mask(eg["gt_px_per_interval"], eg["event_input_native_uint8"],
-                                          v2e["event_input_native_uint8"], evaluation_rows=evaluation_rows)
-        all_gt_valid = all_valid_gt_mask(eg["gt_px_per_interval"], evaluation_rows)
+                                          v2e["event_input_native_uint8"], evaluation_rows=evaluation_rows,
+                                          evaluation_roi_native_yxyx=evaluation_roi)
+        all_gt_valid = all_valid_gt_mask(eg["gt_px_per_interval"], evaluation_rows, evaluation_roi)
         if not all_gt_valid.any():
             raise ValueError(f"registered frame has no finite nonzero GT in its evaluation crop: {sequence} APS {sample_index}")
         result_row = {"sequence": sequence, "aps_start_index": int(row["aps_start_index"]),
                       "start_time_s": start_s, "end_time_s": end_s,
                       "event_count": row["event_count"], "support_counts": counts,
                       "evaluation_rows": evaluation_rows,
+                      "evaluation_roi_native_yxyx": counts["evaluation_roi_native_yxyx"],
                       "event_input_sha256": hashlib.sha256(np.ascontiguousarray(eg["event_input_native_uint8"]).view(np.uint8)).hexdigest(),
                       "eventgenesis": compute_window_metrics(eg["prediction_px_per_interval"], eg["gt_px_per_interval"], valid),
                       "eventgenesis_all_valid_gt_aee_px_per_interval": compute_window_metrics(
@@ -398,6 +426,24 @@ def self_test() -> dict[str, Any]:
     assert crop_counts["common_valid_pixels"] == 1
     crop_gt_valid = all_valid_gt_mask(crop_gt, 190)
     assert crop_gt_valid[189, 10] and not crop_gt_valid[190, 10] and int(crop_gt_valid.sum()) == 1
+    # The pinned STE dt1 evaluator first center-crops native [260,346] to
+    # [256,256] at y=[2,258), x=[45,301), then takes the first 190 rows for
+    # outdoor_day1. Verify that exact legacy ROI maps to native y=[2,192),
+    # x=[45,301), rather than native full-width top-190.
+    legacy_gt = np.zeros((2, *SENSOR_HW), dtype=np.float32)
+    legacy_event = np.zeros(EVENT_SHAPE, dtype=np.uint8)
+    legacy_roi = (2, 192, 45, 301)
+    for y, x in ((2, 45), (191, 300), (192, 45), (2, 301), (1, 45)):
+        legacy_gt[0, y, x] = 1.0
+        legacy_event[0, y, x, 0] = 1
+    legacy_mask, legacy_counts = common_valid_mask(
+        legacy_gt, legacy_event, legacy_event.copy(), evaluation_roi_native_yxyx=legacy_roi,
+    )
+    assert legacy_mask[2, 45] and legacy_mask[191, 300]
+    assert not legacy_mask[192, 45] and not legacy_mask[2, 301] and not legacy_mask[1, 45]
+    assert legacy_counts["common_valid_pixels"] == 2
+    legacy_gt_mask = all_valid_gt_mask(legacy_gt, SENSOR_HW[0], legacy_roi)
+    assert np.array_equal(legacy_gt_mask, legacy_mask)
     mismatched = event.copy()
     mismatched[0, 1, 1, 0] = 1
     try:
@@ -495,6 +541,12 @@ def self_test() -> dict[str, Any]:
             "valid_pixels": crop_counts["common_valid_pixels"],
             "row_189_included": bool(crop_valid[189, 10]),
             "row_190_excluded": bool(not crop_valid[190, 10]),
+        },
+        "legacy_outdoor_native_roi_check": {
+            "native_yxyx": list(legacy_roi),
+            "expected_valid_pixels": 2,
+            "observed_valid_pixels": legacy_counts["common_valid_pixels"],
+            "boundary_cases_passed": True,
         },
         "empty_common_support": empty_metrics,
         "full_artifact_manifest_weight_binding_fixture": {

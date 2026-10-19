@@ -34,26 +34,47 @@
     "indoor_flying3",
     "outdoor_day1"
   ],
+  "crop_policy_reconciliation": {
+    "paper_metric_definition": "AEE is averaged over active pixels where both GT and events are present; the paper does not specify a numeric rectangular crop.",
+    "legacy_source_geometry": {
+      "native_sensor_hw": [260, 346],
+      "center_crop_native_yxyx": [2, 258, 45, 301],
+      "outdoor_day1_crop_after_center_crop_yxyx": [0, 190, 0, 256],
+      "outdoor_day1_equivalent_native_yxyx": [2, 192, 45, 301],
+      "source": "pinned STE-FlowNet main_steflow_dt1.py and multiscaleloss.py at eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6"
+    },
+    "candidate_recommendation": "Use the full native 346x260 sensor raster for the primary sim-to-real comparison on all four sequences, with the common finite-nonzero-GT intersect common-event-active support. Record the exact legacy source ROI as a secondary compatibility diagnostic if research review requests it.",
+    "rationale": "The candidates were trained and validated on shared native-resolution synthetic labels and use the native-resolution real adapter; a full sensor ROI avoids changing input geometry or introducing an outdoor-only crop into the primary comparison. This candidate does not claim exact reproduction of the historical paper/legacy implementation.",
+    "requires_research_freeze": true
+  },
   "sequence_specs": {
     "indoor_flying1": {
       "evaluation_rows": 260,
+      "candidate_metric_roi_native_yxyx": [0, 260, 0, 346],
+      "legacy_code_metric_roi_native_yxyx": [2, 258, 45, 301],
       "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
-      "official_source_crop": "full 260x346 raster (no is_car crop)"
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301)"
     },
     "indoor_flying2": {
       "evaluation_rows": 260,
+      "candidate_metric_roi_native_yxyx": [0, 260, 0, 346],
+      "legacy_code_metric_roi_native_yxyx": [2, 258, 45, 301],
       "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
-      "official_source_crop": "full 260x346 raster (no is_car crop)"
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301)"
     },
     "indoor_flying3": {
       "evaluation_rows": 260,
+      "candidate_metric_roi_native_yxyx": [0, 260, 0, 346],
+      "legacy_code_metric_roi_native_yxyx": [2, 258, 45, 301],
       "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
-      "official_source_crop": "full 260x346 raster (no is_car crop)"
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301)"
     },
     "outdoor_day1": {
-      "evaluation_rows": 190,
+      "evaluation_rows": 260,
+      "candidate_metric_roi_native_yxyx": [0, 260, 0, 346],
+      "legacy_code_metric_roi_native_yxyx": [2, 192, 45, 301],
       "candidate_aps_index_rule": "pinned STE-FlowNet outdoor_day1 validation intervals [9200,9600) and [10500,10900), intersected with loader boundary rule and complete event/APS/flow-GT common timestamp coverage",
-      "official_source_crop": "top 190 rows of the 260-row sensor raster, matching flow_error_dense(is_car=True)"
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301), then first 190 rows, mapping to native y=[2,192), x=[45,301)"
     }
   },
   "dt": 1,
