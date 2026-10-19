@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Replay exact cached robot states to isolate the Ours 100 Hz input cadence.
 
-The two episode traces are immutable development data.  This script directly
-renders the same 0.5 ms states and compares (1) the existing 100 Hz HDR
-endpoint + geometric reconstruction path, (2) direct 2 kHz HDR frames passed
-through the same ideal physical-log DVS response, and (3) the already archived
-2 kHz Direct-HDR event stream.  Learned models receive causal event bins only.
-No physics is advanced and no frozen simulator-core file is edited.
+The two episode traces are immutable development data. This script directly
+renders every exact state row available in the selected trace window and
+compares (1) the existing 100 Hz HDR endpoint + geometric reconstruction path,
+(2) those exact direct HDR frames passed through the same ideal physical-log
+DVS response without geometric interpolation, and (3) the already archived
+2 kHz Direct-HDR event stream. Trace-row intervals are measured and reported;
+no missing intermediate state is fabricated. Learned models receive causal
+event bins only. No physics is advanced and no frozen simulator-core file is
+edited.
 """
 
 from __future__ import annotations
@@ -184,11 +187,10 @@ def main() -> int:
         raise FileExistsError(f"output path already exists: {output}")
     start_s, end_s = (float(x) for x in config["trace_time_s"])
     cutoff = float(config["decision_cutoff_s"])
-    dense_dt = 1.0 / float(config["dense_direct_rate_hz"])
-    sparse_stride = int(round(float(config["dense_direct_rate_hz"]) / float(config["sparse_endpoint_rate_hz"])))
-    render_times = [round(float(t), 9) for t in np.arange(start_s, end_s + dense_dt / 2, dense_dt)]
-    if len(render_times) < 3 or abs(render_times[-1] - cutoff) > 1e-8:
-        raise ValueError("dense render grid must end exactly at the causal query cutoff")
+    sparse_dt = 1.0 / float(config["sparse_endpoint_rate_hz"])
+    sparse_times = [round(float(t), 9) for t in np.arange(start_s, end_s + sparse_dt / 2, sparse_dt)]
+    if len(sparse_times) < 3 or abs(sparse_times[-1] - cutoff) > 1e-8:
+        raise ValueError("sparse HDR endpoint grid must end exactly at the causal query cutoff")
 
     episode_cfg = {int(ep_id): label for label, ep_id in config["episodes"].items()}
     preloaded: dict[int, dict[str, Any]] = {}
@@ -199,13 +201,22 @@ def main() -> int:
             "episode.csv", "direct_hdr_key_snapshots.npz")]
         verified = verify_source_hashes(reference, paths)
         trace = read_trace(paths[1])
-        rows = truth_rows_at_times(trace, render_times)
+        trace_window_rows = [row for row in trace
+                             if start_s - 1e-9 <= float(row["time_s"]) <= end_s + 1e-9]
+        trace_window_times = [round(float(row["time_s"]), 9) for row in trace_window_rows]
+        if len(trace_window_rows) < 3 or abs(trace_window_times[0] - start_s) > 1e-8 or abs(trace_window_times[-1] - end_s) > 1e-8:
+            raise RuntimeError(f"episode_{ep_id:03d} lacks exact trace rows at both selected window endpoints")
+        if not any(abs(t - cutoff) <= 1e-8 for t in trace_window_times):
+            raise RuntimeError(f"episode_{ep_id:03d} lacks an exact state row at the scoring cutoff")
+        sparse_rows = truth_rows_at_times(trace, sparse_times)
         label = interpolate_trace_label(trace, cutoff)
         with np.load(paths[0], allow_pickle=False) as archive:
             reference_events = np.asarray(archive["events_2000hz"], dtype=np.float64)
         with paths[2].open("r", newline="", encoding="utf-8") as stream:
             episode = next(csv.DictReader(stream))
-        preloaded[ep_id] = {"label": episode_cfg[ep_id], "rows": rows, "trace": trace,
+        preloaded[ep_id] = {"label": episode_cfg[ep_id], "rows": trace_window_rows,
+                            "trace_times": trace_window_times, "sparse_rows": sparse_rows,
+                            "sparse_times": sparse_times, "trace": trace,
                             "scoring_label": label, "reference_events": reference_events,
                             "verified": verified, "episode": episode}
 
@@ -232,19 +243,19 @@ def main() -> int:
             camera_pose, intrinsics, (width, height))
 
         for ep_id, pre in sorted(preloaded.items()):
-            print(f"[render] episode_{ep_id:03d}: {len(render_times)} exact cached-state frames", flush=True)
+            print(f"[render] episode_{ep_id:03d}: {len(pre['rows'])} exact cached-state frames", flush=True)
             render_started = time.perf_counter()
             frames = [render_state(env, row, bodies) for row in pre["rows"]]
             render_wall_s = time.perf_counter() - render_started
-            sparse_frames = frames[::sparse_stride]
-            if sparse_frames[-1]["time_s"] != frames[-1]["time_s"]:
-                sparse_frames.append(frames[-1])
+            frames_by_time = {round(float(frame["time_s"]), 9): frame for frame in frames}
+            sparse_frames = [frames_by_time[t] for t in pre["sparse_times"]]
             sparse_events, interval_diagnostics, sparse_wall_s = generate_sparse_plugin(
                 sparse_frames, pose_ids, camera_pose, width, height, fov)
             dense_events, dense_wall_s = generate_dense_direct(frames)
             reference_events = pre["reference_events"]
-            sources = {"sparse_100hz_ours": sparse_events, "direct_2khz_ours": dense_events,
+            sources = {"sparse_100hz_ours": sparse_events, "direct_logged_states_ours": dense_events,
                        "archived_2khz_reference": reference_events}
+            logged_dts = np.diff(np.asarray(pre["trace_times"], dtype=np.float64))
             gt_pos = np.asarray(pre["scoring_label"]["position_m"], dtype=np.float64)
             gt_vel = np.asarray(pre["scoring_label"]["velocity_m_s"], dtype=np.float64)
             gt_uv = project_world(gt_pos, camera_pose, intrinsics)
@@ -299,9 +310,15 @@ def main() -> int:
                 "start_y_m": float(pre["episode"]["start_y_m"]), "cutoff_s": cutoff,
                 "cached_state_trace_sha256": pre["verified"][f"episodes/episode_{ep_id:03d}/state_control_trace.jsonl"],
                 "reference_raw_event_sha256": pre["verified"][f"episodes/episode_{ep_id:03d}/direct_hdr_events_1khz_2khz.npz"],
-                "direct_render_count": len(frames), "direct_render_rate_hz": 2000,
+                "direct_render_count": len(frames),
+                "direct_trace_interval_s": {"min": float(logged_dts.min()),
+                                             "median": float(np.median(logged_dts)),
+                                             "p95": float(np.percentile(logged_dts, 95)),
+                                             "max": float(logged_dts.max()),
+                                             "effective_mean_rate_hz": float(1.0 / logged_dts.mean())},
+                "direct_trace_times_s_sha256": hashlib.sha256(np.asarray(pre["trace_times"], dtype=np.float64).tobytes()).hexdigest(),
                 "render_wall_s": render_wall_s, "sparse_100hz_plugin_wall_s": sparse_wall_s,
-                "direct_2khz_emulator_wall_s": dense_wall_s,
+                "direct_logged_states_emulator_wall_s": dense_wall_s,
                 "generation_response": "same physical_log gain=1 floor=1e-6 threshold=0.2; no noise/bandwidth/refractory; uncalibrated",
                 "sparse_plugin_intervals": interval_diagnostics,
                 "raw_event_and_five_bin_counts": {

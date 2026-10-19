@@ -722,9 +722,9 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 #### R1 Ours 定位失效：采样频率因果诊断（2026-10-19，代码已推送，g1 运行待启动）
 
-新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，取同一缓存物理状态 `.5505–.5905 s`，离线精确渲染 81 个 0.5 ms HDR 状态。比较稀疏 100 Hz HDR 端点经现有 frozen 插件重建、2 kHz 直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference；两个已训练 checkpoint 在相同查询 `.5905 s` 上均读取因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，也不更改 frozen core。此项只分辨输入采样/重建与当前网络定位的关系，不作方法排名。
+新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，使用缓存物理状态窗口 `.5505–.5905 s`。首个启动前置检查发现旧状态 trace 没有保存所有 0.5 ms 物理状态（例如 `.5510 s` 缺失），脚本在渲染前拒绝了该查询；失败退出码 1，不产生任何诊断结果。为保持物理轨迹不被合成，已修正为离线精确渲染窗口内**实际保存的所有状态行**，并将在结果中报告真实、不均匀的时间间隔；对比稀疏 100 Hz HDR 端点经现有 frozen 插件重建、这些精确状态直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference。两个 checkpoint 在相同查询 `.5905 s` 上均读因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，不更改 frozen core，不将合成状态称作 direct render。此项只分辨当前可用输入采样/重建与网络定位的关系，不作方法排名。
 
-- 诊断代码初始提交 `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`，批次日期修正后的执行提交与配置 SHA256 将在本次修订提交后固定；配置 [`r1_ours_localization_cadence_ablation_20261019b.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json) SHA256 `cbcc6a6c24fa1bb088295f1c2755a806fd5550284b1d542e4520ef6fa683679c`。
+- 诊断代码初始提交 `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`。第一次执行前置校验的代码 commit `1c2ba91a86b076625bf88bab66f439ebc6331684` 在请求不存在的 `.5510 s` 状态时按预期 fail-fast，退出码 1，尚未启动 Genesis/渲染。当前配置与脚本已经改为“所有实际记录状态行”，新的执行 commit 将在结果摘要中精确记录；配置 [`r1_ours_localization_cadence_ablation_20261019b.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json) SHA256 `7e91444d68d006ac84c3e6d9b291325fd9cd2e1ad8ee7c8186f891673c5b5f44`。与归档 2 kHz Direct-HDR 输入相比，新增稀疏/直接两条路径使用同一 physical-log 响应；归档参考使用 `log(luminance+1e-6)`，与 `log(max(luminance,1e-6))` 仅在近黑像素 floor 处理上略异，摘要会保留该边界。
 - 复跑命令与待归档输出根目录：
 
   ```bash
