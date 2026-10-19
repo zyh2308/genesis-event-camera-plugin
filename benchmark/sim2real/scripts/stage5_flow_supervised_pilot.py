@@ -55,8 +55,13 @@ def state_sha256(model: torch.nn.Module) -> str:
 
 def load_sample(path: Path, index: int) -> dict[str, np.ndarray]:
     with np.load(path, allow_pickle=False) as z:
-        return {key: np.asarray(z[key][index]).copy() for key in (
-            "events", "flow_gt", "flow_valid", "sample_ids", "label_sha256")}
+        result = {}
+        for key in ("events", "flow_gt", "flow_valid", "sample_ids", "label_sha256"):
+            value = np.asarray(z[key])
+            # Rollout-level label hashes are scalar metadata, while the data
+            # and sample identifiers carry a leading window dimension.
+            result[key] = value.copy() if value.ndim == 0 else np.asarray(value[index]).copy()
+        return result
 
 
 def model_source(model_root: Path, device: torch.device):
