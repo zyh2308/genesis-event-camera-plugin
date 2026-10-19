@@ -67,6 +67,12 @@ def load_checkpoint_model(path: Path, arm: str, model_root: Path, data_manifest_
     upstream = patch_ste(models, multiscaleloss, model_root)
     model = models.steflow().to(device)
     model.load_state_dict(saved["state_dict"], strict=True)
+    current_hash = hashlib.sha256()
+    for name, value in sorted(model.state_dict().items()):
+        current_hash.update(name.encode())
+        current_hash.update(value.detach().cpu().contiguous().numpy().tobytes())
+    if saved.get("current_state_sha256") != current_hash.hexdigest():
+        raise RuntimeError(f"{arm} checkpoint model-state hash mismatch")
     model.eval()
     metadata = {k: saved.get(k) for k in ("generator", "seed", "epoch", "optimizer_update", "next_epoch",
                                           "best_epoch", "best_synthetic_validation_epe", "initial_state_sha256",
@@ -197,8 +203,10 @@ def main() -> None:
         rows.append(row)
 
     result_models = {}
+    initial_hashes = set()
     for arm, checkpoint in (("eventgenesis", args.eventgenesis_checkpoint.resolve()), ("v2e", args.v2e_checkpoint.resolve())):
         model, source_patch, checkpoint_meta = load_checkpoint_model(checkpoint, arm, model_root, manifest_sha, config_sha, device)
+        initial_hashes.add(checkpoint_meta.get("initial_state_sha256"))
         result_models[arm] = {"checkpoint": {"path": str(checkpoint), "sha256": sha256(checkpoint), **checkpoint_meta},
                               "source_patch": source_patch, "samples": []}
         for row in rows:
@@ -224,6 +232,8 @@ def main() -> None:
             result_models[arm]["samples"].append(sample_result)
         del model
         torch.cuda.empty_cache()
+    if len(initial_hashes) != 1:
+        raise RuntimeError(f"synthetic-best checkpoint initialization hashes differ: {sorted(initial_hashes)}")
 
     for row in rows:
         del row["_pair"], row["_variant_inputs"], row["_masks"]
