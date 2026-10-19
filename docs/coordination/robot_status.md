@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-19（Asia/Tokyo）
-**阶段：** R1 原生 HDR 小规模配对重训与 20261019c 定位/采样诊断均已完成；200/500/1000 Hz exact-row cadence sweep 代码和配置已提交，但 g1 检查因两次 SSH 超时暂停，尚未启动实验。现有证据将首个明显失效点定位在 Ours 模型收到不同事件源后的图像定位输出；100 Hz Ours 事件存在强烈帧边界 burst，但它是否是主要原因仍未因果证明。未修改 frozen core，也未启动新一轮训练。此前 `7fb72dc` 及其审核结果原样保留；新增输出独立归档。场景、相机、物理时钟、strict scorer 和共同 Direct-HDR 参考未改变。
+**阶段：** R1.5 缓存轨迹图像/事件对照、200/500/1000 Hz 采样扫查和端点单因素事件隔离均已在 g1 完成。端点数值缺陷已在 NumPy 与 CPU Torch 路径复现；端点修正确有降低事件量，但仍无法解释更大的中间帧生成差异，也未恢复跨相位稳定定位。frozen core 未修改，正式排名/大规模训练未启动。代码提交 `2d782fbd75c7dc3d64b39e6af32364caa5e2f795` 已推到 `exp/robot-closed-loop-v1`；运行产物和证据见本文件末尾的 R1.5 实测收敛状态。场景、相机、物理时钟、strict scorer 和共同 Direct-HDR 参考未改变。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1 原生 HDR 与失效链路诊断（2026-10-19；小规模开发批次）
@@ -718,7 +718,7 @@ cd ~/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-202610
 bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1_native_hdr_small9_retrain_<new_id>
 ~~~
 
-**状态与建议：**HDR 输入转换、有限数值、事件坐标/极性/分箱检查未发现显示灰度误标或接口错误；源帧 seam burst 是已观察到的数值异常，但根因仍待隔离。native-HDR retrain 没恢复共同参考能力，因此目前**不具备恢复后续生成器比较的条件**。不建议立即扩大训练；最小下一步是固定 +55 mm 与中心缓存状态，比较现有插件事件与精确状态高频 direct-render 参考的 seam、raw event、五-bin 和 localization，确认 seam burst 是否为主要域差异。若修复必须改 frozen core，先将最小复现、影响面和方案提交研究会审议；正式测试集/排名保持未启动。
+**当时的状态与建议：**HDR 输入转换、有限数值、事件坐标/极性/分箱检查未发现显示灰度误标或接口错误；native-HDR retrain 没恢复共同参考能力。该段提出的“固定 +55 mm 与中心缓存状态，比较插件事件与 direct-render”的下一步已由下面的 R1.5 实验完成，更新结论见文末；正式测试集/排名仍未启动。
 
 #### R1 Ours 定位失效：采样频率与事件源诊断（2026-10-19，g1 已完成）
 
@@ -750,14 +750,16 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 - g1 到 GitHub 的 `git fetch` 首次手动中断，60 秒退避后单次尝试也以 exit 124 超时；未继续重试。之后通过一次性 Git bundle 传输恢复分支：SHA256 `e7324460ab938080898a74c2059f710c7e69ad675f3c8e2f2b4af691db8801f1`，远端校验通过，并在隔离 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b` 检出提交 `1c2ba91a86b076625bf88bab66f439ebc6331684`。未触碰原始 R1 工作树和数据。
 - 复跑仍使用上面的 g1 命令并提供一个新的隔离输出目录名。结论目前适合提交研究会审阅的是：Ours 的错误由事件源变化触发的定位偏移，而高强度 100 Hz seam burst 是相关候选；需进一步做时序采样因果隔离后才能选择修复。该批次不表示机器人抓取性能、不作 Ours/V2E 排名，未修改 frozen core。
 
-#### Ours temporal cadence sensitivity follow-up（2026-10-19，g1 暂停）
+#### Ours temporal cadence sensitivity follow-up（2026-10-19，执行前历史记录；结果见文末）
+
+本节以下内容记录运行前的环境问题和计划；g1 连接恢复后已复用原 worktree 完成 cadence 与端点隔离实验，实际结果、哈希和复跑命令以文末 R1.5 实测收敛状态为准。
 
 - 为判断 seam burst 是否随 endpoint cadence 消退，新增可选 `cadence_sweep_hz=[200,500,1000]`：每个频率只选窗口内**已经记录并已 direct-render 的精确 trace 行**，保留真实不规则间隔，送入同一个 frozen reconstruction plugin；不插值出新状态、不改模型/标签/推理 query、不推进物理。此版本补充 100 Hz、exact logged-state direct 和 archived 2 kHz 对照。诊断代码/配置 commit `d1572dd3c2f28645c9f6494126100275068f350f`；配置 [`r1_ours_localization_cadence_sweep_20261019d.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_sweep_20261019d.json) SHA256 `9b4f0c84ca2ec2615b2a3de7f6500e8b3ece9189a18989c15c036896f66bd329`；冻结 scene/control/reference/checkpoint 哈希沿用 20261019c。
 - 运行前 g1 资源快照：GPU 0 由其他用户 PID `783655` 使用 14.47 GiB / 99%，未触碰；GPU 1 空闲 4 MiB / 0%，GPU 2–5 空闲；内存可用约 485 GiB，项目盘约 12 TiB 可用。诊断预期沿用 CPU 模型/事件处理，只让 renderer 使用空闲 GPU 1。g1 环境 `Genesis 1.2.2 / Torch 2.8.0+cpu` 存在且原 20261019c worktree 未变。
 - 本地 Git bundle SHA256 `2e30d55225a41fbb5318a4c5d67bfeddc9caef5f967ae8bd11d3a3030c2b964f` 已在 g1 校验并 fetch 到 `refs/codex/robot-cadence-sweep-20261019d`。**操作偏差：** 用户已说明目标 `genesis-event-camera-plugin-r1-cadence-sweep-20261019d` worktree 已存在；我第一次远端预检只核对了旧 20261019b worktree，没有核对用户指定的目标路径，随后错误地发起了 `git worktree add`。SSH 命令在 30 s 处超时，输出显示 checkout 到 38%；之后一次只读状态检查也超时。按 g1 SSH 保护规则退避后已停止所有远程操作。目标 worktree 当前状态以及是否有 checkout 子进程均**未确认**；没有启动 cadence experiment、没有覆盖运行结果，也没有清理或停止任何远端文件/进程。后续必须先只读确认目标路径与 Git worktree 状态；不得再次创建该 worktree 或直接在原始 R1 worktree/g1 原仓库运行。
 - g1 恢复后第一步只做单次只读状态检查：查看 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 是否存在、HEAD 是否为 `d1572dd3c2f28645c9f6494126100275068f350f`、工作区状态以及该路径下是否存在未完成的 checkout；确认安全后才运行，不触碰其他用户作业。输出根路径拟为 `benchmark/robot_closed_loop/results/r1_ours_localization_cadence_sweep_20261019d`。本批次尚无实验结果或 runtime log。
 
-#### R1.5 事件生成一致性候选（2026-10-19；解析控制已过，缓存轨迹执行待完成）
+#### R1.5 事件生成一致性候选（2026-10-19；设计与启动前记录，结果见文末）
 
 本阶段依据研究审查 `C:/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/robot_r1_5_audit_2026-10-19/REVIEW.md` 及同目录审计 JSON/脚本推进。审查确认至少有两个独立生成问题；Ours 旧 checkpoint 对 0.585–0.595 s 的 0.5 ms 读取相位也高度敏感，不能只凭单个时刻评估。
 
@@ -775,45 +777,35 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 小型结果入口：[`R1.5 analytic controls`](../../benchmark/robot_closed_loop/results/r1_5_candidate_controls_20261019a/README.md)。解析输出 SHA256 `d4b7df4333a2e76d3076a82fcbd7fe3cfdf86c5db5b37eec67403afceef590e2`；目录 manifest SHA256 `c037fbf3e6e155207b143bb4a5360952f5df5df41728d96828829826efe53f69`。候选实现 commit `c427e574922aa5c9676151c3404437a74dce9f75`；缓存 runner 成本/端点检查补充 commit `f9c54cfbfed6a8c52c3a788274c66713935e9ede`。候选 config/module/cache runner SHA256 分别 `13efc23498f82c9e0f27539c06abc4554b831a9173ca5e8d5fc2bd603a326226 / 98ba537df324133fb9b93faba8f5f83a42f74161aab88fb6dfa1e4e26996a5cc / 3547d2f07ccdbbdd6a4c047cb45b5d8bb754f94e670e9d82725d6925d57b8955`。scene/control、Ours/V2E checkpoint SHA 沿用本节上游记录：`aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a / 3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80` 与 `6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2 / a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0`。原 reference manifest SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；中心/+55 mm source cache SHA256 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7 / 91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434`。
 
-**尚未完成：**g1 上的真实缓存 candidate-vs-direct 图像/事件/多时刻定位、render fallback 成本、200/500/1000 Hz cadence run 和 Torch 数值路径检查尚未执行。上一轮连续两次 SSH 超时后，按项目 `AGENTS.md` 停止远程连接；本轮没有再次连接，因此服务器上的指定 worktree 实时状态仍未确认。没有创建第二份 worktree、覆盖输出、清理文件或干预其他用户进程。
+本节下方原有“尚未完成”清单和启动命令记录的是执行前状态，现已由文末“R1.5 实测收敛状态”中的 g1 实测结果、哈希和复跑命令取代。此前的解析控制数据仍作为历史证据保留。
 
-恢复后先只读核对既有路径 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 的 HEAD/clean 状态、checkout 状态、GPU/进程 owner 和输出目录；确认安全后在该 worktree fast-forward 到新提交再运行。命令骨架如下：
+#### R1.5 实测收敛状态（2026-10-19；g1 已完成）
 
-~~~bash
-cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d
-/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
-  benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_consistency.py \
-  --config benchmark/robot_closed_loop/configs/r1_5_consistency_candidates_20261019a.json \
-  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
-  --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
-  --reference-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
-  --source-cache-root /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019a/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
-  --ours-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
-  --v2e-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt \
-  --output benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019a_g1
-~~~
+场景、相机、机器人任务、控制器和 strict scorer 沿用既有配置；研究审查指定的中心 episode 004 与 +55 mm episode 005 作为开发诊断，不作独立测试或排名。所有事件/模型对照复用同一缓存物理状态序列和相机；离线精确状态渲染不推进物理，也不生成缺失的中间 GT 状态。
 
-**决策状态：**目前不建议切换 frozen core。先获得两缓存的准确端点/亮度/遮挡对照及成本；若候选通过一般性控制，再整理最小 Torch/NumPy core diff、旧产物失效范围交研究审查。之后建议固定现有 split/网络/预算/seed 做一次小规模 Ours 重训，并在未用于 checkpoint 选择的新开发 episodes 上报告完整 21 phase queries；如改网络或窗口增强，两组采用相同方案。稳定感知仍需证明修复后跨相位定位改善且 render 成本可接受；闭环还需少量新 learned rollout 验证接触、夹持、抬升和 strict hold。旧 checkpoint 不要求在修正输入上立即改善。
+**已确认的问题与影响：**
 
-#### R1.5 g1 缓存回放续跑（2026-10-19；CPU 诊断准备完成，结果待运行）
+- 在真实缓存的精确端点，NumPy 最大投影偏差约 `1.5e-5 / 6.1e-5 px`、Torch CPU 约 `7.6e-5 px`，但最近深度 z-buffer / 可见性竞争会把微小坐标误差放大成大量不同像素。精确 source identity 端点候选让端点画面逐像素恢复。它只处理数学上的精确端点，不对中间物体运动取整。
+- 平滑亮度控制证实 `next_primary` 会在区间第一个生成子帧立即采用全部末端亮度：10 ms ramp 的阈值事件从应有的 `4/8 ms` 提前到 `0.4/0.8 ms`。静态图仍为零事件。这证明亮度时间处理有局限，但不单独证明真实轨迹中的全部 seam 来源。
+- exact-row cadence sweep 显示事件量随输入端点频率急剧上升。40 ms 对照内，100/200/500/1000 Hz warp 路径在 center 产生 `23,690/53,177/133,592/259,960` events，在 +55 mm 产生 `24,776/45,090/111,557/218,197`；直接将窗口内已保存的精确状态 HDR 画面送入同一个 DVS 响应仅有 `2,807/4,618` events。raw event 数量级明显不一致。
+- 只把每个区间最后的 `alpha=1` 重建帧换成其精确端点 luminance，保持所有中间子帧原样，事件量下降 `17.5–30.1%`，但剩余仍比 exact-state direct-render 高 `7–76×`。因此端点投影 bug 是真实且有贡献的数值错误，但不是事件量膨胀和方块定位失败的唯一原因。
+- 端点候选在单个 `.5905 s` cutoff 的模型误差变化不一致，不能说明定位已修复。更完整的 21 个 query phase 中，现有 Ours checkpoint 在 exact-state direct-render 输入的 XY P95 为 center `127.8 mm`、+55 mm `167.1 mm`；端点候选 P95 也随模型/episode 大幅变化。原生 HDR 模型在当前 Direct-HDR 共同参考上的域适配仍失败。
+- 通过实际 render fills 的 log-radiance 区间候选能降低目标区域图像误差，某些查询更准，但每集 `53/59` 个真实状态行都至少请求一次 direct render，约覆盖累计图像像素的 `9.3–9.4%`；该成本尚不足以支持它作为正式在线路径，事件/模型结果也不稳定。
 
-- g1 单次只读复核成功：用户指定的既有 worktree `genesis-event-camera-plugin-r1-cadence-sweep-20261019d` 原为干净 `d1572dd3c2f28645c9f6494126100275068f350f`，现仅 fast-forward 到代码 commit `e1fd8d535d97e77ba46cde102ca4c9a8b20ea17b`，工作区干净；未创建/覆盖 worktree。source cache、逐状态 1 kHz HDR evidence、共同 Direct-HDR episode 与两 checkpoint 均可访问。输出目录 `r1_5_consistency_candidates_20261019a_cached_cpu_g1` 在启动前不存在。
-- 启动前资源快照：g1 总内存可用约 400 GiB，项目盘可用约 12 TiB，系统 load average 约 22/128 核。GPU 0–5 均由其他进程占用（GPU 2 有两个训练进程），本阶段不申请 GPU，采用单线程 CPU cached-evidence runner；没有改动或干扰已有进程。启动前环境检查命令在 20 s 内未返回 Python 版本行，后续改由已知 `/repositories/gec-robot/.venv-robot` 直接运行，若启动失败会记录并排查。
-- 新增 [`diagnose_r1_5_cached_evidence.py`](../../benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cached_evidence.py) 与独立配置 [`r1_5_cached_evidence_cpu_20261019a.json`](../../benchmark/robot_closed_loop/configs/r1_5_cached_evidence_cpu_20261019a.json)，代码/配置 commit `e1fd8d535d97e77ba46cde102ca4c9a8b20ea17b`，SHA256 分别 `6a62c8117a8d97aa5a29de259694b1eb19dbf000d575ed2843d992591cd27207 / d978863d123771397901504b6479cf2f093e65156b71682333139d6a8f43e467`。该路径完全不初始化 Genesis renderer，不推进物理，只读取 exact-state source/dense HDR caches 和真实状态行；比较冻结、端点投影恒等、准确端点、log-radiance 请求候选，在 `.585–.595 s` 每 `0.5 ms` 对两旧模型做诊断，并把 unmatched render requests 明确记为未解析。精确缓存直接帧仅覆盖 `.5815–.5905 s`；其余像素为保留 DVS 定义而暂用近端点值，不作为全路径通过证据。
-- 启动命令（已检查入口可编译；服务器运行尚未开始）：
+**结果、配置和成本：**
+
+- Exact-state image/event replay 与全部 21 个 query phases：[`r1_5_consistency_candidates_20261019b_realrender_g1`](../../benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019b_realrender_g1/)，输出 manifest 文件 SHA256 `49764b3f4e70b406c34d1c41d46ea344c13b9b9cb8d2ca85fd4404563c69ae15`。执行代码 commit `2690935cac25a943148201bb66c31af63d65fd23`，配置 SHA256 `13efc23498f82c9e0f27539c06abc4554b831a9173ca5e8d5fc2bd603a326226`，总 wall `197.931 s`；118 次精确状态 render 共 `3.763 s`，exact direct event emulation 共 `1.433 s`。
+- Exact-row cadence sweep：[`r1_ours_localization_cadence_sweep_20261019d`](../../benchmark/robot_closed_loop/results/r1_ours_localization_cadence_sweep_20261019d/)，manifest SHA256 `010ef8dda4351b4b6f10ead6f4e8d3dd3b0edd837ef9881a24c73e63c144959b`。执行代码 commit `2690935cac25a943148201bb66c31af63d65fd23`，配置 SHA256 `9b4f0c84ca2ec2615b2a3de7f6500e8b3ece9189a18989c15c036896f66bd329`；40 ms clip 的实际 trace 有 47 行/episode，间隔 min `0.5 ms`、median/max `1 ms`，有效均值约 `1.15 kHz`。两集 render wall 共 `2.860 s`，全诊断 Python wall `187.398 s`。200/500/1000 Hz 采样只挑真实保存状态，不合成状态。
+- 端点单因素 cadence isolation：[`r1_5_endpoint_terminal_cadence_isolation_20261019e`](../../benchmark/robot_closed_loop/results/r1_5_endpoint_terminal_cadence_isolation_20261019e/)，manifest 文件 SHA256 `cca6858a08ff3ed1ee1c0d48c8e50a81c6e323c7e98e6394969256024b0cfdaf`。执行代码 commit `2d782fbd75c7dc3d64b39e6af32364caa5e2f795`，配置 [`r1_5_endpoint_terminal_cadence_isolation_20261019e.json`](../../benchmark/robot_closed_loop/configs/r1_5_endpoint_terminal_cadence_isolation_20261019e.json) SHA256 `8fdd5e668ae6c2316ac9ad4449511c1f9fef14d7c1ce28b2a98874931f951f3b`；total Python wall `289.005 s`，render wall `3.061 s`，模型/事件计算使用 CPU、GPU0 用于 headless renderer。runtime log SHA256 `6b64a389e6736f00ac4d4d14eccac6965bf42762535ef206a947283ba020cc34`，exit 文件内容为 `0`；launcher SHA256 `4e09c8dd10879c99f3cc8063561f86271f67fbc455fc7739e9ed29fc6b44f5a1`。
+- 固定参数沿用 scene SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`、shared control SHA256 `3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80`、Direct-HDR reference manifest SHA256 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；Ours/V2E checkpoint SHA256 `6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2 / a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0`。
+- g1 工作树继续复用既有 `genesis-event-camera-plugin-r1-cadence-sweep-20261019d`，从 `2690935` 前进到 `2d782fb`；没有创建第二个 worktree。运行时 GPU0 为 idle renderer 选用，其余已占用 GPU 和其他用户进程未触碰。Genesis 输出共享 Quadrants cache-lock warning，运行仍 exit 0；未清理共享缓存。
+- 复跑最新端点隔离：
 
   ```bash
   cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-cadence-sweep-20261019d
-  OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=. \
-    /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
-    benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cached_evidence.py \
-    --config benchmark/robot_closed_loop/configs/r1_5_cached_evidence_cpu_20261019a.json \
-    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
-    --reference-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
-    --evidence-root /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
-    --ours-checkpoint benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
-    --v2e-checkpoint benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt \
-    --output benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019a_cached_cpu_g1
+  bash benchmark/robot_closed_loop/results/runtime_logs/r1_5_endpoint_terminal_cadence_isolation_20261019e.launch.sh
   ```
 
-- 尚未有缓存回放结果、端到端耗时或结果哈希。独立 Direct-HDR 每物理行新渲染路径仍待 GPU 空闲后运行；R1.5 的 200/500/1000 Hz cadence comparison 也未开始。当前无 core diff，旧 checkpoint 不作为修复效果验收。
+**建议与未解决项：**
+
+目前不把块定位归结为一个已完全定位的 bug，也不建议切换 frozen core 或立即重训。可提交的最小精确端点 NumPy/Torch patch 是一般性正确性修复候选，`git apply --check` 通过，但先交研究侧审查，并界定所有旧 Ours 插值事件及其模型结果必须作为旧 core 版本单独标识。主要事件分布差异仍来自端点之间的生成路径；下一步只在 benchmark 诊断层增加“区间内亮度连续变化 + 遮挡/对应不确定像素请求 direct render”的候选，对两 episodes 的静态、平滑亮度 ramp、真实中间运动和 21 query phases 比较图像、逐子帧/总事件量与成本。若这组一般性控制通过且事件量明显接近 direct reference，再考虑经审查的 core 改动与一次匹配小重训；否则先把最小复现和替代路径交研究侧决定。闭环成功、真实事件硬件保真、正式 Ours/V2E 排名目前都没有由本轮实验建立。
