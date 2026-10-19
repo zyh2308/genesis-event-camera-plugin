@@ -38,6 +38,7 @@ from benchmark.sim2real.compat.e2vid_temporal_consistency import (  # noqa: E402
     validate_upstream as validate_tc_upstream,
 )
 from benchmark.sim2real.e2vid_stage5_gate import (  # noqa: E402
+    canonical_sha256,
     collect_data_files,
     sha256_file,
     verify_data_rows,
@@ -229,6 +230,7 @@ def main() -> None:
     model_bundle_info = verify_model_bundle(model_root, source_bundle_path)
     upstream_loss_info = validate_tc_upstream(model_root)
     fingerprints = {
+        "preparation_script_sha256": sha256(REPO / "benchmark/sim2real/scripts/prepare_e2vid_stage5_run.py"),
         "trainer_script_sha256": trainer_script_sha,
         "compat_source_sha256": sha256(compat_path),
         "geometry_script_sha256": sha256(geometry_script_path),
@@ -283,6 +285,8 @@ def main() -> None:
             if (receipt.get("status") != "pass" or receipt.get("fingerprints") != fingerprints
                     or receipt.get("initial_model_sha256") != expected_initial_hash):
                 raise RuntimeError(f"paired {arm} preflight receipt does not match this training group")
+            if canonical_sha256(group_manifest["data_files"][arm]) != receipt.get("data_files_sha256"):
+                raise RuntimeError(f"paired {arm} preflight data-file receipt differs from group manifest")
         joint_record = group_manifest.get("joint_augmentation_receipt", {})
         joint_path = Path(joint_record.get("path", ""))
         if (not joint_path.is_file() or sha256(joint_path) != joint_record.get("sha256")):

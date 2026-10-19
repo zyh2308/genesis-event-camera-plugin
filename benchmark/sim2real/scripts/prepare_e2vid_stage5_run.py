@@ -62,6 +62,7 @@ def main() -> None:
     data_files = collect_data_files(data_root, data_manifest, verify=True)
 
     fingerprints = {
+        "preparation_script_sha256": sha256_file(Path(__file__).resolve()),
         "trainer_script_sha256": sha256_file(trainer_path),
         "compat_source_sha256": sha256_file(compat_path),
         "geometry_script_sha256": sha256_file(geometry_path),
