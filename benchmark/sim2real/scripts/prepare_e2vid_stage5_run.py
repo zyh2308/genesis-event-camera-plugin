@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO))
 
 from benchmark.sim2real.compat.e2vid_temporal_consistency import (
     PINNED_UPSTREAM_SHA256,

@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -194,11 +195,64 @@ def authorize_real_evaluation(protocol_path: Path, manifest_path: Path, authoriz
             raise PermissionError(f"authorization {key} does not match reviewed protocol artifact")
 
 
+def validate_checkpoint_binding(manifest: dict[str, Any], arms: set[str] | None = None) -> dict[str, dict[str, Any]]:
+    """Validate the manifest's actual checkpoint_binding schema and files.
+
+    Candidate weights live in the test manifest, not the protocol. Requiring
+    non-null exact path/size/hash here prevents an artifact from being scored
+    against a missing or silently substituted synthetic-best checkpoint.
+    """
+    arms = arms or {"eventgenesis", "v2e"}
+    binding = manifest.get("checkpoint_binding")
+    if not isinstance(binding, dict) or set(binding) != arms:
+        raise ValueError(f"manifest checkpoint_binding must contain exactly {sorted(arms)}")
+    checked: dict[str, dict[str, Any]] = {}
+    for arm in sorted(arms):
+        row = binding[arm]
+        path_value, digest, size = row.get("path_on_g1"), row.get("sha256"), row.get("size_bytes")
+        if not isinstance(path_value, str) or not path_value:
+            raise ValueError(f"{arm} checkpoint_binding.path_on_g1 is missing")
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise ValueError(f"{arm} checkpoint_binding.sha256 is missing or malformed")
+        path = Path(path_value)
+        if not path.is_file():
+            raise FileNotFoundError(f"registered {arm} synthetic-best checkpoint is missing: {path}")
+        actual_size, actual_sha = path.stat().st_size, sha256_file(path)
+        if actual_size != int(size) or actual_sha != digest:
+            raise ValueError(
+                f"{arm} checkpoint_binding differs from file: size={actual_size}/{size}, sha256={actual_sha}/{digest}"
+            )
+        checked[arm] = {**row, "resolved_path": str(path.resolve())}
+    return checked
+
+
+def load_registered_artifact_pair(row: dict[str, Any], checkpoint_binding: dict[str, dict[str, Any]]) -> dict[str, dict[str, np.ndarray]]:
+    """Hash-check candidate files and bind each to its registered checkpoint."""
+    arm_paths = row.get("artifacts")
+    arms = set(checkpoint_binding)
+    if not isinstance(arm_paths, dict) or set(arm_paths) != arms:
+        raise ValueError(f"each registered window must list exactly {sorted(arms)}")
+    loaded: dict[str, dict[str, np.ndarray]] = {}
+    for arm, item in arm_paths.items():
+        path = Path(item["path"])
+        if not path.is_file() or sha256_file(path) != item.get("sha256"):
+            raise ValueError(f"missing or changed {arm} artifact for {row.get('sequence')} APS {row.get('aps_start_index')}")
+        if item.get("checkpoint_sha256") != checkpoint_binding[arm].get("sha256"):
+            raise ValueError(f"{arm} artifact checkpoint hash differs from registered synthetic-best")
+        with np.load(path, allow_pickle=False) as bundle:
+            required = ("event_input_native_uint8", "prediction_px_per_interval", "gt_px_per_interval")
+            if any(key not in bundle for key in required):
+                raise ValueError(f"{arm} artifact lacks required arrays: {required}")
+            loaded[arm] = {key: np.asarray(bundle[key]) for key in required}
+    return loaded
+
+
 def evaluate_pair_manifest(manifest_path: Path, protocol_path: Path, authorization_path: Path) -> dict[str, Any]:
     """Score registered paired artifact NPZs after the external approval gate."""
     authorize_real_evaluation(protocol_path, manifest_path, authorization_path)
     manifest = json.loads(manifest_path.read_text())
     protocol = json.loads(protocol_path.read_text())
+    checkpoint_binding = validate_checkpoint_binding(manifest)
     expected_by_sequence = manifest.get("registered_aps_start_indices", {})
     seen_by_sequence: dict[str, set[int]] = {seq: set() for seq in protocol["sequences"]}
     rows_by_sequence: dict[str, list[dict[str, Any]]] = {}
@@ -223,21 +277,7 @@ def evaluate_pair_manifest(manifest_path: Path, protocol_path: Path, authorizati
         if sample_index not in expected_by_sequence.get(sequence, []):
             raise ValueError(f"unregistered APS index {sample_index} for {sequence}")
         sequence_spec = protocol["sequence_specs"][sequence]
-        arm_paths = row["artifacts"]
-        required_arms = {"eventgenesis", "v2e"}
-        if set(arm_paths) != required_arms:
-            raise ValueError(f"each registered window must list exactly {sorted(required_arms)}")
-        loaded = {}
-        for arm, item in arm_paths.items():
-            path = Path(item["path"])
-            if not path.is_file() or sha256_file(path) != item.get("sha256"):
-                raise ValueError(f"missing or changed {arm} artifact for {sequence} APS {row['aps_start_index']}")
-            if item.get("checkpoint_sha256") != protocol["checkpoint_index"][arm].get("sha256"):
-                raise ValueError(f"{arm} checkpoint hash differs from frozen synthetic-best index")
-            with np.load(path, allow_pickle=False) as bundle:
-                loaded[arm] = {key: np.asarray(bundle[key]) for key in (
-                    "event_input_native_uint8", "prediction_px_per_interval", "gt_px_per_interval"
-                )}
+        loaded = load_registered_artifact_pair(row, checkpoint_binding)
         eg, v2e = loaded["eventgenesis"], loaded["v2e"]
         if not np.array_equal(eg["gt_px_per_interval"], v2e["gt_px_per_interval"], equal_nan=True):
             raise ValueError(f"paired GT differs for {sequence} APS {row['aps_start_index']}")
@@ -303,7 +343,8 @@ def evaluate_pair_manifest(manifest_path: Path, protocol_path: Path, authorizati
         "protocol_sha256": sha256_file(protocol_path),
         "test_manifest_sha256": sha256_file(manifest_path),
         "authorization_record": str(authorization_path.resolve()),
-        "checkpoint_index": protocol["checkpoint_index"],
+        "checkpoint_binding": {arm: {key: value for key, value in item.items() if key != "resolved_path"}
+                               for arm, item in checkpoint_binding.items()},
         "checkpoint_selection_or_generator_adjustment_from_real_scores": False,
         "dt": 1,
         "sequence_summary": summary,
@@ -375,6 +416,60 @@ def self_test() -> dict[str, Any]:
         assert "flow units" in str(exc)
     else:
         raise AssertionError("flow-unit mismatch must fail")
+    # Exercise the real schema and file-binding path on temporary, tiny
+    # synthetic artifacts. This does not touch any MVSEC file or open the real
+    # scoring gate.
+    with tempfile.TemporaryDirectory(prefix="mvsec-manifest-binding-selftest-") as temp:
+        root = Path(temp)
+        checkpoint_binding = {}
+        artifact_rows = {}
+        pair_event = np.zeros(EVENT_SHAPE, dtype=np.uint8)
+        pair_gt = np.zeros((2, *SENSOR_HW), dtype=np.float32)
+        pair_pred = np.zeros_like(pair_gt)
+        pair_event[0, 5, 7, 0] = 1
+        pair_gt[:, 5, 7] = (3.0, 4.0)
+        pair_pred[:, 5, 7] = (3.0, 4.0)
+        for arm in ("eventgenesis", "v2e"):
+            checkpoint_path = root / f"{arm}.pt"
+            checkpoint_path.write_bytes(f"temporary synthetic-only {arm} weight".encode())
+            checkpoint_binding[arm] = {
+                "path_on_g1": str(checkpoint_path), "size_bytes": checkpoint_path.stat().st_size,
+                "sha256": sha256_file(checkpoint_path), "expected_epoch": 1,
+            }
+            artifact_path = root / f"{arm}.npz"
+            np.savez_compressed(
+                artifact_path, event_input_native_uint8=pair_event,
+                prediction_px_per_interval=pair_pred, gt_px_per_interval=pair_gt,
+            )
+            artifact_rows[arm] = {
+                "path": str(artifact_path), "sha256": sha256_file(artifact_path),
+                "checkpoint_sha256": checkpoint_binding[arm]["sha256"],
+            }
+        fixture_manifest = {"checkpoint_binding": checkpoint_binding}
+        checked_binding = validate_checkpoint_binding(fixture_manifest)
+        loaded_pair = load_registered_artifact_pair(
+            {"sequence": "synthetic_fixture", "aps_start_index": 0, "artifacts": artifact_rows},
+            checked_binding,
+        )
+        fixture_mask, fixture_support = common_valid_mask(
+            loaded_pair["eventgenesis"]["gt_px_per_interval"],
+            loaded_pair["eventgenesis"]["event_input_native_uint8"],
+            loaded_pair["v2e"]["event_input_native_uint8"],
+        )
+        fixture_metrics = compute_window_metrics(
+            loaded_pair["eventgenesis"]["prediction_px_per_interval"],
+            loaded_pair["eventgenesis"]["gt_px_per_interval"], fixture_mask,
+        )
+        assert fixture_support["common_valid_pixels"] == 1
+        assert fixture_metrics["aee_px_per_interval"] == 0.0
+        invalid_binding = json.loads(json.dumps(fixture_manifest))
+        invalid_binding["checkpoint_binding"]["v2e"]["sha256"] = "0" * 64
+        try:
+            validate_checkpoint_binding(invalid_binding)
+        except ValueError as exc:
+            assert "checkpoint_binding differs from file" in str(exc)
+        else:
+            raise AssertionError("stale synthetic-best checkpoint hash must fail closed")
     try:
         authorize_real_evaluation(DEFAULT_PROTOCOL, DEFAULT_MANIFEST, Path("/nonexistent/approval.json"))
     except FileNotFoundError:
@@ -400,6 +495,15 @@ def self_test() -> dict[str, Any]:
             "row_190_excluded": bool(not crop_valid[190, 10]),
         },
         "empty_common_support": empty_metrics,
+        "full_artifact_manifest_weight_binding_fixture": {
+            "status": "pass", "score_mode": "synthetic-only hand-built fixture",
+            "checkpoint_schema": "manifest.checkpoint_binding",
+            "pair_artifact_sha256_checked": True,
+            "artifact_checkpoint_hash_bound_to_weight_file": True,
+            "manual_aee_px_per_interval": fixture_metrics["aee_px_per_interval"],
+            "stale_weight_hash_negative_control": "rejected",
+            "real_data_used": False, "real_scores_authorized": False,
+        },
         "arm_input_mismatch": "rejected",
         "component_broadcast": "rejected",
         "real_score_authorization": "closed_without_review-linked authorization record",
