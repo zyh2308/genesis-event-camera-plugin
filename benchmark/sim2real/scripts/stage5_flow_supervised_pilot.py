@@ -126,6 +126,24 @@ def predict_eval(model, events, device) -> np.ndarray:
     return out
 
 
+def verify_train_eval_output_parity(model, sample: dict[str, np.ndarray], device: torch.device) -> dict:
+    """Check that mode-dependent return structure does not change the full flow."""
+    events, _, _ = pad_sample(sample, device)
+    model.train()
+    with torch.inference_mode():
+        train_outputs = model(events, 352, use_dt4=False, flow_seq=False)
+    if not isinstance(train_outputs, (tuple, list)) or len(train_outputs) != 4:
+        raise RuntimeError("training-mode STE-FlowNet must return four scales for the mode-parity check")
+    train_flow = model_output_to_flow_hw(train_outputs[0])[:, 46:306, 3:349]
+    eval_flow = predict_eval(model, events, device)
+    max_abs = float(np.max(np.abs(train_flow - eval_flow)))
+    if not np.allclose(train_flow, eval_flow, atol=1e-6, rtol=0):
+        raise RuntimeError(f"STE train/eval full-flow output differs for a fixed input: max_abs={max_abs}")
+    return {"sample_id": str(sample["sample_ids"]), "max_abs_difference": max_abs,
+            "flow_sha256": hashlib.sha256(np.ascontiguousarray(eval_flow).view(np.uint8)).hexdigest(),
+            "status": "pass"}
+
+
 def epe_pair(pred, gt, mask):
     count = int(mask.sum())
     if not count:
@@ -140,10 +158,14 @@ def main() -> None:
     p.add_argument("--config", type=Path, required=True)
     p.add_argument("--output-root", type=Path, required=True)
     p.add_argument("--updates", type=int, default=80)
+    p.add_argument("--train-windows-per-rollout", type=int, default=16,
+                   help="fixed evenly spaced samples per training rollout; default reproduces the 64-window pilot")
     p.add_argument("--device", default="cuda:0")
     args = p.parse_args()
     if args.updates < 1:
         raise ValueError("--updates must be positive")
+    if not 1 <= args.train_windows_per_rollout <= 64:
+        raise ValueError("--train-windows-per-rollout must be within [1,64]")
     out_root = args.output_root.resolve()
     if out_root.exists():
         raise FileExistsError(f"refusing to overwrite pilot output: {out_root}")
@@ -179,7 +201,14 @@ def main() -> None:
             path = Path(row["path"])
             if not path.is_file() or sha256(path) != row["sha256"]:
                 raise RuntimeError(f"registered data artifact changed: {path}")
-        for sample_index in range(0, 64, 4):
+        # Place each selected window at the center of an equal-sized stratum.
+        # In particular, a two-window overfit check uses indices 16 and 48,
+        # avoiding rollout endpoints while spanning the fixed interval.
+        sample_indices = np.floor(
+            (np.arange(args.train_windows_per_rollout, dtype=np.float64) + 0.5)
+            * 64 / args.train_windows_per_rollout
+        ).astype(int).tolist()
+        for sample_index in sample_indices:
             eg = load_sample(Path(eg_row["path"]), sample_index)
             v2 = load_sample(Path(v2_row["path"]), sample_index)
             if not (np.array_equal(eg["flow_gt"], v2["flow_gt"]) and np.array_equal(eg["flow_valid"], v2["flow_valid"])
@@ -188,8 +217,9 @@ def main() -> None:
             train_rows.append({"rollout_id": rid, "sample_index": sample_index,
                                "sample_id": str(eg["sample_ids"]),
                                "arms": {"eventgenesis": eg, "v2e": v2}})
-    if len(train_rows) != 64:
-        raise RuntimeError("the fixed GT pilot must have exactly 64 training samples")
+    expected_train_samples = len(train_rollouts) * args.train_windows_per_rollout
+    if len(train_rows) != expected_train_samples:
+        raise RuntimeError(f"the fixed GT pilot expected {expected_train_samples} training samples, got {len(train_rows)}")
 
     val_rows = []
     for rid in validation_rollouts:
@@ -205,11 +235,13 @@ def main() -> None:
             raise RuntimeError(f"paired validation labels differ for {rid}")
         val_rows.append({"rollout_id": rid, "sample_id": str(samples["eventgenesis"]["sample_ids"]), "arms": samples})
 
-    result = {"schema": "stage5_steflow_synthetic_gt_supervised_pilot_v1", "status": "running",
+    result = {"schema": "stage5_steflow_synthetic_gt_supervised_pilot_v2", "status": "running",
               "created_utc": datetime.now(timezone.utc).isoformat(), "source": source,
               "data_manifest_sha256": manifest_sha, "config_sha256": config_sha,
               "objective": "equal-weight four-scale robust endpoint error from the pinned STE-FlowNet Charbonnier family; target vector resized per scale; validity coverage >=0.999",
               "training_rollouts": train_rollouts, "training_samples": len(train_rows),
+              "train_windows_per_rollout": args.train_windows_per_rollout,
+              "fixed_training_sample_indices_per_rollout": sample_indices,
               "validation_rollouts": validation_rollouts, "validation_windows_per_rollout": 1,
               "updates_per_arm": args.updates, "batch_size": 1, "real_data_used": False,
               "flow_gt_used_for_optimizer": True, "protocol_status": "separate diagnostic; no formal protocol or checkpoint selection change", "arms": {}}
@@ -252,6 +284,8 @@ def main() -> None:
                           "finite_gradient_tensors": len(gradients), "time_utc": datetime.now(timezone.utc).isoformat()}
                 log.write(json.dumps(record, sort_keys=True)+"\n"); log.flush()
         model.eval()
+        parity_train = verify_train_eval_output_parity(model, train_rows[0]["arms"][arm], device)
+        parity_val = verify_train_eval_output_parity(model, val_rows[0]["arms"][arm], device)
         def eval_rows(source_rows):
             details=[]
             with torch.inference_mode():
@@ -298,6 +332,7 @@ def main() -> None:
             "source_patch":source_patch,"train_subset_mean_epe_px_per_30ms":float(np.mean([r["epe_px_per_30ms"] for r in train_eval])),
             "independent_validation_mean_epe_px_per_30ms":float(np.mean([r["epe_px_per_30ms"] for r in validation])),
             "independent_validation_zero_flow_mean_epe_px_per_30ms":float(np.mean([r["zero_flow_epe_px_per_30ms"] for r in validation])),
+            "train_eval_output_parity":{"train":parity_train,"validation":parity_val},
             "train_subset":train_eval,"independent_validation":validation,
             "wall_seconds":time.monotonic()-started}
         del model,restored,optimizer
