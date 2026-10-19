@@ -719,24 +719,24 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 **状态与建议：**HDR 输入转换、有限数值、事件坐标/极性/分箱检查未发现显示灰度误标或接口错误；源帧 seam burst 是已观察到的数值异常，但根因仍待隔离。native-HDR retrain 没恢复共同参考能力，因此目前**不具备恢复后续生成器比较的条件**。不建议立即扩大训练；最小下一步是固定 +55 mm 与中心缓存状态，比较现有插件事件与精确状态高频 direct-render 参考的 seam、raw event、五-bin 和 localization，确认 seam burst 是否为主要域差异。若修复必须改 frozen core，先将最小复现、影响面和方案提交研究会审议；正式测试集/排名保持未启动。
 
-#### R1 Ours 定位失效：采样频率因果诊断（2026-10-20，代码已推送，g1 运行待启动）
+#### R1 Ours 定位失效：采样频率因果诊断（2026-10-19，代码已推送，g1 运行待启动）
 
 新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，取同一缓存物理状态 `.5505–.5905 s`，离线精确渲染 81 个 0.5 ms HDR 状态。比较稀疏 100 Hz HDR 端点经现有 frozen 插件重建、2 kHz 直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference；两个已训练 checkpoint 在相同查询 `.5905 s` 上均读取因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，也不更改 frozen core。此项只分辨输入采样/重建与当前网络定位的关系，不作方法排名。
 
-- 诊断代码 commit `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`，已推送到 `exp/robot-closed-loop-v1`；配置 [`r1_ours_localization_cadence_ablation_20261020a.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261020a.json) SHA256 `b6b73534296b227beee73766fdf90e0b72862f7f0608af5fce8f6add12d74180`。
+- 诊断代码初始提交 `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`，批次日期修正后的执行提交与配置 SHA256 将在本次修订提交后固定；配置 [`r1_ours_localization_cadence_ablation_20261019b.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json) SHA256 `cbcc6a6c24fa1bb088295f1c2755a806fd5550284b1d542e4520ef6fa683679c`。
 - 复跑命令与待归档输出根目录：
 
   ```bash
-  cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261020a
+  cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b
   /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/.venv-robot/bin/python \
     benchmark/robot_closed_loop/diagnostics/diagnose_r1_ours_localization_cadence.py \
-    --config benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261020a.json \
+    --config benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json \
     --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
     --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
     --reference-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
     --ours-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
     --v2e-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt \
-    --output benchmark/robot_closed_loop/results/r1_ours_localization_cadence_ablation_20261020a
+    --output benchmark/robot_closed_loop/results/r1_ours_localization_cadence_ablation_20261019b
   ```
 
 - g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。执行前各 GPU 显存占用约 1–2 MiB、利用率 0%，内存可用约 489 GiB；计划使用 CPU，不占 GPU。已有 R1 输出所在旧工作树保持原样。
