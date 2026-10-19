@@ -1,0 +1,8 @@
+g1 conda environment: /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM
+Python: 3.11.15
+PyTorch: 2.5.1+cu121
+PyTorch CUDA runtime: 12.1
+
+The 80-update GT-supervised fit and the common-active post-hoc evaluation used CUDA_VISIBLE_DEVICES=2, mapped to physical GPU2 (Tesla V100S-PCIE-32GB). The fit ran alongside the two L1 E2VID jobs on that GPU; at peak the three processes used about 13.7 GiB of 32 GiB. The bounded active-region evaluation ran after the fit completed.
+
+The four-scale target audit was launched separately with CUDA_VISIBLE_DEVICES=0, mapped to physical GPU0 (NVIDIA GeForce RTX 3090, 24 GiB). At 2026-10-19 10:21:14 UTC GPU0 showed 37 MiB allocated, 0% utilization, and no compute-app PIDs before launch. GPU1,3,4,5 had existing allocations and were not used.

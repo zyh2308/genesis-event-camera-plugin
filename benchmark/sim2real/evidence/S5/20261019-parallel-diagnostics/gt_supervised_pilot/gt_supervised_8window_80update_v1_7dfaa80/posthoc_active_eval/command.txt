@@ -1,0 +1,18 @@
+Source checkout: /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-stage5-flowdiag-exec-20261019-v4
+Source commit: 7dfaa8028b1309ee10cb66bbab32173133718740
+Script: benchmark/sim2real/scripts/stage5_flow_subset_active_eval.py
+Script SHA-256: 7b9be6c276c55ae4157d1ca9acb74a493a046d97f9ebc67bb7e5633dacc4b82d
+tmux session: stage5_flowactive
+Output root: /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval
+
+CUDA_VISIBLE_DEVICES=2 /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python -u \
+  /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-stage5-flowdiag-exec-20261019-v4/benchmark/sim2real/scripts/stage5_flow_subset_active_eval.py \
+  --model-root /home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet \
+  --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms \
+  --config /home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-stage5-flowdiag-exec-20261019-v4/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json \
+  --eventgenesis-checkpoint /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80/results/eventgenesis_last.pt \
+  --v2e-checkpoint /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80/results/v2e_last.pt \
+  --output /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/summary.json \
+  --device cuda:0
+
+The command was run detached in tmux with stdout/stderr redirected to `eval.log`; the wrapper wrote UTC start/finish records and `exit_code.txt`. `CUDA_VISIBLE_DEVICES=2` maps physical GPU2 to process-local `cuda:0`.

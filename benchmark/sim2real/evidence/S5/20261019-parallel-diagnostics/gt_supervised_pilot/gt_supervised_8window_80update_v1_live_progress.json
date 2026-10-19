@@ -1,0 +1,41 @@
+{
+  "schema": "stage5_flow_gt_subset_live_progress_v1",
+  "observed_utc": "2026-10-19T10:11:34Z",
+  "run_root_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-flow-diagnostics/gt_supervised_8window_80update_v1_7dfaa80",
+  "source_commit": "7dfaa8028b1309ee10cb66bbab32173133718740",
+  "source_script_sha256": "d060e74495e7d31580bf432356d37dcc88c627463f5f7de7482ac2c96d2f6a88",
+  "tmux_session": "stage5_flowgt8",
+  "tmux_pane_pid": 911347,
+  "process_pid_on_gpu": 911354,
+  "state": "running",
+  "updates": {
+    "eventgenesis": 80,
+    "v2e": 55
+  },
+  "training_subset": {
+    "train_rollouts": ["s0_00", "s1_00", "s2_00", "s3_00"],
+    "window_indices_per_rollout": [16, 48],
+    "window_count": 8,
+    "budget_per_arm": 80,
+    "passes_per_subset": 10,
+    "heldout_rollouts": 8
+  },
+  "latest_update": {
+    "arm": "v2e",
+    "update": 55,
+    "sample_id": "s3_00/dt1_048",
+    "loss": 0.12410392612218857,
+    "finite_gradient_tensors": 70,
+    "gradient_l2_norm": 0.8004115223884583
+  },
+  "physical_gpu": 2,
+  "gpu2_memory_used_mib": 13748,
+  "gpu2_memory_total_mib": 32768,
+  "gpu_processes": [
+    {"pid": 873967, "role": "E2VID EventGenesis", "memory_mib": 3208},
+    {"pid": 873971, "role": "E2VID V2E", "memory_mib": 3208},
+    {"pid": 911354, "role": "flow GT subset diagnostic", "memory_mib": 6772}
+  ],
+  "reconstruction_updates_same_observation": {"eventgenesis": 817, "v2e": 764},
+  "real_data_scoring": false
+}

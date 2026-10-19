@@ -1,0 +1,53 @@
+{
+  "schema": "stage5_epose_access_recheck_v1",
+  "checked_utc": "2026-10-19T09:59:00Z",
+  "status": "raw_sample_not_obtained",
+  "access": {
+    "official_article": {
+      "url": "https://www.nature.com/articles/s41597-025-04536-5",
+      "http_status": 202,
+      "note": "Publisher Figshare page returned an AWS WAF challenge; no file listing or sample payload was available."
+    },
+    "official_figshare_api": {
+      "url": "https://api.figshare.com/v2/articles/28106717",
+      "http_status": 403
+    },
+    "datacite_metadata": {
+      "url": "https://api.datacite.org/dois/10.6084/m9.figshare.28106717",
+      "http_status": 200,
+      "archive_size_bytes": 29759153475,
+      "file_listing_or_direct_download": false
+    },
+    "public_mirror": {
+      "status": "not_found_with_verifiable_provenance",
+      "authors_contacted": false,
+      "large_archive_downloaded": false
+    }
+  },
+  "local_inventory": {
+    "inventory_command": "find /home/科研/Eventbased_WAM/data -type f ( -iname '*.h5' -o -iname '*.hdf5' -o -iname '*.mat' ) -print",
+    "matching_raw_hdf5_or_mat_paths": [],
+    "official_code_repository": {
+      "path": "/home/科研/Eventbased_WAM/external_sources/E_Pose",
+      "url": "https://github.com/oussamaabdulhay/E_Pose.git",
+      "commit": "b96ae783fcb6de84e1e9c602e91bce941cab0234"
+    },
+    "raw_hdf5_or_pose_mat_sample_found": false,
+    "candidate_class_assets": [
+      {
+        "class": "mustard",
+        "path": "/home/科研/Eventbased_WAM/external_sources/E_Pose/xyz_data/mustard.xyz",
+        "size_bytes": 474668,
+        "sha256": "85c89f5eb25f25706e7ae1fa1acc17186c98c296fa0745e2e929f7c9125a9af1",
+        "role": "official-repository category point-cloud candidate; not yet matched to a raw sequence"
+      }
+    ]
+  },
+  "unresolved_contract": [
+    "One original event HDF5 sample or small sequence excerpt",
+    "Its exact paired MAT annotation",
+    "The sample's object/category identity and sequence file naming",
+    "Sample-specific timestamp unit and offset, camera K, pose direction, coordinate convention, CAD scale, and symmetry"
+  ],
+  "decision": "Keep generic-object pose work as synthetic mechanism diagnosis only. Do not start formal E-POSE paired training or claim the mustard assets match a dataset sample until the original HDF5/MAT pair identifies that object."
+}
