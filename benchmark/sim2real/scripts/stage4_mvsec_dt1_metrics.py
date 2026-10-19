@@ -214,6 +214,8 @@ def validate_checkpoint_binding(manifest: dict[str, Any], arms: set[str] | None 
             raise ValueError(f"{arm} checkpoint_binding.path_on_g1 is missing")
         if not isinstance(digest, str) or len(digest) != 64:
             raise ValueError(f"{arm} checkpoint_binding.sha256 is missing or malformed")
+        if not isinstance(size, int) or size <= 0:
+            raise ValueError(f"{arm} checkpoint_binding.size_bytes is missing or invalid")
         path = Path(path_value)
         if not path.is_file():
             raise FileNotFoundError(f"registered {arm} synthetic-best checkpoint is missing: {path}")

@@ -1,0 +1,58 @@
+{
+  "schema": "epose_public_access_audit_v1",
+  "recorded_utc": "2026-10-19T08:49:22Z",
+  "real_data_used_for_modeling_or_scoring": false,
+  "attempts": [
+    {
+      "url": "https://api.figshare.com/v2/articles/28106717",
+      "method": "GET",
+      "observed_utc": "2026-10-19T08:40Z (within the same request sequence that received GitHub Date 08:40:01Z)",
+      "result": "HTTP 403 Forbidden",
+      "body_excerpt": "403 Forbidden",
+      "interpretation": "The official article API remained inaccessible from this network path; no retry loop was used."
+    },
+    {
+      "url": "https://figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717",
+      "method": "HEAD",
+      "observed_utc": "2026-10-19, before 08:49:22Z",
+      "result": "HTTP 202 Accepted",
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 0,
+      "interpretation": "The article page returned an asynchronous/empty response rather than dataset metadata."
+    },
+    {
+      "url": "https://figshare.com/ndownloader/articles/28106717/versions/1",
+      "method": "HEAD",
+      "observed_utc": "2026-10-19, before 08:49:22Z",
+      "result": "HTTP 403 Forbidden",
+      "interpretation": "The official article download endpoint was blocked; no data bytes were received."
+    },
+    {
+      "url": "https://api.github.com/repos/oussamaabdulhay/E_Pose/git/trees/main?recursive=1",
+      "method": "GET",
+      "observed_utc": "2026-10-19T08:49:08Z (HTTP Date header)",
+      "result": "HTTP 200",
+      "tree_sha": "b96ae783fcb6de84e1e9c602e91bce941cab0234",
+      "readme_blob_sha1": "dd3123b51fb242af6bd0841e8e94bcd28c33c99a",
+      "mesh_files_found": 25,
+      "mesh_classes_found": [
+        "adjustable_wrench", "bleach cleanser", "cheeseit", "drill", "hammer", "mustard_bottle", "nine_hole_peg", "potted_meat_can", "rubik", "scissors", "sugar_box", "timer", "wood_block"
+      ],
+      "interpretation": "The official code repository is reachable and contains object meshes/point clouds, but it does not contain the raw E-POSE HDF5 event sequences or their per-sample pose MAT files. Without an acquired sample, no class-to-sample CAD match can yet be claimed."
+    }
+  ],
+  "paper_claims_checked": {
+    "dataset_article": "https://doi.org/10.1038/s41597-025-04536-5",
+    "data_record": "https://doi.org/10.6084/m9.figshare.28106717",
+    "paper_format_claim": "raw data originally in HDF5; pose information provided in MAT files alongside sample images",
+    "official_code_repository": "https://github.com/oussamaabdulhay/E_Pose",
+    "repository_readme_claim": "current annotation scripts consume bag files; README says they are to be adapted for provided HDF5 data"
+  },
+  "minimum_missing_items_for_sample_contract_audit": [
+    "one named E-POSE object sequence's original HDF5 raw events and timestamp units",
+    "the associated MAT pose annotation for that sequence and the object/category identifier",
+    "the exact corresponding CAD mesh or point cloud plus its length unit and object-frame convention",
+    "sample camera intrinsics, pose transform direction/frame definitions, and event-to-pose synchronization metadata"
+  ],
+  "next_step": "Continue using only independent synthetic rollouts for model mechanism checks. Retry data acquisition later through the registered official record or a source-documented mirror; do not substitute a generic cuboid for an E-POSE sample and do not contact authors without authorization."
+}
