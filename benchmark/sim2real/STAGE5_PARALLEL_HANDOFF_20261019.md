@@ -1,6 +1,6 @@
 # Stage 5 parallel handoff — 2026-10-19
 
-Updated **2026-10-19 10:42:13 UTC / 19:42:13 JST**. The latest direct L1 log rows are 10:42:01 UTC; GPU ownership was checked at 10:42:13 UTC. Flow diagnostics completed through the fixed four-scale audit at 10:23:46 UTC. E-POSE's official API/page/downloader were rechecked at 10:41:48 UTC. The active branch is `exp/public-sim2real-v1`, local and GitHub commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8`. The reviewed Stage 4 baseline is `61554fb0031609200bc5ddbf2340ec8d20722725`; the frozen simulator core remains `e79e656ac00f7847b98db9e12bf43b093f3afff1`. No simulator core files were changed. All optimization and checkpoint choice remain synthetic-only; all real scores remain closed.
+Updated **2026-10-19 10:42:13 UTC / 19:42:13 JST**. The latest direct L1 log rows are 10:42:01 UTC; GPU ownership was checked at 10:42:13 UTC. Flow diagnostics completed through the fixed four-scale audit at 10:23:46 UTC. E-POSE's official API/page/downloader were rechecked at 10:41:48 UTC. The active branch is `exp/public-sim2real-v1`; the coverage-pilot code snapshot is commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8`, with its status and evidence tracked on the same branch. The reviewed Stage 4 baseline is `61554fb0031609200bc5ddbf2340ec8d20722725`; the frozen simulator core remains `e79e656ac00f7847b98db9e12bf43b093f3afff1`. No simulator core files were changed. All optimization and checkpoint choice remain synthetic-only; all real scores remain closed.
 
 ## Three-line status at a glance
 
@@ -191,7 +191,7 @@ Once the bank completes, run the pinned Stage 4 V2E shard runner on the eight re
 
 ### Repository sync
 
-The source/evidence commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8` is on local and GitHub branch `exp/public-sim2real-v1`. L1 remains pinned to clean checkout `10a593c...`; the completed 8-window flow diagnostic used checkout v4 at `7dfaa80...`; the new pilot checkout is clean at `e4b6cec...` and passed compile/import checks. The shared g1 worktree has not been modified. This handoff update will be committed separately; the pilot has not yet generated data.
+The coverage-pilot source/config commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8` is on local and GitHub branch `exp/public-sim2real-v1`; the follow-up status and evidence are also committed on that branch. L1 remains pinned to clean checkout `10a593c...`; the completed 8-window flow diagnostic used checkout v4 at `7dfaa80...`; the new pilot checkout is clean at `e4b6cec...` and passed compile/import checks. The shared g1 worktree has not been modified. The pilot has not yet generated data.
 
 ## Recommended next action
 

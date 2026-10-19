@@ -1,6 +1,6 @@
 # Public-data Sim-to-Real status — Stage 5 parallel execution
 
-Updated **2026-10-19 10:42:13 UTC / 19:42:13 JST**. L1 logs are current through 10:42:01 UTC; GPU ownership was refreshed at 10:42:13 UTC; official E-POSE access was rechecked at 10:41:48 UTC. Branch: `exp/public-sim2real-v1`, latest source commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8`. Reviewed Stage 4 baseline: `61554fb0031609200bc5ddbf2340ec8d20722725`. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged. All training and checkpoint choice are synthetic-only; real scores remain closed.
+Updated **2026-10-19 10:42:13 UTC / 19:42:13 JST**. L1 logs are current through 10:42:01 UTC; GPU ownership was refreshed at 10:42:13 UTC; official E-POSE access was rechecked at 10:41:48 UTC. Branch: `exp/public-sim2real-v1`; the coverage-pilot source/config snapshot is commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8`, and the status/evidence updates are versioned on the same branch. Reviewed Stage 4 baseline: `61554fb0031609200bc5ddbf2340ec8d20722725`. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged. All training and checkpoint choice are synthetic-only; real scores remain closed.
 
 | Route | Verified progress | Blocker | Next delivery |
 |---|---|---|---|
