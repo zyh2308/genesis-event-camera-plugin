@@ -722,22 +722,22 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 #### R1 Ours 定位失效：采样频率因果诊断（2026-10-19，代码已推送，g1 运行待启动）
 
-新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，使用缓存物理状态窗口 `.5505–.5905 s`。首个启动前置检查发现旧状态 trace 没有保存所有 0.5 ms 物理状态（例如 `.5510 s` 缺失），脚本在渲染前拒绝了该查询；失败退出码 1，不产生任何诊断结果。为保持物理轨迹不被合成，已修正为离线精确渲染窗口内**实际保存的所有状态行**，并将在结果中报告真实、不均匀的时间间隔；对比稀疏 100 Hz HDR 端点经现有 frozen 插件重建、这些精确状态直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference。两个 checkpoint 在相同查询 `.5905 s` 上均读因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，不更改 frozen core，不将合成状态称作 direct render。此项只分辨当前可用输入采样/重建与网络定位的关系，不作方法排名。
+新诊断固定旧开发集中的 episode 004 中央对照与 episode 005 `+55 mm` 失败段，使用缓存物理状态窗口 `.5505–.5905 s`。首个启动前置检查发现旧状态 trace 没有保存所有 0.5 ms 物理状态（例如 `.5510 s` 缺失），脚本在渲染前拒绝了该查询；失败退出码 1，不产生任何诊断结果。为保持物理轨迹不被合成，修正为离线精确渲染窗口内**实际保存的所有状态行**，并报告真实、不均匀的时间间隔；对比稀疏 100 Hz HDR 端点经 frozen 插件重建、这些精确状态直接 HDR 亮度送入相同 `DvsEmulator` 响应，以及原归档 2 kHz Direct-HDR reference。首个完成的 pilot (`20261019b`) 显示强烈事件分布变化，但其 summary 把整集 archived raw-event 数与 40 ms 新生成片段放在同一 `raw_total` 列，口径不齐；保留在 g1 作历史诊断，不用于最终数量比较。修订批次 `20261019c` 会把三个来源先裁到相同 `.5505–.5905 s` 区间再统计。两个 checkpoint 在同一 `.5905 s` cutoff 上读取因果五-bin 输入。GT/分割/深度/位姿只用于 Ours 生成或推理后的评分，不送入模型；不推进物理，不更改 frozen core，不将合成状态称作 direct render。此项只分辨当前可用输入采样/重建与网络定位的关系，不作方法排名。
 
-- 诊断代码初始提交 `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`。第一次执行前置校验的代码 commit `1c2ba91a86b076625bf88bab66f439ebc6331684` 在请求不存在的 `.5510 s` 状态时按预期 fail-fast，退出码 1，尚未启动 Genesis/渲染。当前配置与脚本已经改为“所有实际记录状态行”，新的执行 commit 将在结果摘要中精确记录；配置 [`r1_ours_localization_cadence_ablation_20261019b.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json) SHA256 `7e91444d68d006ac84c3e6d9b291325fd9cd2e1ad8ee7c8186f891673c5b5f44`。与归档 2 kHz Direct-HDR 输入相比，新增稀疏/直接两条路径使用同一 physical-log 响应；归档参考使用 `log(luminance+1e-6)`，与 `log(max(luminance,1e-6))` 仅在近黑像素 floor 处理上略异，摘要会保留该边界。
+- 诊断代码初始提交 `ca6d8fb94c29b651ea5fc14dea23d1faf047945b`。第一次执行前置校验的代码 commit `1c2ba91a86b076625bf88bab66f439ebc6331684` 在请求不存在的 `.5510 s` 状态时按预期 fail-fast，退出码 1，尚未启动 Genesis/渲染。当前配置与脚本已经改为“所有实际记录状态行”，新的执行 commit 将在结果摘要中精确记录；修订配置 [`r1_ours_localization_cadence_ablation_20261019c.json`](../../benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019c.json) SHA256 `6845b34d6f22939dc5761c38cf82b0546ac70a907e78866131c05edf32171a1f`。新增稀疏/直接两条路径使用同一 physical-log 响应；归档参考使用 `log(luminance+1e-6)`，与 `log(max(luminance,1e-6))` 仅在近黑像素 floor 处理上略异，摘要会保留该边界。
 - 复跑命令与待归档输出根目录：
 
   ```bash
   cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-localization-cadence-20261019b
   /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python \
     benchmark/robot_closed_loop/diagnostics/diagnose_r1_ours_localization_cadence.py \
-    --config benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json \
+    --config benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019c.json \
     --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
     --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
     --reference-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016 \
     --ours-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
     --v2e-checkpoint /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt \
-    --output benchmark/robot_closed_loop/results/r1_ours_localization_cadence_ablation_20261019b
+    --output benchmark/robot_closed_loop/results/r1_ours_localization_cadence_ablation_20261019c
   ```
 
 - g1 预检：指定的缓存 Direct-HDR manifest SHA256 与既有记录一致，为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`；两集原始事件、两个 checkpoint 均存在。通过 `gec-robot/.venv-robot` 的 Genesis/PyTorch/dependency import；Genesis 1.2.2 对应 PyTorch `2.8.0+cpu`。conda 环境 PyTorch 2.5.1 会触发 Genesis 版本警告，因此未用于运行。临启动前 GPU 0 突然出现他人 PID `756955`（用户 `zyl` 的 `python train.py`，14.5 GiB、99% 利用率）；未触碰该进程。GPU 1 当时空闲（4 MiB、0%），故执行时将仅暴露 GPU 1 给 renderer，模型/事件计算仍显式使用 CPU。内存可用约 487 GiB；旧 R1 工作树保持原样。

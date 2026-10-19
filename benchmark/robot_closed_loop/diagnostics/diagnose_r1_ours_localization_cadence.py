@@ -252,7 +252,11 @@ def main() -> int:
             sparse_events, interval_diagnostics, sparse_wall_s = generate_sparse_plugin(
                 sparse_frames, pose_ids, camera_pose, width, height, fov)
             dense_events, dense_wall_s = generate_dense_direct(frames)
-            reference_events = pre["reference_events"]
+            reference_events_all = pre["reference_events"]
+            reference_events = reference_events_all[
+                (reference_events_all[:, 0] >= start_s)
+                & (reference_events_all[:, 0] <= end_s)
+            ]
             sources = {"sparse_100hz_ours": sparse_events, "direct_logged_states_ours": dense_events,
                        "archived_2khz_reference": reference_events}
             logged_dts = np.diff(np.asarray(pre["trace_times"], dtype=np.float64))
@@ -322,7 +326,7 @@ def main() -> int:
                 "generation_response": "same physical_log gain=1 floor=1e-6 threshold=0.2; no noise/bandwidth/refractory; uncalibrated",
                 "sparse_plugin_intervals": interval_diagnostics,
                 "raw_event_and_five_bin_counts": {
-                    name: {"raw_total_in_rendered_interval": int(len(stream)),
+                    name: {"raw_total_in_selected_time_interval": int(len(stream)),
                            "raw_in_query_window": int(np.count_nonzero((stream[:, 0] >= cutoff - 0.025) & (stream[:, 0] < cutoff))),
                            "voxel_sum": int(tensors[name].sum()),
                            "nonempty_bins": int(np.count_nonzero(tensors[name].sum(axis=(1, 2, 3))))}
@@ -354,7 +358,7 @@ def main() -> int:
         "reference_manifest_sha256": _sha256(reference / "SHA256SUMS"),
         "checkpoint_sha256": checkpoint_hashes, "episodes": episode_records,
         "wall_s": None,
-        "scope": "two selected cached development episodes; same 0.5 ms physical trajectory, camera, timestamps, response and query; no new rollout or ranking",
+        "scope": "two selected cached development episodes; same rollout and camera; direct HDR uses every exact trace row in the selected window with measured irregular cadence; no synthetic states, new rollout, or ranking",
     }
     # Measure only the overall script wall clock using a stable run-start value.
     summary["wall_s"] = round(float(time.perf_counter() - SCRIPT_START), 3)
