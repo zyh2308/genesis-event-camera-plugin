@@ -179,6 +179,207 @@ def _continuous_edges(depth: np.ndarray, valid: np.ndarray, K: np.ndarray,
     return edge_ok
 
 
+def _build_surface_triangles(labels: np.ndarray, valid: np.ndarray,
+                             edge_valid: np.ndarray,
+                             labels_to_process: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Vectorize the same label/continuity tests used by the Numba raster loop."""
+    height, width = labels.shape
+    if height < 2 or width < 2:
+        return np.empty((0, 3), dtype=np.int64), np.empty((0,), dtype=np.int64)
+    y, x = np.indices((height - 1, width - 1), dtype=np.int64)
+    a = y * width + x
+    b = a + 1
+    c = a + width
+    d = c + 1
+    flat_labels = labels.reshape(-1)
+    flat_valid = valid.reshape(-1)
+    selected = np.isin(flat_labels, labels_to_process)
+    triangle_chunks = []
+    label_chunks = []
+    for vertices, edge_mask in (
+        ((a, b, d), edge_valid[0, :-1, :-1] & edge_valid[1, :-1, 1:]
+         & edge_valid[2, :-1, :-1]),
+        ((a, d, c), edge_valid[1, :-1, :-1] & edge_valid[0, 1:, :-1]
+         & edge_valid[2, :-1, :-1]),
+    ):
+        va, vb, vc = (v.reshape(-1) for v in vertices)
+        same = (flat_labels[va] == flat_labels[vb]) & (flat_labels[va] == flat_labels[vc])
+        keep = (flat_valid[va] & flat_valid[vb] & flat_valid[vc]
+                & selected[va] & same & edge_mask.reshape(-1))
+        if np.any(keep):
+            triangle_chunks.append(np.stack((va[keep], vb[keep], vc[keep]), axis=1))
+            label_chunks.append(flat_labels[va[keep]])
+    if not triangle_chunks:
+        return np.empty((0, 3), dtype=np.int64), np.empty((0,), dtype=np.int64)
+    return np.concatenate(triangle_chunks), np.concatenate(label_chunks).astype(np.int64, copy=False)
+
+
+def _surface_raster_warp_torch_cuda(
+    image: np.ndarray,
+    labels: np.ndarray,
+    uv: np.ndarray,
+    z: np.ndarray,
+    source_valid: np.ndarray,
+    triangles: np.ndarray,
+    triangle_labels: np.ndarray,
+    *,
+    max_bbox_span: int = 12,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
+    """GPU rasterize sparse projected triangles with a z-buffer.
+
+    The source triangle connectivity is still derived from observed, same-label
+    depth samples. Only triangle fragments are generated; no dilation or hole
+    filling is performed. Explicit unsupported pixels continue through the
+    caller's exact render-request path.
+    """
+    try:
+        import torch
+    except Exception as exc:  # pragma: no cover - server-only CUDA backend.
+        raise RuntimeError("torch_cuda_scatter requires PyTorch") from exc
+    if not torch.cuda.is_available():  # pragma: no cover - server-only backend.
+        raise RuntimeError("torch_cuda_scatter requires an available CUDA device")
+
+    height, width = image.shape
+    if triangles.size == 0:
+        return (np.full((height, width), np.nan, np.float32),
+                np.full((height, width), np.inf, np.float32),
+                np.full((height, width), -1, np.int64),
+                np.zeros((height, width), bool),
+                {"triangle_count": 0, "fragment_count": 0})
+    device = torch.device("cuda", torch.cuda.current_device())
+    tri = torch.as_tensor(triangles, dtype=torch.long, device=device)
+    tri_labels = torch.as_tensor(triangle_labels, dtype=torch.int64, device=device)
+    image_t = torch.as_tensor(np.asarray(image).reshape(-1), dtype=torch.float32, device=device)
+    uv_t = torch.as_tensor(np.asarray(uv).reshape(2, -1).T, dtype=torch.float32, device=device)
+    z_t = torch.as_tensor(np.asarray(z).reshape(-1), dtype=torch.float32, device=device)
+    valid_t = torch.as_tensor(np.asarray(source_valid).reshape(-1), dtype=torch.bool, device=device)
+
+    tri_uv = uv_t[tri].to(torch.float64)
+    tri_z = z_t[tri].to(torch.float64)
+    tri_image = image_t[tri].to(torch.float64)
+    tri_ok = valid_t[tri].all(dim=1) & torch.isfinite(tri_uv).all(dim=(1, 2))
+    tri_ok &= torch.isfinite(tri_z).all(dim=1) & (tri_z > 1e-6).all(dim=1)
+    tri_ok &= torch.isfinite(tri_image).all(dim=1)
+    tri_uv = tri_uv[tri_ok]
+    tri_z = tri_z[tri_ok]
+    tri_image = tri_image[tri_ok]
+    tri_labels = tri_labels[tri_ok]
+    if tri_uv.shape[0] == 0:
+        return (np.full((height, width), np.nan, np.float32),
+                np.full((height, width), np.inf, np.float32),
+                np.full((height, width), -1, np.int64),
+                np.zeros((height, width), bool),
+                {"triangle_count": 0, "fragment_count": 0})
+
+    x0, y0 = tri_uv[:, :, 0], tri_uv[:, :, 1]
+    area = ((x0[:, 1] - x0[:, 0]) * (y0[:, 2] - y0[:, 0])
+            - (y0[:, 1] - y0[:, 0]) * (x0[:, 2] - x0[:, 0]))
+    nondegenerate = torch.isfinite(area) & (area.abs() >= 1e-10)
+    tri_uv, tri_z, tri_image, tri_labels = (
+        value[nondegenerate] for value in (tri_uv, tri_z, tri_image, tri_labels)
+    )
+    area = area[nondegenerate]
+    if tri_uv.shape[0] == 0:
+        return (np.full((height, width), np.nan, np.float32),
+                np.full((height, width), np.inf, np.float32),
+                np.full((height, width), -1, np.int64),
+                np.zeros((height, width), bool),
+                {"triangle_count": 0, "fragment_count": 0})
+
+    min_x = torch.ceil(tri_uv[:, :, 0].min(dim=1).values - 1e-7).to(torch.int64).clamp(0, width - 1)
+    max_x = torch.floor(tri_uv[:, :, 0].max(dim=1).values + 1e-7).to(torch.int64).clamp(0, width - 1)
+    min_y = torch.ceil(tri_uv[:, :, 1].min(dim=1).values - 1e-7).to(torch.int64).clamp(0, height - 1)
+    max_y = torch.floor(tri_uv[:, :, 1].max(dim=1).values + 1e-7).to(torch.int64).clamp(0, height - 1)
+    span_x = max_x - min_x + 1
+    span_y = max_y - min_y + 1
+    overlap = (max_x >= min_x) & (max_y >= min_y)
+    too_wide = overlap & ((span_x > int(max_bbox_span)) | (span_y > int(max_bbox_span)))
+    if torch.any(too_wide):
+        max_seen = (int(span_x[too_wide].max().item()), int(span_y[too_wide].max().item()))
+        raise RuntimeError(f"projected surface triangle bbox {max_seen} exceeds safe span {max_bbox_span}")
+    keep_bbox = overlap & ~too_wide
+    tri_uv, tri_z, tri_image, tri_labels = (
+        value[keep_bbox] for value in (tri_uv, tri_z, tri_image, tri_labels)
+    )
+    min_x, max_x, min_y, max_y, span_x, span_y = (
+        value[keep_bbox] for value in (min_x, max_x, min_y, max_y, span_x, span_y)
+    )
+    if tri_uv.shape[0] == 0:
+        return (np.full((height, width), np.nan, np.float32),
+                np.full((height, width), np.inf, np.float32),
+                np.full((height, width), -1, np.int64),
+                np.zeros((height, width), bool),
+                {"triangle_count": 0, "fragment_count": 0})
+
+    offset_width = int(span_x.max().item())
+    offset_height = int(span_y.max().item())
+    offset_y, offset_x = torch.meshgrid(
+        torch.arange(offset_height, device=device),
+        torch.arange(offset_width, device=device), indexing="ij",
+    )
+    px = min_x[:, None] + offset_x.reshape(1, -1)
+    py = min_y[:, None] + offset_y.reshape(1, -1)
+    in_bbox = ((offset_x.reshape(1, -1) < span_x[:, None])
+               & (offset_y.reshape(1, -1) < span_y[:, None]))
+    in_bbox &= (px >= 0) & (px < width) & (py >= 0) & (py < height)
+
+    x0, y0 = tri_uv[:, :, 0], tri_uv[:, :, 1]
+    px_f, py_f = px.to(torch.float64), py.to(torch.float64)
+    inv_area = 1.0 / ((x0[:, 1] - x0[:, 0]) * (y0[:, 2] - y0[:, 0])
+                      - (y0[:, 1] - y0[:, 0]) * (x0[:, 2] - x0[:, 0]))
+    l0 = ((x0[:, 1:2] - px_f) * (y0[:, 2:3] - py_f)
+          - (y0[:, 1:2] - py_f) * (x0[:, 2:3] - px_f)) * inv_area[:, None]
+    l1 = ((x0[:, 2:3] - px_f) * (y0[:, 0:1] - py_f)
+          - (y0[:, 2:3] - py_f) * (x0[:, 0:1] - px_f)) * inv_area[:, None]
+    l2 = 1.0 - l0 - l1
+    covered = in_bbox & (l0 >= -1e-6) & (l1 >= -1e-6) & (l2 >= -1e-6)
+    q0 = l0 / tri_z[:, 0:1]
+    q1 = l1 / tri_z[:, 1:2]
+    q2 = l2 / tri_z[:, 2:3]
+    qsum = q0 + q1 + q2
+    covered &= qsum > 1e-12
+    frag_z = torch.reciprocal(qsum)
+    frag_luma = (q0 * tri_image[:, 0:1] + q1 * tri_image[:, 1:2]
+                 + q2 * tri_image[:, 2:3]) / qsum.clamp_min(1e-30)
+    pixel_index = py * width + px
+    frag_index = pixel_index[covered]
+    frag_z = frag_z[covered]
+    frag_luma = frag_luma[covered]
+    frag_labels = tri_labels[:, None].expand_as(covered)[covered]
+    zbuf = torch.full((height * width,), float("inf"), dtype=torch.float64, device=device)
+    zbuf.scatter_reduce_(0, frag_index, frag_z, reduce="amin", include_self=True)
+    tie_tolerance = max(1e-7, 8.0 * np.finfo(np.float32).eps * float(torch.median(z_t[valid_t]).item()))
+    tied = torch.abs(frag_z - zbuf[frag_index]) <= tie_tolerance
+    tie_index = frag_index[tied]
+    luma_sum = torch.zeros((height * width,), dtype=torch.float64, device=device)
+    tie_count = torch.zeros((height * width,), dtype=torch.int32, device=device)
+    luma_sum.scatter_add_(0, tie_index, frag_luma[tied])
+    tie_count.scatter_add_(0, tie_index, torch.ones_like(tie_index, dtype=torch.int32))
+    label_min = torch.full((height * width,), torch.iinfo(torch.int64).max, dtype=torch.int64, device=device)
+    label_max = torch.full((height * width,), -1, dtype=torch.int64, device=device)
+    label_min.scatter_reduce_(0, tie_index, frag_labels[tied], reduce="amin", include_self=True)
+    label_max.scatter_reduce_(0, tie_index, frag_labels[tied], reduce="amax", include_self=True)
+    support = tie_count > 0
+    out = torch.full((height * width,), float("nan"), dtype=torch.float32, device=device)
+    out_depth = zbuf.to(torch.float32)
+    out_labels = torch.full((height * width,), -1, dtype=torch.int64, device=device)
+    out[support] = (luma_sum[support] / tie_count[support].to(torch.float64)).to(torch.float32)
+    out_labels[support] = label_min[support]
+    conflicts = support & (label_min != label_max)
+    out_labels[conflicts] = -2
+    diagnostics = {
+        "triangle_count": int(tri_uv.shape[0]),
+        "fragment_count": int(frag_index.numel()),
+        "tie_tolerance": float(tie_tolerance),
+        "conflict_pixels": int(conflicts.sum().item()),
+    }
+    # One synchronization per call is needed for CPU output; the downstream
+    # event simulator consumes NumPy frames in this diagnostic runner.
+    return (out.reshape(height, width).cpu().numpy(), out_depth.reshape(height, width).cpu().numpy(),
+            out_labels.reshape(height, width).cpu().numpy(), support.reshape(height, width).cpu().numpy(),
+            diagnostics)
+
+
 def prepare_surface_raster_source(
     image: np.ndarray,
     source_depth: np.ndarray,
@@ -213,6 +414,7 @@ def prepare_surface_raster_source(
             )
     return {"shape": image.shape, "base_valid": base_valid, "edges": edges,
             "labels_to_process": labels_to_process, "bboxes": bboxes,
+            "triangles": _build_surface_triangles(labels, topology_valid, edges, labels_to_process),
             "max_pixel_scale": float(max_pixel_scale)}
 
 
@@ -249,7 +451,7 @@ def surface_raster_warp(
         raise ValueError("projected coordinates, depth, and validity have incompatible shapes")
     if K.shape != (3, 3) or max_pixel_scale <= 0:
         raise ValueError("K must be 3x3 and max_pixel_scale must be positive")
-    if raster_backend not in {"numba_serial", "numba_parallel_labels"}:
+    if raster_backend not in {"numba_serial", "numba_parallel_labels", "torch_cuda_scatter"}:
         raise ValueError(f"unsupported surface raster backend {raster_backend!r}")
     if raster_backend == "numba_parallel_labels" and not _NUMBA:
         raise RuntimeError("numba_parallel_labels requires Numba")
@@ -275,6 +477,16 @@ def surface_raster_warp(
         labels_to_process = np.asarray(prepared_source["labels_to_process"], dtype=np.int64)
         bboxes = prepared_source["bboxes"]
     height, width = depth.shape
+    if prepared_source is not None:
+        triangles, triangle_labels = prepared_source["triangles"]
+    else:
+        triangles, triangle_labels = _build_surface_triangles(
+            labels, valid, edges, labels_to_process,
+        )
+    if raster_backend == "torch_cuda_scatter":
+        return _surface_raster_warp_torch_cuda(
+            image, labels, uv, z, valid, triangles, triangle_labels,
+        )
     out = np.full((height, width), np.nan, dtype=np.float32)
     zbuf = np.full((height, width), np.inf, dtype=np.float32)
     out_labels = np.full((height, width), -1, dtype=np.int64)
