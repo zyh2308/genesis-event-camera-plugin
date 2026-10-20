@@ -490,6 +490,7 @@ def main() -> int:
 
             candidate_events, candidate_dvs_s = _events_from_frames(candidate_frames)
             direct_events, direct_dvs_s = _events_from_frames(direct_frames)
+            request_mask_stack = np.stack(candidate_request_masks).astype(bool)
             unsupported_direct_events = 0
             supported_direct_events = 0
             for idx in range(1, len(times)):
@@ -500,7 +501,7 @@ def main() -> int:
                     continue
                 ex = interval_events[:, 1].astype(np.int64)
                 ey = interval_events[:, 2].astype(np.int64)
-                unsupported = candidate_request_masks[idx - 1, ey, ex] | candidate_request_masks[idx, ey, ex]
+                unsupported = request_mask_stack[idx - 1, ey, ex] | request_mask_stack[idx, ey, ex]
                 unsupported_direct_events += int(unsupported.sum())
                 supported_direct_events += int((~unsupported).sum())
             ep_output = output / f"episode_{episode_id:03d}"
@@ -508,7 +509,7 @@ def main() -> int:
             np.savez_compressed(ep_output / "candidate_surface_raw_events.npz", events=candidate_events)
             np.savez_compressed(ep_output / "direct_logged_state_raw_events.npz", events=direct_events)
             np.savez_compressed(ep_output / "candidate_render_request_masks.npz",
-                                times_s=times, masks=np.stack(candidate_request_masks).astype(np.uint8))
+                                times_s=times, masks=request_mask_stack.astype(np.uint8))
             with (ep_output / "frame_metrics.jsonl").open("w", encoding="utf-8") as stream:
                 for metric in frame_metrics:
                     stream.write(json.dumps(metric, separators=(",", ":")) + "\n")
@@ -597,8 +598,7 @@ def main() -> int:
                     "request_mask_event_sensitivity_only": {
                         "interpretation": "Direct-reference events located on pixels lacking candidate support at either adjacent frame; a sensitivity diagnostic only, not a postprocessed candidate event stream.",
                         "unsupported_pixel_interval_fraction": float(np.mean(
-                            np.stack(candidate_request_masks[:-1]) |
-                            np.stack(candidate_request_masks[1:]))),
+                            request_mask_stack[:-1] | request_mask_stack[1:])),
                         "direct_events_on_unsupported_pixel_intervals": int(unsupported_direct_events),
                         "direct_events_on_supported_pixel_intervals": int(supported_direct_events),
                         "direct_event_fraction_on_unsupported_pixel_intervals": float(
