@@ -150,7 +150,7 @@ def run_controls() -> dict:
     assert not valid[0, 0] and request[0, 0] and np.isnan(image[0, 0])
     tests["unobserved_surface_requests_render"] = {"pass": True,
                                                     "request_fraction": diag["render_request_fraction"]}
-    return {"suite": "r1_5_multiref_surface_controls_20261021c",
+    return {"suite": "r1_5_multiref_surface_controls_20261021e",
             "tests": tests, "all_pass": all(x["pass"] for x in tests.values()),
             "wall_s": time.perf_counter() - started,
             "frozen_simulator_core_modified": False}
