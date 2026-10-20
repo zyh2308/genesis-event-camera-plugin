@@ -33,7 +33,7 @@ REGISTERED_SEQUENCES = (
     "reflective_materials", "slow_and_fast_desk", "slow_hand", "still_life",
 )
 REGISTERED_SEQUENCE = REGISTERED_SEQUENCES[0]
-REGISTERED_SAVE_RULE = "save every 100th adapter output (0,100,...) and the final adapter output; deduplicate"
+REGISTERED_SAVE_RULE = "save every configured Nth interval endpoint starting at image index 1, plus the final interval endpoint; deduplicate"
 EXPECTED_DATA_FILES = (
     "events_ts.npy",
     "events_xy.npy",
@@ -218,6 +218,8 @@ def run_inference(
     device_name: str,
     model_args_override: dict[str, Any] | None = None,
     self_test: bool = False,
+    save_every: int = 100,
+    save_float_arrays: bool = False,
 ) -> dict[str, Any]:
     started_utc = utc_now()
     wall_start = time.monotonic()
@@ -232,6 +234,8 @@ def run_inference(
         raise ValueError(f"HQF sequence directory must be named {sequence_name!r}")
     if not checkpoint_path.is_file():
         raise FileNotFoundError(checkpoint_path)
+    if save_every < 1:
+        raise ValueError(f"save_every must be positive, got {save_every}")
 
     source_verification = {
         "EVREAL": verify_pinned_source(evreal_root, "EVREAL", EVREAL_COMMIT, SOURCE_BUNDLE_MANIFEST),
@@ -242,10 +246,12 @@ def run_inference(
     dataset_class = load_evreal_dataset_class(evreal_root)
     model_cls, crop_parameters_cls = load_e2vid_class(model_root)
     data_info = validate_sequence_files(sequence_path)
-    # EVREAL MemMapDataset's pinned __len__ reports N-1 although its frame and
-    # event-index tables contain N endpoints and __getitem__(N-1) is valid.
-    # For this registered inference-only full-sequence smoke, extend only this
-    # instance to include the final endpoint; no shared EVREAL source is edited.
+    # EVREAL's pinned between_frames __len__ reports N-1 and __getitem__(N-1)
+    # is the final legal endpoint, so expose that last index on this instance.
+    # The first image is only a sequence boundary: __getitem__(0) has an empty
+    # event interval. Reset there, then infer indices 1..N-1 so the first model
+    # call receives events in (t0,t1], as in Stage-5 training. No shared source
+    # files are edited.
     dataset = dataset_class(
         str(sequence_path),
         sensor_resolution=data_info["sensor_resolution_hw"],
@@ -259,6 +265,9 @@ def run_inference(
     dataset.length = dataset.num_frames
     if len(dataset) != dataset.num_frames:
         raise RuntimeError("local full-sequence length extension failed")
+    inference_sample_indices = list(range(1, dataset.num_frames))
+    if len(inference_sample_indices) != dataset.num_frames - 1:
+        raise RuntimeError("expected every interval endpoint after the initial anchor exactly once")
 
     device = torch.device(device_name)
     if device.type == "cuda" and not torch.cuda.is_available():
@@ -288,7 +297,7 @@ def run_inference(
     padded_hw = [int(cropper.height_crop_size), int(cropper.width_crop_size)]
     if padded_hw[0] < height or padded_hw[1] < width:
         raise RuntimeError("E2VID cropper produced a padded size smaller than the sensor image")
-    save_indices = sorted(set(range(0, len(dataset), 100)) | {len(dataset) - 1})
+    save_indices = sorted(set(range(1, len(dataset), save_every)) | {len(dataset) - 1})
     save_index_set = set(save_indices)
     samples: list[dict[str, Any]] = []
     saved_images: list[dict[str, Any]] = []
@@ -298,7 +307,7 @@ def run_inference(
     saved_index_to_path = {index: output_root / f"reconstruction_{index:06d}.png" for index in save_indices}
 
     with torch.inference_mode():
-        for sample_index in range(len(dataset)):
+        for sample_index in inference_sample_indices:
             item = dataset[sample_index]
             expected_target_ts = float(dataset.frame_ts[sample_index])
             frame_ts = float(item["frame_timestamp"].item())
@@ -326,8 +335,10 @@ def run_inference(
             if event_count != event_end - event_start:
                 raise RuntimeError(f"EVREAL event count mismatch at {sample_index}: {event_count} != {event_end-event_start}")
             raw_times = dataset.filehandle["t"][event_start:event_end]
-            if len(raw_times) and float(raw_times[-1]) > frame_ts + 1e-10:
-                raise RuntimeError(f"event window contains an event after its target timestamp at sample {sample_index}")
+            previous_timestamp = float(dataset.frame_ts[sample_index - 1])
+            if len(raw_times) and (float(raw_times[0]) <= previous_timestamp + 1e-10
+                                   or float(raw_times[-1]) > frame_ts + 1e-10):
+                raise RuntimeError(f"event window is not (previous,target] at sample {sample_index}")
 
             event_tensor = item["events"]
             if tuple(event_tensor.shape) != (5, height, width):
@@ -355,10 +366,15 @@ def run_inference(
                 raise ValueError(f"cropped model output must be [1,1,H,W]={expected_shape}, got {tuple(image.shape)}")
             if not torch.isfinite(image).all():
                 raise ValueError(f"non-finite reconstruction output at sample {sample_index}")
+            raw_frame_min = float(image.min().item())
+            raw_frame_max = float(image.max().item())
+            output_min = min(output_min, raw_frame_min)
+            output_max = max(output_max, raw_frame_max)
+            # E2VID's registered final activation is empty. Clamp once, identically
+            # for both generators, to the metric/export domain [0,1].
+            image = image.clamp(0.0, 1.0)
             frame_min = float(image.min().item())
             frame_max = float(image.max().item())
-            output_min = min(output_min, frame_min)
-            output_max = max(output_max, frame_max)
 
             event_min_ts = float(raw_times[0]) if len(raw_times) else None
             event_max_ts = float(raw_times[-1]) if len(raw_times) else None
@@ -378,6 +394,8 @@ def run_inference(
                 "model_padded_output_shape": list(padded_image.shape),
                 "cropped_output_shape": list(image.shape),
                 "reference_frame_shape_checked_only": list(reference_shape),
+                "raw_model_output_min": raw_frame_min,
+                "raw_model_output_max": raw_frame_max,
                 "output_min": frame_min,
                 "output_max": frame_max,
             })
@@ -385,27 +403,43 @@ def run_inference(
                 array = image[0, 0].detach().cpu().numpy()
                 output_path = saved_index_to_path[sample_index]
                 save_gray_png(output_path, array)
-                saved_images.append({
+                saved_row = {
                     "sample_index": sample_index,
                     "target_timestamp_s": frame_ts,
                     "path": str(output_path.resolve()),
                     "sha256": sha256_file(output_path),
                     "shape_hw": [height, width],
                     "dtype": "uint8",
-                    "conversion": "clip raw candidate output to [0,1], round(255*x), uint8; no data-dependent normalization",
-                })
+                    "conversion": "clip candidate output to [0,1], round(255*x), uint8; no data-dependent normalization",
+                }
+                if save_float_arrays:
+                    float_path = output_root / f"reconstruction_{sample_index:06d}.npy"
+                    np.save(float_path, array.astype(np.float32), allow_pickle=False)
+                    saved_row["float_array_path"] = str(float_path.resolve())
+                    saved_row["float_array_sha256"] = sha256_file(float_path)
+                    saved_row["float_array_shape_hw"] = [height, width]
+                    saved_row["float_array_dtype"] = "float32"
+                saved_images.append(saved_row)
 
     if reset_calls != 1:
         raise RuntimeError(f"recurrent reset count changed during sequence; expected 1, got {reset_calls}")
-    if len(samples) != data_info["num_frames"]:
-        raise RuntimeError(f"processed {len(samples)} samples but expected all {data_info['num_frames']} frame endpoints")
+    if len(samples) != data_info["num_frames"] - 1:
+        raise RuntimeError(
+            f"processed {len(samples)} interval endpoints but expected {data_info['num_frames'] - 1}; "
+            "the initial image is only a boundary and must not be a zero-event model call"
+        )
     if sorted(row["sample_index"] for row in saved_images) != save_indices:
         raise RuntimeError("saved output subset differs from preregistered deterministic index rule")
 
     finished_utc = utc_now()
     manifest = {
         "schema_version": 1,
-        "status": "mechanics_self_test_passed_not_real_HQF" if self_test else "fixed_sample_event_only_inference_completed_no_GT_scoring",
+        "status": (
+            "synthetic_fixture_event_only_inference_completed_no_GT_scoring"
+            if self_test and save_float_arrays else
+            "mechanics_self_test_passed_not_real_HQF" if self_test else
+            "fixed_sample_event_only_inference_completed_no_GT_scoring"
+        ),
         "created_at_utc": started_utc,
         "finished_at_utc": finished_utc,
         "elapsed_seconds": time.monotonic() - wall_start,
@@ -416,6 +450,9 @@ def run_inference(
             "num_events": data_info["num_events"],
             "num_frames_in_memmap": data_info["num_frames"],
             "num_samples_processed": len(samples),
+            "num_inferable_event_endpoints": data_info["num_frames"] - 1,
+            "initial_anchor_timestamp_s": float(dataset.frame_ts[0]),
+            "initial_anchor_endpoint_excluded_from_model_and_metrics": True,
             "source_evreal_memmapdataset_length": source_loader_length,
             "adapter_length": len(dataset),
             "sequence_start_timestamp_s": samples[0]["target_timestamp_s"],
@@ -427,7 +464,8 @@ def run_inference(
             "raw_event_schema": "events_xy[N,2]=(x,y) pixels; events_ts[N] seconds; events_p[N] uint8 0=OFF/1=ON; EVREAL maps p to -1/+1 for its between_frames voxelizer",
             "event_voxel_schema": "EVREAL MemMapDataset, num_bins=5, method=between_frames, shape [5,H,W], no additional event normalization",
             "image_array_schema": "images[N,H,W,1] used only by EVREAL item packaging for shape bookkeeping; no reference pixel enters model or score",
-            "source_default_length_note": "pinned MemMapDataset.__len__ returns num_frames-1; this local inference-only adapter extends this instance to num_frames so the final legal endpoint is also processed; no EVREAL source files changed",
+            "source_default_length_note": "pinned MemMapDataset.__len__ returns num_frames-1; this local adapter exposes index N-1 to include the final interval, skips index 0 because it is the initial boundary with no preceding events, and processes exactly intervals (t[i-1],t[i]] for i=1..N-1; no EVREAL source files changed",
+            "initial_anchor_policy": "reset recurrent state at the first image timestamp; do not call the model on the zero-event boundary item",
             "data_shapes": data_info["shapes"],
             "data_dtypes": data_info["dtypes"],
             "timestamp_bounds": {
@@ -441,8 +479,13 @@ def run_inference(
         "registered_inference": {
             "registration_sequence": sequence_name,
             "registered_sequence_inventory": list(REGISTERED_SEQUENCES),
-            "sequence_selection": "explicit sequence argument from the fixed 14-sequence inventory",
+            "sequence_selection": (
+                "registered synthetic fixture manifest rollout" if self_test else
+                "explicit sequence argument from the fixed 14-sequence inventory"
+            ),
             "saved_subset_rule": REGISTERED_SAVE_RULE,
+            "save_every_n_samples": save_every,
+            "save_float_arrays": save_float_arrays,
             "saved_sample_indices": save_indices,
             "saved_images": saved_images,
         },
@@ -464,7 +507,7 @@ def run_inference(
                 "cudnn_benchmark": torch.backends.cudnn.benchmark,
             },
             "recurrent_reset_calls": reset_calls,
-            "reset_policy": "one reset at sequence start; no reset inside sequence",
+            "reset_policy": "one reset at the initial anchor; first model call uses events from (t0,t1]; no reset inside sequence",
             "input_contract": "event-only; [1,5,H,W]",
             "padded_resolution_hw": padded_hw,
             "output_contract_before_crop": [1, 1, *padded_hw],
@@ -566,11 +609,19 @@ def main() -> int:
                         help="Stage-5 JSON config; supplies reconstruction.model_args when the checkpoint omits them")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--save-every", type=int, default=100,
+                        help="save every Nth output plus the last; use 1 for a full synthetic metric fixture")
+    parser.add_argument("--save-float-arrays", action="store_true",
+                        help="also save clipped float32 outputs for the synthetic metric-plumbing run")
     parser.add_argument("--self-test", action="store_true", help="create and run a tiny fabricated MemMapDataset; not real HQF")
+    parser.add_argument("--synthetic-fixture-sequence", type=Path,
+                        help="run a registered synthetic MemMap fixture with the supplied candidate checkpoint")
     args = parser.parse_args()
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     if args.self_test:
+        if args.synthetic_fixture_sequence is not None or args.checkpoint is not None:
+            parser.error("--self-test creates its own random model; use --synthetic-fixture-sequence with --checkpoint")
         sequence_path, checkpoint_path = make_self_test_fixture(output_root, args.evreal_root, args.model_root)
         run_inference(
             evreal_root=args.evreal_root,
@@ -581,6 +632,38 @@ def main() -> int:
             output_root=output_root / "selftest_outputs",
             device_name=args.device,
             self_test=True,
+            save_every=args.save_every,
+            save_float_arrays=args.save_float_arrays,
+        )
+        return 0
+    if args.synthetic_fixture_sequence is not None:
+        if args.checkpoint is None:
+            parser.error("--synthetic-fixture-sequence requires --checkpoint")
+        fixture_sequence = args.synthetic_fixture_sequence.resolve()
+        fixture_manifest = fixture_sequence.parent / "synthetic_fixture_manifest.json"
+        if not fixture_manifest.is_file():
+            raise FileNotFoundError(f"synthetic fixture manifest is missing: {fixture_manifest}")
+        fixture_record = json.loads(fixture_manifest.read_text())
+        if (fixture_record.get("real_data_used") is not False
+                or fixture_record.get("real_scoring_enabled") is not False
+                or fixture_record.get("status") != "synthetic_inference_and_metric_plumbing_only"):
+            raise RuntimeError("synthetic fixture flags/status do not permit this plumbing run")
+        model_args_override = None
+        if args.model_config is not None:
+            config = json.loads(args.model_config.read_text())
+            model_args_override = config["reconstruction"]["model_args"]
+        run_inference(
+            evreal_root=args.evreal_root,
+            model_root=args.model_root,
+            sequence_path=fixture_sequence,
+            sequence_name=fixture_sequence.name,
+            checkpoint_path=args.checkpoint,
+            output_root=output_root,
+            device_name=args.device,
+            model_args_override=model_args_override,
+            self_test=True,
+            save_every=args.save_every,
+            save_float_arrays=args.save_float_arrays,
         )
         return 0
     if args.hqf_root is None or args.checkpoint is None:
@@ -600,6 +683,8 @@ def main() -> int:
         device_name=args.device,
         model_args_override=model_args_override,
         self_test=False,
+        save_every=args.save_every,
+        save_float_arrays=args.save_float_arrays,
     )
     return 0
 

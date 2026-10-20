@@ -208,16 +208,30 @@ def main() -> None:
             )
         # The moving-texture subset is deliberately shared by all warp variants.
         moving_texture_common = moving_texture & warp_common
+        active_motion_common = valid_i & union & moving & warp_common
+        active_moving_texture_common = moving_texture_common & union
         photo_values["moving_texture_subset_pixels"] = int(moving_texture_common.sum())
         photo_values["moving_texture_mae_zero"] = photo_warp(gray[endpoint], gray[endpoint + 3], zero, moving_texture_common)
         photo_values["moving_texture_mae_gt"] = photo_warp(gray[endpoint], gray[endpoint + 3], flow[index], moving_texture_common)
         photo_values["moving_texture_mae_reverse"] = photo_warp(gray[endpoint], gray[endpoint + 3], -flow[index], moving_texture_common)
+        photo_values["active_motion_subset_pixels"] = int(active_motion_common.sum())
+        photo_values["active_motion_mae"] = {
+            flow_name: photo_warp(gray[endpoint], gray[endpoint + 3], candidate_flow, active_motion_common)
+            for flow_name, candidate_flow in candidate_flows.items()
+        }
+        photo_values["active_moving_texture_subset_pixels"] = int(active_moving_texture_common.sum())
+        photo_values["active_moving_texture_mae"] = {
+            flow_name: photo_warp(gray[endpoint], gray[endpoint + 3], candidate_flow, active_moving_texture_common)
+            for flow_name, candidate_flow in candidate_flows.items()
+        }
         region_masks = {
             "full_valid_common_inbounds": warp_common,
             "event_active_union_valid": valid_i & union & warp_common,
             "gt_motion_ge_0_5px_valid": valid_i & moving & warp_common,
             "texture_gradient_gt_1_over_255_valid": valid_i & textured & warp_common,
             "moving_texture_intersection": moving_texture_common,
+            "event_active_union_and_gt_motion": active_motion_common,
+            "event_active_union_and_moving_texture": active_moving_texture_common,
         }
         photo_values["regions"] = {
             region_name: {
@@ -238,6 +252,8 @@ def main() -> None:
             "valid_pixels": int(valid_i.sum()),
             "active_valid_pixels": {arm: int((valid_i & mask).sum()) for arm, mask in active.items()},
             "common_union_active_valid_pixels": int((valid_i & union).sum()),
+            "common_union_active_gt_motion_ge_0_5px_pixels": int((valid_i & union & moving).sum()),
+            "common_union_active_moving_texture_pixels": int(active_moving_texture_common.sum()),
             "common_union_active_valid_coverage": float((valid_i & union).sum() / max(int(valid_i.sum()), 1)),
             "gt_motion_percentiles_px_per_30ms": np.quantile(magnitude[valid_i], [.5, .9, .99]).tolist() if valid_i.any() else [],
             "gt_motion_ge_0_5px_valid_pixels": int((valid_i & (magnitude >= .5)).sum()),

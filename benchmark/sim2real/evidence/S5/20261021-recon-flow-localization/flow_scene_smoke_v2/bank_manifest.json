@@ -1,0 +1,106 @@
+{
+  "schema": "stage5_flow_scene_coverage_single_scene_smoke_v2",
+  "scope": "one_registered_rollout_smoke",
+  "complete_balanced_pilot": false,
+  "frozen_design_episode_ids": [
+    "s5p_00_train",
+    "s5p_00_val",
+    "s5p_01_train",
+    "s5p_01_val",
+    "s5p_02_train",
+    "s5p_02_val",
+    "s5p_03_train",
+    "s5p_03_val"
+  ],
+  "generated_episode_ids": [
+    "s5p_00_train"
+  ],
+  "created_utc": "2026-10-20T18:36:29.550975+00:00",
+  "host": "g1",
+  "repo_commit": "990674d64930e2daa0e1e3a4cb1e5c4bbdbbe3f3",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "genesis_version": "1.2.2",
+  "genesis_renderer_source_sha256": {
+    "vis/camera.py": "b804e4740e15a0d707b1f2ae9e55525df49228ea850fee1bc76538c109cbf06b",
+    "vis/rasterizer.py": "c72f56a4a2cd71578bed394c2c27daa36b918ea34fd19b9c1c64fbb4b8372b6f",
+    "ext/pyrender/shaders/mesh.frag": "76ad11db02b35cd14af48f81c297c727110491f812c050d549442e4c5a10d0e8"
+  },
+  "render_signal_contract": {
+    "representation": "linearized_display_rgb_proxy",
+    "genesis_camera_render_api": "uint8 display RGB; public radiance=True argument is unsupported in installed Genesis 1.2.2",
+    "transfer": "pyrender mesh.frag applies pow(color,1/2.2), then clamps; benchmark inverse is (rgb_uint8/255)^2.2",
+    "native_hdr_radiance": false,
+    "absolute_radiometric_calibration": false,
+    "quantization_and_clipping_recorded_per_endpoint": true
+  },
+  "config_sha256": "eb5470f75e6f283121c0a468834de35adc97b09c98c1b965f875a7d8cbd8216f",
+  "split_seed": 20261019,
+  "flow_direction_check": {
+    "status": "pass",
+    "expected_uv_px": [
+      0.5,
+      0.0
+    ],
+    "observed_uv_px": [
+      0.5,
+      0.0
+    ]
+  },
+  "episodes": [
+    {
+      "id": "s5p_00_train",
+      "split": "train",
+      "stratum": "camera_motion_static_scene",
+      "scene_seed": 2026101900,
+      "frames": 201,
+      "time_s": [
+        0.0,
+        2.0
+      ],
+      "texture_pattern": "checker",
+      "texture_contrast": "high",
+      "speed_class": "low",
+      "speed_scale": 0.7,
+      "amplitude_class": "small",
+      "amplitude_scale": 0.6,
+      "size_class": "small",
+      "size_range_m": [
+        0.08,
+        0.1
+      ],
+      "layout_class": "spread",
+      "eventgenesis_events": 51505,
+      "valid_fraction_30ms_mean": 0.9948583208698816,
+      "flow30_shape": [
+        66,
+        2,
+        260,
+        346
+      ],
+      "K": [
+        [
+          234.52620818528507,
+          0.0,
+          172.5
+        ],
+        [
+          0.0,
+          234.52620818528507,
+          129.5
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "initial_pose_max_abs_error_m": 6.348489067775631e-09,
+      "v2e_input_files": 201,
+      "v2e_input_sha256": "9d1544b35471437883ce5cfa1f86b67b4185816a4c2bdef99e7133fbb388a68a",
+      "rollout_seconds": 386.098
+    }
+  ],
+  "bank_sha256": "d7c9339525a5e51053987a18f11afd4101ba43eff80f8db5c16c0d819bedb448",
+  "split_sha256": "c27b9cb0972513083d7d3357b05c7097cc338a9055838d50bc616fd62d74851a",
+  "finished_utc": "2026-10-20T18:45:05.760525+00:00"
+}

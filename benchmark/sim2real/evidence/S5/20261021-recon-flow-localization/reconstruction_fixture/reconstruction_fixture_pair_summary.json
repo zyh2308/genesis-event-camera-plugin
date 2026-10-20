@@ -1,0 +1,66 @@
+{
+  "schema": "stage5_reconstruction_synthetic_fixture_pair_summary_v1",
+  "status": "both_generators_passed_synthetic_end_to_end_inference_metric_and_independent_artifact_verification",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "checkpoint_selection_allowed": false,
+  "interpretation": "pipeline contracts and reproducibility only; metrics are not a reconstruction quality conclusion or EventGenesis-versus-V2E result",
+  "shared_fixture": {
+    "g1_bank": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3/shared_trajectory.h5",
+    "rollout_id": "s5q_02_train",
+    "split": "train",
+    "physical_bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "target_endpoints": 200,
+    "initial_anchor_endpoints": 1,
+    "first_model_input": "events in (t0,t1]",
+    "recurrent_state_reset_calls": 1,
+    "input_contract": "event-only five-bin tensor",
+    "output_resolution_hw": [260, 346],
+    "model_config_path": "benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+    "model_config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d"
+  },
+  "arms": {
+    "eventgenesis": {
+      "checkpoint_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+      "checkpoint_sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc",
+      "run_root_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2",
+      "verification_path_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/verification/final_integrity_verification.json",
+      "verification_repo_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/reconstruction_fixture/eventgenesis/verification_v2.json",
+      "verification_sha256": "6c5be8f5eb78c138623b9a452147c9d86ccbf1d0154e5e5ebc325a64569654ae",
+      "verification_status": "synthetic_fixture_end_to_end_pass_no_real_scoring",
+      "prior_verification": {"repo_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/reconstruction_fixture/eventgenesis/verification.json", "sha256": "6d3af6022db8c0ed0faff22d877b39bfddd47dd309ee6744f90a5acf1c84523b", "note": "historical verifier version labelled every arm as following a metric compatibility rerun; this arm did require that rerun"},
+      "initial_combined_driver_exit_code": 1,
+      "failure_and_recovery": "first combined run reached metrics and failed on PerceptualSimilarity importing removed skimage.measure.compare_ssim; compatibility shim added, existing frozen inference was evaluated again successfully, then manifest/hash verifier passed",
+      "metrics": {
+        "status": "synthetic_plumbing_pass_not_model_quality_or_generator_result",
+        "lpips_alex": 0.36155069470405576,
+        "mse": 0.03611095282113957,
+        "psnr_db": 14.42364543571239,
+        "ssim": 0.6158346861377031,
+        "metric_result_sha256": "244685724dd13b920056495d7f100bfed903548eab80be6f29fa51dabf572431"
+      }
+    },
+    "v2e": {
+      "checkpoint_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/v2e/synthetic_best.pt",
+      "checkpoint_sha256": "598b1e7837b4b02b50a7f390889c7737ed797840043a3f23121f54dc99d050d8",
+      "run_root_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-v2e-v1",
+      "verification_path_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-v2e-v1/verification/final_integrity_verification.json",
+      "verification_repo_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/reconstruction_fixture/v2e/verification_v2.json",
+      "verification_sha256": "8841ca8d60a9d2200479d95f5b469ea8ce51ef385dd788ad8c056d9b1437a12d",
+      "verification_status": "synthetic_fixture_end_to_end_pass_no_real_scoring",
+      "prior_verification": {"repo_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/reconstruction_fixture/v2e/verification.json", "sha256": "098856e46ab4bedfb01792625e4aa33fbd8d67a637dff8e92add987197b9eaa1", "note": "historical verifier output retained; its status wording incorrectly implied this V2E metric required a compatibility rerun"},
+      "driver_exit_code": 0,
+      "metrics": {
+        "status": "synthetic_plumbing_pass_not_model_quality_or_generator_result",
+        "lpips_alex": 0.6194825348258018,
+        "mse": 0.053929420465517276,
+        "psnr_db": 12.682096906094912,
+        "ssim": 0.4916968222909358,
+        "metric_result_sha256": "aafa19fa8775c2dea1482f107d5a33f58ca67ef56ecbdd42838f1727d9d3af1b"
+      }
+    }
+  },
+  "metric_caveat": "The two metric vectors are retained because both evaluation paths actually ran, but they must not be read as model-quality or generator-ranking evidence. This is one fixture rollout used only to validate event windows, recurrence, image shape/range, metric loading and artifact binding.",
+  "verifier_script_g1_sha256": "d51460e95fb3f07083f63de1ce5d8fe691cc080cdb5a9f3540e7f2c0f0facdeb",
+  "verifier_script_repo_path": "benchmark/sim2real/scripts/verify_stage5_synthetic_reconstruction_fixture.py"
+}

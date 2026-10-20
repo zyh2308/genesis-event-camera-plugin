@@ -1,0 +1,60 @@
+{
+  "schema": "stage5_synthetic_reconstruction_fixture_candidate_v1",
+  "status": "synthetic_plumbing_only",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "checkpoint_selection_allowed": false,
+  "model_quality_claim_allowed": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "fixture": {
+    "physical_bank_path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3/shared_trajectory.h5",
+    "physical_bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "rollout_id": "s5q_02_train",
+    "split": "train",
+    "target_source": "shared bank v2e_display_luma_u8; same endpoint target used for both event-generator arms",
+    "target_endpoint_set": "the physical artifact contains all 201 shared endpoints t_0..t_200; t_0 is the recurrent boundary only, while the 200 inferable targets are t_1..t_200",
+    "event_window": "reset recurrent state at t_0 without a model call; each target t_i, i=1..200, receives events in (t_i-1,t_i] with EventGenesis timestamps in seconds and V2E timestamps converted from microseconds",
+    "resolution_hw": [260, 346]
+  },
+  "arms": {
+    "eventgenesis": {
+      "candidate_checkpoint_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+      "checkpoint_sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc"
+    },
+    "v2e": {
+      "candidate_checkpoint_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/v2e/synthetic_best.pt",
+      "checkpoint_sha256": "598b1e7837b4b02b50a7f390889c7737ed797840043a3f23121f54dc99d050d8"
+    }
+  },
+  "inference": {
+    "architecture": "pinned event_cnn_minimal E2VIDRecurrent",
+    "model_config_repository_path": "benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+    "model_config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+    "model_args": {
+      "num_bins": 5,
+      "skip_type": "sum",
+      "recurrent_block_type": "convlstm",
+      "num_encoders": 3,
+      "base_num_channels": 32,
+      "num_residual_blocks": 2,
+      "use_upsample_conv": true,
+      "final_activation": "",
+      "norm": "none"
+    },
+    "input": "event only, EVREAL MemMapDataset between_frames five signed temporal bins; reference pixels are deleted before model call",
+    "hidden_state": "one reset at t_0; recurrent state continues through all 200 windows",
+    "resolution": "pad native 260x346 with pinned CropParameters then crop to exact 260x346",
+    "output_mapping": "record finite raw range; clip once to [0,1]; save float32 and uint8 without per-frame normalization",
+    "device": "CPU for isolation from other users' GPU allocations",
+    "saved_endpoints": "all 200 inferable outputs t_1..t_200 in chronological order; no zero-event pseudo-window is passed to the model"
+  },
+  "metrics": {
+    "scope": "synthetic pipeline contract check only",
+    "LPIPS_AlexNet": "grayscale repeated to RGB; fixed linear map from [0,1] to [-1,1]; pinned PerceptualSimilarity v0.1 weights",
+    "MSE": "full-frame float32 grayscale [0,1]",
+    "PSNR": "data_range=1; exact match represented as +infinity plus an exact-match flag",
+    "SSIM": "grayscale float32 [0,1], data_range=1",
+    "aggregation": "arithmetic mean across all 200 registered inferable endpoints",
+    "real_data_or_checkpoint_selection_use": false
+  }
+}

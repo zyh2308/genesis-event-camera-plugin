@@ -1,0 +1,111 @@
+{
+  "schema": "stage5_reconstruction_flow_live_observation_v1",
+  "observed_utc": "2026-10-20T20:10:28Z",
+  "observed_jst": "2026-10-21T05:10:28+09:00",
+  "machine": "g1.pkuml.org",
+  "scope": ["reconstruction", "optical_flow"],
+  "pose_status": "paused_by_user_no_access_probe",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_scoring_enabled": false,
+  "reconstruction_training": {
+    "root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0",
+    "eventgenesis": {
+      "status": "complete",
+      "completed_epochs": 200,
+      "optimizer_updates": 12000,
+      "best_epoch": 170,
+      "best_checkpoint_sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc",
+      "final_checkpoint_sha256": "fe7eacf5865f486b7355e4f60202368de34b56d3dbcde1412ee67bfbfc29cbaf",
+      "metrics_jsonl": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/training_metrics.jsonl",
+        "size_bytes": 10245043,
+        "lines": 12040,
+        "sha256": "c8116cf82e2587de19bf854b0767ae6289f32d858a3f56e2ed509b7874f0ffad"
+      }
+    },
+    "v2e": {
+      "status": "complete",
+      "completed_epochs": 200,
+      "optimizer_updates": 12000,
+      "best_epoch": 195,
+      "best_checkpoint_sha256": "598b1e7837b4b02b50a7f390889c7737ed797840043a3f23121f54dc99d050d8",
+      "final_checkpoint_sha256": "af861ca93da680fd83b58c6644376e99ba2c9007f379b92a29221031159726db",
+      "metrics_jsonl": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/v2e/training_metrics.jsonl",
+        "size_bytes": 10132565,
+        "lines": 12040,
+        "sha256": "39bbf9ff62be766567977dff7751177d39a626db1eec87f5543f625ebbc81d2d"
+      }
+    },
+    "initialization_sha256_both_arms": "48426d94f4159592155eda873d4e71e2f06439c10eade990de5979231ed07a0f",
+    "training_exit_codes": {"eventgenesis": 0, "v2e": 0}
+  },
+  "reconstruction_synthetic_fixture": {
+    "physical_bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "registered_targets_per_arm": 200,
+    "event_only_inference": true,
+    "sequence_state_reset_calls": 1,
+    "event_endpoints_independently_recounted": true,
+    "eventgenesis": {
+      "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2",
+      "metric_status": "synthetic_plumbing_pass_not_model_quality_or_generator_result",
+      "real_scoring_enabled": false
+    },
+    "v2e": {
+      "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-v2e-v1",
+      "inference_manifest_and_metric_files_present_at_2026_10_20T20_10_28Z": true,
+      "driver_exit_code_file_present": true,
+      "independent_verifier": "pending_at_observation_time",
+      "real_scoring_enabled": false
+    }
+  },
+  "hqf": {
+    "role": "primary_real_reconstruction_dataset",
+    "sequences": 14,
+    "status": "ready_unscored",
+    "converted_manifest_sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add",
+    "real_scoring_enabled": false,
+    "hs_erbg_role": "extension_only"
+  },
+  "flow_v3_single_rollout_audit": {
+    "bank_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3/shared_trajectory.h5",
+    "bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "audit_path_repo": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json",
+    "audit_sha256": "9f5bf5e3a44d4a2ca167cb8ab3fa2f11bde9bb2388c520b22edf5e5022e84460",
+    "windows": 66,
+    "mean_common_union_active_valid_coverage": 0.0037019908741645793,
+    "mean_common_active_moving_texture_pixels": 9.863636363636363,
+    "windows_with_moving_texture_support": 60,
+    "nonempty_active_moving_texture_pixel_total": 651,
+    "pixel_macro_mean_photo_mae": {
+      "gt": 0.0021934453397989273,
+      "zero": 0.004345659112247328,
+      "reverse": 0.005547806880592058,
+      "mistimed_plus_8_windows": 0.004955859462885807
+    },
+    "interpretation": "one synthetic smoke shows a plausible GT warp signal on the predeclared active moving-texture subset; support is sparse; not a model-learning or generator-quality claim"
+  },
+  "flow_v3_eight_rollout_physical_bank": {
+    "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg",
+    "bank_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "tmux_session": "s5_flow_v3_full_bank_eg_20261021",
+    "runner_pid": 2229637,
+    "observed_status": "running",
+    "active_rollout": "s5q_00_train",
+    "active_endpoint": 20,
+    "total_endpoints_per_rollout": 201,
+    "active_rollout_elapsed_seconds": 94.2,
+    "active_endpoint_rate_hz": 0.212,
+    "completed_rollouts": 0,
+    "total_rollouts": 8,
+    "gpu0": {"memory_used_mib": 7132, "memory_free_mib": 17023, "utilization_percent": 28},
+    "rough_wall_time_estimate_hours": 2.1,
+    "estimate_basis": "early rollout endpoint throughput only; not a measured completion time"
+  },
+  "checks": {
+    "unit_test_command": "python3 -m unittest -v benchmark.sim2real.tests.test_reconstruction_metric_contract benchmark.sim2real.tests.test_stage5_flow_renderer_transfer benchmark.sim2real.tests.test_hqf_time_index_contract",
+    "unit_test_result": "12 tests discovered; 10 passed, 2 skipped because local WSL lacks scikit-image (pinned g1 metric run did execute successfully)",
+    "python_compile": "passed for reconstruction verifier and flow diagnostic/bank adapter scripts",
+    "git_diff_check": "passed"
+  }
+}

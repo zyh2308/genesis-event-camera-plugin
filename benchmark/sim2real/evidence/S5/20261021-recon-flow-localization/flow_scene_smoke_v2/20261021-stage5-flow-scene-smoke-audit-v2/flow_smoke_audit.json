@@ -1,0 +1,2874 @@
+{
+  "analytic_warp_fixture": {
+    "direction_contract": "next(x+u,y+v) is compared with previous(x,y)",
+    "mae": {
+      "gt": 0.0004092652234248817,
+      "reverse": 0.09405886381864548,
+      "zero": 0.0486835241317749
+    },
+    "status": "pass",
+    "translation_xy_px": [
+      2.25,
+      -1.5
+    ],
+    "valid_pixels": 5673
+  },
+  "bank": {
+    "config_sha256": "eb5470f75e6f283121c0a468834de35adc97b09c98c1b965f875a7d8cbd8216f",
+    "manifest_sha256": "69d53f3fa9792960e6bf6344f40090e78e14310c55191f122bba926307d01a42",
+    "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v2-smoke/shared_trajectory.h5",
+    "sha256": "d7c9339525a5e51053987a18f11afd4101ba43eff80f8db5c16c0d819bedb448",
+    "size_bytes": 55604819
+  },
+  "created_utc": "2026-10-20T19:07:17.701098+00:00",
+  "event_artifacts": {
+    "eventgenesis_count": 51505,
+    "eventgenesis_hdf5_sha256": "d7c9339525a5e51053987a18f11afd4101ba43eff80f8db5c16c0d819bedb448",
+    "eventgenesis_time_unit": "seconds relative to rollout",
+    "v2e_count": 21930,
+    "v2e_raw_hdf5_sha256": "920e1f8c2f0ff49869d9997a56ecaebbaa993ea7f7dfe262cc04a5d935fb80e2",
+    "v2e_time_unit": "microseconds from pinned V2E HDF5"
+  },
+  "ground_truth": {
+    "flow_shape": [
+      66,
+      2,
+      260,
+      346
+    ],
+    "unit": "forward source-pixel displacement per 30 ms endpoint interval",
+    "valid_fraction_mean": 0.9948583208698816,
+    "valid_shape": [
+      66,
+      260,
+      346
+    ]
+  },
+  "linearized_display_signal": {
+    "K_px": [
+      [
+        234.52620818528507,
+        0.0,
+        172.5
+      ],
+      [
+        0.0,
+        234.52620818528507,
+        129.5
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "mean": 0.10484522581100464,
+    "range": [
+      0.00010718735575210303,
+      0.18354898691177368
+    ],
+    "renderer_backend": "rasterizer",
+    "representation": "gamma-2.2-decoded Genesis uint8 display RGB proxy; not native HDR radiance",
+    "saturated_channel_fraction_max": 0.0,
+    "saturated_channel_fraction_mean": 0.0,
+    "shape": [
+      201,
+      260,
+      346,
+      3
+    ],
+    "v2e_display_mapping": "fixed Rec.709 linear Y from shared proxy, exposure 1, Reinhard, sRGB, uint8"
+  },
+  "photo_warp_rule": "GT forward endpoint correspondence evaluates next(x+flow)->previous(x); same mask for zero, GT, reverse and mistimed flow",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "schema": "stage5_flow_scene_smoke_audit_v1",
+  "status": "complete",
+  "summary": {
+    "mean_common_union_active_valid_coverage": 0.005762699423200792,
+    "mean_event_count": {
+      "eventgenesis": 769.0757575757576,
+      "v2e": 323.1212121212121
+    },
+    "mean_valid_moving_texture_pixels": 0.0,
+    "windows": 66,
+    "windows_with_nonempty_moving_texture": 0
+  },
+  "support_rule": "common normal-input active union intersect shared valid GT; no event-count filtering",
+  "v2e_manifest_sha256": "26a23594c93752f9cc5d9723cae6912dd0c51864088aac32e27724c0d8911c83",
+  "window_rule": "independently recounted half-open event windows (t_i,t_i+3] on shared 100 Hz endpoints",
+  "windows": [
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 906,
+        "v2e": 189
+      },
+      "common_union_active_and_gt_ge_0_5px": 3,
+      "common_union_active_valid_coverage": 0.01196079085861789,
+      "common_union_active_valid_pixels": 1075,
+      "endpoint_indices": [
+        0,
+        3
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 7073,
+        "v2e": 248
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 8744,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.14398670196533203,
+        0.4963919878005981,
+        0.74374404668808
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.659582090331241e-05,
+        "mistimed_plus_8_windows": 7.997640204848722e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001291649095946923,
+        "zero": 4.8113743105204776e-05
+      },
+      "sample_id": "s5p_00_train/dt1_000",
+      "texture_pixels_gradient_gt_1_over_255": 2214,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89877,
+      "window_index": 0,
+      "window_seconds": [
+        0.0,
+        0.03
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 244,
+        "v2e": 204
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.004372642611569145,
+      "common_union_active_valid_pixels": 393,
+      "endpoint_indices": [
+        3,
+        6
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 622,
+        "v2e": 270
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 8403,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.14388906955718994,
+        0.49123957753181485,
+        0.738524832725525
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.71878253039904e-05,
+        "mistimed_plus_8_windows": 9.251789742847905e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00015199070912785828,
+        "zero": 7.075186294969171e-05
+      },
+      "sample_id": "s5p_00_train/dt1_030",
+      "texture_pixels_gradient_gt_1_over_255": 2213,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89877,
+      "window_index": 1,
+      "window_seconds": [
+        0.03,
+        0.06
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 260,
+        "v2e": 274
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.005140301297314137,
+      "common_union_active_valid_pixels": 462,
+      "endpoint_indices": [
+        6,
+        9
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 796,
+        "v2e": 353
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 8048,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.14278951287269592,
+        0.48583767116069804,
+        0.732877424955368
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00010750165529316291,
+        "mistimed_plus_8_windows": 0.00010425465734442696,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001727578928694129,
+        "zero": 9.297534415964037e-05
+      },
+      "sample_id": "s5p_00_train/dt1_060",
+      "texture_pixels_gradient_gt_1_over_255": 2213,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 2,
+      "window_seconds": [
+        0.06,
+        0.09
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 355,
+        "v2e": 370
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.007643694786265827,
+      "common_union_active_valid_pixels": 687,
+      "endpoint_indices": [
+        9,
+        12
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 857,
+        "v2e": 459
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 7670,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.14160996675491333,
+        0.4801491260528564,
+        0.7269815748929974
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00014463040861301124,
+        "mistimed_plus_8_windows": 0.00013855681754648685,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001863718352979049,
+        "zero": 0.00010879884212044999
+      },
+      "sample_id": "s5p_00_train/dt1_090",
+      "texture_pixels_gradient_gt_1_over_255": 2204,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 3,
+      "window_seconds": [
+        0.09,
+        0.12
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 406,
+        "v2e": 380
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.00793377026560883,
+      "common_union_active_valid_pixels": 713,
+      "endpoint_indices": [
+        12,
+        15
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 958,
+        "v2e": 463
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 7224,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.13990619778633118,
+        0.47316047549247736,
+        0.7185201668739318
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00011856244964292273,
+        "mistimed_plus_8_windows": 0.00011383133823983371,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001709605858195573,
+        "zero": 9.510660311207175e-05
+      },
+      "sample_id": "s5p_00_train/dt1_120",
+      "texture_pixels_gradient_gt_1_over_255": 2222,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89869,
+      "window_index": 4,
+      "window_seconds": [
+        0.12,
+        0.15
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 438,
+        "v2e": 281
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.007432379807959767,
+      "common_union_active_valid_pixels": 668,
+      "endpoint_indices": [
+        15,
+        18
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 909,
+        "v2e": 319
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 6799,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.1380404233932495,
+        0.46559588313102723,
+        0.709805240631104
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00011627520871115848,
+        "mistimed_plus_8_windows": 0.00011221199383726344,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00016784468607511371,
+        "zero": 9.279301593778655e-05
+      },
+      "sample_id": "s5p_00_train/dt1_150",
+      "texture_pixels_gradient_gt_1_over_255": 2200,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89877,
+      "window_index": 5,
+      "window_seconds": [
+        0.15,
+        0.18
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 469,
+        "v2e": 296
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.007743830525823895,
+      "common_union_active_valid_pixels": 696,
+      "endpoint_indices": [
+        18,
+        21
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 1093,
+        "v2e": 359
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 6342,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.13591370731592178,
+        0.45731882750988007,
+        0.6994908106327056
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.780146890785545e-05,
+        "mistimed_plus_8_windows": 8.305194205604494e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001344952470390126,
+        "zero": 6.113801646279171e-05
+      },
+      "sample_id": "s5p_00_train/dt1_180",
+      "texture_pixels_gradient_gt_1_over_255": 2203,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 6,
+      "window_seconds": [
+        0.18,
+        0.21
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 423,
+        "v2e": 250
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006853658807952914,
+      "common_union_active_valid_pixels": 616,
+      "endpoint_indices": [
+        21,
+        24
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 926,
+        "v2e": 283
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 5917,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.13357648253440857,
+        0.4490907192230224,
+        0.689761528968811
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.655867713969201e-05,
+        "mistimed_plus_8_windows": 8.12336293165572e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00012993191194254905,
+        "zero": 5.7923585700336844e-05
+      },
+      "sample_id": "s5p_00_train/dt1_210",
+      "texture_pixels_gradient_gt_1_over_255": 2211,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89879,
+      "window_index": 7,
+      "window_seconds": [
+        0.21,
+        0.24
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 393,
+        "v2e": 365
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.007220819101236106,
+      "common_union_active_valid_pixels": 649,
+      "endpoint_indices": [
+        24,
+        27
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 969,
+        "v2e": 481
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 5457,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.13099627196788788,
+        0.43995351195335386,
+        0.6783769237995148
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00010647845192579553,
+        "mistimed_plus_8_windows": 0.00010385930363554507,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00016060932830441743,
+        "zero": 9.023991879075766e-05
+      },
+      "sample_id": "s5p_00_train/dt1_240",
+      "texture_pixels_gradient_gt_1_over_255": 2197,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89879,
+      "window_index": 8,
+      "window_seconds": [
+        0.24,
+        0.27
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 366,
+        "v2e": 329
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006742623169700476,
+      "common_union_active_valid_pixels": 606,
+      "endpoint_indices": [
+        27,
+        30
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 927,
+        "v2e": 401
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 5007,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.12813841551542282,
+        0.43058358132839203,
+        0.6663855314254761
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.227012196788564e-05,
+        "mistimed_plus_8_windows": 8.865663403412327e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001383746712235734,
+        "zero": 7.030244159977883e-05
+      },
+      "sample_id": "s5p_00_train/dt1_270",
+      "texture_pixels_gradient_gt_1_over_255": 2193,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89876,
+      "window_index": 9,
+      "window_seconds": [
+        0.27,
+        0.3
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 383,
+        "v2e": 308
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.006853735063085516,
+      "common_union_active_valid_pixels": 616,
+      "endpoint_indices": [
+        30,
+        33
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 808,
+        "v2e": 392
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 4540,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.12493366003036499,
+        0.42035759985446935,
+        0.6531426298618317
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.125594078795984e-05,
+        "mistimed_plus_8_windows": 8.465191785944626e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00012284694821573794,
+        "zero": 5.657395740854554e-05
+      },
+      "sample_id": "s5p_00_train/dt1_300",
+      "texture_pixels_gradient_gt_1_over_255": 2202,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 10,
+      "window_seconds": [
+        0.3,
+        0.33
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 367,
+        "v2e": 280
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.006508823071274394,
+      "common_union_active_valid_pixels": 585,
+      "endpoint_indices": [
+        33,
+        36
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 735,
+        "v2e": 343
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 4070,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.12156315892934799,
+        0.40929736495018004,
+        0.638529218435287
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.488312596455216e-05,
+        "mistimed_plus_8_windows": 8.028412412386388e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00012260839866939932,
+        "zero": 5.8343186537967995e-05
+      },
+      "sample_id": "s5p_00_train/dt1_330",
+      "texture_pixels_gradient_gt_1_over_255": 2184,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 11,
+      "window_seconds": [
+        0.33,
+        0.36
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 411,
+        "v2e": 340
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.007532516661659824,
+      "common_union_active_valid_pixels": 677,
+      "endpoint_indices": [
+        36,
+        39
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 868,
+        "v2e": 425
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 3622,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.11807820200920105,
+        0.39800288081169133,
+        0.6235330390930177
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.253576718037948e-05,
+        "mistimed_plus_8_windows": 8.878031803760678e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00013001117622479796,
+        "zero": 6.761395343346521e-05
+      },
+      "sample_id": "s5p_00_train/dt1_360",
+      "texture_pixels_gradient_gt_1_over_255": 2192,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89877,
+      "window_index": 12,
+      "window_seconds": [
+        0.36,
+        0.39
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 344,
+        "v2e": 247
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006008144373484056,
+      "common_union_active_valid_pixels": 540,
+      "endpoint_indices": [
+        39,
+        42
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 733,
+        "v2e": 287
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 3193,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.11429614573717117,
+        0.3860136300325395,
+        0.6071806997060767
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.735458348179236e-05,
+        "mistimed_plus_8_windows": 7.252069190144539e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010976464545819908,
+        "zero": 4.882956636720337e-05
+      },
+      "sample_id": "s5p_00_train/dt1_390",
+      "texture_pixels_gradient_gt_1_over_255": 2183,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 13,
+      "window_seconds": [
+        0.39,
+        0.42
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 337,
+        "v2e": 271
+      },
+      "common_union_active_and_gt_ge_0_5px": 2,
+      "common_union_active_valid_coverage": 0.006119474392781246,
+      "common_union_active_valid_pixels": 550,
+      "endpoint_indices": [
+        42,
+        45
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 688,
+        "v2e": 390
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 2812,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.11036597937345505,
+        0.37402320504188535,
+        0.59087606906891
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.319901826325804e-05,
+        "mistimed_plus_8_windows": 8.076175436144695e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00011963539873249829,
+        "zero": 6.163813668536022e-05
+      },
+      "sample_id": "s5p_00_train/dt1_420",
+      "texture_pixels_gradient_gt_1_over_255": 2191,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89877,
+      "window_index": 14,
+      "window_seconds": [
+        0.42,
+        0.45
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 312,
+        "v2e": 342
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006631284978359313,
+      "common_union_active_valid_pixels": 596,
+      "endpoint_indices": [
+        45,
+        48
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 638,
+        "v2e": 554
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 2419,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.10617409646511078,
+        0.36131306886673,
+        0.5734365439414987
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.954407192301005e-05,
+        "mistimed_plus_8_windows": 7.407333760056645e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010607642616378143,
+        "zero": 4.8597743443679065e-05
+      },
+      "sample_id": "s5p_00_train/dt1_450",
+      "texture_pixels_gradient_gt_1_over_255": 2168,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89877,
+      "window_index": 15,
+      "window_seconds": [
+        0.45,
+        0.48
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 320,
+        "v2e": 302
+      },
+      "common_union_active_and_gt_ge_0_5px": 2,
+      "common_union_active_valid_coverage": 0.006264465016912943,
+      "common_union_active_valid_pixels": 563,
+      "endpoint_indices": [
+        48,
+        51
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 835,
+        "v2e": 513
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 2005,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.10179531574249268,
+        0.34808197319507606,
+        0.5546660476922987
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.894299051258713e-05,
+        "mistimed_plus_8_windows": 7.612899207742885e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001109223157982342,
+        "zero": 5.5802182032493874e-05
+      },
+      "sample_id": "s5p_00_train/dt1_480",
+      "texture_pixels_gradient_gt_1_over_255": 2141,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89872,
+      "window_index": 16,
+      "window_seconds": [
+        0.48,
+        0.51
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 311,
+        "v2e": 249
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0057410518586099085,
+      "common_union_active_valid_pixels": 516,
+      "endpoint_indices": [
+        51,
+        54
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 717,
+        "v2e": 358
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 1602,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.09720193594694138,
+        0.334789890050888,
+        0.5358891665935517
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.333348912652582e-05,
+        "mistimed_plus_8_windows": 7.009076944086701e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.926378697855398e-05,
+        "zero": 4.621952757588588e-05
+      },
+      "sample_id": "s5p_00_train/dt1_510",
+      "texture_pixels_gradient_gt_1_over_255": 2136,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89879,
+      "window_index": 17,
+      "window_seconds": [
+        0.51,
+        0.54
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 273,
+        "v2e": 286
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.0055632204370465975,
+      "common_union_active_valid_pixels": 500,
+      "endpoint_indices": [
+        54,
+        57
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 717,
+        "v2e": 363
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 1215,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.09248321130871773,
+        0.32180145382881165,
+        0.5168712884187698
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.309654367621988e-05,
+        "mistimed_plus_8_windows": 8.298308966914192e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00011865523993037641,
+        "zero": 6.6539338149596e-05
+      },
+      "sample_id": "s5p_00_train/dt1_540",
+      "texture_pixels_gradient_gt_1_over_255": 2128,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89876,
+      "window_index": 18,
+      "window_seconds": [
+        0.54,
+        0.5700000000000001
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 253,
+        "v2e": 235
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.005095626439403211,
+      "common_union_active_valid_pixels": 458,
+      "endpoint_indices": [
+        57,
+        60
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 482,
+        "v2e": 357
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 849,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.08760301768779755,
+        0.3085094392299652,
+        0.4971650958061215
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.072901982814074e-05,
+        "mistimed_plus_8_windows": 7.222802378237247e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.227077680407092e-05,
+        "zero": 4.452259963727556e-05
+      },
+      "sample_id": "s5p_00_train/dt1_570",
+      "texture_pixels_gradient_gt_1_over_255": 2115,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89881,
+      "window_index": 19,
+      "window_seconds": [
+        0.5700000000000001,
+        0.6
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 260,
+        "v2e": 246
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.005129003905163494,
+      "common_union_active_valid_pixels": 461,
+      "endpoint_indices": [
+        60,
+        63
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 593,
+        "v2e": 330
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 494,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.08252127468585968,
+        0.29441261291503906,
+        0.4755054414272306
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.542094292351976e-05,
+        "mistimed_plus_8_windows": 8.652038377476856e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001171541734947823,
+        "zero": 6.897507410030812e-05
+      },
+      "sample_id": "s5p_00_train/dt1_600",
+      "texture_pixels_gradient_gt_1_over_255": 2096,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89881,
+      "window_index": 20,
+      "window_seconds": [
+        0.6,
+        0.63
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 226,
+        "v2e": 218
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004684127372660718,
+      "common_union_active_valid_pixels": 421,
+      "endpoint_indices": [
+        63,
+        66
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 417,
+        "v2e": 386
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 224,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.07753195986151695,
+        0.2812867462635041,
+        0.45480794548988307
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.728039781795815e-05,
+        "mistimed_plus_8_windows": 6.928322545718402e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.601446461398154e-05,
+        "zero": 4.115298361284658e-05
+      },
+      "sample_id": "s5p_00_train/dt1_630",
+      "texture_pixels_gradient_gt_1_over_255": 2079,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89878,
+      "window_index": 21,
+      "window_seconds": [
+        0.63,
+        0.66
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 226,
+        "v2e": 215
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004728526924788607,
+      "common_union_active_valid_pixels": 425,
+      "endpoint_indices": [
+        66,
+        69
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 399,
+        "v2e": 307
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 37,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.07212744280695915,
+        0.2676410526037216,
+        0.4321963220834736
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.261951734311879e-05,
+        "mistimed_plus_8_windows": 7.87933386163786e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010180391109315678,
+        "zero": 5.63052853976842e-05
+      },
+      "sample_id": "s5p_00_train/dt1_660",
+      "texture_pixels_gradient_gt_1_over_255": 2070,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89880,
+      "window_index": 22,
+      "window_seconds": [
+        0.66,
+        0.6900000000000001
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 222,
+        "v2e": 194
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004205420319522941,
+      "common_union_active_valid_pixels": 378,
+      "endpoint_indices": [
+        69,
+        72
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 439,
+        "v2e": 257
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06689519062638283,
+        0.2546797454357147,
+        0.40951008111238474
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 6.469593790825456e-05,
+        "mistimed_plus_8_windows": 6.0571128415176645e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 7.948945130920038e-05,
+        "zero": 3.5503937397152185e-05
+      },
+      "sample_id": "s5p_00_train/dt1_690",
+      "texture_pixels_gradient_gt_1_over_255": 2071,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89884,
+      "window_index": 23,
+      "window_seconds": [
+        0.6900000000000001,
+        0.72
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 205,
+        "v2e": 209
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004272220553386069,
+      "common_union_active_valid_pixels": 384,
+      "endpoint_indices": [
+        72,
+        75
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 364,
+        "v2e": 285
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06136815622448921,
+        0.2424840688705445,
+        0.3868054866790771
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.784707850078121e-05,
+        "mistimed_plus_8_windows": 7.256465323735029e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.117639274336398e-05,
+        "zero": 4.900047861156054e-05
+      },
+      "sample_id": "s5p_00_train/dt1_720",
+      "texture_pixels_gradient_gt_1_over_255": 2074,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89883,
+      "window_index": 24,
+      "window_seconds": [
+        0.72,
+        0.75
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 241,
+        "v2e": 287
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.005329031540301496,
+      "common_union_active_valid_pixels": 479,
+      "endpoint_indices": [
+        75,
+        78
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 535,
+        "v2e": 393
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.05574218928813934,
+        0.22980868816375735,
+        0.3631394243240358
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.85897791502066e-05,
+        "mistimed_plus_8_windows": 7.912519504316151e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.84811777016148e-05,
+        "zero": 5.831781163578853e-05
+      },
+      "sample_id": "s5p_00_train/dt1_750",
+      "texture_pixels_gradient_gt_1_over_255": 2080,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89885,
+      "window_index": 25,
+      "window_seconds": [
+        0.75,
+        0.78
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 232,
+        "v2e": 173
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004190844616376531,
+      "common_union_active_valid_pixels": 377,
+      "endpoint_indices": [
+        78,
+        81
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 389,
+        "v2e": 265
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.0503569170832634,
+        0.21758290678262712,
+        0.33990823388099634
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.84066175785847e-05,
+        "mistimed_plus_8_windows": 7.926793477963656e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.376442176289856e-05,
+        "zero": 5.703750503016636e-05
+      },
+      "sample_id": "s5p_00_train/dt1_780",
+      "texture_pixels_gradient_gt_1_over_255": 2089,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89958,
+      "window_index": 26,
+      "window_seconds": [
+        0.78,
+        0.81
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 212,
+        "v2e": 165
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.003901777476405918,
+      "common_union_active_valid_pixels": 351,
+      "endpoint_indices": [
+        81,
+        84
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 385,
+        "v2e": 222
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.046286486089229584,
+        0.20468422174453732,
+        0.31524995028972624
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.9578389482339844e-05,
+        "mistimed_plus_8_windows": 5.6829532695701346e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.63726677885279e-05,
+        "zero": 2.950987618532963e-05
+      },
+      "sample_id": "s5p_00_train/dt1_810",
+      "texture_pixels_gradient_gt_1_over_255": 2081,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89959,
+      "window_index": 27,
+      "window_seconds": [
+        0.81,
+        0.84
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 227,
+        "v2e": 167
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004104469311027563,
+      "common_union_active_valid_pixels": 369,
+      "endpoint_indices": [
+        84,
+        87
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 439,
+        "v2e": 238
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.043969932943582535,
+        0.19233875572681436,
+        0.29109081476926824
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.950191552983597e-05,
+        "mistimed_plus_8_windows": 6.13007287029177e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 7.055327296257019e-05,
+        "zero": 3.396474858163856e-05
+      },
+      "sample_id": "s5p_00_train/dt1_840",
+      "texture_pixels_gradient_gt_1_over_255": 2080,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89902,
+      "window_index": 28,
+      "window_seconds": [
+        0.84,
+        0.87
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 232,
+        "v2e": 145
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0039070761490254576,
+      "common_union_active_valid_pixels": 351,
+      "endpoint_indices": [
+        87,
+        90
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 462,
+        "v2e": 189
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.04531969502568245,
+        0.1800795942544937,
+        0.2666810977458954
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.897766459384002e-05,
+        "mistimed_plus_8_windows": 6.154835864435881e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.856278196210042e-05,
+        "zero": 3.3013890060829e-05
+      },
+      "sample_id": "s5p_00_train/dt1_870",
+      "texture_pixels_gradient_gt_1_over_255": 2086,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89837,
+      "window_index": 29,
+      "window_seconds": [
+        0.87,
+        0.9
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 266,
+        "v2e": 164
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004465180500189297,
+      "common_union_active_valid_pixels": 401,
+      "endpoint_indices": [
+        90,
+        93
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 469,
+        "v2e": 243
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.048625051975250244,
+        0.1679847612977028,
+        0.24204847216606137
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.9353125834604725e-05,
+        "mistimed_plus_8_windows": 6.0604252212215215e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.394919182639569e-05,
+        "zero": 3.009229476447217e-05
+      },
+      "sample_id": "s5p_00_train/dt1_900",
+      "texture_pixels_gradient_gt_1_over_255": 2090,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89806,
+      "window_index": 30,
+      "window_seconds": [
+        0.9,
+        0.93
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 340,
+        "v2e": 231
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006003430531732418,
+      "common_union_active_valid_pixels": 539,
+      "endpoint_indices": [
+        93,
+        96
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 669,
+        "v2e": 360
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.052745845168828964,
+        0.15633444935083393,
+        0.21733620256185535
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 6.718625081703067e-05,
+        "mistimed_plus_8_windows": 7.163071859395131e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 7.44407152524218e-05,
+        "zero": 4.1008177504409105e-05
+      },
+      "sample_id": "s5p_00_train/dt1_930",
+      "texture_pixels_gradient_gt_1_over_255": 2096,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89782,
+      "window_index": 31,
+      "window_seconds": [
+        0.93,
+        0.96
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 325,
+        "v2e": 126
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004726920032553318,
+      "common_union_active_valid_pixels": 424,
+      "endpoint_indices": [
+        96,
+        99
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 676,
+        "v2e": 173
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.05709928646683693,
+        0.1456812471151352,
+        0.19298660457134248
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.387944111134857e-05,
+        "mistimed_plus_8_windows": 6.328719609882683e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.1007442127447575e-05,
+        "zero": 2.7996309654554352e-05
+      },
+      "sample_id": "s5p_00_train/dt1_960",
+      "texture_pixels_gradient_gt_1_over_255": 2102,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89699,
+      "window_index": 32,
+      "window_seconds": [
+        0.96,
+        0.99
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 413,
+        "v2e": 200
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.00632128164821566,
+      "common_union_active_valid_pixels": 567,
+      "endpoint_indices": [
+        99,
+        102
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 1104,
+        "v2e": 265
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06090307980775833,
+        0.13748989701271058,
+        0.16960766732692717
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.126878335839137e-05,
+        "mistimed_plus_8_windows": 7.644505967618898e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.307746611535549e-05,
+        "zero": 5.0287871999898925e-05
+      },
+      "sample_id": "s5p_00_train/dt1_990",
+      "texture_pixels_gradient_gt_1_over_255": 2103,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89697,
+      "window_index": 33,
+      "window_seconds": [
+        0.99,
+        1.02
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 520,
+        "v2e": 176
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006978896085798058,
+      "common_union_active_valid_pixels": 626,
+      "endpoint_indices": [
+        102,
+        105
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 2144,
+        "v2e": 216
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06370362639427185,
+        0.13381416201591492,
+        0.14983150005340576
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.164537287782878e-05,
+        "mistimed_plus_8_windows": 5.9775204135803506e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 5.824861000292003e-05,
+        "zero": 2.5509987608529627e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1020",
+      "texture_pixels_gradient_gt_1_over_255": 2083,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89699,
+      "window_index": 34,
+      "window_seconds": [
+        1.02,
+        1.05
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 380,
+        "v2e": 188
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.005853123531123397,
+      "common_union_active_valid_pixels": 523,
+      "endpoint_indices": [
+        105,
+        108
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 610,
+        "v2e": 290
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06507490202784538,
+        0.12888269126415253,
+        0.1589442911744118
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.522706437157467e-05,
+        "mistimed_plus_8_windows": 8.22963411337696e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.299587352667004e-05,
+        "zero": 4.934040043735877e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1050",
+      "texture_pixels_gradient_gt_1_over_255": 2082,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89354,
+      "window_index": 35,
+      "window_seconds": [
+        1.05,
+        1.08
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 246,
+        "v2e": 146
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004051392246396276,
+      "common_union_active_valid_pixels": 362,
+      "endpoint_indices": [
+        108,
+        111
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 418,
+        "v2e": 173
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06521227583289146,
+        0.13126303851604465,
+        0.17692034497857104
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.982561924611218e-05,
+        "mistimed_plus_8_windows": 6.697895150864497e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.761530676158145e-05,
+        "zero": 3.318869130453095e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1080",
+      "texture_pixels_gradient_gt_1_over_255": 2091,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89352,
+      "window_index": 36,
+      "window_seconds": [
+        1.08,
+        1.11
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 241,
+        "v2e": 154
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004084967320261438,
+      "common_union_active_valid_pixels": 365,
+      "endpoint_indices": [
+        111,
+        114
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 379,
+        "v2e": 204
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06344817951321602,
+        0.13836354464292536,
+        0.19701074808835986
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.9448582760524005e-05,
+        "mistimed_plus_8_windows": 7.014416041783988e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.52820453979075e-05,
+        "zero": 2.932026472990401e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1110",
+      "texture_pixels_gradient_gt_1_over_255": 2075,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89352,
+      "window_index": 37,
+      "window_seconds": [
+        1.11,
+        1.1400000000000001
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 217,
+        "v2e": 180
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004084875886921682,
+      "common_union_active_valid_pixels": 365,
+      "endpoint_indices": [
+        114,
+        117
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 327,
+        "v2e": 274
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.060665497556328773,
+        0.1472530901432037,
+        0.2180385109782219
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.1088426921051e-05,
+        "mistimed_plus_8_windows": 7.719483255641535e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.007013821043074e-05,
+        "zero": 4.28382663812954e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1140",
+      "texture_pixels_gradient_gt_1_over_255": 2087,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89354,
+      "window_index": 38,
+      "window_seconds": [
+        1.1400000000000001,
+        1.17
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 184,
+        "v2e": 168
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0035589179993956556,
+      "common_union_active_valid_pixels": 318,
+      "endpoint_indices": [
+        117,
+        120
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 289,
+        "v2e": 242
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.062346335500478745,
+        0.15716639459133147,
+        0.2394189453125
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 5.9249301557429135e-05,
+        "mistimed_plus_8_windows": 6.768450839444995e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 6.693869363516569e-05,
+        "zero": 2.8106582249165513e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1170",
+      "texture_pixels_gradient_gt_1_over_255": 2087,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89353,
+      "window_index": 39,
+      "window_seconds": [
+        1.17,
+        1.2
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 205,
+        "v2e": 181
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0038186745503818675,
+      "common_union_active_valid_pixels": 341,
+      "endpoint_indices": [
+        120,
+        123
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 347,
+        "v2e": 265
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.0657036155462265,
+        0.16771605014801025,
+        0.2611733946204185
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 6.122102058725432e-05,
+        "mistimed_plus_8_windows": 6.797516834922135e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 7.18046139809303e-05,
+        "zero": 3.2018178899306804e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1200",
+      "texture_pixels_gradient_gt_1_over_255": 2084,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89298,
+      "window_index": 40,
+      "window_seconds": [
+        1.2,
+        1.23
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 212,
+        "v2e": 195
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004124681962362277,
+      "common_union_active_valid_pixels": 368,
+      "endpoint_indices": [
+        123,
+        126
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 327,
+        "v2e": 286
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.06986270099878311,
+        0.1787294328212738,
+        0.28317156732082344
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.488092523999512e-05,
+        "mistimed_plus_8_windows": 8.249316306319088e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.629238436697051e-05,
+        "zero": 4.5517874241340905e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1230",
+      "texture_pixels_gradient_gt_1_over_255": 2074,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89219,
+      "window_index": 41,
+      "window_seconds": [
+        1.23,
+        1.26
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 197,
+        "v2e": 198
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.003924602774133504,
+      "common_union_active_valid_pixels": 350,
+      "endpoint_indices": [
+        126,
+        129
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 310,
+        "v2e": 283
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.07443391531705856,
+        0.18992331624031067,
+        0.3050118803977966
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 6.273066537687555e-05,
+        "mistimed_plus_8_windows": 7.018885662546381e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 7.349632505793124e-05,
+        "zero": 3.1091185519471765e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1260",
+      "texture_pixels_gradient_gt_1_over_255": 2081,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89181,
+      "window_index": 42,
+      "window_seconds": [
+        1.26,
+        1.29
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 190,
+        "v2e": 191
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.003869925630124847,
+      "common_union_active_valid_pixels": 345,
+      "endpoint_indices": [
+        129,
+        132
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 353,
+        "v2e": 246
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.07949130982160568,
+        0.2013446033000946,
+        0.3268554246425629
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.305309554794803e-05,
+        "mistimed_plus_8_windows": 8.359397179447114e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 7.910039130365476e-05,
+        "zero": 3.664497489808127e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1290",
+      "texture_pixels_gradient_gt_1_over_255": 2084,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89149,
+      "window_index": 43,
+      "window_seconds": [
+        1.29,
+        1.32
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 227,
+        "v2e": 193
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004297238771640468,
+      "common_union_active_valid_pixels": 383,
+      "endpoint_indices": [
+        132,
+        135
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 395,
+        "v2e": 316
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.08481335639953613,
+        0.2130020618438722,
+        0.34878982901573213
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.296795567730442e-05,
+        "mistimed_plus_8_windows": 8.572467777412385e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010049925185739994,
+        "zero": 5.7242745242547244e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1320",
+      "texture_pixels_gradient_gt_1_over_255": 2075,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89127,
+      "window_index": 44,
+      "window_seconds": [
+        1.32,
+        1.35
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 184,
+        "v2e": 160
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0035127097244823523,
+      "common_union_active_valid_pixels": 313,
+      "endpoint_indices": [
+        135,
+        138
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 315,
+        "v2e": 259
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.09040593355894089,
+        0.2247568100690843,
+        0.3699962341785431
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.730507059022784e-05,
+        "mistimed_plus_8_windows": 8.482953126076609e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.299127850681543e-05,
+        "zero": 4.752991662826389e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1350",
+      "texture_pixels_gradient_gt_1_over_255": 2074,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89105,
+      "window_index": 45,
+      "window_seconds": [
+        1.35,
+        1.3800000000000001
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 223,
+        "v2e": 214
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004298975205127341,
+      "common_union_active_valid_pixels": 383,
+      "endpoint_indices": [
+        138,
+        141
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 416,
+        "v2e": 298
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 0,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.09589247405529022,
+        0.2379382699728012,
+        0.39108974039554695
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.294146053027362e-05,
+        "mistimed_plus_8_windows": 7.979996735230088e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.824766700854525e-05,
+        "zero": 4.1496215999359265e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1380",
+      "texture_pixels_gradient_gt_1_over_255": 2062,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89091,
+      "window_index": 46,
+      "window_seconds": [
+        1.3800000000000001,
+        1.41
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 217,
+        "v2e": 228
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004524328086759324,
+      "common_union_active_valid_pixels": 403,
+      "endpoint_indices": [
+        141,
+        144
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 402,
+        "v2e": 356
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 7,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.10149022191762924,
+        0.2519811123609543,
+        0.4118106889724738
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.528794230893254e-05,
+        "mistimed_plus_8_windows": 8.228929073084146e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 9.199162741424516e-05,
+        "zero": 4.37647795479279e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1410",
+      "texture_pixels_gradient_gt_1_over_255": 2064,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89074,
+      "window_index": 47,
+      "window_seconds": [
+        1.41,
+        1.44
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 248,
+        "v2e": 142
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.00398607680215585,
+      "common_union_active_valid_pixels": 355,
+      "endpoint_indices": [
+        144,
+        147
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 466,
+        "v2e": 197
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 98,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.10699933022260666,
+        0.266401594877243,
+        0.4321686473488811
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 7.510666910093278e-05,
+        "mistimed_plus_8_windows": 8.520190021954477e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 8.535804954590276e-05,
+        "zero": 3.527384978951886e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1440",
+      "texture_pixels_gradient_gt_1_over_255": 2061,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89060,
+      "window_index": 48,
+      "window_seconds": [
+        1.44,
+        1.47
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 285,
+        "v2e": 196
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.004750193713573426,
+      "common_union_active_valid_pixels": 423,
+      "endpoint_indices": [
+        147,
+        150
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 603,
+        "v2e": 308
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 268,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.11245840042829514,
+        0.2811012923717498,
+        0.4522807431221009
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.570488716941327e-05,
+        "mistimed_plus_8_windows": 9.004561434267089e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00011208298383280635,
+        "zero": 6.013324309606105e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1470",
+      "texture_pixels_gradient_gt_1_over_255": 2061,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89049,
+      "window_index": 49,
+      "window_seconds": [
+        1.47,
+        1.5
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 336,
+        "v2e": 278
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006177276607215059,
+      "common_union_active_valid_pixels": 550,
+      "endpoint_indices": [
+        150,
+        153
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 691,
+        "v2e": 473
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 488,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.1179160512983799,
+        0.2957340031862259,
+        0.47161128968000376
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.017366781132296e-05,
+        "mistimed_plus_8_windows": 8.732057904126123e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010244072473142296,
+        "zero": 4.891329081146978e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1500",
+      "texture_pixels_gradient_gt_1_over_255": 2052,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89036,
+      "window_index": 50,
+      "window_seconds": [
+        1.5,
+        1.53
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 356,
+        "v2e": 272
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006065916290355193,
+      "common_union_active_valid_pixels": 540,
+      "endpoint_indices": [
+        153,
+        156
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 722,
+        "v2e": 434
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 748,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.12329305335879326,
+        0.3102685868740083,
+        0.49057695180177635
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.521673589712009e-05,
+        "mistimed_plus_8_windows": 9.19909798540175e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00011252831609454006,
+        "zero": 5.749022966483608e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1530",
+      "texture_pixels_gradient_gt_1_over_255": 2041,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89022,
+      "window_index": 51,
+      "window_seconds": [
+        1.53,
+        1.56
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 359,
+        "v2e": 234
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.005931717838967342,
+      "common_union_active_valid_pixels": 528,
+      "endpoint_indices": [
+        156,
+        159
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 686,
+        "v2e": 353
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 1031,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.12850108742713928,
+        0.3245964050292969,
+        0.5088625359535219
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.294004510389641e-05,
+        "mistimed_plus_8_windows": 9.083698387257755e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010433597344672307,
+        "zero": 4.739155338029377e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1560",
+      "texture_pixels_gradient_gt_1_over_255": 2027,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89013,
+      "window_index": 52,
+      "window_seconds": [
+        1.56,
+        1.59
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 383,
+        "v2e": 246
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.006100506690334686,
+      "common_union_active_valid_pixels": 543,
+      "endpoint_indices": [
+        159,
+        162
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 753,
+        "v2e": 304
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 1337,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.13365375995635986,
+        0.33917192220687864,
+        0.527166781425476
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.371602209284902e-05,
+        "mistimed_plus_8_windows": 9.798232349567115e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00013096739712636918,
+        "zero": 7.214800280053169e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1590",
+      "texture_pixels_gradient_gt_1_over_255": 2018,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 89009,
+      "window_index": 53,
+      "window_seconds": [
+        1.59,
+        1.62
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 386,
+        "v2e": 238
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006045147589244581,
+      "common_union_active_valid_pixels": 538,
+      "endpoint_indices": [
+        162,
+        165
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 694,
+        "v2e": 315
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 1640,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.13858266174793243,
+        0.3529563546180725,
+        0.5439318633079514
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.076702215475962e-05,
+        "mistimed_plus_8_windows": 8.713636634638533e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00010886311793001369,
+        "zero": 4.8433488700538874e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1620",
+      "texture_pixels_gradient_gt_1_over_255": 2034,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88997,
+      "window_index": 54,
+      "window_seconds": [
+        1.62,
+        1.6500000000000001
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 406,
+        "v2e": 271
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0066187212046297334,
+      "common_union_active_valid_pixels": 589,
+      "endpoint_indices": [
+        165,
+        168
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 772,
+        "v2e": 332
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 1983,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.14345034956932068,
+        0.3667608797550203,
+        0.5607433176040649
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.958453690866008e-05,
+        "mistimed_plus_8_windows": 9.585802035871893e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00012435868848115206,
+        "zero": 6.139641482150182e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1650",
+      "texture_pixels_gradient_gt_1_over_255": 2038,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88990,
+      "window_index": 55,
+      "window_seconds": [
+        1.6500000000000001,
+        1.68
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 420,
+        "v2e": 197
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.00622576838793055,
+      "common_union_active_valid_pixels": 554,
+      "endpoint_indices": [
+        168,
+        171
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 741,
+        "v2e": 230
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 2398,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.14814235270023346,
+        0.37980765700340274,
+        0.5762759137153628
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.824341395869851e-05,
+        "mistimed_plus_8_windows": 0.0001059181013260968,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.0001250543718924746,
+        "zero": 6.0330905398586765e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1680",
+      "texture_pixels_gradient_gt_1_over_255": 2048,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88985,
+      "window_index": 56,
+      "window_seconds": [
+        1.68,
+        1.71
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 448,
+        "v2e": 285
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006911820899548203,
+      "common_union_active_valid_pixels": 615,
+      "endpoint_indices": [
+        171,
+        174
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 836,
+        "v2e": 348
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 2892,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.15261518210172653,
+        0.39308500289917,
+        0.5918641650676725
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00010358668805565685,
+        "mistimed_plus_8_windows": 0.00010783824836835265,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00015037816774565727,
+        "zero": 8.260077447630465e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1710",
+      "texture_pixels_gradient_gt_1_over_255": 2031,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88978,
+      "window_index": 57,
+      "window_seconds": [
+        1.71,
+        1.74
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 484,
+        "v2e": 249
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.007002596468353435,
+      "common_union_active_valid_pixels": 623,
+      "endpoint_indices": [
+        174,
+        177
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 914,
+        "v2e": 271
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 3401,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.15692244470119476,
+        0.40511752367019666,
+        0.6059517419338226
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00011922793055418879,
+        "mistimed_plus_8_windows": 0.00012311150203458965,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00015762461407575756,
+        "zero": 8.848452853271738e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1740",
+      "texture_pixels_gradient_gt_1_over_255": 2043,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88967,
+      "window_index": 58,
+      "window_seconds": [
+        1.74,
+        1.77
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 467,
+        "v2e": 276
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.006744831772654203,
+      "common_union_active_valid_pixels": 600,
+      "endpoint_indices": [
+        177,
+        180
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 838,
+        "v2e": 316
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 3942,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.16100426018238068,
+        0.4171823620796205,
+        0.6195970654487614
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.066409256774932e-05,
+        "mistimed_plus_8_windows": 9.457404667045921e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00013583200052380562,
+        "zero": 6.484037294285372e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1770",
+      "texture_pixels_gradient_gt_1_over_255": 2002,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88957,
+      "window_index": 59,
+      "window_seconds": [
+        1.77,
+        1.8
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 581,
+        "v2e": 366
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.008285739982911364,
+      "common_union_active_valid_pixels": 737,
+      "endpoint_indices": [
+        180,
+        183
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 1021,
+        "v2e": 425
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 4495,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.16484666615724564,
+        0.4284684479236603,
+        0.6326433491706848
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.0001801969629013911,
+        "mistimed_plus_8_windows": 0.0001790848036762327,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00023159774718806148,
+        "zero": 0.0001589680468896404
+      },
+      "sample_id": "s5p_00_train/dt1_1800",
+      "texture_pixels_gradient_gt_1_over_255": 1995,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88948,
+      "window_index": 60,
+      "window_seconds": [
+        1.8,
+        1.83
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 415,
+        "v2e": 214
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.0062062917406849405,
+      "common_union_active_valid_pixels": 552,
+      "endpoint_indices": [
+        183,
+        186
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 685,
+        "v2e": 247
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 5060,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.16855399310588837,
+        0.43924880623817447,
+        0.6452482223510736
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 8.659598097437993e-05,
+        "mistimed_plus_8_windows": 9.042517922353e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00012498896103352308,
+        "zero": 5.0060734793078154e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1830",
+      "texture_pixels_gradient_gt_1_over_255": 1857,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88942,
+      "window_index": 61,
+      "window_seconds": [
+        1.83,
+        1.86
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 458,
+        "v2e": 291
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.0070161235917155776,
+      "common_union_active_valid_pixels": 624,
+      "endpoint_indices": [
+        186,
+        189
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 824,
+        "v2e": 341
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 5629,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.17200446128845215,
+        0.4497089087963104,
+        0.65784809589386
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00011245850328123197,
+        "mistimed_plus_8_windows": 0.00011490292672533542,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00016534530732315034,
+        "zero": 8.736762538319454e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1860",
+      "texture_pixels_gradient_gt_1_over_255": 1861,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88938,
+      "window_index": 62,
+      "window_seconds": [
+        1.86,
+        1.8900000000000001
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 506,
+        "v2e": 371
+      },
+      "common_union_active_and_gt_ge_0_5px": 0,
+      "common_union_active_valid_coverage": 0.008174877151949264,
+      "common_union_active_valid_pixels": 727,
+      "endpoint_indices": [
+        189,
+        192
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 882,
+        "v2e": 452
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 6181,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.17528609931468964,
+        0.4593115448951721,
+        0.6695794582366937
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00012150251859566197,
+        "mistimed_plus_8_windows": 0.00012316425272729248,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00018261634977534413,
+        "zero": 0.00010263997683068737
+      },
+      "sample_id": "s5p_00_train/dt1_1890",
+      "texture_pixels_gradient_gt_1_over_255": 1902,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88931,
+      "window_index": 63,
+      "window_seconds": [
+        1.8900000000000001,
+        1.92
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 580,
+        "v2e": 285
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.008265949909468167,
+      "common_union_active_valid_pixels": 735,
+      "endpoint_indices": [
+        192,
+        195
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 999,
+        "v2e": 343
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 6717,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.1781858205795288,
+        0.46831362247467034,
+        0.6804107189178465
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 9.615525777917355e-05,
+        "mistimed_plus_8_windows": 9.684548422228545e-05,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00015449034981429577,
+        "zero": 7.28099694242701e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1920",
+      "texture_pixels_gradient_gt_1_over_255": 1939,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88919,
+      "window_index": 64,
+      "window_seconds": [
+        1.92,
+        1.95
+      ]
+    },
+    {
+      "active_valid_pixels": {
+        "eventgenesis": 508,
+        "v2e": 295
+      },
+      "common_union_active_and_gt_ge_0_5px": 1,
+      "common_union_active_valid_coverage": 0.0075131311086367265,
+      "common_union_active_valid_pixels": 668,
+      "endpoint_indices": [
+        195,
+        198
+      ],
+      "events_independently_counted": {
+        "eventgenesis": 909,
+        "v2e": 398
+      },
+      "gt_motion_ge_0_5px_valid_pixels": 7240,
+      "gt_motion_percentiles_px_per_30ms": [
+        0.18084308505058289,
+        0.47635599970817566,
+        0.6901492059230803
+      ],
+      "photo_warp_mae_linearized_display_proxy_luma": {
+        "gt": 0.00010235437366645783,
+        "mistimed_plus_8_windows": 0.00010235437366645783,
+        "moving_texture_mae_gt": null,
+        "moving_texture_mae_reverse": null,
+        "moving_texture_mae_zero": null,
+        "moving_texture_subset_pixels": 0,
+        "reverse": 0.00015716563211753964,
+        "zero": 7.432779239024967e-05
+      },
+      "sample_id": "s5p_00_train/dt1_1950",
+      "texture_pixels_gradient_gt_1_over_255": 1947,
+      "valid_moving_texture_pixels": 0,
+      "valid_pixels": 88911,
+      "window_index": 65,
+      "window_seconds": [
+        1.95,
+        1.98
+      ]
+    }
+  ]
+}

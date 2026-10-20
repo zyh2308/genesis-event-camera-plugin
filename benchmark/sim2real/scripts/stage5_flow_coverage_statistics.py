@@ -12,7 +12,7 @@ from pathlib import Path
 
 import h5py
 import numpy as np
-from prepare_stage0_flow_bank import gaussian_count_representation
+from prepare_steflow_stage0 import gaussian_count_representation
 
 from stage4_v2e_artifacts import locate_shard_artifacts
 

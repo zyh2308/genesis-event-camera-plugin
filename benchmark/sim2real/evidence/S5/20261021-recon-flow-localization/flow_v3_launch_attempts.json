@@ -1,0 +1,52 @@
+{
+  "schema": "stage5_flow_v3_launch_attempts_v1",
+  "scope": "execution setup failures before a physical rollout was captured; all failed outputs remain on g1",
+  "attempts": [
+    {
+      "attempt": "v3-smoke-r1",
+      "run_path_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-smoke",
+      "bank_path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke",
+      "exit_code": 1,
+      "cause": "The archived clean source did not yet contain SOURCE_FILE_HASHES.json, which the generator requires to verify source commit provenance.",
+      "physical_capture_started": false,
+      "partial_outputs_retained": true
+    },
+    {
+      "attempt": "v3-smoke-r2",
+      "run_path_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-smoke-r2",
+      "bank_path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r2",
+      "exit_code": 1,
+      "cause": "The source archive hash manifest was installed and all 1,324 tracked-file hashes verified, but the Genesis event plugin package root was omitted from PYTHONPATH.",
+      "physical_capture_started": false,
+      "partial_outputs_retained": true
+    },
+    {
+      "attempt": "v3-smoke-r3",
+      "run_path_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-smoke-r3",
+      "bank_path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3",
+      "exit_code": 0,
+      "cause": "Physical scene capture and shared 30 ms geometry-label bank completed; paired V2E and observability audit are separate pending stages.",
+      "physical_capture_started": true,
+      "status": "physical_capture_complete_v2e_and_audit_pending",
+      "tmux_session": "s5_flow_v3_smoke_r3_20261021",
+      "selected_rollout": "s5q_02_train",
+      "physical_bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+      "finished_utc": "2026-10-20T19:36:13Z"
+    },
+    {
+      "attempt": "v3-smoke-v2e",
+      "run_path_g1": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-smoke-v2e",
+      "bank_path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3",
+      "exit_code": null,
+      "cause": null,
+      "status": "running",
+      "tmux_session": "s5_flow_v3_smoke_v2e_20261021",
+      "rollout_id": "s5q_02_train",
+      "started_utc": "2026-10-20T19:38:06Z",
+      "gpu_physical_id": 2,
+      "prelaunch_gpu_processes": [],
+      "prelaunch_memory_mib": 1
+    }
+  ],
+  "interpretation": "r1 and r2 are deployment setup errors, not renderer or physical-scene failures. Neither produced trajectory samples or EventGenesis/V2E events."
+}

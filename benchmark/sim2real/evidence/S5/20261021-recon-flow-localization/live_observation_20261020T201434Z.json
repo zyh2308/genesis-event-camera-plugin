@@ -1,0 +1,72 @@
+{
+  "schema": "stage5_reconstruction_flow_live_observation_v1",
+  "observed_utc": "2026-10-20T20:14:34Z",
+  "observed_jst": "2026-10-21T05:14:34+09:00",
+  "machine": "g1.pkuml.org",
+  "scope": ["reconstruction", "optical_flow"],
+  "pose_status": "paused_by_user_no_access_probe",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_scoring_enabled": false,
+  "reconstruction_synthetic_fixture_pair": {
+    "status": "both_generators_passed_synthetic_end_to_end_inference_metric_and_independent_artifact_verification",
+    "summary_repo_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/reconstruction_fixture/reconstruction_fixture_pair_summary.json",
+    "eventgenesis_verification_sha256": "6d3af6022db8c0ed0faff22d877b39bfddd47dd309ee6744f90a5acf1c84523b",
+    "v2e_verification_sha256": "098856e46ab4bedfb01792625e4aa33fbd8d67a637dff8e92add987197b9eaa1",
+    "windows_per_arm": 200,
+    "model_calls_per_arm": 200,
+    "sequence_state_resets_per_arm": 1,
+    "real_data_or_scores_used": false,
+    "eventgenesis_initial_metric_wrapper_exit": 1,
+    "eventgenesis_compatibility_rerun_and_verifier": "pass_on_frozen_inference_artifacts",
+    "v2e_driver_exit_code": 0,
+    "v2e_verifier": "pass"
+  },
+  "hqf": {
+    "role": "primary_real_reconstruction_dataset",
+    "sequences": 14,
+    "status": "ready_unscored",
+    "converted_manifest_sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add",
+    "protocol_v3_model_config_sha_corrected": true,
+    "protocol_v3_sha256": "595b3517b58c946ee26c10154e35c4c39999e5832849d98acadde3094bdf162a",
+    "real_scoring_enabled": false,
+    "hs_erbg_role": "extension_only"
+  },
+  "flow_v3_smoke": {
+    "bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "audit_repo_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json",
+    "audit_sha256": "9f5bf5e3a44d4a2ca167cb8ab3fa2f11bde9bb2388c520b22edf5e5022e84460",
+    "mean_common_union_active_valid_coverage": 0.0037019908741645793,
+    "mean_active_moving_texture_pixels_per_window": 9.863636363636363,
+    "photometric_mae_macro_active_moving_texture_pixels": {
+      "gt": 0.0021934453397989273,
+      "zero": 0.004345659112247328,
+      "reverse": 0.005547806880592058,
+      "mistimed_plus_8_windows": 0.004955859462885807
+    }
+  },
+  "flow_v3_eight_rollout_physical_bank": {
+    "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg",
+    "bank_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "tmux_session": "s5_flow_v3_full_bank_eg_20261021",
+    "runner_pid": 2229637,
+    "cuda_python_pid": 2229727,
+    "observed_status": "running",
+    "active_rollout": "s5q_00_train",
+    "active_endpoint": 100,
+    "total_endpoints_per_rollout": 201,
+    "active_rollout_elapsed_seconds": 307.23,
+    "active_endpoint_rate_hz": 0.325,
+    "completed_rollouts": 0,
+    "total_rollouts": 8,
+    "gpu0": {"memory_used_mib": 7132, "memory_free_mib": 17023, "utilization_percent": 28},
+    "gpu_process_owner": "zhaoyuhan",
+    "other_observed_gpu_processes": "belong to cmy and remain untouched",
+    "gpu2": {"memory_used_mib": 1, "utilization_percent": 0, "status": "observed_idle_at_2026-10-20T20:14:34Z"},
+    "rough_remaining_physical_generation_hours": 1.4,
+    "estimate_basis": "current rollout throughput; each of eight 201-endpoint captures is sequential"
+  },
+  "historical_stage5_reconstruction_training": {
+    "eventgenesis": {"status": "complete", "epochs": 200, "updates": 12000, "exit_code": 0},
+    "v2e": {"status": "complete", "epochs": 200, "updates": 12000, "exit_code": 0}
+  }
+}

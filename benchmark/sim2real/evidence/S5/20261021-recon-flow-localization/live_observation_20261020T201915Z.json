@@ -1,0 +1,79 @@
+{
+  "schema": "stage5_reconstruction_flow_live_observation_v1",
+  "observed_utc": "2026-10-20T20:19:15Z",
+  "observed_jst": "2026-10-21T05:19:15+09:00",
+  "machine": "g1.pkuml.org",
+  "scope": ["reconstruction", "optical_flow"],
+  "pose_status": "paused_by_user_no_access_probe",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_scoring_enabled": false,
+  "reconstruction": {
+    "corrected_tc_training": "complete",
+    "updates_per_arm": 12000,
+    "epochs_per_arm": 200,
+    "eventgenesis_exit_code": 0,
+    "v2e_exit_code": 0,
+    "synthetic_fixture_pair_status": "both generator checkpoint paths independently verified against same synthetic bank; event-only recurrent inference 200 targets per arm and metric artifact binding passed",
+    "eventgenesis_verification_v2_sha256": "6c5be8f5eb78c138623b9a452147c9d86ccbf1d0154e5e5ebc325a64569654ae",
+    "v2e_verification_v2_sha256": "8841ca8d60a9d2200479d95f5b469ea8ce51ef385dd788ad8c056d9b1437a12d",
+    "first_eventgenesis_metric_driver_exit_code": 1,
+    "eventgenesis_recovery": "same frozen inference outputs evaluated after compatibility alias; final independent verifier passed",
+    "v2e_metric_driver_exit_code": 0,
+    "metric_interpretation": "synthetic plumbing only, no model quality or generator comparison",
+    "real_hqf_score": "not run"
+  },
+  "hqf": {
+    "primary_dataset": "HQF all 14 sequences",
+    "hs_erbg_role": "extension only",
+    "status": "ready_unscored",
+    "converted_manifest_sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add",
+    "fixed_candidate_protocol_repo_path": "benchmark/sim2real/protocol/hqf_14_reconstruction_test_candidate_20261021_v3.json",
+    "fixed_model_args_source_hash_mismatch": true,
+    "corrected_model_config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+    "protocol_sha256_after_correction": "595b3517b58c946ee26c10154e35c4c39999e5832849d98acadde3094bdf162a",
+    "real_scoring_enabled": false
+  },
+  "flow_previous_fixed_synthetic_best_input_perturbation": {
+    "result_repo_path": "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/flow_input_perturbation_results.json",
+    "result_sha256": "7e627c6d583322ce71c8df9ec7af53786a891828b460359b9c368dc7e0c9c2ed",
+    "windows": 8,
+    "perturbed_input": "five-bin model event representation, not raw event list",
+    "variants": ["normal", "all-zero", "reverse temporal bins per polarity"],
+    "same_frozen_union_valid_mask": true,
+    "event_count_total": {"eventgenesis": 17916, "v2e": 1037},
+    "full_valid_epe_px_per_30ms": {
+      "eventgenesis": {"normal": 0.10873265777543913, "zero_input": 0.10613528636178764, "reversed": 0.11169428362796416},
+      "v2e": {"normal": 0.10603943427425629, "zero_input": 0.10613779018768985, "reversed": 0.10603650061125736},
+      "zero_flow": 0.10607515080880921
+    },
+    "active_union_epe_px_per_30ms": {
+      "eventgenesis": {"normal": 0.162106956470009, "zero_input": 0.09307303562255706, "reversed": 0.2243918876050707},
+      "v2e": {"normal": 0.09128367943194057, "zero_input": 0.0932141128831268, "reversed": 0.09156334874163477},
+      "zero_flow": 0.09307860142693322
+    },
+    "interpretation": "model outputs respond to perturbations, but errors remain near zero flow overall; sensitivity alone does not prove correct motion learning"
+  },
+  "flow_v3_single_rollout_audit": {
+    "bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "audit_sha256": "9f5bf5e3a44d4a2ca167cb8ab3fa2f11bde9bb2388c520b22edf5e5022e84460",
+    "mean_common_active_valid_coverage": 0.0037019908741645793,
+    "mean_common_active_moving_texture_pixels_per_window": 9.863636363636363,
+    "active_moving_texture_photo_mae_macro": {"gt": 0.0021934453397989273, "zero": 0.004345659112247328, "reverse": 0.005547806880592058, "mistimed_plus_8_windows": 0.004955859462885807}
+  },
+  "flow_v3_eight_rollout_physical_bank": {
+    "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg",
+    "bank_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "tmux_session": "s5_flow_v3_full_bank_eg_20261021",
+    "runner_pid": 2229637,
+    "renderer_pid": 2229727,
+    "status": "running",
+    "completed_rollouts": 1,
+    "active_rollout": "s5q_00_val",
+    "active_endpoint": 0,
+    "endpoints_per_rollout": 201,
+    "shared_bank_partial_bytes": 14820138,
+    "gpu0": {"memory_used_mib": 7920, "memory_free_mib": 16235, "utilization_percent": 90, "compute_pid": 2229727, "owner": "zhaoyuhan"},
+    "gpu2": {"memory_used_mib": 1, "utilization_percent": 0},
+    "other_users_gpu_jobs_untouched": true
+  }
+}

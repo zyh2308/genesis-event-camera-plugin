@@ -1,0 +1,62 @@
+{
+  "candidate_checkpoint": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+    "sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc"
+  },
+  "checkpoint_selection_allowed": false,
+  "created_utc": "2026-10-20T20:13:19.552865+00:00",
+  "event_windows": {
+    "anchor_skipped": true,
+    "event_only_input": "event-only; [1,5,H,W]",
+    "image_endpoints_including_anchor": 201,
+    "inferable_target_endpoints": 200,
+    "model_calls": 200,
+    "recurrent_state_reset_calls": 1
+  },
+  "fixture_manifest": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/synthetic_fixture_manifest.json",
+    "sha256": "b226d233b8a34f8cf5366558f4fcf020766726f2228a11ff2814a99f28e2c71d"
+  },
+  "generator": "eventgenesis",
+  "inference_manifest": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/inference/eventgenesis/inference_manifest.json",
+    "sha256": "476c0d4e943e04d4fdf878a79ed3325514f9f56b26a41068effa15a9c63dad7e"
+  },
+  "initial_wrapper_exit_code": "1",
+  "initial_wrapper_failure_reason": "The first combined invocation hit an old PerceptualSimilarity import of skimage.measure.compare_ssim; the compatibility alias was added, and the same frozen inference artifact was then evaluated by the registered metric script into the hash-bound metrics_result path.",
+  "interpretation": "pipeline wiring and numeric contracts only; metrics are not a model-quality or generator-ranking result",
+  "metric_result": {
+    "lpips_source": {
+      "backbone_weights_path": "/home/zhaoyuhan/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth",
+      "backbone_weights_sha256": "7be5be791159472b1fbf3c69796f7cb30dca7ad8466c2df70058c37116cdee02",
+      "input": "grayscale repeated to RGB; [0,1] mapped linearly to [-1,1]",
+      "model": "pinned PerceptualSimilarity v0.1 AlexNet with torchvision ImageNet backbone",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal/PerceptualSimilarity/models/__init__.py",
+      "sha256": "bd6a7dd5aab85067d98061b9d0b18fb8ca3daadb0b8bb718fff89dc8d3b2e092",
+      "weights_path": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal/PerceptualSimilarity/models/weights/v0.1/alex.pth",
+      "weights_sha256": "df73285e35b22355a2df87cdb6b70b343713b667eddbda73e1977e0c860835c0"
+    },
+    "metric_mean": {
+      "lpips_alex": 0.36155069470405576,
+      "mse": 0.03611095282113957,
+      "psnr_db": 14.42364543571239,
+      "psnr_exact_match_frames": 0,
+      "ssim": 0.6158346861377031
+    },
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/metrics_v2/eventgenesis_metrics_v2.json",
+    "sha256": "244685724dd13b920056495d7f100bfed903548eab80be6f29fa51dabf572431"
+  },
+  "physical_bank": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3/shared_trajectory.h5",
+    "sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "size_bytes": 16957544
+  },
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "schema": "stage5_synthetic_reconstruction_fixture_verification_v1",
+  "status": "synthetic_fixture_end_to_end_pass_after_metric_compatibility_rerun",
+  "verifier_script": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-exec-stage5-recon-fixture-20261021/benchmark/sim2real/scripts/verify_stage5_synthetic_reconstruction_fixture.py",
+    "sha256": "341022bfb9a0f47818cfb5ecf48edf1eac06e845067eb20ebbdb44284f9826a5"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "stage5_reconstruction_flow_live_observation_v1",
+  "observed_utc": "2026-10-20T19:23:52Z",
+  "observed_jst": "2026-10-21T04:23:52+09:00",
+  "scope": {
+    "pose": "paused_by_user; no E-POSE access or download probes",
+    "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+    "real_scoring_enabled": false
+  },
+  "reconstruction": {
+    "status": "complete",
+    "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0",
+    "eventgenesis": {
+      "run_summary_status": "complete",
+      "epochs": 200,
+      "optimizer_updates": 12000,
+      "best_epoch": 170,
+      "best_synthetic_validation_lpips_vgg": 0.041166816372424364,
+      "last_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/last.pt",
+      "last_checkpoint_sha256": "fe7eacf5865f486b7355e4f60202368de34b56d3dbcde1412ee67bfbfc29cbaf",
+      "exit_code": 0
+    },
+    "v2e": {
+      "run_summary_status": "complete",
+      "epochs": 200,
+      "optimizer_updates": 12000,
+      "best_epoch": 195,
+      "best_synthetic_validation_lpips_vgg": 0.08367991168051958,
+      "last_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/v2e/last.pt",
+      "last_checkpoint_sha256": "af861ca93da680fd83b58c6644376e99ba2c9007f379b92a29221031159726db",
+      "exit_code": 0
+    },
+    "config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d"
+  },
+  "hqf": {
+    "status": "ready_unscored",
+    "sequence_count": 14,
+    "ready_unscored_sequence_count": 14,
+    "real_gt_metrics_computed": false,
+    "conversion_manifest_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/manifest.json",
+    "repository_manifest_path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/20261021-hqf14-manifest-validation-v3/hqf_14_file_manifest_v3.json",
+    "repository_manifest_sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add",
+    "engineering_posters": {
+      "source_image_messages": 1267,
+      "retained_images": 1266,
+      "excluded_source_image_index_zero_based": 528
+    },
+    "candidate_protocol": "benchmark/sim2real/protocol/hqf_14_reconstruction_test_candidate_20261021_v2.json"
+  },
+  "flow_fixed_sample_fit": {
+    "status": "completed_memorization_diagnostic",
+    "config": "benchmark/sim2real/configs/stage5_flow_fixed_sample_fit_v1.json",
+    "summary": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/flow_paired_fixed_sample_fit_summary.json",
+    "updates_per_generator": 200,
+    "interpretation": "both network arms fit the same registered sample below zero-flow EPE and pass checkpoint-boundary restore; this does not establish independent-rollout generalization"
+  },
+  "flow_v3_scene_smoke": {
+    "status": "running",
+    "tmux_session": "s5_flow_v3_smoke_r3_20261021",
+    "run_root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-smoke-r3",
+    "bank_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3",
+    "source_commit": "7c55e3e5c2b253a13ebae5e2ba99e6f158809bc9",
+    "source_snapshot": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-exec-7c55e3e5",
+    "config_sha256": "a64ca5000cbc40e8059450d4c6819b3206ffb0fca6715f17547733fdc4e4febe",
+    "generator_script_sha256": "858bf659115b3f04e0e6441ed08fbe995f5da27ea9cc0d068f2831e1162194b1",
+    "selected_registered_rollout": "s5q_02_train",
+    "status_sample_utc": "2026-10-20T19:23:45Z",
+    "active_endpoint": 20,
+    "total_endpoints": 201,
+    "active_endpoint_rate_hz": 0.198,
+    "driver_pid": 2182762,
+    "python_pid": 2182790,
+    "gpu_physical_id": 2,
+    "gpu_memory_used_mib": 6995,
+    "gpu_memory_total_mib": 32768,
+    "gpu_utilization_percent": 29,
+    "other_gpu_processes_modified": false
+  },
+  "run_environment": {
+    "python": "3.11.15",
+    "pytorch": "2.5.1+cu121",
+    "genesis": "1.2.2",
+    "gpu_visibility": "CUDA_VISIBLE_DEVICES=2",
+    "source_archive_sha256": "de704c2bfaaa26374e833dc406a5b10616d19cb337c3a9fda2ee4b27a29b4498",
+    "source_file_hash_manifest_sha256": "a6c8b6f716ff6558114a78a5e8183c5766e2b71ee73fe877dcac32db3f5553bb"
+  }
+}

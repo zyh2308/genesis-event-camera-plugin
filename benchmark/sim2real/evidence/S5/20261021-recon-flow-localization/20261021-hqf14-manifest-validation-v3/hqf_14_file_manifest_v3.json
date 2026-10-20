@@ -1,0 +1,1774 @@
+{
+  "created_utc": "2026-10-20T19:02:49.846759+00:00",
+  "expected_sequence_count": 14,
+  "locked_evreal_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+  "official_download_folder": "https://drive.google.com/drive/folders/18Xdr6pxJX0ZXTrXW9tK0hC3ZpmKDIt6_",
+  "official_source": "https://timostoff.github.io/20ecnn",
+  "ready_unscored_sequence_count": 14,
+  "real_gt_metrics_computed": false,
+  "real_scoring_enabled": false,
+  "schema": "hqf_14_file_manifest_v1",
+  "sequences": [
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "6ea7a9a865a0672118307148ec8964194246ab01b770f14e0244707deb4d52ec",
+            "size_bytes": 29677
+          },
+          "events_p.npy": {
+            "sha256": "e682229a3037a2e543bad71a7ffd71bb3fe4addd97e4123a2af364ebe64d143d",
+            "size_bytes": 19763171
+          },
+          "events_ts.npy": {
+            "sha256": "54704268a6218d55b1756280f40d84f546fb9873d36a51f934337a9f5ea0d864",
+            "size_bytes": 158104472
+          },
+          "events_xy.npy": {
+            "sha256": "dbb8a264a360e88b79fc907d9b00040dd38ab0c90085c42f75de99608f9d86dd",
+            "size_bytes": 158104472
+          },
+          "image_event_indices.npy": {
+            "sha256": "8e23c6fb3dc34a45826a6c5ac8f24a45ce9fcad9c001319ae327577c1626af8b",
+            "size_bytes": 19576
+          },
+          "images.npy": {
+            "sha256": "773ec67ab0f98be9faf354ff58ea2f6a3af00326e5854cee40516a5f20b8a981",
+            "size_bytes": 105019328
+          },
+          "images_ts.npy": {
+            "sha256": "1522f77bdc0f796bbcfbd556b73dcc26dfac203fd22bb261edbd6bfd547c94ae",
+            "size_bytes": 19576
+          },
+          "metadata.json": {
+            "sha256": "420fc300ee20b18275d1da41b67d29c28fbc1abb86c8dfe901f12ee49964fb7f",
+            "size_bytes": 1290
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/bike_bay_hdr",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 99.04994201660156,
+          "hashes": {
+            "events_p.npy": "e682229a3037a2e543bad71a7ffd71bb3fe4addd97e4123a2af364ebe64d143d",
+            "events_ts.npy": "54704268a6218d55b1756280f40d84f546fb9873d36a51f934337a9f5ea0d864",
+            "events_xy.npy": "dbb8a264a360e88b79fc907d9b00040dd38ab0c90085c42f75de99608f9d86dd",
+            "image_event_indices.npy": "8e23c6fb3dc34a45826a6c5ac8f24a45ce9fcad9c001319ae327577c1626af8b",
+            "images.npy": "773ec67ab0f98be9faf354ff58ea2f6a3af00326e5854cee40516a5f20b8a981",
+            "images_ts.npy": "1522f77bdc0f796bbcfbd556b73dcc26dfac203fd22bb261edbd6bfd547c94ae",
+            "metadata.json": "420fc300ee20b18275d1da41b67d29c28fbc1abb86c8dfe901f12ee49964fb7f"
+          },
+          "images_timestamp_first_s": 0.0012011528015136719,
+          "images_timestamp_last_s": 98.9578800201416,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 2431,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/bike_bay_hdr.bag",
+            "source_bag_sha256": "02797ab6240587bf6ccc352f6efc8325f8b9a49d4f69e5dba7f8a8d9ec452935",
+            "source_image_message_count": 2431,
+            "time_origin_absolute_s": 1581815288.4909585
+          },
+          "num_events": 19763043,
+          "num_frames": 2431,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              19763043
+            ],
+            "events_ts": [
+              19763043
+            ],
+            "events_xy": [
+              19763043,
+              2
+            ],
+            "image_event_indices": [
+              2431
+            ],
+            "images": [
+              2431,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              2431
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/bike_bay_hdr.bag",
+        "sha256": "02797ab6240587bf6ccc352f6efc8325f8b9a49d4f69e5dba7f8a8d9ec452935",
+        "size_bytes": 362570693
+      },
+      "sequence": "bike_bay_hdr",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "394bd302da77ba5c3f13f024515bee918052e6cce926c9da31e9b560f467fdba",
+            "size_bytes": 11209
+          },
+          "events_p.npy": {
+            "sha256": "33364a1c03fde1f36767201032f99ce9c8e0de144f7eafa37fa3115b8636bc57",
+            "size_bytes": 10050909
+          },
+          "events_ts.npy": {
+            "sha256": "e807b4bf4f29957467dc144116c24bc25dc0635601bc9ac5d44485e0bad263d6",
+            "size_bytes": 80406376
+          },
+          "events_xy.npy": {
+            "sha256": "00ba18672f2b8fc2037f5f26b58e923b2b94bc31976746be952527805649419d",
+            "size_bytes": 80406376
+          },
+          "image_event_indices.npy": {
+            "sha256": "13e1802e8845e535c042a4f5a91b4386ebcd2d9dd3bedcbed86be3686d59a51f",
+            "size_bytes": 4448
+          },
+          "images.npy": {
+            "sha256": "23d7e3d85e54b0570667d7f1bb20030cb1350ee1a0f1057e291d72156a5fbed4",
+            "size_bytes": 23328128
+          },
+          "images_ts.npy": {
+            "sha256": "0d748ce12ca1137cb3a38b164da6341d668ce82f004ab667c9e990c18c6ca197",
+            "size_bytes": 4448
+          },
+          "metadata.json": {
+            "sha256": "888ef9c0c63ab6750073f5dce0c68e0dd317845e27aa1c42af3dc9695ff6e812",
+            "size_bytes": 1281
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/boxes",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 24.15995693206787,
+          "hashes": {
+            "events_p.npy": "33364a1c03fde1f36767201032f99ce9c8e0de144f7eafa37fa3115b8636bc57",
+            "events_ts.npy": "e807b4bf4f29957467dc144116c24bc25dc0635601bc9ac5d44485e0bad263d6",
+            "events_xy.npy": "00ba18672f2b8fc2037f5f26b58e923b2b94bc31976746be952527805649419d",
+            "image_event_indices.npy": "13e1802e8845e535c042a4f5a91b4386ebcd2d9dd3bedcbed86be3686d59a51f",
+            "images.npy": "23d7e3d85e54b0570667d7f1bb20030cb1350ee1a0f1057e291d72156a5fbed4",
+            "images_ts.npy": "0d748ce12ca1137cb3a38b164da6341d668ce82f004ab667c9e990c18c6ca197",
+            "metadata.json": "888ef9c0c63ab6750073f5dce0c68e0dd317845e27aa1c42af3dc9695ff6e812"
+          },
+          "images_timestamp_first_s": 0.021619081497192383,
+          "images_timestamp_last_s": 24.11524987220764,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 540,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/boxes.bag",
+            "source_bag_sha256": "99ca9721e1e4ec3a27d4d6b920135d3c8d57f83dd74588f3a00a95326e95d603",
+            "source_image_message_count": 540,
+            "time_origin_absolute_s": 1581818226.2405617
+          },
+          "num_events": 10050781,
+          "num_frames": 540,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              10050781
+            ],
+            "events_ts": [
+              10050781
+            ],
+            "events_xy": [
+              10050781,
+              2
+            ],
+            "image_event_indices": [
+              540
+            ],
+            "images": [
+              540,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              540
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/boxes.bag",
+        "sha256": "99ca9721e1e4ec3a27d4d6b920135d3c8d57f83dd74588f3a00a95326e95d603",
+        "size_bytes": 154165863
+      },
+      "sequence": "boxes",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "074e7bb95d28d0a184bed15cb6aa56f33395c8b2fc3e15775ecd2cc1266edc21",
+            "size_bytes": 20268
+          },
+          "events_p.npy": {
+            "sha256": "33eb440dc1fe8af52d6037b859ed7d1f5767a660efc8bd4cd635c6b78b27f7a0",
+            "size_bytes": 13516479
+          },
+          "events_ts.npy": {
+            "sha256": "c5936ca74422675040046cbedd3d4c3fac5e0e01c95f9fb20382b475b9bc6d1a",
+            "size_bytes": 108130936
+          },
+          "events_xy.npy": {
+            "sha256": "619fbc01c30a4de7dab716164d322f2dea9d0206272df6e4453516348f9cf44e",
+            "size_bytes": 108130936
+          },
+          "image_event_indices.npy": {
+            "sha256": "bbe4bd5213e92099bb3eb01f510fa3d9724bc7ebd8419a80d5cd2bc4a5535ad5",
+            "size_bytes": 12056
+          },
+          "images.npy": {
+            "sha256": "3cc17a497e1acf5452ffd1e79ea84ae7abce03b71526c3d19e4e45e2ff7838ea",
+            "size_bytes": 64411328
+          },
+          "images_ts.npy": {
+            "sha256": "569461caf6b08fd2af254e478dc1b0d92d5bc3a674e4a59d27969acdb3d52442",
+            "size_bytes": 12056
+          },
+          "metadata.json": {
+            "sha256": "24870d06a0e7c99a5e793e9e690db5383d153a21b46a56ca4166f7c32e82e8ab",
+            "size_bytes": 1282
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/desk",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 65.77076601982117,
+          "hashes": {
+            "events_p.npy": "33eb440dc1fe8af52d6037b859ed7d1f5767a660efc8bd4cd635c6b78b27f7a0",
+            "events_ts.npy": "c5936ca74422675040046cbedd3d4c3fac5e0e01c95f9fb20382b475b9bc6d1a",
+            "events_xy.npy": "619fbc01c30a4de7dab716164d322f2dea9d0206272df6e4453516348f9cf44e",
+            "image_event_indices.npy": "bbe4bd5213e92099bb3eb01f510fa3d9724bc7ebd8419a80d5cd2bc4a5535ad5",
+            "images.npy": "3cc17a497e1acf5452ffd1e79ea84ae7abce03b71526c3d19e4e45e2ff7838ea",
+            "images_ts.npy": "569461caf6b08fd2af254e478dc1b0d92d5bc3a674e4a59d27969acdb3d52442",
+            "metadata.json": "24870d06a0e7c99a5e793e9e690db5383d153a21b46a56ca4166f7c32e82e8ab"
+          },
+          "images_timestamp_first_s": 0.028927087783813477,
+          "images_timestamp_last_s": 65.69203519821167,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 1491,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk.bag",
+            "source_bag_sha256": "98d792e37427661708d0950f115709bc8d923d30718ce898c9450ff3971dcf2c",
+            "source_image_message_count": 1491,
+            "time_origin_absolute_s": 1581920242.0902267
+          },
+          "num_events": 13516351,
+          "num_frames": 1491,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              13516351
+            ],
+            "events_ts": [
+              13516351
+            ],
+            "events_xy": [
+              13516351,
+              2
+            ],
+            "image_event_indices": [
+              1491
+            ],
+            "images": [
+              1491,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              1491
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk.bag",
+        "sha256": "98d792e37427661708d0950f115709bc8d923d30718ce898c9450ff3971dcf2c",
+        "size_bytes": 240534572
+      },
+      "sequence": "desk",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "b3dbfb43ea4f0288a38a1f15ac75945aabc458e56833934085a505d4e1e1ddc2",
+            "size_bytes": 12873
+          },
+          "events_p.npy": {
+            "sha256": "db7223c26d2144fdafe15d272e860c3d8b5f4583715b84899e9bb1434f5b2fa0",
+            "size_bytes": 12623062
+          },
+          "events_ts.npy": {
+            "sha256": "c9c2923dbb0fde73108f20129e88cb227dabf8a69a38769d19de5e9ed67642fd",
+            "size_bytes": 100983600
+          },
+          "events_xy.npy": {
+            "sha256": "ca980f2b36731d81f3d0231cf72c5868a024bb29f2ce6c3343a4b3fa35a4fc08",
+            "size_bytes": 100983600
+          },
+          "image_event_indices.npy": {
+            "sha256": "dd7c165904d7e07caf4d8b620325987bb7d90181f7ed2af22dccd853372d299a",
+            "size_bytes": 5920
+          },
+          "images.npy": {
+            "sha256": "f4976f2051c26fd73e849a0df9fbb24b4710abdf86aef6f1293facfb640093da",
+            "size_bytes": 31276928
+          },
+          "images_ts.npy": {
+            "sha256": "60251c9e6e6aeb8480efc68381678bbf2220bf952c90115327a6b72821c268ad",
+            "size_bytes": 5920
+          },
+          "metadata.json": {
+            "sha256": "fbcfd8d12ebd2cc18f7223d7ec2f3b0256b0c0e03161a450d502d37f94296f25",
+            "size_bytes": 1285
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/desk_fast",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 31.959280014038086,
+          "hashes": {
+            "events_p.npy": "db7223c26d2144fdafe15d272e860c3d8b5f4583715b84899e9bb1434f5b2fa0",
+            "events_ts.npy": "c9c2923dbb0fde73108f20129e88cb227dabf8a69a38769d19de5e9ed67642fd",
+            "events_xy.npy": "ca980f2b36731d81f3d0231cf72c5868a024bb29f2ce6c3343a4b3fa35a4fc08",
+            "image_event_indices.npy": "dd7c165904d7e07caf4d8b620325987bb7d90181f7ed2af22dccd853372d299a",
+            "images.npy": "f4976f2051c26fd73e849a0df9fbb24b4710abdf86aef6f1293facfb640093da",
+            "images_ts.npy": "60251c9e6e6aeb8480efc68381678bbf2220bf952c90115327a6b72821c268ad",
+            "metadata.json": "fbcfd8d12ebd2cc18f7223d7ec2f3b0256b0c0e03161a450d502d37f94296f25"
+          },
+          "images_timestamp_first_s": 0.002997159957885742,
+          "images_timestamp_last_s": 31.865028142929077,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 724,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_fast.bag",
+            "source_bag_sha256": "102f14526db7851da5064504013ebe2a665c351d2e13c86171179ac5e75f851f",
+            "source_image_message_count": 724,
+            "time_origin_absolute_s": 1581920320.1186407
+          },
+          "num_events": 12622934,
+          "num_frames": 724,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              12622934
+            ],
+            "events_ts": [
+              12622934
+            ],
+            "events_xy": [
+              12622934,
+              2
+            ],
+            "image_event_indices": [
+              724
+            ],
+            "images": [
+              724,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              724
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_fast.bag",
+        "sha256": "102f14526db7851da5064504013ebe2a665c351d2e13c86171179ac5e75f851f",
+        "size_bytes": 195603169
+      },
+      "sequence": "desk_fast",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "513799b5bd0c8fdc20f7c99d3f38012cce28e1a410e2a9198afd5457369b258d",
+            "size_bytes": 10554
+          },
+          "events_p.npy": {
+            "sha256": "698987d92cfea13ec34ffde8426219796f6ab318483001f52bb7b97119796d8a",
+            "size_bytes": 777305
+          },
+          "events_ts.npy": {
+            "sha256": "54adc6d836f089d1a6f963a3d00fcbe6a0d48a0266681757c40f9e4adc50cd50",
+            "size_bytes": 6217544
+          },
+          "events_xy.npy": {
+            "sha256": "b264bbb22cdf1b58efaddc7c277b2cd2439db265d2fab972e10de20f03972b65",
+            "size_bytes": 6217544
+          },
+          "image_event_indices.npy": {
+            "sha256": "38436229d6f3a92a92221528dbc76bcdd3a4293b233be5d70882aa5ed0229c8e",
+            "size_bytes": 3864
+          },
+          "images.npy": {
+            "sha256": "1415953444eaee8b9437dd562a9032355cd634347ccc16f8c065f3543fd080b1",
+            "size_bytes": 20174528
+          },
+          "images_ts.npy": {
+            "sha256": "e45ec61b3efebbb7e45d78062e320c758be879a64d1e07bbd7815060c20be13c",
+            "size_bytes": 3864
+          },
+          "metadata.json": {
+            "sha256": "04d3379b982649e8835ef8043dd17bc9a676758ac3469caec550ffa345ad357e",
+            "size_bytes": 1290
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/desk_hand_only",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.03905010223388672,
+          "events_timestamp_last_s": 20.621449947357178,
+          "hashes": {
+            "events_p.npy": "698987d92cfea13ec34ffde8426219796f6ab318483001f52bb7b97119796d8a",
+            "events_ts.npy": "54adc6d836f089d1a6f963a3d00fcbe6a0d48a0266681757c40f9e4adc50cd50",
+            "events_xy.npy": "b264bbb22cdf1b58efaddc7c277b2cd2439db265d2fab972e10de20f03972b65",
+            "image_event_indices.npy": "38436229d6f3a92a92221528dbc76bcdd3a4293b233be5d70882aa5ed0229c8e",
+            "images.npy": "1415953444eaee8b9437dd562a9032355cd634347ccc16f8c065f3543fd080b1",
+            "images_ts.npy": "e45ec61b3efebbb7e45d78062e320c758be879a64d1e07bbd7815060c20be13c",
+            "metadata.json": "04d3379b982649e8835ef8043dd17bc9a676758ac3469caec550ffa345ad357e"
+          },
+          "images_timestamp_first_s": 0.0,
+          "images_timestamp_last_s": 20.53624701499939,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 467,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_hand_only.bag",
+            "source_bag_sha256": "1ecb442044d1f535fbf08ed1e4ba9bf871dfb28a020a974ab8cf7d60c88b72e2",
+            "source_image_message_count": 467,
+            "time_origin_absolute_s": 1581920369.3910027
+          },
+          "num_events": 777177,
+          "num_frames": 467,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              777177
+            ],
+            "events_ts": [
+              777177
+            ],
+            "events_xy": [
+              777177,
+              2
+            ],
+            "image_event_indices": [
+              467
+            ],
+            "images": [
+              467,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              467
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_hand_only.bag",
+        "sha256": "1ecb442044d1f535fbf08ed1e4ba9bf871dfb28a020a974ab8cf7d60c88b72e2",
+        "size_bytes": 30399396
+      },
+      "sequence": "desk_hand_only",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "52f8283cc2cd9cca494da456df8fcac9117752599f1cc908fac1a48598871b17",
+            "size_bytes": 19695
+          },
+          "events_p.npy": {
+            "sha256": "265504881d535b156028c7e6fe62dc36a01b3b2e19f9756ca06129a48b8a44e8",
+            "size_bytes": 1926733
+          },
+          "events_ts.npy": {
+            "sha256": "fab126bcc022cb5133396dace184775bceab7923bbc8c07db4761597a26cd6ee",
+            "size_bytes": 15412968
+          },
+          "events_xy.npy": {
+            "sha256": "dce30a1c9844ec59ab4c09b1bbece6463cf8c846a0206543c9f9c4014119de2d",
+            "size_bytes": 15412968
+          },
+          "image_event_indices.npy": {
+            "sha256": "80859cc15211d1335a401c3ae17c7884ec8dc8098a707bca459b46706cb3a203",
+            "size_bytes": 11600
+          },
+          "images.npy": {
+            "sha256": "2203e432c0df9c820f079240abf71862d552e84b1d7a8b11276d8caad85556ed",
+            "size_bytes": 61948928
+          },
+          "images_ts.npy": {
+            "sha256": "9625c8551ab4d284a12fd320ac1ec8e222077885a2880fd52411e03cf1234c8c",
+            "size_bytes": 11600
+          },
+          "metadata.json": {
+            "sha256": "a5d0d36a43d0c7f7487627e6382758209939699a808dde1c9901320a2dc213a8",
+            "size_bytes": 1287
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/desk_slow",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 63.26396298408508,
+          "hashes": {
+            "events_p.npy": "265504881d535b156028c7e6fe62dc36a01b3b2e19f9756ca06129a48b8a44e8",
+            "events_ts.npy": "fab126bcc022cb5133396dace184775bceab7923bbc8c07db4761597a26cd6ee",
+            "events_xy.npy": "dce30a1c9844ec59ab4c09b1bbece6463cf8c846a0206543c9f9c4014119de2d",
+            "image_event_indices.npy": "80859cc15211d1335a401c3ae17c7884ec8dc8098a707bca459b46706cb3a203",
+            "images.npy": "2203e432c0df9c820f079240abf71862d552e84b1d7a8b11276d8caad85556ed",
+            "images_ts.npy": "9625c8551ab4d284a12fd320ac1ec8e222077885a2880fd52411e03cf1234c8c",
+            "metadata.json": "a5d0d36a43d0c7f7487627e6382758209939699a808dde1c9901320a2dc213a8"
+          },
+          "images_timestamp_first_s": 0.03909707069396973,
+          "images_timestamp_last_s": 63.19026017189026,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 1434,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_slow.bag",
+            "source_bag_sha256": "cd0677bc83673351c6db9ae6d1d7f80ae2258a7e1a4cfece4a4a8aa8a8b6be11",
+            "source_image_message_count": 1434,
+            "time_origin_absolute_s": 1581920441.3169098
+          },
+          "num_events": 1926605,
+          "num_frames": 1434,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              1926605
+            ],
+            "events_ts": [
+              1926605
+            ],
+            "events_xy": [
+              1926605,
+              2
+            ],
+            "image_event_indices": [
+              1434
+            ],
+            "images": [
+              1434,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              1434
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_slow.bag",
+        "sha256": "cd0677bc83673351c6db9ae6d1d7f80ae2258a7e1a4cfece4a4a8aa8a8b6be11",
+        "size_bytes": 87342950
+      },
+      "sequence": "desk_slow",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "1f4ff68691bf77e1f67082902db5a4a042db99b77188b145126811bc36759b09",
+            "size_bytes": 18480
+          },
+          "events_p.npy": {
+            "sha256": "c7c3bef70ac837d81f696c1ba179c8fc36934cdfd8522f375f41caf21240cf1e",
+            "size_bytes": 15376400
+          },
+          "events_ts.npy": {
+            "sha256": "ae2bebde2552d3cbb53d36083c35dca778135f566d757ade31de31673e560507",
+            "size_bytes": 123010304
+          },
+          "events_xy.npy": {
+            "sha256": "748f78391b1debfdcc8795acdbfb0fc4304cb5f17fa7f98149515e331db6b9f3",
+            "size_bytes": 123010304
+          },
+          "image_event_indices.npy": {
+            "sha256": "fb2019fd3cd3d8470de695205b025cac3b78594008f34450fc100b39ffc3efd7",
+            "size_bytes": 10256
+          },
+          "images.npy": {
+            "sha256": "cc49bda89bbd3cf5b3fb56b7f6c76e448de86bde44df50bd1252f75a93491887",
+            "size_bytes": 54691328
+          },
+          "images_ts.npy": {
+            "sha256": "878a5e62bfa6d9a8bc23d60c04a3f6e325671f81684832191b50bd7f5eaf9891",
+            "size_bytes": 10256
+          },
+          "metadata.json": {
+            "sha256": "ecbc49e558b81066970470a9e69769ab1fee0dead2f1eeb601fa6b707b256770",
+            "size_bytes": 1744
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/engineering_posters",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 60.7399799823761,
+          "hashes": {
+            "events_p.npy": "c7c3bef70ac837d81f696c1ba179c8fc36934cdfd8522f375f41caf21240cf1e",
+            "events_ts.npy": "ae2bebde2552d3cbb53d36083c35dca778135f566d757ade31de31673e560507",
+            "events_xy.npy": "748f78391b1debfdcc8795acdbfb0fc4304cb5f17fa7f98149515e331db6b9f3",
+            "image_event_indices.npy": "fb2019fd3cd3d8470de695205b025cac3b78594008f34450fc100b39ffc3efd7",
+            "images.npy": "cc49bda89bbd3cf5b3fb56b7f6c76e448de86bde44df50bd1252f75a93491887",
+            "images_ts.npy": "878a5e62bfa6d9a8bc23d60c04a3f6e325671f81684832191b50bd7f5eaf9891",
+            "metadata.json": "ecbc49e558b81066970470a9e69769ab1fee0dead2f1eeb601fa6b707b256770"
+          },
+          "images_timestamp_first_s": 0.011904001235961914,
+          "images_timestamp_last_s": 60.65911412239075,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [
+              {
+                "bag_record_timestamp_ns": 1581816879054135511,
+                "header_timestamp_ns": 1581814731682469481,
+                "image_payload_sha256": "6282df3c7872628955572f05dc5b53cbda475964070bb3a3d6cd32288619ffc5",
+                "previous_retained_header_timestamp_ns": 1581816879078825481,
+                "previous_retained_source_image_index": 527,
+                "reason": "header_timestamp_not_strictly_after_previous_retained_image",
+                "source_image_index": 528
+              }
+            ],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 1266,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/engineering_posters.bag",
+            "source_bag_sha256": "c9b8c6d1bd42954271d26ef7f2b4f7bd7e7f3377ec8cc24129337eb54285d21a",
+            "source_image_message_count": 1267,
+            "time_origin_absolute_s": 1581816854.8709595
+          },
+          "num_events": 15376272,
+          "num_frames": 1266,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              15376272
+            ],
+            "events_ts": [
+              15376272
+            ],
+            "events_xy": [
+              15376272,
+              2
+            ],
+            "image_event_indices": [
+              1266
+            ],
+            "images": [
+              1266,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              1266
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/engineering_posters.bag",
+        "sha256": "c9b8c6d1bd42954271d26ef7f2b4f7bd7e7f3377ec8cc24129337eb54285d21a",
+        "size_bytes": 255005214
+      },
+      "sequence": "engineering_posters",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "6d236ca484b3b37c73f4e55f7adea2ff2a577efe772c7cedbfe599da488b38d4",
+            "size_bytes": 16273
+          },
+          "events_p.npy": {
+            "sha256": "848444af5e7001da68c074e1591a871717134dfee8a580c1b1c9469667a76698",
+            "size_bytes": 14602517
+          },
+          "events_ts.npy": {
+            "sha256": "314ecb1433be77778ae93fa588a125cdd0fc3331b002e8bf1da73dd7cb2a1412",
+            "size_bytes": 116819240
+          },
+          "events_xy.npy": {
+            "sha256": "7856e415e47f6c7e284eda3e5a8a5717540cb196003572a76f5740b2386d5ae9",
+            "size_bytes": 116819240
+          },
+          "image_event_indices.npy": {
+            "sha256": "4e432fb08de1a453c6f5a1fdbc69ecfcc684bd1604bf0db5a55898d3be75d00d",
+            "size_bytes": 8848
+          },
+          "images.npy": {
+            "sha256": "e4869b3aa3e394e5c56f2f496d72fbab66da83ddd8dd0de7db6eb299be21ba51",
+            "size_bytes": 47088128
+          },
+          "images_ts.npy": {
+            "sha256": "b6bc0d797b963aaa5c3a0bb105692cbe825bc824efa7cec9c7722a670c83f49a",
+            "size_bytes": 8848
+          },
+          "metadata.json": {
+            "sha256": "6b51dcdf0435137d0ef92015b0df9abb55c0042d3a517853c4b3a2b44d0dc1c9",
+            "size_bytes": 1297
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/high_texture_plants",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 43.159980058670044,
+          "hashes": {
+            "events_p.npy": "848444af5e7001da68c074e1591a871717134dfee8a580c1b1c9469667a76698",
+            "events_ts.npy": "314ecb1433be77778ae93fa588a125cdd0fc3331b002e8bf1da73dd7cb2a1412",
+            "events_xy.npy": "7856e415e47f6c7e284eda3e5a8a5717540cb196003572a76f5740b2386d5ae9",
+            "image_event_indices.npy": "4e432fb08de1a453c6f5a1fdbc69ecfcc684bd1604bf0db5a55898d3be75d00d",
+            "images.npy": "e4869b3aa3e394e5c56f2f496d72fbab66da83ddd8dd0de7db6eb299be21ba51",
+            "images_ts.npy": "b6bc0d797b963aaa5c3a0bb105692cbe825bc824efa7cec9c7722a670c83f49a",
+            "metadata.json": "6b51dcdf0435137d0ef92015b0df9abb55c0042d3a517853c4b3a2b44d0dc1c9"
+          },
+          "images_timestamp_first_s": 0.0064051151275634766,
+          "images_timestamp_last_s": 43.08967614173889,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 1090,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/high_texture_plants.bag",
+            "source_bag_sha256": "393097faaed0e9db69d854e4b7ec1d1d51f4b135f750dc3414abe352d0be3ca2",
+            "source_image_message_count": 1090,
+            "time_origin_absolute_s": 1582417050.4778013
+          },
+          "num_events": 14602389,
+          "num_frames": 1090,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              14602389
+            ],
+            "events_ts": [
+              14602389
+            ],
+            "events_xy": [
+              14602389,
+              2
+            ],
+            "image_event_indices": [
+              1090
+            ],
+            "images": [
+              1090,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              1090
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/high_texture_plants.bag",
+        "sha256": "393097faaed0e9db69d854e4b7ec1d1d51f4b135f750dc3414abe352d0be3ca2",
+        "size_bytes": 237224811
+      },
+      "sequence": "high_texture_plants",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "51b23b6c698f3aba7490a9e1d702d1bd689328967b07f019a406d08dafb85265",
+            "size_bytes": 15342
+          },
+          "events_p.npy": {
+            "sha256": "2a128f9862e3dd666b1154ec4907667210ac53062941dcc8ffe02f78ff1fcc26",
+            "size_bytes": 7056701
+          },
+          "events_ts.npy": {
+            "sha256": "b48c119698adf4760b34ed6d2bdef40ecfa4402fcd90bebfc146d44c7eb34fbf",
+            "size_bytes": 56452712
+          },
+          "events_xy.npy": {
+            "sha256": "f3735208e3ef1495cb34d2f9ed69c8fb8feb5cc5d55f3d8ab7e26575d8eaa4bf",
+            "size_bytes": 56452712
+          },
+          "image_event_indices.npy": {
+            "sha256": "4646cc43b63d6e2b83dced0fbe82e78aa5653d244d2eef47888b9db05c1dd7ae",
+            "size_bytes": 8112
+          },
+          "images.npy": {
+            "sha256": "b6d019a3324fb8c2b28577292064c633a010aed860d47c0dbd1c93e92daac513",
+            "size_bytes": 43113728
+          },
+          "images_ts.npy": {
+            "sha256": "f08f1c5b45788dc516ab6248e7fff6f47d80ee2ceee648c3c15f5a2559b29ba5",
+            "size_bytes": 8112
+          },
+          "metadata.json": {
+            "sha256": "c6749fda402e6c3bb6434ad5cd6a64ebe2627aae911adfad92e0a1be55a67e3c",
+            "size_bytes": 1291
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/poster_pillar_1",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.011374950408935547,
+          "events_timestamp_last_s": 41.79082179069519,
+          "hashes": {
+            "events_p.npy": "2a128f9862e3dd666b1154ec4907667210ac53062941dcc8ffe02f78ff1fcc26",
+            "events_ts.npy": "b48c119698adf4760b34ed6d2bdef40ecfa4402fcd90bebfc146d44c7eb34fbf",
+            "events_xy.npy": "f3735208e3ef1495cb34d2f9ed69c8fb8feb5cc5d55f3d8ab7e26575d8eaa4bf",
+            "image_event_indices.npy": "4646cc43b63d6e2b83dced0fbe82e78aa5653d244d2eef47888b9db05c1dd7ae",
+            "images.npy": "b6d019a3324fb8c2b28577292064c633a010aed860d47c0dbd1c93e92daac513",
+            "images_ts.npy": "f08f1c5b45788dc516ab6248e7fff6f47d80ee2ceee648c3c15f5a2559b29ba5",
+            "metadata.json": "c6749fda402e6c3bb6434ad5cd6a64ebe2627aae911adfad92e0a1be55a67e3c"
+          },
+          "images_timestamp_first_s": 0.0,
+          "images_timestamp_last_s": 41.762136936187744,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 998,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/poster_pillar_1.bag",
+            "source_bag_sha256": "3d9892f4c4224d3fbe51ee80e72c134beb997588d57f8bd45d04099a58c00ea2",
+            "source_image_message_count": 998,
+            "time_origin_absolute_s": 1582416757.2764335
+          },
+          "num_events": 7056573,
+          "num_frames": 998,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              7056573
+            ],
+            "events_ts": [
+              7056573
+            ],
+            "events_xy": [
+              7056573,
+              2
+            ],
+            "image_event_indices": [
+              998
+            ],
+            "images": [
+              998,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              998
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/poster_pillar_1.bag",
+        "sha256": "3d9892f4c4224d3fbe51ee80e72c134beb997588d57f8bd45d04099a58c00ea2",
+        "size_bytes": 135114005
+      },
+      "sequence": "poster_pillar_1",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "d3a2d20a89051794db63ae01732f917bfc7230e7360f23241a06f03df2e5203a",
+            "size_bytes": 11875
+          },
+          "events_p.npy": {
+            "sha256": "afa229c6fe4ab6f9444e3eabf60abc7cf5d029a18343f4ae3c10a1c310f1976e",
+            "size_bytes": 2541050
+          },
+          "events_ts.npy": {
+            "sha256": "240ffb5cfa9df5a0b27943c78cf4a39226d7e36f29ccc13a58f82efc60eab4d4",
+            "size_bytes": 20327504
+          },
+          "events_xy.npy": {
+            "sha256": "1f69cb7b813478acabd53597d4b28f75aeb731308ba6af7c28ed6801a4243c89",
+            "size_bytes": 20327504
+          },
+          "image_event_indices.npy": {
+            "sha256": "e3f7abb7927dac90a456575f1e409d1e96592b0f7f852c71886ae008d6e78d48",
+            "size_bytes": 5032
+          },
+          "images.npy": {
+            "sha256": "8d7918da3a2416d2a54928cd1853c7994b4a57306f057e4f55e7d5515057a6e2",
+            "size_bytes": 26481728
+          },
+          "images_ts.npy": {
+            "sha256": "e871e512f439f06e0b0b853f5ae99241e991fe825ad473046ab49b46881e34f2",
+            "size_bytes": 5032
+          },
+          "metadata.json": {
+            "sha256": "40938823434c615eefb000906e9fa964fa17d26bb3a9474bf97aef8bb38d40ea",
+            "size_bytes": 1291
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/poster_pillar_2",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 25.409312963485718,
+          "hashes": {
+            "events_p.npy": "afa229c6fe4ab6f9444e3eabf60abc7cf5d029a18343f4ae3c10a1c310f1976e",
+            "events_ts.npy": "240ffb5cfa9df5a0b27943c78cf4a39226d7e36f29ccc13a58f82efc60eab4d4",
+            "events_xy.npy": "1f69cb7b813478acabd53597d4b28f75aeb731308ba6af7c28ed6801a4243c89",
+            "image_event_indices.npy": "e3f7abb7927dac90a456575f1e409d1e96592b0f7f852c71886ae008d6e78d48",
+            "images.npy": "8d7918da3a2416d2a54928cd1853c7994b4a57306f057e4f55e7d5515057a6e2",
+            "images_ts.npy": "e871e512f439f06e0b0b853f5ae99241e991fe825ad473046ab49b46881e34f2",
+            "metadata.json": "40938823434c615eefb000906e9fa964fa17d26bb3a9474bf97aef8bb38d40ea"
+          },
+          "images_timestamp_first_s": 0.019747018814086914,
+          "images_timestamp_last_s": 25.365426301956177,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 613,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/poster_pillar_2.bag",
+            "source_bag_sha256": "2fe294a946b46dbc3d83db1660eab6ec07938aec8719abde4bd68fee0d1ddcf5",
+            "source_image_message_count": 613,
+            "time_origin_absolute_s": 1582416818.9984853
+          },
+          "num_events": 2540922,
+          "num_frames": 613,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              2540922
+            ],
+            "events_ts": [
+              2540922
+            ],
+            "events_xy": [
+              2540922,
+              2
+            ],
+            "image_event_indices": [
+              613
+            ],
+            "images": [
+              613,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              613
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/poster_pillar_2.bag",
+        "sha256": "2fe294a946b46dbc3d83db1660eab6ec07938aec8719abde4bd68fee0d1ddcf5",
+        "size_bytes": 59672629
+      },
+      "sequence": "poster_pillar_2",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "811110c60a30ed02a247d8d540e734c4d14ca7c3e2ef7ad4d85f38ff265bd462",
+            "size_bytes": 11934
+          },
+          "events_p.npy": {
+            "sha256": "bbd800d2e5094a43971471f2033a7ebbb5d31b8bcafd0985cbcb5b1ce6b1a17e",
+            "size_bytes": 7753984
+          },
+          "events_ts.npy": {
+            "sha256": "5bf1153c5b0efa29d29c8be405885129d3196cdea1348a1dac2c7f4afb03d01f",
+            "size_bytes": 62030976
+          },
+          "events_xy.npy": {
+            "sha256": "c1daa0adfd8dabd54872a5834ce4ec40db7e37d82b302cb954270ae6c9535913",
+            "size_bytes": 62030976
+          },
+          "image_event_indices.npy": {
+            "sha256": "eb8fe315abafbc0ec9e02edd4dd8dd1dc1609cd5481477ca8019f42f98d1d830",
+            "size_bytes": 5080
+          },
+          "images.npy": {
+            "sha256": "1dce85c420af9e52668fada97414880f909797df6e23bb0dec6c9ba83ae40ab4",
+            "size_bytes": 26740928
+          },
+          "images_ts.npy": {
+            "sha256": "8f6555fbd326406a67afa7a72ffb107b8a5612df38b8317ba262fbe247c76a1b",
+            "size_bytes": 5080
+          },
+          "metadata.json": {
+            "sha256": "6ad02ebe691935b172aee7335b09320a0714be13b38575699b669d03d27f413a",
+            "size_bytes": 1296
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/reflective_materials",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 28.87998390197754,
+          "hashes": {
+            "events_p.npy": "bbd800d2e5094a43971471f2033a7ebbb5d31b8bcafd0985cbcb5b1ce6b1a17e",
+            "events_ts.npy": "5bf1153c5b0efa29d29c8be405885129d3196cdea1348a1dac2c7f4afb03d01f",
+            "events_xy.npy": "c1daa0adfd8dabd54872a5834ce4ec40db7e37d82b302cb954270ae6c9535913",
+            "image_event_indices.npy": "eb8fe315abafbc0ec9e02edd4dd8dd1dc1609cd5481477ca8019f42f98d1d830",
+            "images.npy": "1dce85c420af9e52668fada97414880f909797df6e23bb0dec6c9ba83ae40ab4",
+            "images_ts.npy": "8f6555fbd326406a67afa7a72ffb107b8a5612df38b8317ba262fbe247c76a1b",
+            "metadata.json": "6ad02ebe691935b172aee7335b09320a0714be13b38575699b669d03d27f413a"
+          },
+          "images_timestamp_first_s": 0.018928050994873047,
+          "images_timestamp_last_s": 28.806512117385864,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 619,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/reflective_materials.bag",
+            "source_bag_sha256": "c6003205689ebb22e3c223cefa30133e035091595f7e0b14b7c7898862f6e3f1",
+            "source_image_message_count": 619,
+            "time_origin_absolute_s": 1581817341.5709705
+          },
+          "num_events": 7753856,
+          "num_frames": 619,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              7753856
+            ],
+            "events_ts": [
+              7753856
+            ],
+            "events_xy": [
+              7753856,
+              2
+            ],
+            "image_event_indices": [
+              619
+            ],
+            "images": [
+              619,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              619
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/reflective_materials.bag",
+        "sha256": "c6003205689ebb22e3c223cefa30133e035091595f7e0b14b7c7898862f6e3f1",
+        "size_bytes": 127731306
+      },
+      "sequence": "reflective_materials",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "e9f09e77f947c2a544e8159a8c7868d25f40a553a64f7ae6f18f9c422fe62f8b",
+            "size_bytes": 22812
+          },
+          "events_p.npy": {
+            "sha256": "73601f1d433f003834d56ca6c0ca8b22668d46a7e82127ccef5a9eabd0d75fe6",
+            "size_bytes": 15030542
+          },
+          "events_ts.npy": {
+            "sha256": "9e9f9001c1e9c942040d95950bbeaa48213f4526d650f1ace22031c858393ae4",
+            "size_bytes": 120243440
+          },
+          "events_xy.npy": {
+            "sha256": "b1b5e6155406be1f717721f678a937641eb28fdf73d00d5bd9129ffca536546f",
+            "size_bytes": 120243440
+          },
+          "image_event_indices.npy": {
+            "sha256": "21704f41d950b62cf3cbc20dfbf6facfd2f05c53717b0535dd6cd5c0adf4892d",
+            "size_bytes": 14080
+          },
+          "images.npy": {
+            "sha256": "c4fe889f43888272bea64accfa6acdc86f90feabc25fc5ab8ae7ba17ed4b41d5",
+            "size_bytes": 75340928
+          },
+          "images_ts.npy": {
+            "sha256": "9b676683b8b59f879a569004c6f67ab7dc0ade72c0dbabb430fbdc809a838a62",
+            "size_bytes": 14080
+          },
+          "metadata.json": {
+            "sha256": "1a9a143c0037ce37ca3fa399b249afe0b8074f163cb6ef9c88d913033c4ba97f",
+            "size_bytes": 1296
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/slow_and_fast_desk",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.009039640426635742,
+          "events_timestamp_last_s": 75.57902669906616,
+          "hashes": {
+            "events_p.npy": "73601f1d433f003834d56ca6c0ca8b22668d46a7e82127ccef5a9eabd0d75fe6",
+            "events_ts.npy": "9e9f9001c1e9c942040d95950bbeaa48213f4526d650f1ace22031c858393ae4",
+            "events_xy.npy": "b1b5e6155406be1f717721f678a937641eb28fdf73d00d5bd9129ffca536546f",
+            "image_event_indices.npy": "21704f41d950b62cf3cbc20dfbf6facfd2f05c53717b0535dd6cd5c0adf4892d",
+            "images.npy": "c4fe889f43888272bea64accfa6acdc86f90feabc25fc5ab8ae7ba17ed4b41d5",
+            "images_ts.npy": "9b676683b8b59f879a569004c6f67ab7dc0ade72c0dbabb430fbdc809a838a62",
+            "metadata.json": "1a9a143c0037ce37ca3fa399b249afe0b8074f163cb6ef9c88d913033c4ba97f"
+          },
+          "images_timestamp_first_s": 0.0,
+          "images_timestamp_last_s": 75.56235074996948,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 1744,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/slow_and_fast_desk.bag",
+            "source_bag_sha256": "0e18ef9f4cc79736201575ed4129a70d89b5e468ae628eac9d1529dfb1e4c474",
+            "source_image_message_count": 1744,
+            "time_origin_absolute_s": 1581910615.2810178
+          },
+          "num_events": 15030414,
+          "num_frames": 1744,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              15030414
+            ],
+            "events_ts": [
+              15030414
+            ],
+            "events_xy": [
+              15030414,
+              2
+            ],
+            "image_event_indices": [
+              1744
+            ],
+            "images": [
+              1744,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              1744
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/slow_and_fast_desk.bag",
+        "sha256": "0e18ef9f4cc79736201575ed4129a70d89b5e468ae628eac9d1529dfb1e4c474",
+        "size_bytes": 271203002
+      },
+      "sequence": "slow_and_fast_desk",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "127c687f495634670d9b1c7a30bdb92aaa50bd3dd465ee21441b09e14cf12e75",
+            "size_bytes": 14463
+          },
+          "events_p.npy": {
+            "sha256": "cafabf6bcad29e7126f719fa6fdd953ab2b10e17834efcd16a2e1320cf043e57",
+            "size_bytes": 7635953
+          },
+          "events_ts.npy": {
+            "sha256": "f7a03c402d1d79b1420324d3a8c0ce5e9160ba8d3b75cef66a65d3c78e80ab44",
+            "size_bytes": 61086728
+          },
+          "events_xy.npy": {
+            "sha256": "31fb503d5bde6d577f9c8bd9b5ea049e09cbe6840f307272fd472040f59f9048",
+            "size_bytes": 61086728
+          },
+          "image_event_indices.npy": {
+            "sha256": "600cfcb71c353711850157697ecbf5f4898a5b852bbacb2f22998fc27b4ccdd5",
+            "size_bytes": 7336
+          },
+          "images.npy": {
+            "sha256": "b161aa39f2f0d648d00841d50903e00d5408d7c73b1d0f5fae3999aff0220f29",
+            "size_bytes": 38923328
+          },
+          "images_ts.npy": {
+            "sha256": "21537c73450f9e1b0b04070204bf1636f589baeb202333fafaae68b8a6ebce93",
+            "size_bytes": 7336
+          },
+          "metadata.json": {
+            "sha256": "9b5cfa4c0a86d39caa55563826b5616ba3c210dbf21037da8eac4025f27811bc",
+            "size_bytes": 1285
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/slow_hand",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.021544933319091797,
+          "events_timestamp_last_s": 38.920077085494995,
+          "hashes": {
+            "events_p.npy": "cafabf6bcad29e7126f719fa6fdd953ab2b10e17834efcd16a2e1320cf043e57",
+            "events_ts.npy": "f7a03c402d1d79b1420324d3a8c0ce5e9160ba8d3b75cef66a65d3c78e80ab44",
+            "events_xy.npy": "31fb503d5bde6d577f9c8bd9b5ea049e09cbe6840f307272fd472040f59f9048",
+            "image_event_indices.npy": "600cfcb71c353711850157697ecbf5f4898a5b852bbacb2f22998fc27b4ccdd5",
+            "images.npy": "b161aa39f2f0d648d00841d50903e00d5408d7c73b1d0f5fae3999aff0220f29",
+            "images_ts.npy": "21537c73450f9e1b0b04070204bf1636f589baeb202333fafaae68b8a6ebce93",
+            "metadata.json": "9b5cfa4c0a86d39caa55563826b5616ba3c210dbf21037da8eac4025f27811bc"
+          },
+          "images_timestamp_first_s": 0.0,
+          "images_timestamp_last_s": 38.83505296707153,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 901,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/slow_hand.bag",
+            "source_bag_sha256": "46bf7b2785e3120b04220f6fc3a0cb8d01dd79c44d06be6518b1790d06102206",
+            "source_image_message_count": 901,
+            "time_origin_absolute_s": 1581910540.2385995
+          },
+          "num_events": 7635825,
+          "num_frames": 901,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              7635825
+            ],
+            "events_ts": [
+              7635825
+            ],
+            "events_xy": [
+              7635825,
+              2
+            ],
+            "image_event_indices": [
+              901
+            ],
+            "images": [
+              901,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              901
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/slow_hand.bag",
+        "sha256": "46bf7b2785e3120b04220f6fc3a0cb8d01dd79c44d06be6518b1790d06102206",
+        "size_bytes": 138435653
+      },
+      "sequence": "slow_hand",
+      "status": "ready_unscored"
+    },
+    {
+      "evreal_memmap": {
+        "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
+        "exists": true,
+        "files": {
+          "conversion_manifest.json": {
+            "sha256": "1e57120706c7e401063e9a719acba622155017b01310a88b73ea5444d3719b34",
+            "size_bytes": 17299
+          },
+          "events_p.npy": {
+            "sha256": "842af3c4e6cc766247929eb714f5e72055dc69a1cf47d18088c63d9de15381cb",
+            "size_bytes": 42740609
+          },
+          "events_ts.npy": {
+            "sha256": "135891768a75f603be2d428c71b96917175ddb21dc8b6b3564cf28e3b04e69d3",
+            "size_bytes": 341923976
+          },
+          "events_xy.npy": {
+            "sha256": "9ce84e0ff0120df7b4e7b156e8cf19138a261b1cf3be436aad2612c5de2945de",
+            "size_bytes": 341923976
+          },
+          "image_event_indices.npy": {
+            "sha256": "2a41962d6de6879acff43aa4838f82b67e7b9938bef58613e6b603520bca1655",
+            "size_bytes": 9680
+          },
+          "images.npy": {
+            "sha256": "ec5c06abbef80c8c1e9cfd2d5753a7665b91cc5d5e75ea6459353e88405ed8fa",
+            "size_bytes": 51580928
+          },
+          "images_ts.npy": {
+            "sha256": "984b47c86d6f380d4f61b6339fdc7f5fd15ae46390b67496251b9cf7d88d5f82",
+            "size_bytes": 9680
+          },
+          "metadata.json": {
+            "sha256": "4aa9022460edabc8ded33111499f0e6cb0e3948db6c45e6ed97f624f6c73bd92",
+            "size_bytes": 1288
+          }
+        },
+        "missing_files": [],
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3/still_life",
+        "reference_images_are_evaluation_targets_only": true,
+        "schema_checks": {
+          "dtypes": {
+            "events_p": "uint8",
+            "events_ts": "float64",
+            "events_xy": "int32",
+            "image_event_indices": "int64",
+            "images": "uint8",
+            "images_ts": "float64"
+          },
+          "events_timestamp_first_s": 0.0,
+          "events_timestamp_last_s": 68.069993019104,
+          "hashes": {
+            "events_p.npy": "842af3c4e6cc766247929eb714f5e72055dc69a1cf47d18088c63d9de15381cb",
+            "events_ts.npy": "135891768a75f603be2d428c71b96917175ddb21dc8b6b3564cf28e3b04e69d3",
+            "events_xy.npy": "9ce84e0ff0120df7b4e7b156e8cf19138a261b1cf3be436aad2612c5de2945de",
+            "image_event_indices.npy": "2a41962d6de6879acff43aa4838f82b67e7b9938bef58613e6b603520bca1655",
+            "images.npy": "ec5c06abbef80c8c1e9cfd2d5753a7665b91cc5d5e75ea6459353e88405ed8fa",
+            "images_ts.npy": "984b47c86d6f380d4f61b6339fdc7f5fd15ae46390b67496251b9cf7d88d5f82",
+            "metadata.json": "4aa9022460edabc8ded33111499f0e6cb0e3948db6c45e6ed97f624f6c73bd92"
+          },
+          "images_timestamp_first_s": 0.04924821853637695,
+          "images_timestamp_last_s": 68.00105714797974,
+          "metadata": {
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
+            "event_message_type": "dvs_msgs/msg/EventArray",
+            "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
+            "event_timestamp_unit": "seconds, ROS event ts",
+            "event_topic": "/dvs/events",
+            "excluded_source_images": [],
+            "image_message_type": "sensor_msgs/msg/Image",
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
+            "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
+            "image_topic": "/dvs/image_raw",
+            "retained_image_count": 1194,
+            "sensor_resolution": [
+              180,
+              240
+            ],
+            "source_bag": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/still_life.bag",
+            "source_bag_sha256": "2b66a8656d666d819a4d7da8322718730724e1bc9f02076d6bd0d60222e88235",
+            "source_image_message_count": 1194,
+            "time_origin_absolute_s": 1581821418.3007076
+          },
+          "num_events": 42740481,
+          "num_frames": 1194,
+          "sensor_resolution_hw": [
+            180,
+            240
+          ],
+          "shapes": {
+            "events_p": [
+              42740481
+            ],
+            "events_ts": [
+              42740481
+            ],
+            "events_xy": [
+              42740481,
+              2
+            ],
+            "image_event_indices": [
+              1194
+            ],
+            "images": [
+              1194,
+              180,
+              240,
+              1
+            ],
+            "images_ts": [
+              1194
+            ]
+          }
+        }
+      },
+      "raw_bag": {
+        "exists": true,
+        "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/still_life.bag",
+        "sha256": "2b66a8656d666d819a4d7da8322718730724e1bc9f02076d6bd0d60222e88235",
+        "size_bytes": 607692313
+      },
+      "sequence": "still_life",
+      "status": "ready_unscored"
+    }
+  ],
+  "status": "ready_unscored"
+}
