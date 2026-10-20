@@ -512,6 +512,10 @@ def main() -> int:
             projection_wall_s = 0.0
             raster_wall_s = 0.0
             composition_wall_s = 0.0
+            moving_composition_wall_s = 0.0
+            static_composition_wall_s = 0.0
+            visibility_merge_wall_s = 0.0
+            moving_pair_numpy_audit_wall_s = 0.0
             roi_render_wall_s = 0.0
             roi_render_pixels = 0
             roi_repaired_pixels = 0
@@ -575,11 +579,25 @@ def main() -> int:
                         moving_refs, static_refs, pose_ids.tolist(), t,
                         prepared_static=prepared_static,
                         moving_edge_guard_px=moving_edge_guard_px,
+                        moving_composition_backend=str(candidate_cfg.get("geometry", {}).get(
+                            "moving_composition_backend", "numpy",
+                        )),
+                        audit_moving_pair_against_numpy=bool(candidate_cfg.get(
+                            "runtime", {},
+                        ).get("audit_moving_pair_against_numpy", False)),
                     )
-                    composition_wall_s += time.perf_counter() - composition_started
+                    composition_elapsed = time.perf_counter() - composition_started
+                    pair_audit_elapsed = float(comp_diag.get(
+                        "moving_pair_numpy_audit_wall_s_excluded_from_candidate_cost", 0.0,
+                    ))
+                    composition_wall_s += max(0.0, composition_elapsed - pair_audit_elapsed)
+                    moving_composition_wall_s += float(comp_diag.get("moving_composition_wall_s", 0.0))
+                    static_composition_wall_s += float(comp_diag.get("static_composition_wall_s", 0.0))
+                    visibility_merge_wall_s += float(comp_diag.get("visibility_merge_wall_s", 0.0))
+                    moving_pair_numpy_audit_wall_s += pair_audit_elapsed
                     comp_summary = {key: value for key, value in comp_diag.items()
                                     if not isinstance(value, np.ndarray)}
-                    reconstruction_wall_s += time.perf_counter() - started
+                    reconstruction_wall_s += time.perf_counter() - started - pair_audit_elapsed
                     diagnostics = {
                         "mode": "selective_multireference_surface_raster",
                         "alpha": alpha,
@@ -942,9 +960,15 @@ def main() -> int:
                         "projection": float(projection_wall_s),
                         "surface_raster": float(raster_wall_s),
                         "multireference_composition": float(composition_wall_s),
+                        "moving_frontmost_composition": float(moving_composition_wall_s),
+                        "static_frontmost_composition": float(static_composition_wall_s),
+                        "moving_static_visibility_merge": float(visibility_merge_wall_s),
                         "unattributed_overhead": float(max(0.0, reconstruction_wall_s - projection_wall_s
                                                               - raster_wall_s - composition_wall_s)),
                     },
+                    "moving_pair_numpy_audit_wall_s_excluded_from_candidate_cost": float(
+                        moving_pair_numpy_audit_wall_s
+                    ),
                     "dvs_wall_s": candidate_dvs_s,
                     "one_time_roi_setup_wall_s_amortized": float(
                         roi_camera_setup_wall_s / max(1, len(episodes))
@@ -952,13 +976,12 @@ def main() -> int:
                     ),
                     "total_production_wall_s_estimate": float(source_render_s + sum(render_time_by_time[t] for t in fallback_times)
                                                                  + roi_render_wall_s + preparation_wall_s
-                                                                 + static_preparation_wall_s
                                                                  + (roi_camera_setup_wall_s / max(1, len(episodes))
                                                                     if main_scissor_enabled else 0.0)
                                                                  + reconstruction_wall_s + candidate_dvs_s),
                     "ratio_to_all_state_direct_render_plus_dvs": float(
                         (source_render_s + sum(render_time_by_time[t] for t in fallback_times)
-                         + roi_render_wall_s + preparation_wall_s + static_preparation_wall_s
+                         + roi_render_wall_s + preparation_wall_s
                          + (roi_camera_setup_wall_s / max(1, len(episodes))
                             if main_scissor_enabled else 0.0)
                          + reconstruction_wall_s + candidate_dvs_s)
@@ -1073,8 +1096,7 @@ def main() -> int:
         "cost_accounting": {
             "candidate_total_includes": [
                 "exact selected source HDR render time",
-                "moving projection and surface-raster source preparation",
-                "static visibility and temporal-index preparation",
+                "moving projection, surface-raster, and static visibility preparation, counted once",
                 "per-query projection, rasterization, composition, and exact scissored HDR repair",
                 "candidate DVS event generation",
                 "one-time ROI/scissor installation amortized evenly across this run's episodes",
@@ -1088,6 +1110,7 @@ def main() -> int:
                 "offline segmentation audit renders and their analysis",
                 "model inference and diagnostic artifact serialization",
             ],
+            "preparation_subcomponents": "static_visibility_preparation_wall_s is a diagnostic subdivision of source_preparation_wall_s and is not added a second time.",
             "numba_jit": "JIT time is included in whichever timed source-preparation or reconstruction call first triggers compilation; the runtime log and per-component times preserve cold/warm differences.",
         },
     }

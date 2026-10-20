@@ -10,6 +10,7 @@ surface, or ambiguous equal-depth labels, remain render requests.
 
 from __future__ import annotations
 
+import time
 from typing import Iterable, Sequence
 
 import numpy as np
@@ -142,6 +143,93 @@ def _frontmost_prepared_numba_logcached(radiance, log_radiance, times, min_depth
         one_sided_counts[y] = row_one_sided
     return (blend_log, out, out_depth, out_labels, support, two_sided,
             one_sided_counts)
+
+
+@njit(cache=True, nogil=True, parallel=True)
+def _frontmost_pair_numba(radiance0, depth0, labels0, visible0,
+                          radiance1, depth1, labels1, visible1,
+                          log_radiance0, log_radiance1, time0, time1, query_time,
+                          depth_rtol, depth_atol, floor):
+    """Fuse exact two-view visibility selection without temporary source stacks."""
+    height, width = radiance0.shape
+    blend_log = np.empty((height, width), dtype=np.float64)
+    out = np.full((height, width), np.nan, dtype=np.float32)
+    out_depth = np.full((height, width), np.inf, dtype=np.float32)
+    out_labels = np.full((height, width), -1, dtype=np.int64)
+    support = np.zeros((height, width), dtype=np.bool_)
+    two_sided = np.zeros((height, width), dtype=np.bool_)
+    has_surface = np.zeros((height, width), dtype=np.bool_)
+    conflicting = np.zeros((height, width), dtype=np.bool_)
+    for y in prange(height):
+        for x in range(width):
+            r0 = radiance0[y, x]
+            r1 = radiance1[y, x]
+            z0 = depth0[y, x]
+            z1 = depth1[y, x]
+            l0 = labels0[y, x]
+            l1 = labels1[y, x]
+            ok0 = visible0[y, x] and np.isfinite(r0) and np.isfinite(z0) and z0 > 1e-6 and l0 >= 0
+            ok1 = visible1[y, x] and np.isfinite(r1) and np.isfinite(z1) and z1 > 1e-6 and l1 >= 0
+            if not ok0 and not ok1:
+                blend_log[y, x] = 0.0
+                continue
+            has_surface[y, x] = True
+            if ok0 and ok1:
+                if z0 <= z1:
+                    min_z = z0
+                    front_label = l0
+                else:
+                    min_z = z1
+                    front_label = l1
+            elif ok0:
+                min_z = z0
+                front_label = l0
+            else:
+                min_z = z1
+                front_label = l1
+            tolerance = max(depth_atol, depth_rtol * max(float(min_z), 0.0))
+            delta0 = abs(float(z0) - float(min_z)) if ok0 else np.inf
+            delta1 = abs(float(z1) - float(min_z)) if ok1 else np.inf
+            contributes0 = ok0 and l0 == front_label and delta0 <= tolerance
+            contributes1 = ok1 and l1 == front_label and delta1 <= tolerance
+            near0 = ok0 and delta0 <= tolerance
+            near1 = ok1 and delta1 <= tolerance
+            if (near0 and l0 != front_label) or (near1 and l1 != front_label):
+                conflicting[y, x] = True
+                blend_log[y, x] = 0.0
+                continue
+            before0 = contributes0 and time0 <= query_time
+            before1 = contributes1 and time1 <= query_time
+            after0 = contributes0 and time0 >= query_time
+            after1 = contributes1 and time1 >= query_time
+            has_before = before0 or before1
+            has_after = after0 or after1
+            if not has_before and not has_after:
+                blend_log[y, x] = 0.0
+                continue
+            if has_before and has_after:
+                before_index = 0 if before0 and (not before1 or time0 >= time1) else 1
+                after_index = 0 if after0 and (not after1 or time0 <= time1) else 1
+                before_time = time0 if before_index == 0 else time1
+                after_time = time0 if after_index == 0 else time1
+                span = max(after_time - before_time, 1e-12)
+                frac = min(1.0, max(0.0, (query_time - before_time) / span))
+                before_log = log_radiance0[y, x] if before_index == 0 else log_radiance1[y, x]
+                after_log = log_radiance0[y, x] if after_index == 0 else log_radiance1[y, x]
+                blend_log[y, x] = (1.0 - frac) * float(before_log) + frac * float(after_log)
+                two_sided[y, x] = True
+            elif has_before:
+                before_index = 0 if before0 else 1
+                out[y, x] = r0 if before_index == 0 else r1
+                blend_log[y, x] = 0.0
+            else:
+                after_index = 0 if after0 else 1
+                out[y, x] = r0 if after_index == 0 else r1
+                blend_log[y, x] = 0.0
+            out_depth[y, x] = min_z
+            out_labels[y, x] = front_label
+            support[y, x] = True
+    return blend_log, out, out_depth, out_labels, support, two_sided, has_surface, conflicting
 
 
 def interpolate_body_poses(poses0: dict[int, np.ndarray], poses1: dict[int, np.ndarray],
@@ -538,6 +626,8 @@ def compose_multireference_scene(
     depth_atol: float = 2e-5,
     prepared_static: dict | None = None,
     moving_edge_guard_px: int = 0,
+    moving_composition_backend: str = "numpy",
+    audit_moving_pair_against_numpy: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, object]]:
     """Merge dynamic surface warps and fixed-coordinate static observations.
 
@@ -549,15 +639,84 @@ def compose_multireference_scene(
     if not moving_references or (not static_references and prepared_static is None):
         raise ValueError("at least one moving and one static reference are required")
     moving_times = np.asarray([x["time_s"] for x in moving_references], dtype=np.float64)
-    moving = _frontmost_composite(
-        np.stack([x["radiance"] for x in moving_references]),
-        np.stack([x["depth"] for x in moving_references]),
-        np.stack([x["labels"] for x in moving_references]),
-        np.stack([x["visible"] for x in moving_references]), moving_times,
-        query_time, floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
+    moving_pair_audit = None
+    moving_pair_audit_wall_s = 0.0
+    if moving_composition_backend not in {"numpy", "numba_pair_fused"}:
+        raise ValueError(f"unsupported moving composition backend {moving_composition_backend!r}")
+    moving_started = time.perf_counter()
+    if moving_composition_backend == "numba_pair_fused":
+        if not _NUMBA_COMPOSER_AVAILABLE:
+            raise RuntimeError("numba_pair_fused moving composition requested but Numba is unavailable")
+        if len(moving_references) != 2:
+            raise ValueError("numba_pair_fused requires exactly two moving references")
+        frame0, frame1 = moving_references
+        radiance0 = np.asarray(frame0["radiance"], dtype=np.float32)
+        radiance1 = np.asarray(frame1["radiance"], dtype=np.float32)
+        log_radiance0 = np.log(np.maximum(radiance0, float(floor))).astype(np.float32)
+        log_radiance1 = np.log(np.maximum(radiance1, float(floor))).astype(np.float32)
+        (blend_log, moving_luma, moving_depth, moving_label, moving_support,
+         moving_two_sided, moving_has_surface, moving_conflicting) = _frontmost_pair_numba(
+            radiance0, np.asarray(frame0["depth"], dtype=np.float32),
+            np.asarray(frame0["labels"], dtype=np.int64), np.asarray(frame0["visible"], dtype=np.bool_),
+            radiance1, np.asarray(frame1["depth"], dtype=np.float32),
+            np.asarray(frame1["labels"], dtype=np.int64), np.asarray(frame1["visible"], dtype=np.bool_),
+            log_radiance0, log_radiance1, float(moving_times[0]), float(moving_times[1]),
+            float(query_time), float(depth_rtol), float(depth_atol), float(floor),
+        )
+        moving_luma[moving_two_sided] = np.exp(blend_log[moving_two_sided])
+        moving_stats = {
+            "valid": moving_support,
+            "supported_pixels": int(np.count_nonzero(moving_support)),
+            "two_sided_photometric_pixels": int(np.count_nonzero(moving_two_sided)),
+            "one_sided_photometric_pixels": int(np.count_nonzero(moving_support & ~moving_two_sided)),
+            "unobserved_pixels": int(np.count_nonzero(~moving_has_surface)),
+            "ambiguous_pixels": int(np.count_nonzero(moving_conflicting)),
+            "backend": "numba_pair_fused",
+        }
+        moving = moving_luma, moving_depth, moving_label, moving_stats
+        if audit_moving_pair_against_numpy:
+            audit_started = time.perf_counter()
+            numpy_moving = _frontmost_composite(
+                np.stack([x["radiance"] for x in moving_references]),
+                np.stack([x["depth"] for x in moving_references]),
+                np.stack([x["labels"] for x in moving_references]),
+                np.stack([x["visible"] for x in moving_references]), moving_times,
+                query_time, floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
+            )
+            moving_pair_audit_wall_s = time.perf_counter() - audit_started
+            ref_luma, ref_depth, ref_label, ref_stats = numpy_moving
+            ref_support = np.asarray(ref_stats["valid"], dtype=bool)
+            delta_luma = np.abs(moving_luma.astype(np.float64) - ref_luma.astype(np.float64))
+            both_finite_luma = np.isfinite(moving_luma) & np.isfinite(ref_luma)
+            both_finite_depth = np.isfinite(moving_depth) & np.isfinite(ref_depth)
+            moving_pair_audit = {
+                "support_mismatch_pixels": int(np.count_nonzero(moving_support != ref_support)),
+                "label_mismatch_pixels_on_common_support": int(np.count_nonzero(
+                    moving_support & ref_support & (moving_label != ref_label))),
+                "depth_abs_max_m_on_common_support": (
+                    float(np.max(np.abs(moving_depth[both_finite_depth] - ref_depth[both_finite_depth])))
+                    if both_finite_depth.any() else None
+                ),
+                "radiance_exact_equal_on_common_support": bool(np.array_equal(
+                    moving_luma[both_finite_luma], ref_luma[both_finite_luma])),
+                "radiance_abs_max_on_common_support": (
+                    float(np.max(delta_luma[both_finite_luma])) if both_finite_luma.any() else None
+                ),
+            }
+    else:
+        moving = _frontmost_composite(
+            np.stack([x["radiance"] for x in moving_references]),
+            np.stack([x["depth"] for x in moving_references]),
+            np.stack([x["labels"] for x in moving_references]),
+            np.stack([x["visible"] for x in moving_references]), moving_times,
+            query_time, floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
+        )
+    moving_composition_wall_s = max(
+        0.0, time.perf_counter() - moving_started - moving_pair_audit_wall_s,
     )
     moving_luma, moving_depth, moving_label, moving_stats = moving
     motion_ids = np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64)
+    static_started = time.perf_counter()
     if prepared_static is None:
         static_radiance, static_depths, static_labels = [], [], []
         for frame in static_references:
@@ -580,10 +739,12 @@ def compose_multireference_scene(
             floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
             prepared=prepared_static,
         )
+    static_composition_wall_s = time.perf_counter() - static_started
     static_luma, static_depth, static_label, static_stats = static
     moving_evidence = {key: value for key, value in moving_stats.items() if key != "valid"}
     static_evidence = {key: value for key, value in static_stats.items() if key != "valid"}
     shape = static_luma.shape
+    merge_started = time.perf_counter()
     moving_valid = np.isfinite(moving_luma) & np.isfinite(moving_depth) & (moving_label >= 0)
     static_valid_out = np.isfinite(static_luma) & np.isfinite(static_depth) & (static_label >= 0)
     edge_guard = np.zeros(shape, dtype=bool)
@@ -635,5 +796,13 @@ def compose_multireference_scene(
         "request_render": request,
         "moving_ids": motion_ids.tolist(),
         "visibility": "per-pixel nearest interpolated depth across complementary source surfaces",
+        "moving_composition_wall_s": float(moving_composition_wall_s),
+        "static_composition_wall_s": float(static_composition_wall_s),
+        "visibility_merge_wall_s": float(time.perf_counter() - merge_started),
+        "moving_composition_backend": moving_composition_backend,
+        "moving_pair_numpy_audit": moving_pair_audit,
+        "moving_pair_numpy_audit_wall_s_excluded_from_candidate_cost": float(
+            moving_pair_audit_wall_s
+        ),
     }
     return out, supported, request, diagnostics
