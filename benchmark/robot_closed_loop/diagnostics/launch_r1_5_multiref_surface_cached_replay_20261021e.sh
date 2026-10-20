@@ -17,6 +17,7 @@ if [[ "${1:-}" == "--worker" ]]; then
       --cache-root "$CACHE" \
       --scene-config "$ROOT/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json" \
       --control-config "$ROOT/benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json" \
+      --candidate-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_multiref_surface_candidate_20261021c.json" \
       --ours-checkpoint "$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
       --v2e-checkpoint "$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
       --output "$OUTPUT" \

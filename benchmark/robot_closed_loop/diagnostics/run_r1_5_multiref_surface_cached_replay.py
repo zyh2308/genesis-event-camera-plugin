@@ -48,6 +48,7 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate imp
     compose_multireference_scene,
     interpolate_body_poses,
     prepare_moving_projection_source,
+    prepare_static_reference_composite,
     project_moving_source_to_target,
 )
 from genesis_event_plugin.dvs_emulator import DvsEmulator
@@ -214,6 +215,7 @@ def main() -> int:
                         help="previous R1.5 native_hdr_cutoff059 cache with episode_004/005 trace_window.jsonl")
     parser.add_argument("--scene-config", type=Path, required=True)
     parser.add_argument("--control-config", type=Path, required=True)
+    parser.add_argument("--candidate-config", type=Path, required=True)
     parser.add_argument("--ours-checkpoint", type=Path, required=True)
     parser.add_argument("--v2e-checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -229,6 +231,7 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=False)
     scene_cfg = json.loads(args.scene_config.read_text(encoding="utf-8"))
     scene_cfg["shared_control"] = json.loads(args.control_config.read_text(encoding="utf-8"))
+    candidate_cfg = json.loads(args.candidate_config.read_text(encoding="utf-8"))
     cache_root = args.cache_root.resolve()
     episodes = [4, 5]
     traces = {}
@@ -256,8 +259,7 @@ def main() -> int:
     inputs[str(candidate_path.resolve())] = _sha256(candidate_path.resolve())
     multiref_path = Path(__file__).with_name("r1_5_multiref_surface_candidate.py")
     inputs[str(multiref_path.resolve())] = _sha256(multiref_path.resolve())
-    candidate_config = ROOT / "benchmark/robot_closed_loop/configs/r1_5_multiref_surface_candidate_20261021c.json"
-    inputs[str(candidate_config.resolve())] = _sha256(candidate_config.resolve())
+    inputs[str(args.candidate_config.resolve())] = _sha256(args.candidate_config.resolve())
     for path in (args.ours_checkpoint, args.v2e_checkpoint):
         inputs[str(path.resolve())] = _sha256(path.resolve())
 
@@ -351,6 +353,15 @@ def main() -> int:
                 frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
                 raster_labels=set(pose_ids.tolist()),
             ) for frame in source_frames]
+            static_refs = [{
+                "time_s": float(source["time_s"]), "radiance": source["radiance_luma"],
+                "depth": source["depth"], "labels": source["segmentation"],
+            } for source in source_frames]
+            static_prepare_started = time.perf_counter()
+            prepared_static = prepare_static_reference_composite(
+                static_refs, pose_ids.tolist(), [float(row["time_s"]) for row in trace],
+            )
+            static_preparation_wall_s = time.perf_counter() - static_prepare_started
             preparation_wall_s = time.perf_counter() - preparation_started
 
             candidate_frames = []
@@ -406,13 +417,10 @@ def main() -> int:
                             "depth": warped[1], "labels": warped[2], "visible": warped[3],
                         })
                         raster_diagnostics.append(warped[4])
-                    static_refs = [{
-                        "time_s": float(source["time_s"]), "radiance": source["radiance_luma"],
-                        "depth": source["depth"], "labels": source["segmentation"],
-                    } for source in source_frames]
                     composition_started = time.perf_counter()
                     candidate_pre_fallback, candidate_valid, request_mask, comp_diag = compose_multireference_scene(
                         moving_refs, static_refs, pose_ids.tolist(), t,
+                        prepared_static=prepared_static,
                     )
                     composition_wall_s += time.perf_counter() - composition_started
                     comp_summary = {key: value for key, value in comp_diag.items()
@@ -449,6 +457,13 @@ def main() -> int:
                                  - np.log(np.maximum(direct_luma, 1e-6)))
                     target_mask = np.isin(direct["segmentation"], target_ids)
                     robot_mask = np.isin(direct["segmentation"], robot_ids)
+                    candidate_labels = np.asarray(comp_diag["target_labels"], dtype=np.int64)
+                    candidate_depth = np.asarray(comp_diag["target_depth"], dtype=np.float32)
+                    direct_labels = np.asarray(direct["segmentation"], dtype=np.int64)
+                    direct_depth = np.asarray(direct["depth"], dtype=np.float32)
+                    depth_compare = evaluated & np.isfinite(candidate_depth) & np.isfinite(direct_depth)
+                    same_label = depth_compare & (candidate_labels == direct_labels)
+                    depth_error = np.abs(candidate_depth - direct_depth)
                     frame_metrics.append({
                         "time_s": t, "source_lo_s": lower_time, "source_hi_s": upper_time,
                         "alpha": alpha, "render_request_fraction": float(request_mask.mean()),
@@ -459,6 +474,13 @@ def main() -> int:
                         "log_abs_error_p95_target": float(np.percentile(err[evaluated & target_mask], 95)) if np.any(evaluated & target_mask) else None,
                         "log_abs_error_p95_robot": float(np.percentile(err[evaluated & robot_mask], 95)) if np.any(evaluated & robot_mask) else None,
                         "log_abs_error_p95_background": float(np.percentile(err[evaluated & ~(target_mask | robot_mask)], 95)) if np.any(evaluated & ~(target_mask | robot_mask)) else None,
+                        "supported_segmentation_agreement_fraction": float(np.mean(candidate_labels[evaluated] == direct_labels[evaluated])) if evaluated.any() else None,
+                        "supported_segmentation_mismatch_pixels": int(np.count_nonzero(evaluated & (candidate_labels != direct_labels))),
+                        "supported_depth_abs_p95_m": float(np.percentile(depth_error[depth_compare], 95)) if depth_compare.any() else None,
+                        "supported_depth_abs_p99_m": float(np.percentile(depth_error[depth_compare], 99)) if depth_compare.any() else None,
+                        "supported_depth_abs_p95_same_label_m": float(np.percentile(depth_error[same_label], 95)) if same_label.any() else None,
+                        "supported_depth_compared_pixels": int(depth_compare.sum()),
+                        "supported_depth_same_label_pixels": int(same_label.sum()),
                         "valid_radiance_p01_p50_p99": np.percentile(candidate_pre_fallback[np.isfinite(candidate_pre_fallback)], [1, 50, 99]).tolist(),
                         "direct_radiance_p01_p50_p99": np.percentile(direct_luma, [1, 50, 99]).tolist(),
                         "diagnostics": diagnostics,
@@ -468,6 +490,19 @@ def main() -> int:
 
             candidate_events, candidate_dvs_s = _events_from_frames(candidate_frames)
             direct_events, direct_dvs_s = _events_from_frames(direct_frames)
+            unsupported_direct_events = 0
+            supported_direct_events = 0
+            for idx in range(1, len(times)):
+                lo, hi = times[idx - 1], times[idx]
+                interval_events = direct_events[(direct_events[:, 0] > lo) &
+                                                (direct_events[:, 0] <= hi)] if len(direct_events) else direct_events
+                if not len(interval_events):
+                    continue
+                ex = interval_events[:, 1].astype(np.int64)
+                ey = interval_events[:, 2].astype(np.int64)
+                unsupported = candidate_request_masks[idx - 1, ey, ex] | candidate_request_masks[idx, ey, ex]
+                unsupported_direct_events += int(unsupported.sum())
+                supported_direct_events += int((~unsupported).sum())
             ep_output = output / f"episode_{episode_id:03d}"
             ep_output.mkdir(parents=True, exist_ok=False)
             np.savez_compressed(ep_output / "candidate_surface_raw_events.npz", events=candidate_events)
@@ -546,6 +581,7 @@ def main() -> int:
                     "full_frame_fallback_times_s": fallback_times,
                     "fallback_render_wall_s": float(sum(render_time_by_time[t] for t in fallback_times)),
                     "source_preparation_wall_s": float(preparation_wall_s),
+                    "static_visibility_preparation_wall_s": float(static_preparation_wall_s),
                     "reconstruction_wall_s": reconstruction_wall_s,
                     "reconstruction_components_wall_s": {
                         "projection": float(projection_wall_s),
@@ -558,6 +594,16 @@ def main() -> int:
                     "total_production_wall_s_estimate": float(source_render_s + sum(render_time_by_time[t] for t in fallback_times)
                                                                  + preparation_wall_s + reconstruction_wall_s + candidate_dvs_s),
                     "event_count": int(len(candidate_events)), "region_event_counts": candidate_region,
+                    "request_mask_event_sensitivity_only": {
+                        "interpretation": "Direct-reference events located on pixels lacking candidate support at either adjacent frame; a sensitivity diagnostic only, not a postprocessed candidate event stream.",
+                        "unsupported_pixel_interval_fraction": float(np.mean(
+                            np.stack(candidate_request_masks[:-1]) |
+                            np.stack(candidate_request_masks[1:]))),
+                        "direct_events_on_unsupported_pixel_intervals": int(unsupported_direct_events),
+                        "direct_events_on_supported_pixel_intervals": int(supported_direct_events),
+                        "direct_event_fraction_on_unsupported_pixel_intervals": float(
+                            unsupported_direct_events / max(1, len(direct_events))),
+                    },
                     "positive_events": int(np.count_nonzero(candidate_events[:, 3] > 0)) if len(candidate_events) else 0,
                     "negative_events": int(np.count_nonzero(candidate_events[:, 3] < 0)) if len(candidate_events) else 0,
                     "query_window_event_counts": {
@@ -597,11 +643,11 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(inference_records)
     summary = {
-        "experiment_id": "r1_5_multiref_surface_cached_replay_20261021e",
+        "experiment_id": str(candidate_cfg["experiment_id"]),
         "code_commit": __import__("subprocess").check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "frozen_core_base": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
         "frozen_core_modified": False,
-        "candidate_config_sha256": _sha256(ROOT / "benchmark/robot_closed_loop/configs/r1_5_multiref_surface_candidate_20261021c.json"),
+        "candidate_config_sha256": _sha256(args.candidate_config.resolve()),
         "inputs_sha256": inputs,
         "checkpoint_sha256": checkpoint_hashes,
         "scene_and_rig": {"camera_resolution_wh": [width, height], "vertical_fov_deg": fov,

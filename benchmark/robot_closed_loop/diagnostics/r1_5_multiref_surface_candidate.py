@@ -145,6 +145,7 @@ def _frontmost_composite(
     floor: float,
     depth_rtol: float,
     depth_atol: float,
+    prepared: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, int]]:
     """Z-select surface evidence and interpolate only observations of that surface."""
     radiance = np.asarray(radiance, dtype=np.float32)
@@ -157,35 +158,31 @@ def _frontmost_composite(
     if times.shape != (radiance.shape[0],) or not np.isfinite(times).all():
         raise ValueError("times must provide one finite timestamp per source")
 
-    masked_depth = np.where(valid, depth, np.inf)
-    min_depth = np.min(masked_depth, axis=0)
-    has_surface = np.isfinite(min_depth)
-    nearest_idx = np.argmin(masked_depth, axis=0)
-    front_label = np.take_along_axis(labels, nearest_idx[None, ...], axis=0)[0]
-    depth_tol = np.maximum(float(depth_atol), float(depth_rtol) * np.maximum(min_depth, 0.0))
-    contributors = valid & (labels == front_label[None, ...])
-    depth_delta = np.zeros_like(depth, dtype=np.float32)
-    np.subtract(depth, min_depth[None, ...], out=depth_delta,
-                where=np.isfinite(depth) & np.isfinite(min_depth[None, ...]))
-    depth_delta = np.abs(depth_delta)
-    contributors &= depth_delta <= depth_tol[None, ...]
-    # Distinct surfaces within the numerical coincidence band are not ordered
-    # confidently. They are left unknown instead of hiding one arbitrarily.
-    conflicting = np.zeros_like(has_surface)
-    # Detect another segmentation surface at the same depth within the local
-    # numerical band; such a contact/interpenetration is not tie-broken.
-    near = valid & (depth_delta <= depth_tol[None, ...])
-    for i in range(radiance.shape[0]):
-        conflicting |= near[i] & (labels[i] != front_label)
-
-    before_scores = np.where(contributors & (times[:, None, None] <= query_time),
-                             times[:, None, None], -np.inf)
-    after_scores = np.where(contributors & (times[:, None, None] >= query_time),
-                            times[:, None, None], np.inf)
-    before_idx = np.argmax(before_scores, axis=0)
-    after_idx = np.argmin(after_scores, axis=0)
-    has_before = np.isfinite(np.max(before_scores, axis=0))
-    has_after = np.isfinite(np.min(after_scores, axis=0))
+    if prepared is None:
+        min_depth, has_surface, front_label, contributors, conflicting = _prepare_frontmost_geometry(
+            depth, labels, valid, depth_rtol=depth_rtol, depth_atol=depth_atol,
+        )
+        before_scores = np.where(contributors & (times[:, None, None] <= query_time),
+                                 times[:, None, None], -np.inf)
+        after_scores = np.where(contributors & (times[:, None, None] >= query_time),
+                                times[:, None, None], np.inf)
+        before_idx = np.argmax(before_scores, axis=0)
+        after_idx = np.argmin(after_scores, axis=0)
+        has_before = np.isfinite(np.max(before_scores, axis=0))
+        has_after = np.isfinite(np.min(after_scores, axis=0))
+    else:
+        if tuple(prepared["radiance"].shape) != tuple(radiance.shape):
+            raise ValueError("prepared static references do not match radiance shape")
+        min_depth = prepared["min_depth"]
+        has_surface = prepared["has_surface"]
+        front_label = prepared["front_label"]
+        conflicting = prepared["conflicting"]
+        key = round(float(query_time), 9)
+        if key not in prepared["query_indices"]:
+            raise ValueError(f"query time {key} was not prepared for static references")
+        before_idx, after_idx, has_before, has_after = prepared["query_indices"][key]
+        radiance = prepared["radiance"]
+        times = prepared["times"]
     two_sided = has_before & has_after
     one_sided = has_before ^ has_after
     before_value = np.take_along_axis(radiance, before_idx[None, ...], axis=0)[0]
@@ -217,6 +214,102 @@ def _frontmost_composite(
     return out, out_depth, out_labels, {"valid": support, **stats}
 
 
+def _prepare_frontmost_geometry(
+    depth: np.ndarray,
+    labels: np.ndarray,
+    valid: np.ndarray,
+    *,
+    depth_rtol: float,
+    depth_atol: float,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Compute time-invariant nearest-surface and ambiguity evidence."""
+    masked_depth = np.where(valid, depth, np.inf)
+    min_depth = np.min(masked_depth, axis=0)
+    has_surface = np.isfinite(min_depth)
+    nearest_idx = np.argmin(masked_depth, axis=0)
+    front_label = np.take_along_axis(labels, nearest_idx[None, ...], axis=0)[0]
+    depth_tol = np.maximum(float(depth_atol), float(depth_rtol) * np.maximum(min_depth, 0.0))
+    contributors = valid & (labels == front_label[None, ...])
+    depth_delta = np.zeros_like(depth, dtype=np.float32)
+    np.subtract(depth, min_depth[None, ...], out=depth_delta,
+                where=np.isfinite(depth) & np.isfinite(min_depth[None, ...]))
+    depth_delta = np.abs(depth_delta)
+    contributors &= depth_delta <= depth_tol[None, ...]
+    # Distinct surfaces in the numerical coincidence band stay unknown.
+    near = valid & (depth_delta <= depth_tol[None, ...])
+    conflicting = np.zeros_like(has_surface)
+    for i in range(depth.shape[0]):
+        conflicting |= near[i] & (labels[i] != front_label)
+    return min_depth, has_surface, front_label, contributors, conflicting
+
+
+def prepare_static_reference_composite(
+    static_references: Sequence[dict],
+    moving_ids: Iterable[int],
+    query_times: Iterable[float],
+    *,
+    floor: float = 1e-6,
+    depth_rtol: float = 1e-3,
+    depth_atol: float = 2e-5,
+) -> dict:
+    """Cache fixed-camera static visibility and temporal source indices.
+
+    Static depth/segmentation never changes in this benchmark. Recomputing a
+    five-view z-selection at every sub-millisecond query wastes CPU while
+    preserving no additional geometry information. This cache stores only
+    source-derived visibility and before/after source indices; per-query
+    radiance interpolation remains exact to the uncached implementation.
+    """
+    if not static_references:
+        raise ValueError("at least one static reference is required")
+    motion_ids = np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64)
+    radiance = np.stack([np.asarray(frame["radiance"], dtype=np.float32)
+                         for frame in static_references])
+    depths, labels = [], []
+    for frame in static_references:
+        frame_labels = np.asarray(frame["labels"], dtype=np.int64)
+        dynamic_mask = np.isin(frame_labels, motion_ids)
+        depths.append(np.where(dynamic_mask, np.inf, frame["depth"]).astype(np.float32))
+        labels.append(np.where(dynamic_mask, -1, frame_labels).astype(np.int64))
+    depth = np.stack(depths)
+    labels = np.stack(labels)
+    valid = np.isfinite(radiance) & np.isfinite(depth) & (depth > 1e-6) & (labels >= 0)
+    times = np.asarray([x["time_s"] for x in static_references], dtype=np.float64)
+    if times.ndim != 1 or not np.isfinite(times).all() or np.any(np.diff(times) < 0):
+        raise ValueError("static source times must be finite and nondecreasing")
+    min_depth, has_surface, front_label, contributors, conflicting = _prepare_frontmost_geometry(
+        depth, labels, valid, depth_rtol=depth_rtol, depth_atol=depth_atol,
+    )
+    query_indices = {}
+    for query_time in query_times:
+        q = float(query_time)
+        before_scores = np.where(contributors & (times[:, None, None] <= q),
+                                 times[:, None, None], -np.inf)
+        after_scores = np.where(contributors & (times[:, None, None] >= q),
+                                times[:, None, None], np.inf)
+        before_idx = np.argmax(before_scores, axis=0)
+        after_idx = np.argmin(after_scores, axis=0)
+        has_before = np.isfinite(np.max(before_scores, axis=0))
+        has_after = np.isfinite(np.min(after_scores, axis=0))
+        query_indices[round(q, 9)] = (before_idx, after_idx, has_before, has_after)
+    return {
+        "radiance": radiance,
+        "depth": depth,
+        "labels": labels,
+        "valid": valid,
+        "times": times,
+        "min_depth": min_depth,
+        "has_surface": has_surface,
+        "front_label": front_label,
+        "contributors": contributors,
+        "conflicting": conflicting,
+        "query_indices": query_indices,
+        "floor": float(floor),
+        "depth_rtol": float(depth_rtol),
+        "depth_atol": float(depth_atol),
+    }
+
+
 def compose_multireference_scene(
     moving_references: Sequence[dict],
     static_references: Sequence[dict],
@@ -226,6 +319,7 @@ def compose_multireference_scene(
     floor: float = 1e-6,
     depth_rtol: float = 1e-3,
     depth_atol: float = 2e-5,
+    prepared_static: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, object]]:
     """Merge dynamic surface warps and fixed-coordinate static observations.
 
@@ -234,7 +328,7 @@ def compose_multireference_scene(
     complementary views. No-source and depth-conflict pixels request a real
     render.
     """
-    if not moving_references or not static_references:
+    if not moving_references or (not static_references and prepared_static is None):
         raise ValueError("at least one moving and one static reference are required")
     moving_times = np.asarray([x["time_s"] for x in moving_references], dtype=np.float64)
     moving = _frontmost_composite(
@@ -246,20 +340,28 @@ def compose_multireference_scene(
     )
     moving_luma, moving_depth, moving_label, moving_stats = moving
     motion_ids = np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64)
-    static_radiance, static_depths, static_labels = [], [], []
-    for frame in static_references:
-        labels = np.asarray(frame["labels"], dtype=np.int64)
-        dynamic_mask = np.isin(labels, motion_ids)
-        static_radiance.append(np.asarray(frame["radiance"], dtype=np.float32))
-        static_depths.append(np.where(dynamic_mask, np.inf, frame["depth"]).astype(np.float32))
-        static_labels.append(np.where(dynamic_mask, -1, labels).astype(np.int64))
-    static_valid = np.stack([np.isfinite(z) & (z > 1e-6) & (l >= 0)
-                             for z, l in zip(static_depths, static_labels)])
-    static = _frontmost_composite(
-        np.stack(static_radiance), np.stack(static_depths), np.stack(static_labels),
-        static_valid, np.asarray([x["time_s"] for x in static_references], dtype=np.float64),
-        query_time, floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
-    )
+    if prepared_static is None:
+        static_radiance, static_depths, static_labels = [], [], []
+        for frame in static_references:
+            labels = np.asarray(frame["labels"], dtype=np.int64)
+            dynamic_mask = np.isin(labels, motion_ids)
+            static_radiance.append(np.asarray(frame["radiance"], dtype=np.float32))
+            static_depths.append(np.where(dynamic_mask, np.inf, frame["depth"]).astype(np.float32))
+            static_labels.append(np.where(dynamic_mask, -1, labels).astype(np.int64))
+        static_valid = np.stack([np.isfinite(z) & (z > 1e-6) & (l >= 0)
+                                 for z, l in zip(static_depths, static_labels)])
+        static = _frontmost_composite(
+            np.stack(static_radiance), np.stack(static_depths), np.stack(static_labels),
+            static_valid, np.asarray([x["time_s"] for x in static_references], dtype=np.float64),
+            query_time, floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
+        )
+    else:
+        static = _frontmost_composite(
+            prepared_static["radiance"], prepared_static["depth"], prepared_static["labels"],
+            prepared_static["valid"], prepared_static["times"], query_time,
+            floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
+            prepared=prepared_static,
+        )
     static_luma, static_depth, static_label, static_stats = static
     moving_evidence = {key: value for key, value in moving_stats.items() if key != "valid"}
     static_evidence = {key: value for key, value in static_stats.items() if key != "valid"}

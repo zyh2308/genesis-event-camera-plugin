@@ -12,6 +12,7 @@ import numpy as np
 from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
     compose_multireference_scene,
     prepare_moving_projection_source,
+    prepare_static_reference_composite,
     project_moving_source_to_target,
 )
 from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate import (
@@ -150,7 +151,46 @@ def run_controls() -> dict:
     assert not valid[0, 0] and request[0, 0] and np.isnan(image[0, 0])
     tests["unobserved_surface_requests_render"] = {"pass": True,
                                                     "request_fraction": diag["render_request_fraction"]}
-    return {"suite": "r1_5_multiref_surface_controls_20261021e",
+
+    # Static geometry is fixed in this benchmark. The prepared visibility
+    # cache must preserve the exact same support, depth, label, and radiance
+    # decisions as recomputing the five-view z-selection for every query.
+    static_refs = [
+        _ref(0.0, [[0.10, 0.20], [0.30, 0.40]],
+             [[2.0, 2.0], [2.0, 2.0]], [[3, 3], [3, 3]]),
+        _ref(0.5, [[0.12, 0.22], [0.32, 0.42]],
+             [[2.0, 2.0], [2.0, 2.0]], [[3, 3], [3, 3]]),
+        _ref(1.0, [[0.14, 0.24], [0.34, 0.44]],
+             [[2.0, 2.0], [2.0, 2.0]], [[3, 3], [3, 3]]),
+    ]
+    moving_refs = [
+        _ref(0.0, [[np.nan, np.nan], [np.nan, np.nan]],
+             [[np.inf, np.inf], [np.inf, np.inf]], [[-1, -1], [-1, -1]],
+             [[False, False], [False, False]]),
+        _ref(0.5, [[np.nan, 0.9], [np.nan, np.nan]],
+             [[np.inf, 1.0], [np.inf, np.inf]], [[-1, 10], [-1, -1]],
+             [[False, True], [False, False]]),
+        _ref(1.0, [[np.nan, np.nan], [np.nan, np.nan]],
+             [[np.inf, np.inf], [np.inf, np.inf]], [[-1, -1], [-1, -1]],
+             [[False, False], [False, False]]),
+    ]
+    static_cache = prepare_static_reference_composite(
+        static_refs, [10], [0.25, 0.5, 0.75],
+    )
+    for q in [0.25, 0.5, 0.75]:
+        reference = compose_multireference_scene(moving_refs, static_refs, [10], q)
+        cached = compose_multireference_scene(
+            moving_refs, static_refs, [10], q, prepared_static=static_cache,
+        )
+        assert np.array_equal(reference[0], cached[0], equal_nan=True)
+        assert np.array_equal(reference[1], cached[1])
+        assert np.array_equal(reference[2], cached[2])
+        assert np.array_equal(reference[3]["target_labels"], cached[3]["target_labels"])
+        assert np.array_equal(reference[3]["target_depth"], cached[3]["target_depth"])
+    tests["prepared_static_visibility_matches_uncached_bitwise"] = {
+        "pass": True, "queries": 3, "evidence": "radiance/support/request/label/depth exact match",
+    }
+    return {"suite": "r1_5_multiref_surface_controls_20261021f",
             "tests": tests, "all_pass": all(x["pass"] for x in tests.values()),
             "wall_s": time.perf_counter() - started,
             "frozen_simulator_core_modified": False}
