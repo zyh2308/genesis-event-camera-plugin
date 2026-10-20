@@ -64,11 +64,11 @@ V2E 同样已产出200张 float32 重建和指标文件（run：`/home/zhaoyuhan
 
 ## MVSEC dt1 协议与真实文件准备
 
-协议候选明确为 `indoor_flying1/2/3` 与 `outdoor_day1`，真实评分继续关闭。主候选使用四条序列的原生 `260×346` 画幅；已并列记录 STE 官方旧代码的中心裁剪（室内 `y=[2,258), x=[45,301)`；outdoor 在该裁剪后仅取前190行）作为兼容诊断，论文定义并没有规定这个矩形 crop，需研究审查冻结。事件窗使用 APS 时间戳 `(t_i,t_{i+1}]`；GT 是到下一 GT 时间戳的位移，按锁定的 STE `estimate_corresponding_gt_flow` 语义传播；共同支持为有限非零 GT 与两个候选共用的事件活跃区。AEE 和 `EPE>3px AND EPE>5%|GT|` 的 Outlier 定义、空窗口与四序列等权汇总都写入 [dt1 协议候选](protocol/mvsec_dt1_protocol_candidate_20261019.json)，两模型权重通过 `checkpoint_binding` 绑定。
+协议候选明确为 `indoor_flying1/2/3` 与 `outdoor_day1`，真实评分继续关闭。主候选使用四条序列的原生 `260×346` 画幅；已并列记录 STE 官方旧代码的中心裁剪（室内 `y=[2,258), x=[45,301)`；outdoor 在该裁剪后仅取前190行）作为兼容诊断，论文定义并没有规定这个矩形 crop，需研究审查冻结。事件窗使用 APS 时间戳 `(t_i,t_{i+1}]`；GT 是到下一 GT 时间戳的位移，按锁定的 STE `estimate_corresponding_gt_flow` 语义传播；共同支持为有限非零 GT 与两个候选共用的事件活跃区。AEE 和 `EPE>3px AND EPE>5%|GT|` 的 Outlier 定义、空窗口与四序列等权汇总都写入 [dt1 协议候选 v2](protocol/mvsec_dt1_protocol_candidate_20261021_v2.json)，两模型权重通过 `checkpoint_binding` 绑定。复核发现2019版协议的 checkpoint selection 文本误写为 synthetic LPIPS；与45轮归档不符。v2据归档曲线/summary修正为历史 full-valid synthetic EPE best，epoch33/20权重和哈希不变；新 active-union 规则仍只适用于未来独立版本。
 
 真实文件盘点发现：g1 的旧 Stage-3 目录目前只存有 `indoor_flying1` 的1秒数据/GT切片和室内标定，完整四序列文件为0/4；WSL 本地留有完整 `indoor_flying1` HDF5 1.70 GB/3.37 GB，其余三条不在本地或 g1。官方 [MVSEC 下载页](https://daniilidis-group.github.io/mvsec/download/)公开提供 HDF5 文件目录；已从该目录解析本候选八个 HDF5 文件及室内/室外两份标定 ZIP 的 Drive ID，机器索引见 [官方 HDF5 文件索引](evidence/S5/20261021-recon-flow-localization/mvsec_official_hdf5_source_index_20261021.json)。新版本候选清单将其下载目标隔离到 g1 `data/sim2real/stage5/real/MVSEC/`，并绑定 seed0 synthetic-best checkpoint：EG epoch33 `a4e6c7e1…c824a8e`、V2E epoch20 `11041863…cd474`；索引见 [dt1 candidate manifest v2](manifests/mvsec_dt1_test_manifest_candidate_20261021_v2.json)。清单的窗口暂时为空，完整 HDF5 到达后仍要按注册规则枚举所有时间合格窗口、时间戳和 event index，不读取模型输出，不因空事件区丢窗口。
 
-新增 [`download_mvsec_candidate_hdf5.py`](scripts/download_mvsec_candidate_hdf5.py)：按文件串行下载、原子更新路径/大小/SHA256清单，校验 HDF5 必需字段、传感器形状和时间戳，保留旧 Stage-3 文件、不覆盖已有未登记文件；不加载模型、不计算分数。下载启动/完成状态将由独立机器日志记录。当前 g1 仍以“1秒固定片段”作为唯一实际测试数据；协议准备不等于完整四序列数据已在 g1，也不等于正式评分通过。
+新增 [`download_mvsec_candidate_hdf5.py`](scripts/download_mvsec_candidate_hdf5.py)：按文件串行下载、原子更新路径/大小/SHA256清单，校验 HDF5 必需字段、传感器形状和时间戳，保留旧 Stage-3 文件、不覆盖已有未登记文件；不加载模型、不计算分数。监督启动入口为 `scripts/run_mvsec_candidate_download_server.sh`；g1 下载进程和完成状态会保存在独立 tmux run 目录。完整四序列数据仍需实际下载和注册；协议准备不等于真实评分通过。
 
 全入口合成检查已在本次再次运行：`python3 benchmark/sim2real/scripts/stage4_mvsec_dt1_metrics.py --self-test` 退出0，手算 AEE `2.5 px`、Outlier `25%`，确认空公共支持返回 undefined、outdoor legacy ROI 边界、候选权重哈希错误拒绝、manifest 到 checkpoint SHA 绑定以及未授权真实评分 fail-closed。回执位于 `evidence/S5/20261021-recon-flow-localization/mvsec_candidate_full_entry_selftest_20261021/`；不读取真实输入或模型权重。
 
