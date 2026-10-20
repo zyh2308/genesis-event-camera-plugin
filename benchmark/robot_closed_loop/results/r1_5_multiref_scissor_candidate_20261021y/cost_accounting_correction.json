@@ -1,0 +1,33 @@
+{
+  "experiment_id": "r1_5_multiref_scissor_candidate_20261021y",
+  "purpose": "post-run correction for an accounting defect: the static query-index NumPy audit time was labeled excluded but remained inside source_preparation_wall_s and total_production_wall_s_estimate",
+  "run_code_commit": "7cba3710a19a96ebf55b2ff0a5ab24843d35a54d",
+  "accounting_fix_commit": "91dff951cd6093b8db222c5c63a92936427553bc",
+  "original_summary_sha256": "f410a3e9252c86348074b04f1e18ee46dc732bca39026de6db63a432dec69576",
+  "original_output_manifest_sha256": "817c6a4934d190e4213de085d81162df5b70c17c202af74f6f68ac2600a93793",
+  "correction": "subtract only the separately timed NumPy query-index equivalence audit; retain Numba query-index build/JIT time in candidate production time",
+  "episodes": {
+    "4": {
+      "reported_candidate_total_wall_s": 9.5357969943434,
+      "numpy_audit_wall_s": 0.20898271910846233,
+      "corrected_candidate_total_wall_s": 9.326814275234938,
+      "direct_total_wall_s": 0.8742470480501652,
+      "corrected_candidate_to_direct_ratio": 10.668396646047075
+    },
+    "5": {
+      "reported_candidate_total_wall_s": 1.797969177365303,
+      "numpy_audit_wall_s": 0.20980148948729038,
+      "corrected_candidate_total_wall_s": 1.5881676878780127,
+      "direct_total_wall_s": 0.8944482579827309,
+      "corrected_candidate_to_direct_ratio": 1.7755836334902622
+    }
+  },
+  "batch": {
+    "reported_candidate_total_wall_s": 11.333766171708703,
+    "numpy_audit_wall_s": 0.4187842085957527,
+    "corrected_candidate_total_wall_s": 10.91498196311295,
+    "direct_total_wall_s": 1.768695306032896,
+    "corrected_candidate_to_direct_ratio": 6.171205365832493
+  },
+  "note": "Original summary.json and SHA256SUMS remain unchanged and verifiable. This addendum preserves the actual candidate work while removing only diagnostic comparison time from reported production cost."
+}

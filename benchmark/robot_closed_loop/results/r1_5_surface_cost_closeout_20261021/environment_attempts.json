@@ -1,0 +1,43 @@
+{
+  "candidate_backend": "torch_cuda_scatter",
+  "device": "Tesla V100S-PCIE-32GB, physical GPU index 2 exposed through CUDA_VISIBLE_DEVICES=2",
+  "attempts": [
+    {
+      "run_id": "r1_5_multiref_scissor_candidate_20261021ab",
+      "status": "failed_before_valid_result",
+      "exit_code": 1,
+      "reason": "initial independent-label Numba raster implementation imported njit but omitted prange",
+      "log_path": "benchmark/robot_closed_loop/results/runtime_logs/r1_5_multiref_scissor_candidate_20261021ab/run.log",
+      "log_sha256": "c2d30cd3f74966e97d498958afe80643fa5fddb391fede94137a299b26fa07f8"
+    },
+    {
+      "run_id": "r1_5_multiref_scissor_candidate_20261021ad",
+      "status": "failed_before_render",
+      "exit_code": 1,
+      "reason": "stock conda Genesis package did not include the installed HDR overlay API; renderer call rejected the radiance keyword",
+      "log_path": "benchmark/robot_closed_loop/results/runtime_logs/r1_5_multiref_scissor_candidate_20261021ad/run.log",
+      "log_sha256": "5eb9f19f81491bb20e0ec45d75531e4320febb16f9f8928bcd1d3eaa3c106244"
+    },
+    {
+      "run_id": "r1_5_multiref_scissor_candidate_20261021ae",
+      "status": "completed",
+      "exit_code": 0,
+      "code_commit": "1f5c1815490f45d00ef61f6d6f167ae31f614017",
+      "environment": "Eventbased_WAM PyTorch 2.5.1+cu121 plus the installed Genesis 1.2.2 HDR-overlay package code from .venv-robot; Genesis emitted its unsupported-Torch-version warning",
+      "cache_rerender_validation": "Both episodes had five source-endpoint and ten dense direct-HDR rerender checks; all HDR/luminance/depth errors and segmentation mismatches were zero.",
+      "result_manifest_sha256": "75aa1a4c0374b1fd1c9ee9a9d5f954cbbc4dd112057780c332b42c43d4e64cb8",
+      "runtime_log_sha256": "e0768a03a59164fb7c707239955d3a9d9e12a68774feb5030e0219bd7bc71765"
+    }
+  ],
+  "kernel_smokes": {
+    "pytorch_cuda_scatter_reduce": {
+      "status": "passed",
+      "device": "Tesla V100S-PCIE-32GB",
+      "result": "amin scatter_reduce and scatter_add returned the expected values"
+    },
+    "numba_cuda_compile": {
+      "status": "failed_for_toolchain_reason",
+      "reason": "Numba found the CUDA device but the installed CUDA Toolkit 10.1/NVVM did not expose a supported compute capability; a minimal kernel failed compilation before any raster experiment"
+    }
+  }
+}
