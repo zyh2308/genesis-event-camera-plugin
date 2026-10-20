@@ -283,7 +283,8 @@ def main() -> int:
             direct_events = full_events
             rows_path = output / f"episode_{episode_id:03d}_per_frame.csv"
             with rows_path.open("w", newline="", encoding="utf-8") as stream:
-                writer = csv.DictWriter(stream, fieldnames=list(rows_out[0]))
+                fieldnames = list(dict.fromkeys(key for row in rows_out for key in row))
+                writer = csv.DictWriter(stream, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(rows_out)
             event_match = {
