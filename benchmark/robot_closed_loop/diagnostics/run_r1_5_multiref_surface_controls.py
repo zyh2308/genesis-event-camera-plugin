@@ -128,6 +128,26 @@ def run_controls() -> dict:
     tests["static_surface_in_front"] = {"pass": True, "chosen_radiance": float(image[0, 0]),
                                          "static_front_fraction": diag["static_front_fraction"]}
 
+    static_sheet = [_ref(0.0, np.full((5, 5), 0.1), np.full((5, 5), 2.0),
+                         np.full((5, 5), 3))]
+    center_rad = np.full((5, 5), np.nan, dtype=np.float32)
+    center_depth = np.full((5, 5), np.inf, dtype=np.float32)
+    center_label = np.full((5, 5), -1, dtype=np.int64)
+    center_valid = np.zeros((5, 5), dtype=bool)
+    center_rad[2, 2], center_depth[2, 2], center_label[2, 2], center_valid[2, 2] = 0.8, 0.5, 10, True
+    moving_center = [_ref(0.0, center_rad, center_depth, center_label, center_valid)]
+    image, valid, request, diag = compose_multireference_scene(
+        moving_center, static_sheet, [10], 0.0, moving_edge_guard_px=1,
+    )
+    assert not request[2, 2] and image[2, 2] == np.float32(0.8)
+    assert int(request[1:4, 1:4].sum()) == 8
+    assert not request[0, 0] and np.isclose(image[0, 0], 0.1)
+    assert diag["moving_edge_guard_pixels"] == 8
+    tests["moving_silhouette_guard_requests_neighboring_static_pixels"] = {
+        "pass": True, "guard_px": 1, "guarded_pixels": diag["moving_edge_guard_pixels"],
+        "center_dynamic_surface_preserved": True, "distant_static_surface_preserved": True,
+    }
+
     # An equal-depth conflict between different labels is explicitly unknown.
     image, valid, request, diag = compose_multireference_scene(
         [_ref(0.0, [[0.8]], [[1.0]], [[10]])],
@@ -196,7 +216,7 @@ def run_controls() -> dict:
     tests["prepared_static_visibility_matches_uncached_bitwise"] = {
         "pass": True, "queries": 3, "evidence": "radiance/support/request/label/depth exact match",
     }
-    return {"suite": "r1_5_multiref_surface_controls_20261021h",
+    return {"suite": "r1_5_multiref_surface_controls_20261021i",
             "tests": tests, "all_pass": all(x["pass"] for x in tests.values()),
             "wall_s": time.perf_counter() - started,
             "frozen_simulator_core_modified": False}

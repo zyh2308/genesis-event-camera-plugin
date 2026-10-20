@@ -239,6 +239,9 @@ def main() -> int:
     scene_cfg = json.loads(args.scene_config.read_text(encoding="utf-8"))
     scene_cfg["shared_control"] = json.loads(args.control_config.read_text(encoding="utf-8"))
     candidate_cfg = json.loads(args.candidate_config.read_text(encoding="utf-8"))
+    moving_edge_guard_px = int(candidate_cfg.get("geometry", {}).get("moving_edge_guard_px", 0))
+    if moving_edge_guard_px < 0:
+        raise ValueError("candidate geometry moving_edge_guard_px must be non-negative")
     cache_root = args.cache_root.resolve()
     episodes = [4, 5]
     traces = {}
@@ -433,6 +436,7 @@ def main() -> int:
                     candidate_pre_fallback, candidate_valid, request_mask, comp_diag = compose_multireference_scene(
                         moving_refs, static_refs, pose_ids.tolist(), t,
                         prepared_static=prepared_static,
+                        moving_edge_guard_px=moving_edge_guard_px,
                     )
                     composition_wall_s += time.perf_counter() - composition_started
                     comp_summary = {key: value for key, value in comp_diag.items()
@@ -621,6 +625,7 @@ def main() -> int:
                     "source_endpoint_interval_s": float(args.source_interval),
                     "source_views_per_query": int(args.max_source_views),
                     "moving_source_views_per_query": int(args.moving_source_views),
+                    "moving_edge_guard_px": moving_edge_guard_px,
                     "reconstructed_non_endpoint_frames": int(sum(x["mode"] != "exact_direct_endpoint" for x in query_source_meta)),
                     "full_frame_fallback_count": len(fallback_times),
                     "full_frame_fallback_times_s": fallback_times,

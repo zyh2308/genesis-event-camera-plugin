@@ -1,0 +1,50 @@
+{
+  "experiment_id": "r1_5_multiref_surface_cached_replay_20261021i",
+  "purpose": "bracketed dynamic surface views with a conservative geometric silhouette uncertainty band",
+  "candidate_only": true,
+  "frozen_simulator_core_modified": false,
+  "derived_from_config": "r1_5_multiref_surface_candidate_20261021h.json",
+  "source_references": {
+    "rate_hz": 100,
+    "all_static_views_per_query": 5,
+    "moving_views_per_query": 2,
+    "moving_selection": "the two exact 100 Hz keyframes bracketing the logged query pose",
+    "additional_physics_states": 0,
+    "additional_keyframe_renders": 0,
+    "static_precomputation": "cache fixed-camera visibility and query-time source indices once per episode"
+  },
+  "geometry": {
+    "static_labels": "reuse actual fixed-camera pixels and depths from all five observed references",
+    "moving_labels": "project only the bracketing source samples by source-body-to-interpolated-target-body SE3; rasterize same-label continuous triangles",
+    "visibility": "per-pixel nearest interpolated depth across moving surfaces and observed static background",
+    "moving_edge_guard_px": 1,
+    "moving_edge_guard_rule": "pixels adjacent to a candidate projected moving-front surface are unknown and request a direct render; candidate radiance is not dilated",
+    "unobserved_or_ambiguous": "request full direct render; no spatial inpainting or threshold change",
+    "depth_tie_rtol": 0.001,
+    "depth_tie_atol_m": 0.00002,
+    "surface_connectivity_max_local_pixel_scale": 4.0
+  },
+  "radiometry": {
+    "source": "Genesis linear HDR luminance",
+    "temporal_interpolation": "log-domain interpolation between bracketing observations of the same frontmost label and depth",
+    "single_sided_observation": "temporally hold nearest actual source sample and report separately",
+    "floor": 1e-6
+  },
+  "pixel_response": {
+    "model": "physical_log",
+    "threshold_on_off": 0.2,
+    "threshold_mismatch": 0.0,
+    "bandwidth": "disabled",
+    "leak_noise_refractory": "disabled"
+  },
+  "evaluation": {
+    "episodes": [4, 5],
+    "role": "cached development diagnostics only",
+    "full_direct_render_fallback": "charged once per requested target frame",
+    "occlusion_audit": "separate missing-moving-front, false-moving-front, and wrong-link label mismatches against exact direct render",
+    "unsupported_event_overlap": "direct-reference event overlap is a sensitivity diagnostic only, not a filtered candidate stream",
+    "old_checkpoints": "diagnostic only; trained on previous event-generation domain",
+    "ranking": false,
+    "formal_test": false
+  }
+}

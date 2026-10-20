@@ -225,6 +225,24 @@ def _frontmost_composite(
     return out, out_depth, out_labels, {"valid": support, **stats}
 
 
+def _dilate_mask(mask: np.ndarray, radius: int) -> np.ndarray:
+    """Square pixel guard band without wrapping at image borders."""
+    mask = np.asarray(mask, dtype=bool)
+    radius = int(radius)
+    if radius < 0:
+        raise ValueError("edge guard radius must be non-negative")
+    if radius == 0:
+        return mask.copy()
+    height, width = mask.shape
+    padded = np.pad(mask, radius, mode="constant", constant_values=False)
+    out = np.zeros_like(mask)
+    for dy in range(-radius, radius + 1):
+        for dx in range(-radius, radius + 1):
+            y0, x0 = radius + dy, radius + dx
+            out |= padded[y0:y0 + height, x0:x0 + width]
+    return out
+
+
 def _prepare_frontmost_geometry(
     depth: np.ndarray,
     labels: np.ndarray,
@@ -331,6 +349,7 @@ def compose_multireference_scene(
     depth_rtol: float = 1e-3,
     depth_atol: float = 2e-5,
     prepared_static: dict | None = None,
+    moving_edge_guard_px: int = 0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, object]]:
     """Merge dynamic surface warps and fixed-coordinate static observations.
 
@@ -379,6 +398,17 @@ def compose_multireference_scene(
     shape = static_luma.shape
     moving_valid = np.isfinite(moving_luma) & np.isfinite(moving_depth) & (moving_label >= 0)
     static_valid_out = np.isfinite(static_luma) & np.isfinite(static_depth) & (static_label >= 0)
+    edge_guard = np.zeros(shape, dtype=bool)
+    if int(moving_edge_guard_px) > 0:
+        potentially_front = moving_valid & (~static_valid_out | (
+            moving_depth <= static_depth + np.maximum(
+                float(depth_atol), float(depth_rtol) * np.minimum(moving_depth, static_depth))))
+        uncertain_band = _dilate_mask(potentially_front, int(moving_edge_guard_px)) & ~potentially_front
+        edge_guard = uncertain_band & static_valid_out
+        static_valid_out = static_valid_out & ~edge_guard
+        static_luma = np.where(edge_guard, np.nan, static_luma)
+        static_depth = np.where(edge_guard, np.inf, static_depth)
+        static_label = np.where(edge_guard, -1, static_label)
     out = np.full(shape, np.nan, dtype=np.float32)
     out_depth = np.full(shape, np.inf, dtype=np.float32)
     out_label = np.full(shape, -1, dtype=np.int64)
@@ -407,6 +437,8 @@ def compose_multireference_scene(
         "dynamic_front_fraction": float(moving_front.mean()),
         "static_front_fraction": float(static_front.mean()),
         "depth_tie_request_fraction": float(tie.mean()),
+        "moving_edge_guard_px": int(moving_edge_guard_px),
+        "moving_edge_guard_pixels": int(edge_guard.sum()),
         "moving_surface_evidence": moving_evidence,
         "static_surface_evidence": static_evidence,
         "target_labels": out_label,
