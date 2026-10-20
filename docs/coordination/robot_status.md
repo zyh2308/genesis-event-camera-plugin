@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-21（Asia/Tokyo）
-**阶段：** R1.5 连续表面候选已完成 g1 缓存片段验证，并测试了 CPU 4/8/16 线程与 PyTorch CUDA triangle-scatter 实现。真实片段渲染请求降至约 0.91%/0.95%，无整帧回退；遮挡指标总体接近 Direct-HDR。事件一致性没有恢复，所有成对候选仍慢于 Direct-HDR，最佳观测配对仍为 1.36×，CUDA 配对为 5.17×。不启动重训或短闭环；方向选择和证据见文末“R1.5 surface coverage/cost closeout”。冻结 core 未改，任务/相机/控制/评分不变。候选实现末端为 `2d60e28`，结果归档提交为 `9fbaf06`；当前推送状态待核实。
+**阶段：** R1.5 连续表面候选已完成 g1 缓存片段验证，并测试了 CPU 4/8/16 线程与 PyTorch CUDA triangle-scatter 实现。真实片段渲染请求降至约 0.91%/0.95%，无整帧回退；遮挡指标总体接近 Direct-HDR。事件一致性没有恢复，所有成对候选仍慢于 Direct-HDR，最佳观测配对仍为 1.36×，CUDA 配对为 5.17×。不启动重训或短闭环；方向选择和证据见文末“R1.5 surface coverage/cost closeout”。冻结 core 未改，任务/相机/控制/评分不变。候选实现末端为 `2d60e28`，结果归档提交为 `9fbaf06`。本地 HEAD `55f1fe5`；HTTPS 推送遇到 TLS 握手失败，GitHub SSH 推送因本机无 `ssh-askpass` 且 host key 未验证而失败；提交仍在本地 `exp/robot-closed-loop-v1` 分支。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1 原生 HDR 与失效链路诊断（2026-10-19；小规模开发批次）
