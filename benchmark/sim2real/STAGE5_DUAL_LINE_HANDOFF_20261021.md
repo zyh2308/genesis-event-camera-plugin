@@ -1,13 +1,13 @@
 # Stage 5 双线执行交接 — 2026-10-21
 
-更新到 **2026-10-20 18:32:33 UTC / 2026-10-21 03:32:33 JST**。g1 进程与产物最后一次直接核对为 **18:27:54 UTC**。范围仅含重建与光流；位姿**按用户要求暂缓**，未重新访问或下载 E-POSE。冻结 simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未改；所有训练和模型选择只用 synthetic 数据，真实评分关闭。
+更新到 **2026-10-20 18:37:07 UTC / 2026-10-21 03:37:07 JST**。g1 进程与产物最后一次直接核对为 **18:36:56 UTC**。范围仅含重建与光流；位姿**按用户要求暂缓**，未重新访问或下载 E-POSE。冻结 simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未改；所有训练和模型选择只用 synthetic 数据，真实评分关闭。
 
 ## 状态一览
 
 | 线路 | 已完成并核实 | 当前阻塞/边界 | 下一步 |
 |---|---|---|---|
-| 重建 / E2VID+ | corrected-TC seed 0 两组均已完成 200 epochs / 12,000 updates，退出码 0。HQF 14/14 原始包已传至 g1 并与本地逐文件 SHA256 一致。已检查一条原始 bag 的事件和图像话题；合成 E2VID event-only 推理适配自检通过。 | HQF 转换首次运行在第 5 条序列失败，根因是端点偏移验证把 end-exclusive offset 当作被包含事件的索引；同时发现锁定 EVREAL 旧转换器也在 `[prev,end)` 切片中漏掉端点事件。修正已做，尚未在 g1 重跑 14 序列。没有任何真实模型评分。 | 部署修正版到新的干净 g1 checkout，在新输出目录转换 14 条；完成文件、时间和端点 manifest；真实评分仍等待研究核验。 |
-| 光流 / STE-FlowNet dt1 | EventGenesis 和 V2E 均在同一固定合成样本 `s2_00/dt1_144`、同一共享 GT/active-union mask、同一配对初始化下，各完成 200 次多尺度监督拟合；预登记拟合阈值和 checkpoint 恢复检查全部通过。 | 这只证明固定窗口记忆，不是独立 rollout 泛化。新场景 smoke 在 Genesis 初始化后失败：已安装 Genesis 1.2.2 的 `Camera.render()` 不支持 `radiance=True`。首次物理 capture 未完成，因此目前没有新场景的 events/GT 可观测性结果；现有 8 rollout bank 尚未启动。 | 用 benchmark 适配层读取实际 uint8 display RGB、按锁定 shader 的 gamma 2.2 解码为明确标注的 linearized-display proxy，保留饱和/量化限制并记录 Genesis 源码 hash；在干净 checkout 重跑一条共享场景，再依据其审计决定 8 rollout 配置。 |
+| 重建 / E2VID+ | corrected-TC seed 0 两组均已完成 200 epochs / 12,000 updates，退出码 0。HQF 14/14 原始包已传至 g1 并与本地逐文件 SHA256 一致。已检查一条原始 bag 的事件和图像话题；合成 E2VID event-only 推理适配自检通过。 | HQF 首次转换在第 5 条序列失败，根因是把 end-exclusive offset 当作最后一个被包含事件；旧 EVREAL 转换器还会漏掉端点事件。已修正并部署；14 序列转换 v2 于 18:36:56 UTC 在 CPU tmux `hqf14_convert_v2_20261021` 启动，观测时正在处理 `bike_bay_hdr`。没有真实评分。 | 完成全14序列转换、时间端点验证与 manifest；保持真实评分关闭。 |
+| 光流 / STE-FlowNet dt1 | EventGenesis 和 V2E 均在同一固定合成样本 `s2_00/dt1_144`、共享 GT/active-union mask 和配对初始化下，各完成 200 次多尺度监督拟合；预登记阈值和 checkpoint 恢复检查通过。 | 拟合只证明固定窗口记忆。首个 smoke 确认 `Camera.render()` 无 `radiance` 参数，修复已部署。新的单场景 smoke 于 18:36:18 UTC 在 GPU2 tmux `s5_scene_smoke_v2_20261021` 运行中，完整 capture/审计尚未产出；8 rollout bank 未启动。 | 先完成单场景的 events/共同 GT、可观测性和光度 warp 审计，再确定唯一 8-rollout 版本；新 bank 和短自监督泛化检查通过前不启动长训。 |
 | 位姿 | 无新增动作。 | **按用户要求暂缓**。 | 等用户通知后恢复。 |
 
 ## 光流：实际网络固定窗口拟合
@@ -35,13 +35,13 @@
 
 g1 只读源码核对：`Camera.render` 签名不含 `radiance`，普通 pyrender `mesh.frag` 用 `pow(color,1/2.2)` 编码并 clamp，`Renderer.render` 返回 uint8。由此只能在 benchmark/provider 层对真实返回 RGB 做 `(rgb_uint8/255)^2.2` 解码，作为 **linearized display RGB proxy**。该信号仍有 8-bit 量化、renderer clipping，且无绝对辐射标定；绝不记作 native HDR radiance。新的 bank schema 为 v2，逐帧保存饱和通道比例，并记录 Genesis `camera.py`、`rasterizer.py`、`mesh.frag` SHA256。EventGenesis 和 V2E 都从同一 proxy 派生输入；阈值、噪声、共同轨迹/标签未变。
 
-修正代码与数学回归检查目前通过本地小测试，但截至本报告时间尚未部署或实际重跑；renderer API 与源文件 hash 的远端证据是 `flow_renderer_contract_probe.json`；因此场景输入契约仍未通过端到端验证，尚无新的运动可观测性数据。
+renderer adapter 与数学回归检查已通过本地小测试；提交 `990674d64930e2daa0e1e3a4cb1e5c4bbdbbe3f3` 已推送 GitHub，并部署为 g1 干净执行快照。renderer API 与源文件 hash 证据在 `flow_renderer_contract_probe.json`。新 smoke 运行中，尚未产生完整一条 rollout 或运动可观测性结论。
 
 ## 重建与 HQF
 
 已完成的训练：g1 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/`。EventGenesis 12,000 updates，exit 0，synthetic-best epoch170 LPIPS-VGG `0.04116681637`，last SHA256 `fe7eacf5865f486b7355e4f60202368de34b56d3dbcde1412ee67bfbfc29cbaf`；V2E 同预算，exit 0，synthetic-best epoch195 LPIPS-VGG `0.08367991168`，last SHA256 `af861ca93da680fd83b58c6644376e99ba2c9007f379b92a29221031159726db`。共同初始化 SHA256 `48426d94f4159592155eda873d4e71e2f06439c10eade990de5979231ed07a0f`。选择继续只用 synthetic LPIPS-VGG。
 
-研究侧 review `reviews/recon_flow_localization_20261019/REVIEW.md` 已明确 HQF 全14序列为重建主测试，HS-ERGB 仅扩展。HQF 候选协议为 LPIPS-AlexNet 主指标，SSIM/PSNR/MSE 辅助；先序列内帧均值，再14序列等权平均；不做 real-GT 亮度/直方图拟合。协议文件 `protocol/hqf_14_reconstruction_test_candidate_20261021.json`。转换第一次失败摘要在 `evidence/S5/20261021-recon-flow-localization/hqf_conversion_attempt01/`；按 timestamp 的独立小例子覆盖首窗口、同戳、空窗和未来事件，锁定 EVREAL MemMap 是 end-exclusive slice。修正实现已更新 converter/builder/inference validator，并通过本地索引边界回归；HQF 合成模型适配入口曾在 fabricated MemMap 上通过递归 reset、event-only 输入、padding/unpadding 与最终 endpoint 自检。新修正版本还需重新实际运行完整14条转换。合成推理自检本轮清洁源码重跑通过，证据 `hqf_adapter_selftest_v6/selftest_outputs/inference_manifest.json`；先前失败/不完整的适配尝试见 `hqf_adapter_selftest_attempts.json`。
+研究侧 review `reviews/recon_flow_localization_20261019/REVIEW.md` 已明确 HQF 全14序列为重建主测试，HS-ERGB 仅扩展。HQF 候选协议为 LPIPS-AlexNet 主指标，SSIM/PSNR/MSE 辅助；先序列内帧均值，再14序列等权平均；不做 real-GT 亮度/直方图拟合。协议文件 `protocol/hqf_14_reconstruction_test_candidate_20261021.json`。转换第一次失败摘要在 `evidence/S5/20261021-recon-flow-localization/hqf_conversion_attempt01/`；按 timestamp 的独立小例子覆盖首窗口、同戳、空窗和未来事件，锁定 EVREAL MemMap 是 end-exclusive slice。修正实现已更新 converter/builder/inference validator，并通过本地索引边界回归；HQF 合成模型适配入口曾在 fabricated MemMap 上通过递归 reset、event-only 输入、padding/unpadding 与最终 endpoint 自检。完整14条修正版转换已在 g1 tmux `hqf14_convert_v2_20261021` 运行，run 为 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-hqf14-conversion-v2/`，输出新根 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v2/`。合成推理自检本轮清洁源码重跑通过，证据 `hqf_adapter_selftest_v6/selftest_outputs/inference_manifest.json`；先前失败/不完整的适配尝试见 `hqf_adapter_selftest_attempts.json`。
 
 HQF 原始数据 g1 路径 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/`，14 包总计 2,902,695,576 bytes。WSL 下载清单 `evidence/S5/20261021-recon-flow-localization/hqf_raw_download_manifest.json`，g1 SHA 输出 `hqf_g1_sha256sum.txt`，14/14 与本地相符。`desk_hand_only.bag` 已读到 `/dvs/events` (`dvs_msgs/msg/EventArray`) 和 `/dvs/image_raw` (`sensor_msgs/msg/Image`)；完整 MemMap manifest 仍待修正转换。
 
@@ -53,7 +53,7 @@ MVSEC 机器清单 `evidence/S5/20261021-recon-flow-localization/mvsec_manifest_
 
 - g1 环境：`Eventbased_WAM`，Python 3.11.15，PyTorch 2.5.1+cu121，Genesis 1.2.2；V2E 使用既有 pinned checkout。隔离 `rosbags==0.11.7` 路径为 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-hqf-convert-deps/pydeps`。
 - 单样本两组拟合命令分别保存在 g1 `.../20261021-stage5-flow-fixed-sample-fit-v4/command.txt` 与 `...fit-v5/command.txt`；配置和汇总在仓库上述路径。
-- HQF 全量转换命令：`bash benchmark/sim2real/scripts/convert_hqf_14_dataset.sh <raw_bag_root> <new_memmap_root> <new_manifest.json>`，必须使用 `PYTHONPATH=/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-hqf-convert-deps/pydeps` 与 `PYTHON_BIN=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python`；需在修正代码快照上执行，输出使用新目录。
+- HQF 全量转换实际命令保存在 g1 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-hqf14-conversion-v2/command.txt`，运行脚本在同目录 `driver.sh`；输入为只读 14 个 raw bags，输出 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v2/`，manifest 写入该 run 目录。
 - 新 renderer adapter 单测：`python3 benchmark/sim2real/tests/test_stage5_flow_renderer_transfer.py`；HQF 时间索引单测：`python3 benchmark/sim2real/tests/test_hqf_time_index_contract.py`。本报告时间两者均本地通过；不表示远端场景 smoke 已通过。
 
-当前已发布 GitHub 版本为 `836fe01db81d541de3b056fb748f6f289c81596d`；renderer 适配、HQF index 修正和最新文档尚未提交/部署。大权重和真实数据留 g1，仓库仅保存机器证据、小型产物、路径和 hash。**未得到新场景完整 bank 前不启动光流长训或其他 seeds；任何真实评分仍关闭。**
+当前已发布并部署版本为 `990674d64930e2daa0e1e3a4cb1e5c4bbdbbe3f3`；GitHub `origin/exp/public-sim2real-v1` 与 g1 干净执行快照一致。g1 原共享仓库、旧训练和旧转换输出未覆盖。大权重和真实数据留 g1，仓库仅保存机器证据、小型产物、路径和 hash。**未得到新场景完整 bank 前不启动光流长训或其他 seeds；任何真实评分仍关闭。**
