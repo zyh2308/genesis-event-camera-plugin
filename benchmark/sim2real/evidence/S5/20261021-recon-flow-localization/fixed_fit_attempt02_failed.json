@@ -1,0 +1,25 @@
+{
+  "schema": "stage5_flow_fixed_network_fit_attempt_v1",
+  "run_id": "20261021-stage5-flow-fixed-sample-fit-v2",
+  "status": "failed_before_optimizer_update",
+  "started_utc": "2026-10-20T17:50:02Z",
+  "finished_utc": "2026-10-20T17:50:11Z",
+  "duration_seconds": 9,
+  "source_commit": "a44ad4b38156ccb187c34670119d91eb016bd568",
+  "fixed_sample_id": "s2_00/dt1_144",
+  "optimizer_updates_per_arm": {
+    "eventgenesis": 0,
+    "v2e": 0
+  },
+  "failure_stage": "initial evaluation at update 0 before the first optimizer step",
+  "root_cause": "the helper returns [2,H,W] after removing the batch dimension, but the diagnostic indexed a second batch dimension and reduced the prediction to [H,W]",
+  "repair": "crop the helper result directly as [2,H,W]; retain strict comparison against GT [2,260,346]",
+  "raw_remote_log": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-fixed-sample-fit-v2/driver.log",
+    "sha256": "e6f903f737e37c6c6c87ded4102e49d819e58e3e6a82c37415a99c5e5a56094c",
+    "exit_code": 1
+  },
+  "no_optimizer_updates": true,
+  "real_data_used": false,
+  "record_created_utc": "2026-10-20T17:50:53.606133+00:00"
+}
