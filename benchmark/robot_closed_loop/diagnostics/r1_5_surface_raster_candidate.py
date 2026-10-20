@@ -16,7 +16,7 @@ import numpy as np
 
 
 try:  # Optional acceleration only; the implementation has a NumPy fallback.
-    from numba import njit
+    from numba import njit, prange
 
     _NUMBA = True
 except Exception:  # pragma: no cover - depends on the execution environment.
