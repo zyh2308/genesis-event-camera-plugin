@@ -35,6 +35,7 @@ class MainCameraScissorROI:
         self._original_read = None
         self._read_rgb_float_crop = None
         self._installed = False
+        self._crop = None
         self._gl = None
         self._pr_renderer = None
 
@@ -113,6 +114,8 @@ class MainCameraScissorROI:
 
         def configure_forward(flags):
             self._original_configure(flags)
+            if self._crop is None:
+                return
             saved_state["enabled"] = bool(GL.glIsEnabled(GL.GL_SCISSOR_TEST))
             saved_state["box"] = tuple(int(v) for v in GL.glGetIntegerv(GL.GL_SCISSOR_BOX))
             x0, y0, x1, y1 = self._crop
@@ -120,6 +123,8 @@ class MainCameraScissorROI:
             GL.glScissor(x0, self.height - y1, x1 - x0, y1 - y0)
 
         def read_main_framebuffer(scene, flags):
+            if self._crop is None:
+                return self._original_read(scene, flags)
             if flags & (RenderFlags.RET_DEPTH | RenderFlags.SEG | RenderFlags.DEPTH_ONLY):
                 if not (flags & RenderFlags.SEG) or flags & (RenderFlags.RET_DEPTH | RenderFlags.DEPTH_ONLY):
                     raise RuntimeError("scissored ROI supports HDR or segmentation-only readback")
@@ -175,7 +180,8 @@ class MainCameraScissorROI:
             "camera_projection_changed": False,
             "camera_node_changed": False,
             "full_scene_depth_test_retained": True,
-            "channels_read": ["scene-linear HDR RGB"],
+            "candidate_channel": "scene-linear HDR RGB",
+            "optional_audit_channel": "link segmentation only; excluded from candidate cost",
             "diagnostic_only": True,
             "frozen_simulator_core_modified": False,
         }
@@ -188,10 +194,13 @@ class MainCameraScissorROI:
         if not self._installed:
             raise RuntimeError("install scissor renderer before rendering")
         self.set_crop(crop_xyxy)
-        image, = self.camera.render(
-            rgb=True, depth=False, segmentation=False,
-            radiance=True, force_render=True,
-        )
+        try:
+            image, = self.camera.render(
+                rgb=True, depth=False, segmentation=False,
+                radiance=True, force_render=True,
+            )
+        finally:
+            self._crop = None
         image = np.asarray(image, dtype=np.float32)
         x0, y0, x1, y1 = self._crop
         expected = (y1 - y0, x1 - x0, 3)
@@ -206,9 +215,12 @@ class MainCameraScissorROI:
         if not self._installed:
             raise RuntimeError("install scissor renderer before rendering")
         self.set_crop(crop_xyxy)
-        _, _, segmentation, _ = self.camera.render(
-            rgb=False, depth=False, segmentation=True, force_render=True,
-        )
+        try:
+            _, _, segmentation, _ = self.camera.render(
+                rgb=False, depth=False, segmentation=True, force_render=True,
+            )
+        finally:
+            self._crop = None
         segmentation = np.asarray(segmentation, dtype=np.int32)
         x0, y0, x1, y1 = self._crop
         expected = (y1 - y0, x1 - x0)

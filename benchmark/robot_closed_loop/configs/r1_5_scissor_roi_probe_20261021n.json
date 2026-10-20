@@ -1,0 +1,26 @@
+{
+  "experiment_id": "r1_5_scissor_roi_probe_20261021n",
+  "purpose": "measure current-request-mask-bounded Direct-HDR repair using the original full camera projection, GL scissor, and partial readback",
+  "source_support_masks_from": "r1_5_direct_roi_repair_20261021k",
+  "trace_window_s": [0.5505, 0.5905],
+  "roi_rule": "per-frame tight integer bounding box of the current candidate unknown/request mask; no GT used to select or size the ROI",
+  "render_path": {
+    "camera": "existing fixed main camera at native resolution and projection",
+    "channels": ["scene-linear HDR RGB"],
+    "rasterization": "full scene with the original depth test, clipped by OpenGL scissor to the request bounding box",
+    "readback": "partial MSAA color blit and scene-linear HDR readback for the same ROI",
+    "repaired_values": "only pixels explicitly marked unknown by the candidate reconstruction"
+  },
+  "audit": {
+    "compare": "every scissor HDR sample against same-state full-frame HDR at the exact same pixel; separately compare link segmentation over each request ROI",
+    "direct_cost": "measure full-resolution HDR-only rendering plus DVS on the same saved trace rows",
+    "candidate_cost": "prior K source/preparation/reconstruction timings plus fresh scissor HDR-only repair and fresh DVS; label as assembled estimate"
+  },
+  "boundaries": {
+    "archived_robot_trace_only": true,
+    "no_physics_step_or_new_rollout": true,
+    "no_training_or_ranking": true,
+    "frozen_simulator_core_modified": false,
+    "downstream_gt_input": false
+  }
+}
