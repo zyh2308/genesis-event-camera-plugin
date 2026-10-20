@@ -561,7 +561,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(inference_records)
     summary = {
-        "experiment_id": "r1_5_multiref_surface_cached_replay_20261021c",
+        "experiment_id": "r1_5_multiref_surface_cached_replay_20261021d",
         "code_commit": __import__("subprocess").check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "frozen_core_base": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
         "frozen_core_modified": False,

@@ -222,6 +222,8 @@ def compose_multireference_scene(
         query_time, floor=floor, depth_rtol=depth_rtol, depth_atol=depth_atol,
     )
     static_luma, static_depth, static_label, static_stats = static
+    moving_evidence = {key: value for key, value in moving_stats.items() if key != "valid"}
+    static_evidence = {key: value for key, value in static_stats.items() if key != "valid"}
     shape = static_luma.shape
     moving_valid = np.isfinite(moving_luma) & np.isfinite(moving_depth) & (moving_label >= 0)
     static_valid_out = np.isfinite(static_luma) & np.isfinite(static_depth) & (static_label >= 0)
@@ -253,8 +255,8 @@ def compose_multireference_scene(
         "dynamic_front_fraction": float(moving_front.mean()),
         "static_front_fraction": float(static_front.mean()),
         "depth_tie_request_fraction": float(tie.mean()),
-        "moving_surface_evidence": moving_stats,
-        "static_surface_evidence": static_stats,
+        "moving_surface_evidence": moving_evidence,
+        "static_surface_evidence": static_evidence,
         "target_labels": out_label,
         "target_depth": out_depth,
         "supported": supported,

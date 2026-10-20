@@ -66,6 +66,8 @@ def run_controls() -> dict:
     image, valid, request, diag = compose_multireference_scene(
         no_moving, [static0, static1], [10], 0.5,
     )
+    json.dumps({key: value for key, value in diag.items()
+                 if not isinstance(value, np.ndarray)})
     assert valid[0, 0] and not request[0, 0] and np.isclose(image[0, 0], 0.2)
     tests["complementary_static_surface_recovery"] = {
         "pass": True, "radiance": float(image[0, 0]),
