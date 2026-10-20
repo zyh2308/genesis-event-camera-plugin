@@ -98,9 +98,15 @@ def main() -> None:
         json.loads(split_path.read_text()),
         json.loads(v2e_manifest_path.read_text()),
     )
-    if bank_manifest.get("schema") != "stage5_flow_scene_coverage_shared_bank_v2":
+    if bank_manifest.get("schema") not in {
+        "stage5_flow_scene_coverage_shared_bank_v2",
+        "stage5_flow_scene_coverage_shared_bank_v3",
+    }:
         raise RuntimeError("unexpected shared physical-bank schema")
-    if v2e_manifest.get("schema") != "stage5_v2e_coverage_pilot_raw_events_v2":
+    if v2e_manifest.get("schema") not in {
+        "stage5_v2e_coverage_pilot_raw_events_v2",
+        "stage5_v2e_coverage_pilot_raw_events_v3",
+    }:
         raise RuntimeError("unexpected V2E manifest schema")
     if sha256(bank_path) != bank_manifest.get("bank_sha256"):
         raise RuntimeError("shared physical bank hash mismatch")
@@ -191,7 +197,9 @@ def main() -> None:
                     "stratum": item["stratum"],
                     "factors": {key: item[key] for key in (
                         "texture_pattern", "texture_contrast", "speed_class", "speed_scale",
-                        "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class")},
+                        "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class",
+                        "floor_tiles_per_side", "floor_extent_m", "object_top_panels_per_side", "tile_gap_fraction",
+                        "occlusion_crossing_base_x_m")},
                     "window_index": window_index,
                     "sample_id": f"{rollout}/dt1_{endpoint_index:03d}",
                     "event_start_us": left,
@@ -221,7 +229,9 @@ def main() -> None:
                 "stratum": item["stratum"],
                 "factors": {key: item[key] for key in (
                     "texture_pattern", "texture_contrast", "speed_class", "speed_scale",
-                    "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class")},
+                    "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class",
+                    "floor_tiles_per_side", "floor_extent_m", "object_top_panels_per_side", "tile_gap_fraction",
+                    "occlusion_crossing_base_x_m")},
                 "windows": 66,
                 "events_in_windows": rollout_events,
                 "raw_events_total": {"eventgenesis": int(len(eg)), "v2e": int(len(v2))},
@@ -260,7 +270,8 @@ def main() -> None:
         "split_summary": summarize_rows(window_rows, ("split",)),
         "factor_summary": {
             key: summarize_rows(window_rows, (key,))
-            for key in ("texture_pattern", "texture_contrast", "speed_class", "amplitude_class", "size_class", "layout_class")
+            for key in ("texture_pattern", "texture_contrast", "speed_class", "amplitude_class", "size_class", "layout_class",
+                        "floor_tiles_per_side", "object_top_panels_per_side")
         },
         "windows": window_rows,
     }

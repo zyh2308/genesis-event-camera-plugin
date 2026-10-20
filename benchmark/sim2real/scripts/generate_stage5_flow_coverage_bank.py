@@ -28,17 +28,31 @@ import numpy as np
 
 
 CORE = "e79e656ac00f7847b98db9e12bf43b093f3afff1"
-STRATA = (
+V2_STRATA = (
     "camera_motion_static_scene",
     "independent_rigid_motion_static_camera",
     "camera_and_independent_rigid_motion",
     "combined_motion_with_occlusion",
 )
+V3_STRATA = (
+    "static_scene",
+    "camera_motion_static_scene",
+    "independent_rigid_motion_static_camera",
+    "combined_motion_with_occlusion",
+)
+STRATA = V2_STRATA
 WIDTH, HEIGHT = 346, 260
 FPS, DT, DURATION = 100, 0.001, 2.0
 FRAMES = int(FPS * DURATION) + 1
 BANK_SCHEMA = "stage5_flow_scene_coverage_shared_bank_v2"
 SCENE_SMOKE_SCHEMA = "stage5_flow_scene_coverage_single_scene_smoke_v2"
+PROTOCOLS = {
+    "stage5_flow_scene_coverage_pilot_v2": (V2_STRATA, BANK_SCHEMA, SCENE_SMOKE_SCHEMA),
+    "stage5_flow_scene_coverage_pilot_v3": (
+        V3_STRATA, "stage5_flow_scene_coverage_shared_bank_v3",
+        "stage5_flow_scene_coverage_single_scene_smoke_v3",
+    ),
+}
 TOTAL_ROLLOUTS = 8
 
 
@@ -215,39 +229,55 @@ def genesis_renderer_source_hashes(gs) -> dict[str, str]:
     return {name: sha256(path) for name, path in candidates.items()}
 
 
-def registered_episodes(design_rows: list[dict]) -> list[dict]:
+def registered_episodes(design_rows: list[dict], bank_cfg: dict, coverage: dict) -> list[dict]:
     if len(design_rows) != TOTAL_ROLLOUTS:
         raise RuntimeError(f"coverage pilot design must contain {TOTAL_ROLLOUTS} rollouts")
+    strata = tuple(bank_cfg["strata"])
+    texture_grid = bank_cfg.get("texture_grid", {
+        "floor_tiles_per_side": 2, "floor_extent_m": 0.84,
+        "object_top_panels_per_side": 2, "tile_gap_fraction": 0.12,
+    })
     rows = []
     for row in design_rows:
         item = dict(row)
-        if item.get("stratum") not in STRATA or item.get("split") not in ("train", "validation"):
+        if item.get("stratum") not in strata or item.get("split") not in ("train", "validation"):
             raise RuntimeError(f"invalid coverage pilot stratum/split: {item}")
         required = ("id", "scene_seed", "texture_pattern", "texture_contrast", "speed_class", "amplitude_class", "size_class", "layout_class")
         if any(key not in item for key in required):
             raise RuntimeError(f"incomplete coverage pilot factor row: {item}")
-        if item["texture_pattern"] not in ("checker", "stripes"):
+        if item["texture_pattern"] not in coverage["texture_pattern"]:
             raise RuntimeError(f"unknown texture pattern: {item['texture_pattern']}")
-        if item["texture_contrast"] not in ("high", "medium"):
+        if item["texture_contrast"] not in coverage["texture_contrast"]:
             raise RuntimeError(f"unknown texture contrast: {item['texture_contrast']}")
-        if item["speed_class"] not in ("low", "high") or item["amplitude_class"] not in ("small", "large") or item["size_class"] not in ("small", "large"):
+        if (item["speed_class"] not in coverage["speed_class"]
+                or item["amplitude_class"] not in coverage["amplitude_class"]
+                or item["size_class"] not in coverage["size_class"]):
             raise RuntimeError(f"unknown motion or size class: {item}")
-        if item["layout_class"] not in ("spread", "clustered"):
+        if item["layout_class"] not in coverage["layout_class"]:
             raise RuntimeError(f"unknown scene layout: {item['layout_class']}")
         item["noise_seed"] = 42
-        item["stratum_index"] = STRATA.index(item["stratum"])
+        item["stratum_index"] = strata.index(item["stratum"])
         item["local_index"] = 0 if item["split"] == "train" else 1
-        item["speed_scale"] = 0.7 if item["speed_class"] == "low" else 1.4
-        item["amplitude_scale"] = 0.6 if item["amplitude_class"] == "small" else 1.4
-        item["size_range_m"] = [0.08, 0.10] if item["size_class"] == "small" else [0.16, 0.18]
+        item["speed_scale"] = float(coverage["speed_class"][item["speed_class"]]["frequency_scale"])
+        item["amplitude_scale"] = float(coverage["amplitude_class"][item["amplitude_class"]]["amplitude_scale"])
+        item["size_range_m"] = list(coverage["size_class"][item["size_class"]]["object_box_size_m"])
+        item["floor_tiles_per_side"] = int(texture_grid["floor_tiles_per_side"])
+        item["floor_extent_m"] = float(texture_grid["floor_extent_m"])
+        item["object_top_panels_per_side"] = int(texture_grid["object_top_panels_per_side"])
+        item["tile_gap_fraction"] = float(texture_grid["tile_gap_fraction"])
+        item["occlusion_crossing_base_x_m"] = float(bank_cfg.get("occlusion_crossing_base_x_m", -0.26))
+        if (item["floor_tiles_per_side"] < 2 or item["object_top_panels_per_side"] < 2
+                or item["floor_extent_m"] <= 0 or not 0 <= item["tile_gap_fraction"] < 0.5):
+            raise RuntimeError(f"invalid registered texture grid: {item}")
         rows.append(item)
     if len({row["id"] for row in rows}) != TOTAL_ROLLOUTS:
         raise RuntimeError("coverage pilot IDs are not unique")
     for split in ("train", "validation"):
         subset = [row for row in rows if row["split"] == split]
-        if len(subset) != 4 or {row["stratum"] for row in subset} != set(STRATA):
+        if len(subset) != 4 or {row["stratum"] for row in subset} != set(strata):
             raise RuntimeError(f"{split} must contain one rollout from each registered motion stratum")
-    for factor in ("texture_pattern", "texture_contrast", "speed_class", "amplitude_class", "size_class", "layout_class"):
+    for factor in ("texture_pattern", "texture_contrast", "speed_class", "amplitude_class", "size_class", "layout_class",
+                   "floor_tiles_per_side", "object_top_panels_per_side"):
         for split in ("train", "validation"):
             counts = {value: sum(row[factor] == value for row in rows if row["split"] == split)
                       for value in sorted({row[factor] for row in rows})}
@@ -322,11 +352,18 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         texture_colors = ((.12, .16, .20, 1.), (.56, .62, .68, 1.))
     else:
         raise RuntimeError(f"unknown registered texture contrast {episode['texture_contrast']}")
-    for row in range(2):
-        for col in range(2):
+    floor_grid = episode["floor_tiles_per_side"]
+    floor_tile = episode["floor_extent_m"] / floor_grid
+    floor_half = episode["floor_extent_m"] * 0.5
+    tile_keep = 1.0 - episode["tile_gap_fraction"]
+    for row in range(floor_grid):
+        for col in range(floor_grid):
             parity = col if episode["texture_pattern"] == "stripes" else row + col
+            tile_center_x = -floor_half + (col + 0.5) * floor_tile
+            tile_center_y = -floor_half + (row + 0.5) * floor_tile
             scene.add_entity(
-                gs.morphs.Box(pos=(-.21 + .42 * col, -.21 + .42 * row, .002), size=(.42, .42, .004)),
+                gs.morphs.Box(pos=(tile_center_x, tile_center_y, .002),
+                              size=(floor_tile * tile_keep, floor_tile * tile_keep, .004)),
                 surface=gs.surfaces.Default(color=texture_colors[parity % 2], emissive=(.005, .005, .005)),
             )
     objects = []
@@ -342,9 +379,10 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             base_xy = (rng.uniform(-.12, .12), rng.uniform(-.10, .10))
         base = np.asarray([base_xy[0], base_xy[1], size * .5 + .025])
         if episode["stratum"] == "combined_motion_with_occlusion" and oi == 1:
-            # Cross the center at a nearer diagonal depth to create occlusion.
+            # A nearer diagonal path creates visibility changes. Newer registered
+            # designs set its x center so the trajectory crosses the image center.
             size = float(0.10 if episode["size_class"] == "small" else 0.17)
-            base = np.asarray([-.26, -.16, size * .5 + .07])
+            base = np.asarray([episode["occlusion_crossing_base_x_m"], -.16, size * .5 + .07])
         initial = trajectory_pose(0.0, episode, oi, base)
         registered_initial_positions.append(initial.copy())
         size_x = size
@@ -355,17 +393,21 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             surface=gs.surfaces.Default(color=palette[(oi + episode["stratum_index"]) % len(palette)], emissive=(.015, .015, .015)),
         )
         objects.append(body); bases.append(base); sizes.append(size)
-        for row in range(2):
-            for col in range(2):
+        object_grid = episode["object_top_panels_per_side"]
+        for row in range(object_grid):
+            for col in range(object_grid):
                 parity = col if episode["texture_pattern"] == "stripes" else row + col
                 parity = (parity + oi + episode["stratum_index"]) % 2
+                cell_x = size_x / object_grid
+                cell_y = size_y / object_grid
                 offset = np.asarray([
-                    (col - .5) * size_x * .46,
-                    (row - .5) * size_y * .46,
+                    ((col + 0.5) / object_grid - 0.5) * size_x,
+                    ((row + 0.5) / object_grid - 0.5) * size_y,
                     size_z * .5 + .003,
                 ], dtype=np.float64)
                 tile = scene.add_entity(
-                    gs.morphs.Box(pos=tuple(initial + offset), size=(size_x * .44, size_y * .44, .004)),
+                    gs.morphs.Box(pos=tuple(initial + offset),
+                                  size=(cell_x * tile_keep, cell_y * tile_keep, .004)),
                     surface=gs.surfaces.Default(color=texture_colors[parity], emissive=(.005, .005, .005)),
                 )
                 object_texture_tiles.append((oi, tile, offset))
@@ -546,7 +588,10 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             raise IOError(f"failed to write {path}")
 
     group = h5.create_group(f"episodes/{episode['id']}")
-    for key in ("split", "stratum", "scene_seed", "noise_seed", "texture_pattern", "texture_contrast", "speed_class", "speed_scale", "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class"):
+    for key in ("split", "stratum", "scene_seed", "noise_seed", "texture_pattern", "texture_contrast",
+                "speed_class", "speed_scale", "amplitude_class", "amplitude_scale", "size_class", "size_range_m",
+                "layout_class", "floor_tiles_per_side", "floor_extent_m", "object_top_panels_per_side", "tile_gap_fraction",
+                "occlusion_crossing_base_x_m"):
         group.attrs[key] = episode[key]
     group.attrs["physical_trajectory_kind"] = "Genesis scripted kinematic camera/object path, scene stepped at 1 ms"
     group.attrs["camera_frame_convention"] = "OpenCV x-right/y-down/z-forward"
@@ -595,6 +640,9 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         "speed_class": episode["speed_class"], "speed_scale": episode["speed_scale"],
         "amplitude_class": episode["amplitude_class"], "amplitude_scale": episode["amplitude_scale"], "size_class": episode["size_class"],
         "size_range_m": episode["size_range_m"], "layout_class": episode["layout_class"],
+        "floor_tiles_per_side": episode["floor_tiles_per_side"], "floor_extent_m": episode["floor_extent_m"],
+        "object_top_panels_per_side": episode["object_top_panels_per_side"], "tile_gap_fraction": episode["tile_gap_fraction"],
+        "occlusion_crossing_base_x_m": episode["occlusion_crossing_base_x_m"],
         "eventgenesis_events": int(len(events)), "valid_fraction_30ms_mean": float(valid30.mean()),
         "flow30_shape": list(flow30.shape), "K": K.tolist(),
         "initial_pose_max_abs_error_m": initial_pose_error,
@@ -604,7 +652,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
 
 
 def main() -> None:
-    global TOTAL_ROLLOUTS
+    global TOTAL_ROLLOUTS, STRATA, BANK_SCHEMA, SCENE_SMOKE_SCHEMA
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
@@ -613,6 +661,12 @@ def main() -> None:
     config_path = args.config.resolve()
     launch = json.loads(config_path.read_text())
     bank_cfg = launch["shared_bank"]
+    protocol = launch.get("schema")
+    if protocol not in PROTOCOLS:
+        raise RuntimeError(f"unsupported coverage-pilot protocol schema: {protocol}")
+    STRATA, BANK_SCHEMA, SCENE_SMOKE_SCHEMA = PROTOCOLS[protocol]
+    if tuple(bank_cfg.get("strata", ())) != STRATA:
+        raise RuntimeError(f"{protocol} strata differ from its registered implementation: {bank_cfg.get('strata')}")
     if (bank_cfg["rollouts"], bank_cfg["duration_s"], bank_cfg["sensor_wh"],
             bank_cfg["physics_dt_s"], bank_cfg["radiance_endpoint_hz"], bank_cfg["expected_frames_per_rollout"]) != (
             TOTAL_ROLLOUTS, 2.0, [346, 260], .001, 100, 201):
@@ -636,7 +690,7 @@ def main() -> None:
     if not isinstance(design, list):
         raise RuntimeError("coverage pilot config must freeze its 8 episode factor rows")
     root = args.output_root.resolve(); root.mkdir(parents=True, exist_ok=False)
-    episodes = registered_episodes(design)
+    episodes = registered_episodes(design, bank_cfg, launch["coverage_factors"])
     all_episode_ids = [episode["id"] for episode in episodes]
     if args.episode_id is not None:
         if args.episode_id not in all_episode_ids:

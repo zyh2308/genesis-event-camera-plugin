@@ -30,7 +30,16 @@ def main() -> None:
     bank, root = args.bank_root.resolve(), args.v2e_root.resolve()
     split = json.loads((bank / "registered_split.json").read_text())
     bank_manifest = json.loads((bank / "bank_manifest.json").read_text())
-    smoke = bank_manifest.get("schema") == "stage5_flow_scene_coverage_single_scene_smoke_v2"
+    bank_schema = bank_manifest.get("schema")
+    smoke_schemas = {
+        "stage5_flow_scene_coverage_single_scene_smoke_v2",
+        "stage5_flow_scene_coverage_single_scene_smoke_v3",
+    }
+    smoke = bank_schema in smoke_schemas
+    protocol_v3 = bank_schema in {
+        "stage5_flow_scene_coverage_single_scene_smoke_v3",
+        "stage5_flow_scene_coverage_shared_bank_v3",
+    }
     if smoke:
         if bank_manifest.get("scope") != "one_registered_rollout_smoke" or len(split) != 1:
             raise RuntimeError("single-scene smoke manifest/split contract mismatch")
@@ -71,7 +80,9 @@ def main() -> None:
             "stratum": item["stratum"],
             "coverage_factors": {key: item[key] for key in (
                 "texture_pattern", "texture_contrast", "speed_class", "speed_scale",
-                "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class")},
+            "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class",
+            "floor_tiles_per_side", "floor_extent_m", "object_top_panels_per_side", "tile_gap_fraction",
+            "occlusion_crossing_base_x_m")},
             "raw_events_path": str(path),
             "raw_events_sha256": sha256(path),
             "raw_events_size_bytes": path.stat().st_size,
@@ -94,7 +105,11 @@ def main() -> None:
     elif len(rows) != 8 or sum(row["split"] == "train" for row in rows) != 4:
         raise RuntimeError("V2E paired pilot bank incomplete or split mismatch")
     manifest = {
-        "schema": "stage5_v2e_coverage_single_scene_smoke_v2" if smoke else "stage5_v2e_coverage_pilot_raw_events_v2",
+        "schema": (
+            "stage5_v2e_coverage_single_scene_smoke_v3" if protocol_v3 else "stage5_v2e_coverage_single_scene_smoke_v2"
+        ) if smoke else (
+            "stage5_v2e_coverage_pilot_raw_events_v3" if protocol_v3 else "stage5_v2e_coverage_pilot_raw_events_v2"
+        ),
         "scope": bank_manifest["scope"],
         "complete_balanced_pilot": not smoke,
         "created_utc": datetime.now(timezone.utc).isoformat(),

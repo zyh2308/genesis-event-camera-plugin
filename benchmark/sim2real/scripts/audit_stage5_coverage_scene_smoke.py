@@ -88,7 +88,12 @@ def main() -> None:
     bank_manifest = json.loads(bank_manifest_path.read_text())
     split = json.loads(split_path.read_text())
     v2e_manifest = json.loads(v2e_manifest_path.read_text())
-    if bank_manifest.get("schema") != "stage5_flow_scene_coverage_single_scene_smoke_v2" or len(split) != 1:
+    bank_schema = bank_manifest.get("schema")
+    smoke_schemas = {
+        "stage5_flow_scene_coverage_single_scene_smoke_v2",
+        "stage5_flow_scene_coverage_single_scene_smoke_v3",
+    }
+    if bank_schema not in smoke_schemas or len(split) != 1:
         raise RuntimeError("this audit requires exactly one registered scene-smoke rollout")
     if not bank_manifest.get("complete_balanced_pilot") is False:
         raise RuntimeError("one-scene smoke must not claim full balanced-pilot completion")
@@ -97,7 +102,7 @@ def main() -> None:
     if sha256(bank_path) != bank_manifest.get("bank_sha256"):
         raise RuntimeError("physical bank HDF5 hash mismatch")
     rollout = split[0]["id"]
-    if rollout != "s5p_00_train" or bank_manifest.get("generated_episode_ids") != [rollout]:
+    if bank_manifest.get("generated_episode_ids") != [rollout]:
         raise RuntimeError(f"unexpected or unregistered smoke rollout {rollout}")
     v2e_raw_path, v2e_status_path = locate_shard_artifacts(v2e, rollout)
     v2e_status = json.loads(v2e_status_path.read_text())
@@ -117,6 +122,10 @@ def main() -> None:
         eg = np.asarray(group["eventgenesis_events_txyp"], dtype=np.float64)
         K = np.asarray(group["camera_intrinsics_K_px"], dtype=np.float64)
         segmentation = np.asarray(group["segmentation_link_idx"], dtype=np.int32)
+        target_link_ids_raw = group.attrs["target_object_segmentation_link_ids"]
+        if isinstance(target_link_ids_raw, bytes):
+            target_link_ids_raw = target_link_ids_raw.decode("utf-8")
+        target_link_ids = [int(value) for value in json.loads(str(target_link_ids_raw))]
         saturated_channel_fraction_mean = float(group.attrs["render_signal_saturated_channel_fraction_mean"])
         saturated_channel_fraction_max = float(group.attrs["render_signal_saturated_channel_fraction_max"])
         renderer_backend = str(group.attrs["genesis_renderer_backend"])
@@ -132,6 +141,11 @@ def main() -> None:
         raise RuntimeError("shared 30 ms flow labels/validity do not cover all endpoints")
     if K.shape != (3, 3) or not np.isfinite(K).all() or eg.ndim != 2 or eg.shape[1] != 4:
         raise RuntimeError("camera or EventGenesis artifact schema invalid")
+    if not target_link_ids:
+        raise RuntimeError("shared bank does not record target object/texture segmentation link IDs")
+    visible_target_pixels = np.count_nonzero(
+        np.isin(segmentation, np.asarray(target_link_ids, dtype=np.int32)), axis=(1, 2)
+    )
     if len(eg) and (not np.isfinite(eg).all() or np.any(np.diff(eg[:, 0]) < 0)):
         raise RuntimeError("EventGenesis events are non-finite or unsorted")
     with h5py.File(v2e_raw_path, "r") as raw:
@@ -182,16 +196,39 @@ def main() -> None:
             warp_common &= (map_x >= 0) & (map_x <= 345) & (map_y >= 0) & (map_y <= 259)
         photo_values = {}
         zero = np.zeros_like(flow[index])
-        photo_values["zero"] = photo_warp(gray[endpoint], gray[endpoint + 3], zero, warp_common)
-        photo_values["gt"] = photo_warp(gray[endpoint], gray[endpoint + 3], flow[index], warp_common)
-        photo_values["reverse"] = photo_warp(gray[endpoint], gray[endpoint + 3], -flow[index], warp_common)
-        photo_values["mistimed_plus_8_windows"] = photo_warp(gray[endpoint], gray[endpoint + 3], flow[mistimed_index], warp_common)
+        candidate_flows = {
+            "zero": zero,
+            "gt": flow[index],
+            "reverse": -flow[index],
+            "mistimed_plus_8_windows": flow[mistimed_index],
+        }
+        for flow_name, candidate_flow in candidate_flows.items():
+            photo_values[flow_name] = photo_warp(
+                gray[endpoint], gray[endpoint + 3], candidate_flow, warp_common
+            )
         # The moving-texture subset is deliberately shared by all warp variants.
         moving_texture_common = moving_texture & warp_common
         photo_values["moving_texture_subset_pixels"] = int(moving_texture_common.sum())
         photo_values["moving_texture_mae_zero"] = photo_warp(gray[endpoint], gray[endpoint + 3], zero, moving_texture_common)
         photo_values["moving_texture_mae_gt"] = photo_warp(gray[endpoint], gray[endpoint + 3], flow[index], moving_texture_common)
         photo_values["moving_texture_mae_reverse"] = photo_warp(gray[endpoint], gray[endpoint + 3], -flow[index], moving_texture_common)
+        region_masks = {
+            "full_valid_common_inbounds": warp_common,
+            "event_active_union_valid": valid_i & union & warp_common,
+            "gt_motion_ge_0_5px_valid": valid_i & moving & warp_common,
+            "texture_gradient_gt_1_over_255_valid": valid_i & textured & warp_common,
+            "moving_texture_intersection": moving_texture_common,
+        }
+        photo_values["regions"] = {
+            region_name: {
+                "pixels": int(region_mask.sum()),
+                "mae": {
+                    flow_name: photo_warp(gray[endpoint], gray[endpoint + 3], candidate_flow, region_mask)
+                    for flow_name, candidate_flow in candidate_flows.items()
+                },
+            }
+            for region_name, region_mask in region_masks.items()
+        }
         rows.append({
             "sample_id": f"{rollout}/dt1_{endpoint * 10:03d}",
             "window_index": index,
@@ -211,7 +248,7 @@ def main() -> None:
         })
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schema": "stage5_flow_scene_smoke_audit_v1",
+        "schema": "stage5_flow_scene_smoke_audit_v2" if bank_schema.endswith("_v3") else "stage5_flow_scene_smoke_audit_v1",
         "status": "complete",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "real_data_used": False,
@@ -234,6 +271,28 @@ def main() -> None:
         "ground_truth": {"flow_shape": list(flow.shape), "valid_shape": list(valid.shape),
                          "unit": "forward source-pixel displacement per 30 ms endpoint interval",
                          "valid_fraction_mean": float(valid.mean())},
+        "segmentation_visibility": {
+            "target_object_and_texture_link_ids": target_link_ids,
+            "visible_target_pixels_per_endpoint": {
+                "min": int(visible_target_pixels.min()),
+                "mean": float(visible_target_pixels.mean()),
+                "max": int(visible_target_pixels.max()),
+                "distinct_endpoint_counts": int(len(np.unique(visible_target_pixels))),
+                "endpoints_with_zero_visible_target_pixels": int(np.count_nonzero(visible_target_pixels == 0)),
+            },
+            "interpretation": "renderer segmentation pixels for registered physical object and texture links; count change is a visibility diagnostic, not a quality score",
+        },
+        "scene_design": {key: split[0].get(key) for key in (
+            "stratum", "split", "scene_seed", "texture_pattern", "texture_contrast", "speed_class", "speed_scale",
+            "amplitude_class", "amplitude_scale", "size_class", "size_range_m", "layout_class",
+            "floor_tiles_per_side", "floor_extent_m", "object_top_panels_per_side", "tile_gap_fraction",
+            "occlusion_crossing_base_x_m")},
+        "diagnostic_thresholds": {
+            "gt_motion": "flow magnitude >= 0.5 source pixels per 30 ms interval",
+            "texture": "Sobel gradient magnitude of linearized display luma > 1/255",
+            "event_active_support": "any nonzero channel in the registered Gaussian-count event representation; shared union of normal EventGenesis and V2E events",
+            "photo_warp_candidate_mask": "shared GT-valid pixels whose mapped target coordinates are in bounds for zero, GT, reverse and mistimed flow",
+        },
         "analytic_warp_fixture": analytic_warp_fixture(),
         "window_rule": "independently recounted half-open event windows (t_i,t_i+3] on shared 100 Hz endpoints",
         "support_rule": "common normal-input active union intersect shared valid GT; no event-count filtering",
