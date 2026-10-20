@@ -10,7 +10,7 @@ import numpy as np
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
-from convert_hqf_bag_rosbags import image_endpoint_offsets
+from convert_hqf_bag_rosbags import image_endpoint_offsets, source_image_timestamp_keep_indices
 
 
 class HQFTimeIndexContractTests(unittest.TestCase):
@@ -49,6 +49,23 @@ class HQFTimeIndexContractTests(unittest.TestCase):
             image_endpoint_offsets(np.asarray([0.1]), np.asarray([0.2, 0.2]))
         with self.assertRaisesRegex(ValueError, "finite"):
             image_endpoint_offsets(np.asarray([0.1]), np.asarray([np.nan]))
+
+    def test_empty_event_stream_has_zero_offsets(self):
+        offsets = image_endpoint_offsets(
+            np.asarray([], dtype=np.float64),
+            np.asarray([0.01, 0.02, 0.03], dtype=np.float64),
+        )
+        self.assertEqual(offsets.tolist(), [0, 0, 0])
+
+    def test_bad_source_image_time_is_recorded_without_sorting_or_imputation(self):
+        keep, excluded = source_image_timestamp_keep_indices(
+            np.asarray([100, 200, 50, 300, 300, 400], dtype=np.int64)
+        )
+        self.assertEqual(keep, [0, 1, 3, 5])
+        self.assertEqual([row["source_image_index"] for row in excluded], [2, 4])
+        self.assertEqual([row["header_timestamp_ns"] for row in excluded], [50, 300])
+        self.assertEqual(excluded[0]["previous_retained_source_image_index"], 1)
+        self.assertEqual(excluded[1]["previous_retained_source_image_index"], 3)
 
 
 if __name__ == "__main__":

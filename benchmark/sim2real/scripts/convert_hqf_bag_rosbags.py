@@ -32,6 +32,14 @@ def stamp_seconds(stamp: Any) -> float:
     return float(sec) + float(nsec) * 1e-9
 
 
+def stamp_nanoseconds(stamp: Any) -> int:
+    sec = getattr(stamp, "sec", getattr(stamp, "secs", None))
+    nsec = getattr(stamp, "nanosec", getattr(stamp, "nsec", getattr(stamp, "nsecs", None)))
+    if sec is None or nsec is None:
+        raise ValueError(f"ROS timestamp object lacks seconds/nanoseconds fields: {type(stamp)!r}")
+    return int(sec) * 1_000_000_000 + int(nsec)
+
+
 def image_endpoint_offsets(events_ts: np.ndarray, images_ts: np.ndarray) -> np.ndarray:
     """Return EVREAL end-exclusive event offsets for right-inclusive endpoints."""
     events_ts = np.asarray(events_ts, dtype=np.float64)
@@ -50,6 +58,31 @@ def image_endpoint_offsets(events_ts: np.ndarray, images_ts: np.ndarray) -> np.n
     if np.any(events_ts[offsets[has_following]] <= images_ts[has_following]):
         raise RuntimeError("an event at or before the endpoint was omitted from its event offset")
     return offsets
+
+
+def source_image_timestamp_keep_indices(image_timestamps_ns: np.ndarray) -> tuple[list[int], list[dict[str, int | str]]]:
+    """Keep bag-order frames whose header stamp advances strictly; never sort or impute."""
+    timestamps = np.asarray(image_timestamps_ns)
+    if timestamps.ndim != 1 or not np.issubdtype(timestamps.dtype, np.integer):
+        raise ValueError("source image timestamps must be a one-dimensional integer nanosecond array")
+    if len(timestamps) == 0:
+        raise ValueError("source image timestamp array is empty")
+    keep: list[int] = []
+    excluded: list[dict[str, int | str]] = []
+    for source_index, timestamp_ns in enumerate(timestamps.tolist()):
+        if keep and timestamp_ns <= int(timestamps[keep[-1]]):
+            excluded.append({
+                "source_image_index": source_index,
+                "reason": "header_timestamp_not_strictly_after_previous_retained_image",
+                "header_timestamp_ns": int(timestamp_ns),
+                "previous_retained_source_image_index": keep[-1],
+                "previous_retained_header_timestamp_ns": int(timestamps[keep[-1]]),
+            })
+        else:
+            keep.append(source_index)
+    if len(keep) < 2:
+        raise ValueError("fewer than two strictly increasing HQF image endpoints remain after source-integrity filtering")
+    return keep, excluded
 
 
 def inspect_bag(bag_path: Path) -> dict:
@@ -117,7 +150,8 @@ def convert_bag(
     event_times: list[np.ndarray] = []
     polarity_blocks: list[np.ndarray] = []
     images: list[np.ndarray] = []
-    image_times: list[float] = []
+    image_times_ns: list[int] = []
+    image_bag_times_ns: list[int] = []
     image_encodings: set[str] = set()
     event_message_count = 0
     image_message_count = 0
@@ -138,7 +172,7 @@ def convert_bag(
                 image_type = connection.msgtype
         typestore.register(definitions)
 
-        for connection, _bag_timestamp, rawdata in reader.messages(connections=connections):
+        for connection, bag_timestamp, rawdata in reader.messages(connections=connections):
             message = typestore.deserialize_ros1(rawdata, connection.msgtype)
             if connection.topic == event_topic:
                 event_message_count += 1
@@ -156,7 +190,8 @@ def convert_bag(
                 image_message_count += 1
                 image_encodings.add(str(message.encoding))
                 images.append(image_to_mono8(message))
-                image_times.append(stamp_seconds(message.header.stamp))
+                image_times_ns.append(stamp_nanoseconds(message.header.stamp))
+                image_bag_times_ns.append(int(bag_timestamp))
 
     if not event_blocks or not images:
         raise ValueError("registered HQF topics produced no decoded event records or images")
@@ -164,7 +199,8 @@ def convert_bag(
     events_ts_absolute = np.concatenate(event_times)
     events_p = np.concatenate(polarity_blocks)
     images_array = np.stack(images, axis=0)
-    images_ts_absolute = np.asarray(image_times, dtype=np.float64)
+    source_image_times_ns = np.asarray(image_times_ns, dtype=np.int64)
+    images_ts_absolute = source_image_times_ns.astype(np.float64) * 1e-9
     if len(events_xy) != len(events_ts_absolute) or len(events_xy) != len(events_p):
         raise RuntimeError("decoded event x/y/t/p lengths differ")
     if events_xy.ndim != 2 or events_xy.shape[1] != 2:
@@ -175,8 +211,23 @@ def convert_bag(
         raise ValueError("decoded HQF timestamps contain NaN or Inf")
     if np.any(np.diff(events_ts_absolute) < 0):
         raise ValueError("decoded HQF event timestamps are not sorted in source message order")
+    # Do not reorder images by timestamp or infer replacement times. If a
+    # source header timestamp would move backward or repeat relative to the
+    # last accepted frame, omit that image target and record its source index.
+    # The event stream remains intact; the next valid endpoint consumes all
+    # intervening events. This is a fixed source-integrity rule, independent
+    # of model output or score.
+    keep_image_indices, excluded_images = source_image_timestamp_keep_indices(source_image_times_ns)
+    for entry in excluded_images:
+        source_index = int(entry["source_image_index"])
+        entry.update({
+            "bag_record_timestamp_ns": image_bag_times_ns[source_index],
+            "image_payload_sha256": hashlib.sha256(images[source_index].tobytes()).hexdigest(),
+        })
+    images_array = images_array[np.asarray(keep_image_indices, dtype=np.int64)]
+    images_ts_absolute = images_ts_absolute[np.asarray(keep_image_indices, dtype=np.int64)]
     if np.any(np.diff(images_ts_absolute) <= 0):
-        raise ValueError("decoded HQF image timestamps are not strictly increasing; refusing silent repair")
+        raise RuntimeError("source-integrity filter failed to produce strictly increasing HQF image timestamps")
     height, width = map(int, images_array.shape[1:])
     if len(events_xy) and (
         events_xy[:, 0].min() < 0 or events_xy[:, 0].max() >= width
@@ -214,6 +265,10 @@ def convert_bag(
             "event_timestamp_unit": "seconds, ROS event ts",
             "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
             "time_origin_absolute_s": origin,
+            "source_image_message_count": image_message_count,
+            "retained_image_count": int(len(keep_image_indices)),
+            "excluded_source_images": excluded_images,
+            "image_timestamp_integrity_rule": "retain source bag order; never sort or impute timestamps; omit a source image whose header timestamp is <= the last retained image timestamp, record its source index and header/bag timestamps, and let the next retained endpoint consume intervening events",
             "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
             "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
         }
@@ -229,6 +284,9 @@ def convert_bag(
                        "image_topic": image_topic, "image_message_type": image_type, "image_messages": image_message_count},
             "event_count": int(len(events_ts)),
             "image_count": int(len(images_ts)),
+            "source_image_message_count": image_message_count,
+            "excluded_source_images": excluded_images,
+            "retained_source_image_indices": keep_image_indices,
             "sensor_resolution_hw": [height, width],
             "event_timestamp_absolute_s": [float(events_ts_absolute[0]), float(events_ts_absolute[-1])],
             "image_timestamp_absolute_s": [float(images_ts_absolute[0]), float(images_ts_absolute[-1])],

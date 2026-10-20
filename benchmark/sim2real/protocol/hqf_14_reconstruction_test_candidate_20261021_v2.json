@@ -1,0 +1,106 @@
+{
+  "data_integrity": {
+    "known_raw_data_exception": {
+      "evidence": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_source_timing_audit_summary.json",
+      "header_time_backward_jump_from_previous_s": 2147.396356,
+      "raw_bag_manifest": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_raw_download_manifest.json",
+      "retained_image_message_count_expected": 1266,
+      "sequence": "engineering_posters",
+      "source_image_index_zero_based": 528,
+      "source_image_message_count": 1267
+    },
+    "nonmonotonic_endpoint_rule": "Before inference, omit the offending reference target and its endpoint when its header timestamp is <= the last retained timestamp. Preserve the event stream unchanged; the next retained endpoint consumes all events since the previous retained endpoint. Record original source index, header timestamp, bag record timestamp, and image payload hash. Apply the rule without inspecting model outputs or metric values.",
+    "score_gate": "false until research review freezes this data-integrity rule; no candidate model has been scored on HQF",
+    "sequence_coverage": "All 14 registered HQF sequences remain in the dataset-level aggregate; only source frames that fail the fixed monotonic timestamp integrity rule are omitted.",
+    "source_image_order": "Preserve ROS bag record order. Use sensor_msgs/Image header.stamp as the image endpoint timestamp; do not sort frames or impute replacement timestamps.",
+    "strict_time_rule": "Retain a frame only when its header timestamp is strictly greater than the previous retained frame timestamp."
+  },
+  "dataset_role": {
+    "decision_source": "reviews/recon_flow_localization_20261019/REVIEW.md",
+    "extension": "HS-ERGB only; not a substitute for HQF primary",
+    "primary": "HQF all 14 sequences",
+    "rationale": "HQF supplies high-quality aligned reference frames for event reconstruction and is natively supported by the locked EVREAL MemMapDataset configuration; HS-ERGB remains a video-interpolation extension requiring a distinct target-time protocol."
+  },
+  "expected_converted_files_per_sequence": [
+    "events_ts.npy",
+    "events_xy.npy",
+    "events_p.npy",
+    "images.npy",
+    "images_ts.npy",
+    "image_event_indices.npy",
+    "metadata.json",
+    "conversion_manifest.json"
+  ],
+  "model": {
+    "architecture": "pinned event_cnn_minimal E2VIDRecurrent",
+    "geometry": "pad native 180x240 using the pinned E2VID CropParameters, run inference, crop output back to the exact native raster",
+    "inference_input": "events only, five signed temporal bins between reference-frame endpoints",
+    "model_args_source": "configs/stage4_corrected_v2_flowdt1_seed0.json::reconstruction.model_args",
+    "model_args_source_sha256": "48afa40d4afe36c287858b9d87556c4250b9535ade35a3952ff4cced53268074",
+    "public_pretrained_checkpoint_substitution": false,
+    "sequence_start": "reset recurrent state once at the first endpoint of each sequence; never carry state across sequences",
+    "weights": "new corrected-Stage5 synthetic-best checkpoint, selected only by synthetic LPIPS-VGG validation"
+  },
+  "photometry_and_metrics": {
+    "aggregation": "arithmetic mean over evaluated frames within each sequence; then equal arithmetic mean over all 14 sequences",
+    "brightness_or_histogram_fit_to_real_GT": false,
+    "checkpoint_selection_uses_real_data": false,
+    "metric_values_per_frame": true,
+    "model_output_and_reference_range": "float32 [0,1] on the same native grayscale pixel grid",
+    "primary_metric": "LPIPS-AlexNet",
+    "secondary_metrics": [
+      "SSIM",
+      "PSNR",
+      "MSE"
+    ],
+    "sequence_weights": "equal; never proportional to frame count"
+  },
+  "raw_bag_contract": {
+    "event_polarity_encoding": "0=OFF, 1=ON",
+    "event_topic": "/dvs/events",
+    "extension": ".bag",
+    "native_sensor_hw": [
+      180,
+      240
+    ],
+    "reference_image_topic": "/dvs/image_raw",
+    "source_time_unit": "ROS header timestamp seconds"
+  },
+  "real_data_used_for_training_or_selection": false,
+  "real_scores_authorized": false,
+  "real_scoring_enabled": false,
+  "schema": "hqf_14_reconstruction_test_candidate_v2",
+  "sequences": [
+    "bike_bay_hdr",
+    "boxes",
+    "desk",
+    "desk_fast",
+    "desk_hand_only",
+    "desk_slow",
+    "engineering_posters",
+    "high_texture_plants",
+    "poster_pillar_1",
+    "poster_pillar_2",
+    "reflective_materials",
+    "slow_and_fast_desk",
+    "slow_hand",
+    "still_life"
+  ],
+  "sources": {
+    "evreal_hqf_config_sha256": "5ff01881f21f9a3eb079793231b57447a7ce4413e04ea2e7bcab8eb5ad344559",
+    "official_dataset_folder": "https://drive.google.com/drive/folders/18Xdr6pxJX0ZXTrXW9tK0hC3ZpmKDIt6_",
+    "official_evreal_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+    "official_evreal_hqf_config": "config/dataset/HQF.json",
+    "official_paper_dataset_page": "https://timostoff.github.io/20ecnn",
+    "sequence_inventory_crosscheck": "fixed 14-name set in the official-source-compatible HQF conversion inventory; names checked against published E2HQV catalog"
+  },
+  "status": "data_integrity_candidate_unscored_pending_research_freeze",
+  "time_alignment": {
+    "event_window": "EVREAL MemMapDataset receives end-exclusive offsets; each model input slice is events with previous image timestamp < t <= current reference image timestamp. The first interval begins at event offset 0, and no event after the current image is included.",
+    "first_endpoint": "use the pinned EVREAL endpoint convention and preserve its initial event range; no future event is allowed",
+    "nonmonotonic_source_images": "Apply data_integrity.nonmonotonic_endpoint_rule before endpoint association and event-only inference; no timestamps are fabricated.",
+    "pinned_EVREAL_legacy_difference": "The pinned EVREAL bag_to_npy helper computes searchsorted(..., right)-1 but its MemMapDataset consumes the value as an exclusive event offset, omitting one event at each endpoint. This adapter uses searchsorted(..., right) end-exclusive offsets to implement the registered (previous,current] interval exactly; the dataset/model/metric interface remains pinned.",
+    "reference_endpoint": "reference image timestamp",
+    "sequence_end": "include the final reference endpoint exactly once"
+  }
+}
