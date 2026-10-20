@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -103,6 +104,8 @@ def main() -> None:
                         choices=["indoor_flying1", "indoor_flying2", "indoor_flying3", "outdoor_day1"],
                         default=["indoor_flying1", "indoor_flying2", "indoor_flying3", "outdoor_day1"])
     parser.add_argument("--skip-calibration", action="store_true")
+    parser.add_argument("--seed-from", type=Path,
+                        help="copy already verified official MVSEC files from a local Stage-3 root before fetching missing files")
     args = parser.parse_args()
 
     root = args.root.resolve()
@@ -120,6 +123,37 @@ def main() -> None:
             "real_scoring_enabled": False, "real_scores_computed": False,
             "requested_sequences": args.sequences, "files": {},
         }
+
+    if args.seed_from:
+        source_root = args.seed_from.resolve()
+        for name in ("indoor_flying1_data.hdf5", "indoor_flying1_gt.hdf5", "indoor_flying_calib.zip"):
+            folder, file_id, kind = FILES[name]
+            source_path = source_root / folder / name
+            output_path = root / folder / name
+            if not source_path.is_file():
+                continue
+            digest = sha256(source_path)
+            existing = manifest["files"].get(name)
+            if output_path.exists():
+                if not existing or existing.get("sha256") != sha256(output_path):
+                    raise FileExistsError(f"refusing to replace unregistered/different staged file: {output_path}")
+            else:
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source_path, output_path)
+            if sha256(output_path) != digest:
+                raise IOError(f"copied local MVSEC file hash mismatch: {output_path}")
+            validation = validate_hdf5(output_path, kind) if name.endswith((".h5", ".hdf5")) else validate_archive(output_path)
+            manifest["files"][name] = {
+                "name": name, "path": str(output_path), "drive_file_id": file_id,
+                "source_folder": folder, "kind": kind, "status": "complete",
+                "started_utc": utc_now(), "finished_utc": utc_now(),
+                "size_bytes": output_path.stat().st_size, "sha256": digest,
+                "hdf5_datasets": validation if isinstance(validation, dict) else None,
+                "archive_members": validation if isinstance(validation, list) else None,
+                "transfer": "copied_and_hash_verified_from_existing_local_stage3_file",
+                "origin_path": str(source_path),
+            }
+            atomic_json(manifest_path, manifest)
 
     expected_names = []
     for sequence in args.sequences:
@@ -154,7 +188,7 @@ def main() -> None:
         try:
             downloaded = gdown.download(
                 id=file_id, output=str(path), quiet=False,
-                resume=True, use_cookies=False, verify=True,
+                resume=True, use_cookies=True, verify=True,
             )
             if downloaded is None or not path.is_file() or path.stat().st_size == 0:
                 raise IOError("gdown did not produce a non-empty output file")
@@ -171,6 +205,9 @@ def main() -> None:
             entry.update({"status": "failed", "finished_utc": utc_now(),
                           "error_type": type(exc).__name__, "error": str(exc)})
             failures.append(name)
+            manifest["status"] = "failed"
+            manifest["finished_utc"] = utc_now()
+            manifest["failed_files"] = failures
             atomic_json(manifest_path, manifest)
             raise
         atomic_json(manifest_path, manifest)

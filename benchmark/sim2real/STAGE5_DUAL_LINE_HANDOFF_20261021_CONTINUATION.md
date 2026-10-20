@@ -1,13 +1,13 @@
 # Stage 5 双线执行交接（续）— 2026-10-21
 
-本页续接前一份 [Stage 5 双线交接](STAGE5_DUAL_LINE_HANDOFF_20261021.md)，保留旧页作为历史快照。g1 最近一次资源/进程刷新为 **2026-10-20 20:23:46 UTC / 2026-10-21 05:23:46 JST**；光流 bank 的 progress 文件更新于20:22:25 UTC，记录1/8完成、第二条 rollout 到60/201 endpoints。重建两组 fixture verifier 的更正回执在20:20:31 UTC完成。当前范围只含重建和光流；位姿按用户要求暂缓，没有执行 E-POSE 访问。训练、checkpoint 选择只使用合成数据，真实评分保持关闭。冻结核心 `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未改。实时记录见 [20:23:46 状态 JSON](evidence/S5/20261021-recon-flow-localization/live_observation_20261020T202346Z.json)。
+本页续接前一份 [Stage 5 双线交接](STAGE5_DUAL_LINE_HANDOFF_20261021.md)，保留旧页作为历史快照。最近一次 g1 状态读取为 **2026-10-20 20:42:53 UTC / 2026-10-21 05:42:53 JST**；重建两组的 run_summary 在20:39:30均报告 complete、各12,000 updates。光流 bank 在20:42:53的 PID 检查仍存活，progress 文件20:41:48更新至2/8、当前 `s5q_01_train` 到80/201 endpoints。g1直接连接官方 Google Drive 的首次下载于20:38:37报 `ConnectTimeout`，runner退出码1、未生成数据文件；原失败清单保留。之后在WSL用同一官方室内标定 Drive ID 的 gdown 下载1.29 MB文件成功，SHA与已存官方标定一致；已修复下载器失败状态写入，准备在隔离本地stage5目录串行获取其余完整文件后上传g1新目录。当前范围只含重建和光流；位姿按用户要求暂缓，没有执行 E-POSE 访问。训练、checkpoint 选择只使用合成数据，真实评分保持关闭。冻结核心 `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未改。实时记录见 [20:42:53 状态 JSON](evidence/S5/20261021-recon-flow-localization/live_observation_20261020T204253Z.json)；[20:40:53 JSON](evidence/S5/20261021-recon-flow-localization/live_observation_20261020T204053Z.json)及更早快照保留作历史。
 
 ## 当前状态
 
 | 线路 | 已实际完成 | 当前运行/未完成 | 下一步 |
 |---|---|---|---|
 | **重建 / E2VID+** | 修正 TC 后 seed 0 两组各完成 200 epoch / 12,000 updates，run summary 为 `complete`，best/final 权重及完整 JSONL 曲线都在 g1。HQF 14/14 文件已转换并校验；HQF 主测、HS-ERGB 扩展、LPIPS-Alex 主指标和序列等权规则已按研究 review 登记，real score 关闭。两组候选模型都已在固定合成物理样本上完成事件输入→递归推理→200张输出→指标→独立 manifest/hash 复核。 | 未在 HQF 上运行候选 checkpoint 或计算真实分数。 | 归档验证回执和完整训练曲线摘要；保持真实评分门关闭。 |
-| **光流 / STE-FlowNet dt1** | 既有固定训练窗的监督记忆诊断两组各200 updates均通过，active-union/full EPE 均降至零流基线以下。一个新 v3 共享场景已完成 paired event、GT 和线性化 display proxy 审计，真值 warp 的事件活跃运动纹理区域误差优于零流/反向/错时对照。解析 warp fixture `(2.25,-1.5)` 通过；既有synthetic-best输入置零/时间反转诊断结果已复核并纳入报告。 | g1 当前运行新的八 rollout 物理 bank；20:23:46 UTC进程仍存活，GPU0 worker为本任务 PID `2229727`；progress文件最近更新时间20:22:25 UTC，`s5q_00_train` 完成、`s5q_00_val` 到60/201 endpoints。GPU0本任务占用7,920 MiB、利用率92%；GPU2空闲，其他用户GPU进程未触碰。估算余下约1.2–1.8小时，实际时间取决于后续场景渲染速度。V2E八 rollout配对生成和新版STE自监督短训尚未开始。 | 不按事件数筛样本；完成同一物理 bank 后，在新鲜 GPU 检查通过时并行配对生成 V2E，统计共同覆盖，再启动固定100 updates/arm 的 STE 原自监督目标短诊断与独立 rollout 验证。 |
+| **光流 / STE-FlowNet dt1** | 既有固定训练窗的监督记忆诊断两组各200 updates均通过，active-union/full EPE 均降至零流基线以下。一个新 v3 共享场景已完成 paired event、GT 和线性化 display proxy 审计，真值 warp 的事件活跃运动纹理区域误差优于零流/反向/错时对照。解析 warp fixture `(2.25,-1.5)` 通过；既有synthetic-best输入置零/时间反转诊断结果已复核并纳入报告。 | g1最近进程检查（20:42:53 UTC）：八 rollout bank的runner/worker PID `2229637/2229727`仍存活；progress更新时间20:41:48 UTC，已完成2/8，当前 `s5q_01_train` 到80/201，约0.137 endpoint/s。GPU0本任务显存8,472 MiB、利用率90%；GPU2空闲，其他用户GPU进程未触碰。完整八条的耗时仍取决于渲染速率，先前估时不再作为当前预测。V2E配对生成和新版STE自监督短训尚未开始。 | 等共享物理 bank完成；再做 fresh GPU/PID ownership检查，配对生成V2E，统计共同覆盖；之后启动固定100 updates/arm 的STE原自监督目标短诊断与独立rollout验证。 |
 | **位姿** | 无新增动作，按用户要求暂缓。 | E-POSE访问与下载探测暂停。 | 等用户通知后恢复。 |
 
 ## 重建：既有完整训练和新合成端到端验证
@@ -32,7 +32,14 @@ V2E 同样已产出200张 float32 重建和指标文件（run：`/home/zhaoyuhan
 
 ### 实际 STE 网络固定窗拟合
 
-此前对 `s2_00/dt1_144` 的独立 GT 监督诊断两组各200 optimizer updates，关闭随机增强和样本轮换，模型 seed 0 配对初始化。EventGenesis full valid EPE 从 `0.56700` 降至 `0.06259` px/30ms、共同事件活跃 EPE 从 `1.68166` 降至 `0.08011`；V2E 分别从 `0.54841` 降至 `0.04702`、从 `0.97759` 降至 `0.07829`。零流基线是 full `0.54151`、active `0.32972`。所以两组实际 STE 网络和优化路径能拟合一个已登记样本；这不证明独立 rollout 泛化，也不涉及原自监督正式目标。checkpoint 边界恢复和权重哈希见 `flow_paired_fixed_sample_fit_summary.json` 及 per-arm 证据目录。
+此前对 `s2_00/dt1_144` 的独立 GT 监督诊断两组各200 optimizer updates，关闭随机增强和样本轮换，模型 seed 0 配对初始化。样本由物理 bank ID 预先固定，数据清单 SHA256 为 `1f9aff5164c71301a7406c9981c31ef0d5df381df81641cf2a1d397e8df246b1`。零流基线是 full `0.54151`、共同事件活跃区 `0.32972` px/30ms。两个实际 STE 网络都有真实参数变化，且 EPE 显著下降：
+
+| arm | optimizer updates | full EPE @0 → @100 → @200 | common-active EPE @0 → @100 → @200 | parameter ΔL2 @200 |
+|---|---:|---:|---:|---:|
+| EventGenesis | 200 | `0.56700 → 0.10373 → 0.06259` | `1.68166 → 0.16163 → 0.08011` | `100.608` |
+| V2E | 200 | `0.54841 → 0.12264 → 0.04702` | `0.97759 → 0.14988 → 0.07829` | `108.777` |
+
+所以两组实际 STE 网络和优化路径都能拟合一个已登记样本，训练窗口误差也低于同一支持上的零流基线；这只证明单样本记忆能力，不证明独立 rollout 泛化，也不涉及原自监督正式目标。checkpoint 边界恢复、恢复后普通 `eval()` 推理复现、权重哈希和逐100步日志见 [`flow_paired_fixed_sample_fit_summary.json`](evidence/S5/20261021-recon-flow-localization/flow_paired_fixed_sample_fit_summary.json) 及 per-arm 证据目录。
 
 ### 已完成的 synthetic-best 输入扰动诊断
 
@@ -61,14 +68,18 @@ V2E 同样已产出200张 float32 重建和指标文件（run：`/home/zhaoyuhan
 
 ### 八 rollout 扩展仍在生成
 
+20:42:53 UTC 的真实进程检查确认 tmux `s5_flow_v3_full_bank_eg_20261021` 中 runner/worker PID `2229637/2229727` 属于本项目账号，worker 正在 GPU0 执行；配置 SHA256 `a64ca5000cbc40e8059450d4c6819b3206ffb0fca6715f17547733fdc4e4febe`，源码快照为 `7c55e3e5c2b253a13ebae5e2ba99e6f158809bc9`。当前 bank 在 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts/`，progress 写入 `generation_progress.json`。每个 rollout 201 个100Hz render endpoints、66个30ms标签/事件窗；split预先登记4 train/4 validation，分层覆盖静止、低速相机、适中物体运动、快速合并运动与遮挡。当前生成器 EventGenesis；完整 HDF5尚未封口。该快照另显示 GPU2 空闲、GPU1/3/4/5有其他作业，未改动其他人的进程。
+
+首个共享场景在同一配置、同一物理轨迹上已经完成实际双生成器检查：固定 `s5q_02_train`、66个30ms窗口，8×8地面格纹和4×4物体顶面纹理；两组均生成事件，GT形状 `[66,2,260,346]`、平均有效率0.99897。共同事件活跃有效区域平均覆盖0.3702%，每窗事件活跃且有纹理、运动的像素平均14.1；该面积仍稀疏。线性化 display proxy 中，在活跃运动纹理子集上真值warp MAE `0.00278`，零流 `0.01282`、反向 `0.01258`、错时 `0.01278`（宏平均相关像素数很少）；独立解析平移 `(2.25,-1.5)` 的GT warp MAE `0.000409`，零流 `0.048684`、反向 `0.094059`。证据 [`flow_smoke_audit_v3_regionfix.json`](evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json)，shared HDF5 仍在 g1，SHA256 `5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f`。这证明当前标签/warp约定在一个固定可见纹理场景上相容，不证明模型泛化或生成器质量。
+
 
 ## MVSEC dt1 协议与真实文件准备
 
-协议候选明确为 `indoor_flying1/2/3` 与 `outdoor_day1`，真实评分继续关闭。主候选使用四条序列的原生 `260×346` 画幅；已并列记录 STE 官方旧代码的中心裁剪（室内 `y=[2,258), x=[45,301)`；outdoor 在该裁剪后仅取前190行）作为兼容诊断，论文定义并没有规定这个矩形 crop，需研究审查冻结。事件窗使用 APS 时间戳 `(t_i,t_{i+1}]`；GT 是到下一 GT 时间戳的位移，按锁定的 STE `estimate_corresponding_gt_flow` 语义传播；共同支持为有限非零 GT 与两个候选共用的事件活跃区。AEE 和 `EPE>3px AND EPE>5%|GT|` 的 Outlier 定义、空窗口与四序列等权汇总都写入 [dt1 协议候选 v2](protocol/mvsec_dt1_protocol_candidate_20261021_v2.json)，两模型权重通过 `checkpoint_binding` 绑定。复核发现2019版协议的 checkpoint selection 文本误写为 synthetic LPIPS；与45轮归档不符。v2据归档曲线/summary修正为历史 full-valid synthetic EPE best，epoch33/20权重和哈希不变；新 active-union 规则仍只适用于未来独立版本。
+协议候选明确为 `indoor_flying1/2/3` 与 `outdoor_day1`，真实评分继续关闭。主候选使用四条序列的原生 `260×346` 画幅；已并列记录 STE 官方旧代码的中心裁剪（室内 `y=[2,258), x=[45,301)`；outdoor 在该裁剪后仅取前190行）作为兼容诊断，论文定义并没有规定这个矩形 crop，需研究审查冻结。事件窗使用 APS 时间戳 `(t_i,t_{i+1}]`；GT 是到下一 GT 时间戳的位移，按锁定的 STE `estimate_corresponding_gt_flow` 语义传播；共同支持为有限非零 GT 与两个候选共用的事件活跃区。AEE 和 `EPE>3px AND EPE>5%|GT|` 的 Outlier 定义、空窗口与四序列等权汇总都写入 [dt1 协议候选 v2](protocol/mvsec_dt1_protocol_candidate_20261021_v2.json)，两模型权重通过 `checkpoint_binding` 绑定。复核发现2019版协议的 checkpoint selection 文本误写为 synthetic LPIPS；与45轮归档不符。v2据归档曲线/summary修正为历史 full-valid synthetic EPE best，epoch33/20权重和哈希不变；新 active-union 规则仍只适用于未来独立版本。现已新增串行下载入口：g1曾启动tmux `mvsec_hdf5_dl_20261021`、runner/worker PID `2273169/2273249`（已失败退出），从官方序列文件目录尝试下载至 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC/`。g1首个直接下载在20:38:37 UTC因连接 `drive.google.com:443` 超时失败，runner退出码1，输出文件不存在。失败manifest的单文件状态已记为failed，但旧下载器未同步更新顶层status（仍写running）；这一正确性问题已在新版下载器修复。使用同一官方 `indoor_flying_calib.zip` Drive ID 在WSL运行 gdown 5.2.0成功下载，文件1,294,736 bytes、SHA256 `2bc61565a2e53af174c7afc956c9148dea96c55a765b95f06e558e7d726d1f94`，与已有本地官方标定逐字节一致。因此当前证据指向g1到Drive的网络路由超时，而非数据源缺失；新版流程先复用经hash验证的本地 Stage-3 文件，并在WSL串行获取缺失官方文件后推送至g1独立路径。完整文件校验及时间窗登记尚未完成。
 
 真实文件盘点发现：g1 的旧 Stage-3 目录目前只存有 `indoor_flying1` 的1秒数据/GT切片和室内标定，完整四序列文件为0/4；WSL 本地留有完整 `indoor_flying1` HDF5 1.70 GB/3.37 GB，其余三条不在本地或 g1。官方 [MVSEC 下载页](https://daniilidis-group.github.io/mvsec/download/)公开提供 HDF5 文件目录；已从该目录解析本候选八个 HDF5 文件及室内/室外两份标定 ZIP 的 Drive ID，机器索引见 [官方 HDF5 文件索引](evidence/S5/20261021-recon-flow-localization/mvsec_official_hdf5_source_index_20261021.json)。新版本候选清单将其下载目标隔离到 g1 `data/sim2real/stage5/real/MVSEC/`，并绑定 seed0 synthetic-best checkpoint：EG epoch33 `a4e6c7e1…c824a8e`、V2E epoch20 `11041863…cd474`；索引见 [dt1 candidate manifest v2](manifests/mvsec_dt1_test_manifest_candidate_20261021_v2.json)。清单的窗口暂时为空，完整 HDF5 到达后仍要按注册规则枚举所有时间合格窗口、时间戳和 event index，不读取模型输出，不因空事件区丢窗口。
 
-新增 [`download_mvsec_candidate_hdf5.py`](scripts/download_mvsec_candidate_hdf5.py)：按文件串行下载、原子更新路径/大小/SHA256清单，校验 HDF5 必需字段、传感器形状和时间戳，保留旧 Stage-3 文件、不覆盖已有未登记文件；不加载模型、不计算分数。监督启动入口为 `scripts/run_mvsec_candidate_download_server.sh`；g1 下载进程和完成状态会保存在独立 tmux run 目录。完整四序列数据仍需实际下载和注册；协议准备不等于真实评分通过。
+更新 [`download_mvsec_candidate_hdf5.py`](scripts/download_mvsec_candidate_hdf5.py)：按文件串行下载、原子更新路径/大小/SHA256清单、校验HDF5字段与时间戳；支持从已验证的本地Stage-3目录复制已有官方文件，失败时将顶层manifest标为failed。新增 `scripts/run_mvsec_candidate_download_local.sh` 用于隔离的WSL数据暂存和日志记录；`scripts/run_mvsec_candidate_download_server.sh` 保留作为服务器直连入口。当前g1失败目录和日志保留，下一次数据同步使用新版本目录，不覆盖失败现场；下载、校验和传输都不加载模型、不评分。
 
 全入口合成检查已在本次再次运行：`python3 benchmark/sim2real/scripts/stage4_mvsec_dt1_metrics.py --self-test` 退出0，手算 AEE `2.5 px`、Outlier `25%`，确认空公共支持返回 undefined、outdoor legacy ROI 边界、候选权重哈希错误拒绝、manifest 到 checkpoint SHA 绑定以及未授权真实评分 fail-closed。回执位于 `evidence/S5/20261021-recon-flow-localization/mvsec_candidate_full_entry_selftest_20261021/`；不读取真实输入或模型权重。
 
@@ -80,6 +91,8 @@ V2E 同样已产出200张 float32 重建和指标文件（run：`/home/zhaoyuhan
 - 光流新 bank：g1 detached 命令保存在 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg/command.txt`；实时 stdout/progress 在该目录。
 - 光流 paired adapter 与短训练入口已实现于 `scripts/prepare_stage5_flow_diagnostic_bank.py`、`scripts/train_stage5_flow_selfsup_diagnostic.py`，但必须等八条 bank 与 V2E artifact 完成，并在配置中登记确切 bank/manifest/code hash 后运行。
 - 当前本地运行 `python3 -m unittest -v benchmark.sim2real.tests.test_reconstruction_metric_contract benchmark.sim2real.tests.test_stage5_flow_renderer_transfer benchmark.sim2real.tests.test_hqf_time_index_contract`：12项中10项通过、2项因本机缺 scikit-image 而跳过。g1 固定 synthetic fixture 的实际 LPIPS/SSIM/MSE/PSNR 入口已成功运行；不是 HQF real score。
+
+本 handoff 当前工作副本将发布到 `exp/public-sim2real-v1`；最近已推送的基础提交为 `f0b2cbf`。g1 仍运行的 bank 使用隔离导出快照 `7c55e3e5c2b253a13ebae5e2ba99e6f158809bc9`，MVSEC 下载器使用 clean checkout `5ab99bb54f7f4e723d41a166fc3c33b95da18d84`。新报告提交不会改动这两个运行入口的导入文件。
 
 ## 已确认、未确认与影响
 
