@@ -146,6 +146,36 @@ def _frontmost_prepared_numba_logcached(radiance, log_radiance, times, min_depth
 
 
 @njit(cache=True, nogil=True, parallel=True)
+def _static_query_indices_numba(contributors, times, query_times):
+    """Build per-pixel temporal brackets without Q temporary SxHxW score arrays."""
+    source_count, height, width = contributors.shape
+    query_count = query_times.size
+    before_idx = np.zeros((query_count, height, width), dtype=np.int64)
+    after_idx = np.zeros((query_count, height, width), dtype=np.int64)
+    has_before = np.zeros((query_count, height, width), dtype=np.bool_)
+    has_after = np.zeros((query_count, height, width), dtype=np.bool_)
+    for query_index in prange(query_count):
+        query_time = query_times[query_index]
+        for y in range(height):
+            for x in range(width):
+                best_before_time = -np.inf
+                best_after_time = np.inf
+                for source_index in range(source_count):
+                    if not contributors[source_index, y, x]:
+                        continue
+                    source_time = times[source_index]
+                    if source_time <= query_time and source_time > best_before_time:
+                        best_before_time = source_time
+                        before_idx[query_index, y, x] = source_index
+                        has_before[query_index, y, x] = True
+                    if source_time >= query_time and source_time < best_after_time:
+                        best_after_time = source_time
+                        after_idx[query_index, y, x] = source_index
+                        has_after[query_index, y, x] = True
+    return before_idx, after_idx, has_before, has_after
+
+
+@njit(cache=True, nogil=True, parallel=True)
 def _frontmost_pair_numba(radiance0, depth0, labels0, visible0,
                           radiance1, depth1, labels1, visible1,
                           log_radiance0, log_radiance1, time0, time1, query_time,
@@ -548,6 +578,7 @@ def prepare_static_reference_composite(
     depth_rtol: float = 1e-3,
     depth_atol: float = 2e-5,
     composition_backend: str = "numpy",
+    audit_query_indices_against_numpy: bool = False,
 ) -> dict:
     """Cache fixed-camera static visibility and temporal source indices.
 
@@ -583,18 +614,61 @@ def prepare_static_reference_composite(
     min_depth, has_surface, front_label, contributors, conflicting = _prepare_frontmost_geometry(
         depth, labels, valid, depth_rtol=depth_rtol, depth_atol=depth_atol,
     )
-    query_indices = {}
-    for query_time in query_times:
-        q = float(query_time)
-        before_scores = np.where(contributors & (times[:, None, None] <= q),
-                                 times[:, None, None], -np.inf)
-        after_scores = np.where(contributors & (times[:, None, None] >= q),
-                                times[:, None, None], np.inf)
-        before_idx = np.argmax(before_scores, axis=0)
-        after_idx = np.argmin(after_scores, axis=0)
-        has_before = np.isfinite(np.max(before_scores, axis=0))
-        has_after = np.isfinite(np.min(after_scores, axis=0))
-        query_indices[round(q, 9)] = (before_idx, after_idx, has_before, has_after)
+    query_times = np.asarray([float(x) for x in query_times], dtype=np.float64)
+    index_audit_wall_s = 0.0
+    index_audit = None
+    if composition_backend == "numba_parallel_logcached":
+        index_args = (np.ascontiguousarray(contributors), times, query_times)
+        index_started = time.perf_counter()
+        numba_indices = _static_query_indices_numba(*index_args)
+        index_build_wall_s = time.perf_counter() - index_started
+        query_indices = {
+            round(float(q), 9): tuple(array[i] for array in numba_indices)
+            for i, q in enumerate(query_times)
+        }
+        if audit_query_indices_against_numpy:
+            audit_started = time.perf_counter()
+            equal_fields = [True, True, True, True]
+            mismatched_entries = [0, 0, 0, 0]
+            for i, q in enumerate(query_times):
+                before_scores = np.where(contributors & (times[:, None, None] <= q),
+                                         times[:, None, None], -np.inf)
+                after_scores = np.where(contributors & (times[:, None, None] >= q),
+                                        times[:, None, None], np.inf)
+                numpy_indices = (
+                    np.argmax(before_scores, axis=0),
+                    np.argmin(after_scores, axis=0),
+                    np.isfinite(np.max(before_scores, axis=0)),
+                    np.isfinite(np.min(after_scores, axis=0)),
+                )
+                for field, (got, expected) in enumerate(zip(numba_indices, numpy_indices)):
+                    mismatch = got[i] != expected
+                    mismatched_entries[field] += int(np.count_nonzero(mismatch))
+                    equal_fields[field] &= not bool(mismatch.any())
+            index_audit_wall_s = time.perf_counter() - audit_started
+            index_audit = {
+                "fields_exact_equal": {
+                    "before_idx": equal_fields[0], "after_idx": equal_fields[1],
+                    "has_before": equal_fields[2], "has_after": equal_fields[3],
+                },
+                "mismatched_entries": mismatched_entries,
+                "wall_s_excluded_from_candidate_cost": float(index_audit_wall_s),
+            }
+    else:
+        index_build_wall_s = 0.0
+        query_indices = {}
+        for q in query_times:
+            before_scores = np.where(contributors & (times[:, None, None] <= q),
+                                     times[:, None, None], -np.inf)
+            after_scores = np.where(contributors & (times[:, None, None] >= q),
+                                    times[:, None, None], np.inf)
+            before_idx = np.argmax(before_scores, axis=0)
+            after_idx = np.argmin(after_scores, axis=0)
+            has_before = np.isfinite(np.max(before_scores, axis=0))
+            has_after = np.isfinite(np.min(after_scores, axis=0))
+            query_indices[round(float(q), 9)] = (before_idx, after_idx, has_before, has_after)
+        if audit_query_indices_against_numpy:
+            index_audit = {"requested": True, "available": False}
     return {
         "radiance": radiance,
         "log_radiance": log_radiance,
@@ -608,6 +682,9 @@ def prepare_static_reference_composite(
         "contributors": contributors,
         "conflicting": conflicting,
         "query_indices": query_indices,
+        "query_index_build_wall_s": float(index_build_wall_s),
+        "query_index_numpy_audit": index_audit,
+        "query_index_numpy_audit_wall_s_excluded_from_candidate_cost": float(index_audit_wall_s),
         "floor": float(floor),
         "depth_rtol": float(depth_rtol),
         "depth_atol": float(depth_atol),

@@ -492,6 +492,9 @@ def main() -> int:
                 composition_backend=str(candidate_cfg.get("geometry", {}).get(
                     "static_composition_backend", "numpy",
                 )),
+                audit_query_indices_against_numpy=bool(candidate_cfg.get("geometry", {}).get(
+                    "audit_static_query_indices_against_numpy", False,
+                )),
             )
             static_preparation_wall_s = time.perf_counter() - static_prepare_started
             preparation_wall_s = time.perf_counter() - preparation_started
@@ -923,6 +926,17 @@ def main() -> int:
                     "moving_source_views_per_query": int(args.moving_source_views),
                     "moving_edge_guard_px": moving_edge_guard_px,
                     "static_composition_backend": str(prepared_static.get("composition_backend", "numpy")),
+                    "static_query_index_build_wall_s": float(
+                        prepared_static.get("query_index_build_wall_s", 0.0)
+                    ),
+                    "static_query_index_numpy_audit": prepared_static.get(
+                        "query_index_numpy_audit"
+                    ),
+                    "static_query_index_numpy_audit_wall_s_excluded_from_candidate_cost": float(
+                        prepared_static.get(
+                            "query_index_numpy_audit_wall_s_excluded_from_candidate_cost", 0.0
+                        )
+                    ),
                     "reconstructed_non_endpoint_frames": int(sum(x["mode"] != "exact_direct_endpoint" for x in query_source_meta)),
                     "full_frame_fallback_count": len(fallback_times),
                     "full_frame_fallback_times_s": fallback_times,
