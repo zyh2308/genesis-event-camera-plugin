@@ -1,0 +1,30 @@
+{
+  "experiment_id": "r1_5_direct_roi_repair_20261021k",
+  "purpose": "diagnostic exact-ray cropped render repair for unsupported reconstructed pixels; used only if 200 Hz source views leave requests",
+  "candidate_reconstruction_config": "r1_5_multiref_surface_candidate_20261021k.json",
+  "candidate_only": true,
+  "formal_ranking": false,
+  "new_physics_rollout": false,
+  "roi": {
+    "camera_name": "direct_roi_exact",
+    "crop_xyxy": [80, 0, 320, 128],
+    "culling_fov_deg": 40.0,
+    "selection_basis": "fixed development crop containing every explicit request in archived episodes 004/005; no generalization claim",
+    "render_pixels": 30720,
+    "fraction_of_full_frame_pixels": 0.4,
+    "auxiliary_camera": {
+      "same_pose_as_fixed_reference": true,
+      "projection": "bundled pyrender IntrinsicsCamera with exact source fx/fy and principal point shifted by crop origin",
+      "render_channels": ["scene-linear HDR radiance", "depth", "link segmentation"]
+    },
+    "repair_rule": "patch exact rendered samples only at request pixels; no dilation, filtering, event deletion, or threshold change",
+    "outside_crop_rule": "charge a full-frame direct render for any explicit request outside the crop",
+    "lifecycle": "restore the registered Pyrender camera object before Genesis scene destruction"
+  },
+  "research_boundaries": {
+    "frozen_simulator_core_modified": false,
+    "GT_segmentation_depth_pose_inputs_to_downstream_model": false,
+    "reference_source": "same archived physical/robot states and fixed camera as development clips",
+    "new_data_generation_or_training": false
+  }
+}

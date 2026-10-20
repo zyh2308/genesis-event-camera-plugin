@@ -2,9 +2,9 @@
 """Reconstruct cached HDR intervals with selective multi-reference surfaces.
 
 The runner re-renders only exact saved robot/target trace states on g1. It
-does not advance physics or synthesize state rows. Those exact direct frames
-are used both for the 100 Hz candidate endpoints and as references at logged
-query rows. By default, a render request at a logged time is charged as a
+does not advance physics or synthesize state rows. Selected exact direct frames
+are used as source references; every other logged query is reconstructed from
+those references. By default, a render request at a logged time is charged as a
 full-frame direct-render fallback. The optional ROI diagnostic instead uses a
 cropped auxiliary camera with the exact off-axis intrinsics of that fixed
 camera crop, and charges any request outside the configured crop as a full
@@ -59,6 +59,7 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate imp
 from benchmark.robot_closed_loop.diagnostics.r1_5_direct_roi_render import (
     configure_intrinsics_crop_camera,
     crop_render_to_frame_dict,
+    restore_intrinsics_crop_camera,
 )
 from genesis_event_plugin.dvs_emulator import DvsEmulator
 from genesis_event_plugin.genesis_adapter import camera_to_world_cv
@@ -280,15 +281,16 @@ def main() -> int:
     parser.add_argument("--start", type=float, default=0.5505)
     parser.add_argument("--end", type=float, default=0.5905)
     parser.add_argument("--query-start", type=float, default=0.5855)
-    parser.add_argument("--source-interval", type=float, default=0.010)
+    parser.add_argument("--source-interval", type=float, default=0.010,
+                        help="requested source period; every source time must match an existing saved physical row")
     parser.add_argument("--max-source-views", type=int, default=5)
     parser.add_argument("--moving-source-views", type=int, default=None,
-                        help="2 uses only bracketing dynamic views; max-source-views uses all dynamic references")
+                        help="number of temporally nearest dynamic source views, always including both brackets")
     args = parser.parse_args()
     if args.moving_source_views is None:
         args.moving_source_views = args.max_source_views
-    if args.moving_source_views not in (2, args.max_source_views):
-        raise ValueError("moving-source-views must be 2 or max-source-views")
+    if not (2 <= args.moving_source_views <= args.max_source_views):
+        raise ValueError("moving-source-views must be between 2 and max-source-views")
     output = args.output.resolve()
     if output.exists():
         raise FileExistsError(output)
@@ -344,6 +346,7 @@ def main() -> int:
     import genesis as gs
     gs.init(backend=gs.cpu, logging_level="warning")
     env = None
+    roi_camera = None
     episode_records = {}
     inference_records = []
     try:
@@ -441,11 +444,12 @@ def main() -> int:
             source_times = np.arange(args.start, args.end + args.source_interval / 2,
                                      args.source_interval, dtype=np.float64)
             source_times = np.asarray([round(float(x), 9) for x in source_times])
+            missing_source_times = [float(t) for t in source_times if float(t) not in frame_by_time]
+            if missing_source_times:
+                raise ValueError(f"source times must match saved physical rows exactly: {missing_source_times}")
             source_frames = [frame_by_time[float(t)] for t in source_times]
             if args.max_source_views < 2 or args.max_source_views > len(source_frames):
                 raise ValueError(f"max-source-views must be in [2, {len(source_frames)}]")
-            if args.max_source_views != len(source_frames):
-                raise ValueError("this first multi-reference run requires all exact keyframes in the cached interval")
             source_render_s = float(sum(render_time_by_time[float(t)] for t in source_times))
             preparation_started = time.perf_counter()
             prepared_motion_sources = [prepare_moving_projection_source(
@@ -502,7 +506,7 @@ def main() -> int:
                     hi = int(np.searchsorted(source_times, t, side="right"))
                     lo = hi - 1
                     if lo < 0 or hi >= len(source_times):
-                        raise RuntimeError(f"time {t} lies outside the recorded 100 Hz endpoints")
+                        raise RuntimeError(f"time {t} lies outside the recorded source endpoints")
                     lower_time, upper_time = float(source_times[lo]), float(source_times[hi])
                     alpha = float((t - lower_time) / (upper_time - lower_time))
                     f0, f1 = frame_by_time[lower_time], frame_by_time[upper_time]
@@ -512,7 +516,7 @@ def main() -> int:
                     moving_refs = []
                     raster_diagnostics = []
                     moving_source_indices = moving_reference_indices(
-                        lo, hi, len(source_frames), args.moving_source_views,
+                        lo, hi, len(source_frames), args.moving_source_views, alpha,
                     )
                     for source_index, source in enumerate(source_frames):
                         if source_index not in moving_source_indices:
@@ -890,7 +894,7 @@ def main() -> int:
                 "frame_metrics_file": f"episode_{episode_id:03d}/frame_metrics.jsonl",
                 "candidate_raw_events_file": f"episode_{episode_id:03d}/candidate_surface_raw_events.npz",
                 "direct_raw_events_file": f"episode_{episode_id:03d}/direct_logged_state_raw_events.npz",
-                "candidate_path_semantics": ("independent diagnostic; exact source endpoints; moving labels are selectively rasterized from all already-rendered 100 Hz views into interpolated target poses; fixed-camera static labels reuse observed pixels; per-pixel depth chooses visibility; request pixels are repaired only by exact-ray direct rendering from a cropped auxiliary camera; any request outside the fixed crop triggers the original full-frame direct fallback"
+                "candidate_path_semantics": ("independent diagnostic; exact selected source endpoints; moving labels are selectively rasterized from the configured temporally nearest source views into interpolated target poses; fixed-camera static labels reuse observed pixels; per-pixel depth chooses visibility; request pixels are repaired only by exact-ray direct rendering from a cropped auxiliary camera; any request outside the fixed crop triggers the original full-frame direct fallback"
                                              if roi_cfg else "independent diagnostic; exact source endpoints; moving labels are selectively rasterized from all already-rendered 100 Hz views into interpolated target poses; fixed-camera static labels reuse observed pixels; per-pixel depth chooses visibility; unknown mask at each existing logged state triggers a charged full direct-render fallback"),
                 "direct_render_is_offline": True,
                 "new_physics_rollout": False,
@@ -904,6 +908,8 @@ def main() -> int:
                               "candidate_total_estimate_s": rec["candidate"]["total_production_wall_s_estimate"]},
                              separators=(",", ":")), flush=True)
     finally:
+        if roi_camera is not None:
+            restore_intrinsics_crop_camera(roi_camera)
         gs.destroy()
 
     with (output / "all_query_inference.csv").open("w", newline="", encoding="utf-8") as stream:

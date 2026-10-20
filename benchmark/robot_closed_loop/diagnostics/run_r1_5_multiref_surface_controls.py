@@ -63,8 +63,10 @@ def run_controls() -> dict:
     }
     assert moving_reference_indices(1, 2, 5, 2) == [1, 2]
     assert moving_reference_indices(1, 2, 5, 5) == [0, 1, 2, 3, 4]
-    tests["dynamic_reference_subset_is_bracketing_only"] = {
+    assert moving_reference_indices(3, 4, 9, 4, 0.2) == [2, 3, 4, 5]
+    tests["temporal_reference_selection_preserves_brackets"] = {
         "pass": True, "two_view_indices": [1, 2], "all_view_indices": [0, 1, 2, 3, 4],
+        "nearest_four_of_nine": [2, 3, 4, 5], "query_alpha": 0.2,
     }
     # The moving-only projection must agree with the frozen general projector
     # on every target sample; this checks its camera/body transform order.
@@ -241,7 +243,7 @@ def run_controls() -> dict:
     tests["prepared_static_visibility_matches_uncached_bitwise"] = {
         "pass": True, "queries": 3, "evidence": "radiance/support/request/label/depth exact match",
     }
-    return {"suite": "r1_5_direct_roi_controls_20261021j",
+    return {"suite": "r1_5_direct_roi_controls_20261021k",
             "tests": tests, "all_pass": all(x["pass"] for x in tests.values()),
             "wall_s": time.perf_counter() - started,
             "frozen_simulator_core_modified": False}

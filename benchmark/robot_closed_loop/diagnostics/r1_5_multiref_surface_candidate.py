@@ -28,15 +28,33 @@ def interpolate_body_poses(poses0: dict[int, np.ndarray], poses1: dict[int, np.n
     return out
 
 
-def moving_reference_indices(lo: int, hi: int, source_count: int, requested_count: int) -> list[int]:
-    """Select dynamic surfaces from the bracketing views or all cached views."""
+def moving_reference_indices(lo: int, hi: int, source_count: int, requested_count: int,
+                             query_alpha: float = 0.5) -> list[int]:
+    """Select dynamic surfaces from the temporal neighborhood of a query.
+
+    If the keyframe cache is denser than the per-query warp budget, retain
+    both bracketing views and fill the budget with the nearest keyframes.
+    Selection depends only on timestamps and the current query time.
+    """
     if not (0 <= int(lo) < int(hi) < int(source_count)):
         raise ValueError("bracketing source indices must be ordered and in range")
-    if int(requested_count) == int(source_count):
+    requested_count = int(requested_count)
+    if requested_count < 2 or requested_count > int(source_count):
+        raise ValueError("requested moving references must be between two and source_count")
+    if not np.isfinite(query_alpha) or not (0.0 <= float(query_alpha) <= 1.0):
+        raise ValueError("query_alpha must be finite and in [0, 1]")
+    if requested_count == int(source_count):
         return list(range(int(source_count)))
-    if int(requested_count) == 2:
+    if requested_count == 2:
         return [int(lo), int(hi)]
-    raise ValueError("requested moving references must be 2 or source_count")
+    query_index = float(lo) + float(query_alpha)
+    ranked = sorted(range(int(source_count)), key=lambda index: (abs(index - query_index), index))
+    selected = {int(lo), int(hi)}
+    for index in ranked:
+        selected.add(index)
+        if len(selected) >= requested_count:
+            break
+    return sorted(selected)
 
 
 def project_moving_source_to_target(

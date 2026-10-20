@@ -59,6 +59,9 @@ def configure_intrinsics_crop_camera(
     except (AttributeError, KeyError, ImportError) as exc:
         raise RuntimeError("Genesis 1.2.2 rasterizer camera-node API is unavailable") from exc
 
+    if not hasattr(crop_camera, "_r1_5_original_camera_node_camera"):
+        crop_camera._r1_5_original_camera_node_camera = camera_node.camera
+
     intrinsics = np.asarray(source_camera.intrinsics, dtype=np.float64)
     if intrinsics.shape != (3, 3) or not np.isfinite(intrinsics).all():
         raise RuntimeError("source camera did not expose finite 3x3 pinhole intrinsics")
@@ -93,6 +96,24 @@ def configure_intrinsics_crop_camera(
         "candidate_diagnostic_only": True,
         "frozen_simulator_core_modified": False,
     }
+
+
+def restore_intrinsics_crop_camera(crop_camera: Any) -> None:
+    """Restore Genesis' registered camera object before scene destruction.
+
+    The diagnostic replaces ``Node.camera`` only to install exact off-axis
+    intrinsics. Pyrender indexes nodes by the original camera object, so the
+    original object must be restored before Genesis removes the node.
+    """
+    original = getattr(crop_camera, "_r1_5_original_camera_node_camera", None)
+    if original is None:
+        return
+    try:
+        node = crop_camera._rasterizer._camera_nodes[crop_camera.uid]
+    except (AttributeError, KeyError) as exc:
+        raise RuntimeError("Genesis camera node disappeared before restoration") from exc
+    node.camera = original
+    delattr(crop_camera, "_r1_5_original_camera_node_camera")
 
 
 def crop_render_to_frame_dict(camera: Any, time_s: float) -> Dict[str, Any]:
