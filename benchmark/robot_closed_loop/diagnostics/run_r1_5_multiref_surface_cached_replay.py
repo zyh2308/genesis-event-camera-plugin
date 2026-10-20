@@ -482,6 +482,9 @@ def main() -> int:
             prepared_raster_sources = [prepare_surface_raster_source(
                 frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
                 raster_labels=set(pose_ids.tolist()),
+                raster_backend=str(candidate_cfg.get("geometry", {}).get(
+                    "surface_raster_backend", "numba_serial",
+                )),
             ) for frame in source_frames]
             surface_raster_prepare_wall_s = time.perf_counter() - surface_raster_prepare_started
             static_refs = [{

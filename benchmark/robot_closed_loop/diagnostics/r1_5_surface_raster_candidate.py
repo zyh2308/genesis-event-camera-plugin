@@ -388,6 +388,7 @@ def prepare_surface_raster_source(
     *,
     max_pixel_scale: float = 4.0,
     raster_labels: set[int] | None = None,
+    raster_backend: str = "numba_serial",
 ) -> Dict[str, object]:
     """Cache source-only triangle topology for repeated target-time warps."""
     image = np.asarray(image, dtype=np.float32)
@@ -412,10 +413,16 @@ def prepare_surface_raster_source(
                 max(0, int(ys.min()) - 1), min(h - 1, int(ys.max()) + 1),
                 max(0, int(xs.min()) - 1), min(w - 1, int(xs.max()) + 1),
             )
-    return {"shape": image.shape, "base_valid": base_valid, "edges": edges,
-            "labels_to_process": labels_to_process, "bboxes": bboxes,
-            "triangles": _build_surface_triangles(labels, topology_valid, edges, labels_to_process),
-            "max_pixel_scale": float(max_pixel_scale)}
+    if raster_backend not in {"numba_serial", "numba_parallel_labels", "torch_cuda_scatter"}:
+        raise ValueError(f"unsupported surface raster backend {raster_backend!r}")
+    prepared = {"shape": image.shape, "base_valid": base_valid, "edges": edges,
+                "labels_to_process": labels_to_process, "bboxes": bboxes,
+                "max_pixel_scale": float(max_pixel_scale)}
+    if raster_backend == "torch_cuda_scatter":
+        prepared["triangles"] = _build_surface_triangles(
+            labels, topology_valid, edges, labels_to_process,
+        )
+    return prepared
 
 
 def surface_raster_warp(
@@ -477,13 +484,15 @@ def surface_raster_warp(
         labels_to_process = np.asarray(prepared_source["labels_to_process"], dtype=np.int64)
         bboxes = prepared_source["bboxes"]
     height, width = depth.shape
-    if prepared_source is not None:
-        triangles, triangle_labels = prepared_source["triangles"]
-    else:
-        triangles, triangle_labels = _build_surface_triangles(
-            labels, valid, edges, labels_to_process,
-        )
     if raster_backend == "torch_cuda_scatter":
+        if prepared_source is not None and "triangles" in prepared_source:
+            triangles, triangle_labels = prepared_source["triangles"]
+        else:
+            topology_valid = (valid if prepared_source is None else
+                              np.asarray(prepared_source["base_valid"], dtype=bool))
+            triangles, triangle_labels = _build_surface_triangles(
+                labels, topology_valid, edges, labels_to_process,
+            )
         return _surface_raster_warp_torch_cuda(
             image, labels, uv, z, valid, triangles, triangle_labels,
         )
