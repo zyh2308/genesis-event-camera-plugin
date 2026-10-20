@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_direct_roi_20261021j
 PY=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
 CACHE=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059
+CHECKPOINT_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_multiref_20261021i
 RUN_ID=r1_5_direct_roi_repair_20261021j
 OUTPUT="$ROOT/benchmark/robot_closed_loop/results/$RUN_ID"
 RUNTIME="$ROOT/benchmark/robot_closed_loop/results/runtime_logs/$RUN_ID"
@@ -19,8 +20,8 @@ if [[ "${1:-}" == "--worker" ]]; then
       --control-config "$ROOT/benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json" \
       --candidate-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_multiref_surface_candidate_20261021i.json" \
       --roi-repair-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_direct_roi_repair_20261021j.json" \
-      --ours-checkpoint "$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
-      --v2e-checkpoint "$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
+      --ours-checkpoint "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
+      --v2e-checkpoint "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
       --moving-source-views 2 \
       --output "$OUTPUT" \
       >"$RUNTIME/run.log" 2>&1 &
@@ -49,8 +50,8 @@ for episode in 004 005; do
     [[ -f "$CACHE/episode_$episode/$input" ]] || { echo "missing $CACHE/episode_$episode/$input" >&2; exit 2; }
   done
 done
-[[ -f "$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" ]]
-[[ -f "$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" ]]
+[[ -f "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" ]]
+[[ -f "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" ]]
 mkdir -p "$RUNTIME"
 tmux new-session -d -s "$SESSION" "$SCRIPT --worker"
 sleep 2
