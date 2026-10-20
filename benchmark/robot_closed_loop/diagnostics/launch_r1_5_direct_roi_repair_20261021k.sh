@@ -13,8 +13,8 @@ SCRIPT="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_direct_roi_rep
 
 if [[ "${1:-}" == "--worker" ]]; then
   env PYTHONPATH="$ROOT" PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= \
-    OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 TI_NUM_THREADS=4 \
-    "$PY" "$ROOT/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py" \
+    OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 TI_NUM_THREADS=1 \
+    nice -n 10 "$PY" "$ROOT/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py" \
       --cache-root "$CACHE" \
       --scene-config "$ROOT/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json" \
       --control-config "$ROOT/benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json" \
