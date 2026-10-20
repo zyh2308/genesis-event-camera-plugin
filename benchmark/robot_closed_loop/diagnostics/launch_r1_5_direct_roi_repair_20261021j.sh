@@ -53,7 +53,7 @@ done
 [[ -f "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" ]]
 [[ -f "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" ]]
 mkdir -p "$RUNTIME"
-tmux new-session -d -s "$SESSION" "$SCRIPT --worker"
+tmux new-session -d -s "$SESSION" "bash '$SCRIPT' --worker"
 sleep 2
 tmux has-session -t "$SESSION"
 echo "detached=1 session=$SESSION pid=$(cat "$RUNTIME/run.pid")"
