@@ -140,6 +140,19 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def source_commit(repo_root: Path) -> str:
+    try:
+        return subprocess.check_output(["git", "-C", str(repo_root), "rev-parse", "HEAD"], text=True).strip()
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        manifest = repo_root / "SOURCE_FILE_HASHES.json"
+        if not manifest.is_file():
+            raise RuntimeError("execution source is neither a Git checkout nor a verified source archive")
+        commit = json.loads(manifest.read_text()).get("commit")
+        if not isinstance(commit, str) or len(commit) != 40:
+            raise RuntimeError("source archive manifest has no valid commit ID")
+        return commit
+
+
 def atomic_json(path: Path, value: dict) -> None:
     tmp = path.with_suffix(path.suffix + ".partial")
     tmp.write_text(json.dumps(value, indent=2) + "\n")
@@ -584,7 +597,7 @@ def main() -> None:
         raise RuntimeError(f"expected Genesis 1.2.2, found {getattr(gs, '__version__', None)}")
     gs.init(backend=gs.gpu, logging_level="warning")
     repo_root = Path(__file__).resolve().parents[3]
-    commit = subprocess.check_output(["git", "-C", str(repo_root), "rev-parse", "HEAD"], text=True).strip()
+    commit = source_commit(repo_root)
     manifest = {
         "schema": bank_schema, "scope": scope,
         "complete_balanced_pilot": args.episode_id is None,

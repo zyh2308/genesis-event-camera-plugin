@@ -1,0 +1,41 @@
+{
+  "schema": "hqf_stage5_adapter_selftest_v1",
+  "status": "pass",
+  "scope": "synthetic fabricated MemMap data only; no HQF sample, GT score, or checkpoint selection",
+  "model_mechanics": "recurrent model reset once at sequence start, 4 endpoint samples processed, output cropped to input native size, event-only model input",
+  "model_args_override_contract": "separately loaded strict state_dict using registered Stage-5 model args when checkpoint omits serialized model_args",
+  "initial_attempts": [
+    {
+      "status": "expected_fail_closed",
+      "reason": "original local EVREAL checkout had untracked __pycache__; pinned source verifier rejected dirty checkout"
+    },
+    {
+      "status": "expected_fail_closed",
+      "reason": "standalone helper probe imported event_cnn_minimal before pinned EVREAL utils; normal adapter order was then used and the helper passed"
+    }
+  ],
+  "pinned_sources": {
+    "EVREAL_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+    "event_cnn_minimal_commit": "78aa471a66593f55e349303563997297fbc816e8"
+  },
+  "inference_manifest": {
+    "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest/inference_manifest.json",
+    "sha256": "b69113fd71504d4d0d2f9293d752ea319ad21865fd0183865e52feab670f99df"
+  },
+  "saved_fixture_images": [
+    {
+      "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest/reconstruction_000000.png",
+      "sha256": "c32377581bd768b7443d8e5d57170877a79fa18fd1eda20f09833329a24c18b2",
+      "size_bytes": 76
+    },
+    {
+      "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest/reconstruction_000003.png",
+      "sha256": "a939b33d7a88c4a4020393de710cb6b2707725e6050470345f9bb7b277495e93",
+      "size_bytes": 110
+    }
+  ],
+  "adapter_script_sha256": "f57366dc35ed57c2124f380826eef5c305bb432cf64fdf36738fb551e1f559d0",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "created_utc": "2026-10-20T17:45:35.455123+00:00"
+}

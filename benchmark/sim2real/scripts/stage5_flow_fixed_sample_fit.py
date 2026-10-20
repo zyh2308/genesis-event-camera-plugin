@@ -12,6 +12,7 @@ import json
 import random
 import sys
 import time
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -42,6 +43,19 @@ def epe(pred: np.ndarray, gt: np.ndarray, mask: np.ndarray) -> float | None:
 
 def optimizer_steps(optimizer: torch.optim.Optimizer) -> list[int]:
     return sorted({int(state["step"].item()) for state in optimizer.state.values() if "step" in state})
+
+
+def source_commit() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        manifest = ROOT / "SOURCE_FILE_HASHES.json"
+        if not manifest.is_file():
+            raise RuntimeError("execution source is neither a Git checkout nor a verified source archive")
+        record = json.loads(manifest.read_text())
+        if not isinstance(record.get("commit"), str) or len(record["commit"]) != 40:
+            raise RuntimeError("source archive manifest has no valid commit ID")
+        return record["commit"]
 
 
 def model_parameter_delta(model: torch.nn.Module, initial: dict[str, torch.Tensor]) -> float:
@@ -147,7 +161,7 @@ def main() -> None:
         "schema": "stage5_flow_fixed_sample_network_fit_v1",
         "status": "running",
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        "source_commit": __import__("subprocess").check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "source_commit": source_commit(),
         "config_sha256": sha256(args.config.resolve()),
         "data_manifest_sha256": manifest_hash,
         "flow_unit": FLOW_UNIT,

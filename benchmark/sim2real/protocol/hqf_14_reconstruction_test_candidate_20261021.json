@@ -13,7 +13,8 @@
     "official_dataset_folder": "https://drive.google.com/drive/folders/18Xdr6pxJX0ZXTrXW9tK0hC3ZpmKDIt6_",
     "official_evreal_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
     "official_evreal_hqf_config": "config/dataset/HQF.json",
-    "evreal_hqf_config_sha256": "to_be_filled_from_locked_source_checkout"
+    "evreal_hqf_config_sha256": "5ff01881f21f9a3eb079793231b57447a7ce4413e04ea2e7bcab8eb5ad344559",
+    "sequence_inventory_crosscheck": "fixed 14-name set in the official-source-compatible HQF conversion inventory; names checked against published E2HQV catalog"
   },
   "sequences": [
     "bike_bay_hdr",
@@ -42,6 +43,8 @@
   "model": {
     "architecture": "pinned event_cnn_minimal E2VIDRecurrent",
     "weights": "new corrected-Stage5 synthetic-best checkpoint, selected only by synthetic LPIPS-VGG validation",
+    "model_args_source": "configs/stage4_corrected_v2_flowdt1_seed0.json::reconstruction.model_args",
+    "model_args_source_sha256": "48afa40d4afe36c287858b9d87556c4250b9535ade35a3952ff4cced53268074",
     "public_pretrained_checkpoint_substitution": false,
     "inference_input": "events only, five signed temporal bins between reference-frame endpoints",
     "sequence_start": "reset recurrent state once at the first endpoint of each sequence; never carry state across sequences",

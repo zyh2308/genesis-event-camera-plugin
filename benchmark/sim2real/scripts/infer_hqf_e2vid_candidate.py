@@ -27,7 +27,12 @@ from verify_pinned_source import verify_pinned_source
 
 EVREAL_COMMIT = "398f03551b7f5d150ae10aa89e4e731557fce240"
 MODEL_COMMIT = "78aa471a66593f55e349303563997297fbc816e8"
-REGISTERED_SEQUENCE = "bike_bay_hdr"
+REGISTERED_SEQUENCES = (
+    "bike_bay_hdr", "boxes", "desk", "desk_fast", "desk_hand_only", "desk_slow",
+    "engineering_posters", "high_texture_plants", "poster_pillar_1", "poster_pillar_2",
+    "reflective_materials", "slow_and_fast_desk", "slow_hand", "still_life",
+)
+REGISTERED_SEQUENCE = REGISTERED_SEQUENCES[0]
 REGISTERED_SAVE_RULE = "save every 100th adapter output (0,100,...) and the final adapter output; deduplicate"
 EXPECTED_DATA_FILES = (
     "events_ts.npy",
@@ -154,16 +159,27 @@ def validate_sequence_files(sequence_path: Path) -> dict[str, Any]:
     }
 
 
-def checkpoint_to_model(checkpoint_path: Path, device: torch.device, model_cls):
+def checkpoint_to_model(
+    checkpoint_path: Path,
+    device: torch.device,
+    model_cls,
+    model_args_override: dict[str, Any] | None = None,
+):
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    if not isinstance(checkpoint, dict) or "model" not in checkpoint or "model_args" not in checkpoint:
-        raise ValueError("checkpoint must contain Stage-2 keys 'model' and 'model_args'")
-    model_args = copy.deepcopy(checkpoint["model_args"])
+    if not isinstance(checkpoint, dict) or "model" not in checkpoint:
+        raise ValueError("checkpoint must contain the candidate model state under key 'model'")
+    checkpoint_args = checkpoint.get("model_args")
+    if checkpoint_args is None:
+        if model_args_override is None:
+            raise ValueError("checkpoint lacks model_args; pass the registered Stage-5 model config")
+        checkpoint_args = model_args_override
+    elif model_args_override is not None and checkpoint_args != model_args_override:
+        raise ValueError("checkpoint model_args differ from the explicitly registered model config")
+    model_args = copy.deepcopy(checkpoint_args)
     if not isinstance(model_args, dict) or model_args.get("num_bins") != 5:
-        raise ValueError("Stage-2 model_args must be a dict with num_bins=5")
-    # The pinned E2VID constructor mutates its argument dict (pops
-    # final_activation and adds num_output_channels); retain the serialized
-    # Stage-2 arguments for the manifest and give the model a copy.
+        raise ValueError("E2VID model_args must be a dict with num_bins=5")
+    # The pinned constructor mutates its argument dict; retain the registered
+    # values for the manifest and give the model a copy.
     model = model_cls(copy.deepcopy(model_args)).to(device)
     incompatible = model.load_state_dict(checkpoint["model"], strict=True)
     if incompatible.missing_keys or incompatible.unexpected_keys:
@@ -193,6 +209,7 @@ def run_inference(
     checkpoint_path: Path,
     output_root: Path,
     device_name: str,
+    model_args_override: dict[str, Any] | None = None,
     self_test: bool = False,
 ) -> dict[str, Any]:
     started_utc = utc_now()
@@ -202,10 +219,10 @@ def run_inference(
     checkpoint_path = checkpoint_path.resolve()
     evreal_root = evreal_root.resolve()
     model_root = model_root.resolve()
-    if not self_test and sequence_name != REGISTERED_SEQUENCE:
-        raise ValueError(f"real HQF pilot sequence is preregistered as {REGISTERED_SEQUENCE!r}, got {sequence_name!r}")
-    if not self_test and sequence_path.name != REGISTERED_SEQUENCE:
-        raise ValueError(f"real HQF sequence directory must be named {REGISTERED_SEQUENCE!r}")
+    if not self_test and sequence_name not in REGISTERED_SEQUENCES:
+        raise ValueError(f"real HQF sequence must be one of the 14 registered sequences, got {sequence_name!r}")
+    if not self_test and sequence_path.name != sequence_name:
+        raise ValueError(f"HQF sequence directory must be named {sequence_name!r}")
     if not checkpoint_path.is_file():
         raise FileNotFoundError(checkpoint_path)
 
@@ -243,7 +260,9 @@ def run_inference(
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
         torch.use_deterministic_algorithms(True)
-    model, checkpoint, model_args = checkpoint_to_model(checkpoint_path, device, model_cls)
+    model, checkpoint, model_args = checkpoint_to_model(
+        checkpoint_path, device, model_cls, model_args_override=model_args_override
+    )
     reset_calls = 0
     original_reset = model.reset_states
 
@@ -413,8 +432,9 @@ def run_inference(
             "samples": samples,
         },
         "registered_inference": {
-            "registration_sequence": REGISTERED_SEQUENCE,
-            "sequence_selection": "first alphabetic sequence from the official 14-sequence inventory",
+            "registration_sequence": sequence_name,
+            "registered_sequence_inventory": list(REGISTERED_SEQUENCES),
+            "sequence_selection": "explicit sequence argument from the fixed 14-sequence inventory",
             "saved_subset_rule": REGISTERED_SAVE_RULE,
             "saved_sample_indices": save_indices,
             "saved_images": saved_images,
@@ -535,6 +555,9 @@ def main() -> int:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--hqf-root", type=Path)
     parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--sequence", choices=REGISTERED_SEQUENCES, default=REGISTERED_SEQUENCE)
+    parser.add_argument("--model-config", type=Path,
+                        help="Stage-5 JSON config; supplies reconstruction.model_args when the checkpoint omits them")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--self-test", action="store_true", help="create and run a tiny fabricated MemMapDataset; not real HQF")
@@ -556,15 +579,20 @@ def main() -> int:
         return 0
     if args.hqf_root is None or args.checkpoint is None:
         parser.error("real inference requires --hqf-root and --checkpoint")
-    sequence_path = args.hqf_root / REGISTERED_SEQUENCE
+    model_args_override = None
+    if args.model_config is not None:
+        config = json.loads(args.model_config.read_text())
+        model_args_override = config["reconstruction"]["model_args"]
+    sequence_path = args.hqf_root / args.sequence
     run_inference(
         evreal_root=args.evreal_root,
         model_root=args.model_root,
         sequence_path=sequence_path,
-        sequence_name=REGISTERED_SEQUENCE,
+        sequence_name=args.sequence,
         checkpoint_path=args.checkpoint,
         output_root=output_root,
         device_name=args.device,
+        model_args_override=model_args_override,
         self_test=False,
     )
     return 0
