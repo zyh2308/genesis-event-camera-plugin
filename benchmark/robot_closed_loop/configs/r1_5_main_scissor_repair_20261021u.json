@@ -1,0 +1,24 @@
+{
+  "experiment_id": "r1_5_main_scissor_repair_20261021u",
+  "purpose": "repair only explicit unsupported pixels with the fixed main camera, preserving its original full-scene depth test and exact projection",
+  "roi": {
+    "renderer": "main_camera_scissor",
+    "crop_rule": "per-frame tight integer bounding box of the current candidate unknown/request mask",
+    "camera": "existing fixed side camera at native resolution and projection",
+    "channels": ["scene-linear HDR RGB"],
+    "depth_occlusion": "original full-scene renderer depth test remains active during the scissored draw",
+    "repair_rule": "write exact rendered samples only at pixels marked unsupported by the current candidate request mask",
+    "outside_roi_rule": "all requested pixels lie inside the tight bounding box; any residual outside request remains a charged full-frame direct fallback"
+  },
+  "audit": {
+    "hdr": "same-state crop samples compared with full-frame HDR at identical pixels",
+    "segmentation": "same-state link segmentation compared over every rendered crop, timing excluded from candidate path",
+    "depth": "candidate depth/visibility remains separately compared against direct depth on supported pixels"
+  },
+  "research_boundaries": {
+    "frozen_simulator_core_modified": false,
+    "downstream_gt_input": false,
+    "gt_segmentation_depth_pose_to_estimator": false,
+    "reference": "same archived exact physical/robot states; no physics step"
+  }
+}
