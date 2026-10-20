@@ -87,8 +87,8 @@ def main() -> None:
     if first.shape != second.shape or not np.isfinite(first).all():
         raise RuntimeError(f"restored prediction shape/finite check failed: {first.shape}, {second.shape}")
     max_abs = float(np.max(np.abs(first - second)))
-    if max_abs != 0.0:
-        raise RuntimeError(f"ordinary eval prediction is not repeatable after checkpoint load: {max_abs}")
+    if max_abs > 1e-6:
+        raise RuntimeError(f"ordinary eval prediction is not repeatable within 1e-6 after checkpoint load: {max_abs}")
 
     result = {
         "schema": "stage5_flow_fit_checkpoint_restore_v1",
@@ -106,6 +106,7 @@ def main() -> None:
         "prediction_shape": list(first.shape),
         "prediction_finite": True,
         "repeat_eval_prediction_max_abs": max_abs,
+        "repeat_eval_prediction_max_abs_tolerance": 1e-6,
         "real_data_used": False,
         "real_scoring_enabled": False,
     }

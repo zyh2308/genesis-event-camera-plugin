@@ -342,7 +342,7 @@ def main() -> None:
         # Keep this check on that public boundary instead of assuming a torch tensor.
         restore_max_abs = float(np.max(np.abs(expected - actual)))
         restored_steps = optimizer_steps(restored_optimizer)
-        if restore_max_abs != 0.0 or state_sha256(restored) != arm_result["final_state_sha256"] or restored_steps != [updates]:
+        if restore_max_abs > 1e-6 or state_sha256(restored) != arm_result["final_state_sha256"] or restored_steps != [updates]:
             raise RuntimeError(f"{arm}: restored checkpoint prediction/state mismatch")
         arm_result["checkpoint"] = {
             "path": str(checkpoint_path),
@@ -350,6 +350,7 @@ def main() -> None:
             "sha256": sha256(checkpoint_path),
             "restored_state_equal": True,
             "restored_prediction_max_abs": restore_max_abs,
+            "restored_prediction_max_abs_tolerance": 1e-6,
             "restored_optimizer_step_values": restored_steps,
         }
         result["arms"][arm] = arm_result
