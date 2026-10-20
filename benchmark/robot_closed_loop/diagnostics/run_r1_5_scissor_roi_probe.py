@@ -192,6 +192,10 @@ def main() -> int:
             # which would add segmentation allocation cost to the HDR timings.
             for idx, row in enumerate(trace):
                 t = trace_times[idx]
+                # This is a second rendering pass after the direct reference
+                # loop above. Restore the exact cached state for every crop;
+                # otherwise all crops would depict the final trace state.
+                _set_exact_logged_state(env, row)
                 mask = request_masks[idx]
                 crop = roi_from_mask(mask)
                 if crop is not None:
