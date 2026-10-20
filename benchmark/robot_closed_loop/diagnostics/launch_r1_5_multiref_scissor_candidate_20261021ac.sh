@@ -13,6 +13,7 @@ SCRIPT="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_sciss
 
 if (( $# == 1 )) && [[ "$1" == "--worker" ]]; then
   env PYTHONPATH="$ROOT" PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= \
+    PYOPENGL_PLATFORM=egl EGL_DEVICE_ID=2 \
     OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 TI_NUM_THREADS=1 \
     NUMBA_NUM_THREADS=8 \
     nice -n 10 "$PY" "$ROOT/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py" \
