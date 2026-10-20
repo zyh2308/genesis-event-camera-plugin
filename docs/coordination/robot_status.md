@@ -809,3 +809,40 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 **建议与未解决项：**
 
 目前不把块定位归结为一个已完全定位的 bug，也不建议切换 frozen core 或立即重训。可提交的最小精确端点 NumPy/Torch patch 是一般性正确性修复候选，`git apply --check` 通过，但先交研究侧审查，并界定所有旧 Ours 插值事件及其模型结果必须作为旧 core 版本单独标识。主要事件分布差异仍来自端点之间的生成路径；下一步只在 benchmark 诊断层增加“区间内亮度连续变化 + 遮挡/对应不确定像素请求 direct render”的候选，对两 episodes 的静态、平滑亮度 ramp、真实中间运动和 21 query phases 比较图像、逐子帧/总事件量与成本。若这组一般性控制通过且事件量明显接近 direct reference，再考虑经审查的 core 改动与一次匹配小重训；否则先把最小复现和替代路径交研究侧决定。闭环成功、真实事件硬件保真、正式 Ours/V2E 排名目前都没有由本轮实验建立。
+
+#### R1.5 后续：连续表面空间采样候选（2026-10-21，候选实现已提交，g1 episode 回放待执行）
+
+本阶段先依研究审查 `robot_r1_5_followup_audit_2026-10-21/REVIEW_AND_SOLUTION.md` 收窄的机制，实现 benchmark 独立候选，未触碰冻结 `genesis_event_plugin/`。检查 `e79e656ac00f7847b98db9e12bf43b093f3afff1..59bedc5` 显示冻结 core 无文件差异。候选将相邻深度/分割样本构成局部连续三角面，按面覆盖和透视校正面深度做 z-buffer；不同 segmentation 或超过局部焦距/像素 footprint 连续性约束的边断开。端点间只对同标签、投影深度匹配的表面做 log-radiance 时间插值；单边支持、孔洞和共面标签冲突显式请求 full-frame render。它没有扩大统一 z-buffer epsilon、关闭遮挡、取整运动、删除事件或改阈值。候选目前是 NumPy CPU 诊断实现；若服务器装有 Numba 可选使用，其余环境走纯 NumPy/Python，未增加软件依赖。最大局部 3D 边长参数为 4 个深度与焦距缩放的像素 footprint，是候选拓扑连续性门限，不是点样本可见性容差，后续以真实缓存的 request 比例/耗时复核。
+
+- 代码 commit `59bedc52e70c80611748cf15d00111128efabe46`，已推 `origin/exp/robot-closed-loop-v1`。候选配置 [`r1_5_surface_raster_candidate_20261021a.json`](../../benchmark/robot_closed_loop/configs/r1_5_surface_raster_candidate_20261021a.json) SHA256 `eb7278f69c6a7dc586e3254356b22ee121cb90219244a3ad45862586811adc05`；候选实现 SHA256 `74b18a926f33a70740bbdc44a33d543b9c3ee9d7e99df4b2649e0bd3f04b8dd5`；控制脚本 SHA256 `875eea94acbb07596a1176f612b86720a0be5c1b8205b094e4c0e4e7fd69290b`；episode replay 脚本 SHA256 `a87ed86c72fa9687070e051fd246a141f098874f28e204f34d1c08783bbd47d0`。
+- **已做的本机工程控制（非 g1 实验验收）：** `run_r1_5_surface_raster_controls.py` 五项都通过。静态事件 `0`；递增/递减斜面在投影位移 `±1e-5 px` 时、1984 个内部像素均无 `>0.2` log 差，最大连续采样误差约 `1.55e-6`；解析面 `0.25X+Z=1`、相机双向各移动 1 mm/40 ms、真实最大 log 变化 `0.0303/0.0305 < 0.2`，事件均为 `0`；正/负 `0.5` log ramp 的 `4/8 ms` 阈值事件时刻误差均低于 `1.3 ns`；两层真正重叠的 foreground/background 控制由 z-buffer 选中较近的 foreground。解析平面的图像边缘产生补渲染请求；这是显式未知区，不以边界颜色差视为候选正确性。此检查使用本机 CPU 与现有 DVS 像素响应，未依赖 checkpoint。
+- **g1 执行状态：** 已确认专用新 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a` 位于候选代码 commit。旧执行树及其遗留未跟踪结果没有改动。GPU 当前有其他作业占用，本阶段候选控制与回放计划仅用 CPU。预检发现另有用户 Stage-5 SSH 会话正在运行，故尚未并发开启远程执行；不触碰其进程，空闲后依下列命令继续。
+- **当前尚未完成：** g1 五项控制重跑；Episode 004 中心及 005 +55 mm 在全部真实 trace/query rows 的逐子帧亮度、有效区域误差、区域 raw-event/polarity 分布、source seam burst、全部 query 推理；候选所需 exact endpoint/fallback render 次数和 wall、重建、DVS 分项成本；小预算新数据重训、未参与候选选择的新 episode 定位稳定性及短闭环；候选是否足以提交 core 变更审查。旧 checkpoint 只作诊断，不用单点误差决定正确性；新训练与闭环均未启动。
+
+g1 复跑顺序（先运行五项模型无关控制，只有通过后运行两集缓存 replay；不启动 cadence 矩阵）：
+
+```bash
+cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a
+export PYTHONDONTWRITEBYTECODE=1
+PY=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
+OUT=benchmark/robot_closed_loop/results/r1_5_surface_raster_controls_20261021a
+mkdir -p "$OUT"
+"$PY" benchmark/robot_closed_loop/diagnostics/run_r1_5_surface_raster_controls.py \
+  --output "$OUT/controls.json"
+```
+
+```bash
+cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a
+export PYTHONDONTWRITEBYTECODE=1
+PY=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
+RESULTS=benchmark/robot_closed_loop/results
+"$PY" benchmark/robot_closed_loop/diagnostics/run_r1_5_surface_raster_cached_replay.py \
+  --cache-root "$RESULTS/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059" \
+  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
+  --ours-checkpoint "$RESULTS/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
+  --v2e-checkpoint "$RESULTS/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
+  --output "$RESULTS/r1_5_surface_raster_cached_replay_20261021a"
+```
+
+实验归档目录尚未生成，故当前没有 g1 结果哈希。g1 输出需同时保存 `summary.json`、`all_query_inference.csv`、逐 trace-row `frame_metrics.jsonl`、candidate/direct raw events、代表性可视化与 `SHA256SUMS`；该报告届时记录真实执行 commit、配置、缓存输入和 checkpoint 哈希。Stage-5 连接忙碌只延后执行，不改变任务路线。
