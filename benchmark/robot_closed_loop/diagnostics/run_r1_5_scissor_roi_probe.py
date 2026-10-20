@@ -113,11 +113,19 @@ def main() -> int:
             trace_path = ep_cache / "trace_window.jsonl"
             masks_path = prior / f"episode_{episode_id:03d}" / "candidate_render_request_masks.npz"
             arrays_path = prior / f"episode_{episode_id:03d}" / "candidate_roi_replay_arrays.npz"
-            for path in (trace_path, masks_path, arrays_path):
+            prior_direct_events_path = prior / f"episode_{episode_id:03d}" / "direct_logged_state_raw_events.npz"
+            prior_candidate_events_path = prior / f"episode_{episode_id:03d}" / "candidate_surface_raw_events.npz"
+            for path in (trace_path, masks_path, arrays_path, prior_direct_events_path, prior_candidate_events_path):
                 if not path.is_file():
                     raise FileNotFoundError(path)
                 inputs[str(path)] = file_sha(path)
-            trace = _rows(trace_path)
+            trace_all = _rows(trace_path)
+            trace_window = probe_cfg.get("trace_window_s")
+            if not isinstance(trace_window, list) or len(trace_window) != 2:
+                raise ValueError("probe config trace_window_s must be [start_s, end_s]")
+            t_start, t_end = (float(x) for x in trace_window)
+            trace = [row for row in trace_all
+                     if t_start - 1e-9 <= float(row["time_s"]) <= t_end + 1e-9]
             with np.load(masks_path) as z:
                 mask_times = np.asarray(z["times_s"], dtype=np.float64)
                 request_masks = np.asarray(z["masks"], dtype=bool)
@@ -230,6 +238,10 @@ def main() -> int:
 
             full_events, full_dvs_s = events_from_luma_frames(full_luma_frames, trace_times)
             repaired_events, repaired_dvs_s = events_from_luma_frames(repaired_luma_frames, trace_times)
+            with np.load(prior_direct_events_path) as z:
+                prior_direct_events = np.asarray(z["events"], dtype=np.float64)
+            with np.load(prior_candidate_events_path) as z:
+                prior_candidate_events = np.asarray(z["events"], dtype=np.float64)
 
             # Separate label audit: the scissored ID buffer must match the
             # same-state full-camera ID buffer across each entire request ROI.
@@ -279,6 +291,9 @@ def main() -> int:
                 "direct_events": int(len(direct_events)),
                 "candidate_positive": int(np.count_nonzero(repaired_events[:, 3] > 0)) if len(repaired_events) else 0,
                 "candidate_negative": int(np.count_nonzero(repaired_events[:, 3] < 0)) if len(repaired_events) else 0,
+                "direct_events_exact_match_vs_prior_k": bool(np.array_equal(direct_events, prior_direct_events)),
+                "candidate_events_exact_match_vs_prior_k": bool(np.array_equal(repaired_events, prior_candidate_events)),
+                "candidate_event_count_delta_vs_prior_k": int(len(repaired_events) - len(prior_candidate_events)),
             }
             np.savez_compressed(
                 output / f"episode_{episode_id:03d}_scissor_patch.npz",
@@ -292,6 +307,7 @@ def main() -> int:
             )
             episode_summaries[str(episode_id)] = {
                 "episode_role": "center_control" if episode_id == 4 else "plus55mm_development_failure",
+                "trace_window_s": [t_start, t_end],
                 "trace_rows": int(len(trace)),
                 "unsupported_requested_pixels": int(requested_pixel_total),
                 "unsupported_fraction_over_trace": float(requested_pixel_total / max(1, len(trace) * width * height)),
