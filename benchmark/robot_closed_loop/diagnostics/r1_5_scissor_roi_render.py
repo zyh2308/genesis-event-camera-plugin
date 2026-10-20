@@ -193,7 +193,7 @@ class MainCameraScissorROI:
     def render_hdr_crop(self, time_s: float, crop_xyxy: Sequence[int]) -> np.ndarray:
         if not self._installed:
             raise RuntimeError("install scissor renderer before rendering")
-        self.set_crop(crop_xyxy)
+        crop = self.set_crop(crop_xyxy)
         try:
             image, _, _, _ = self.camera.render(
                 rgb=True, depth=False, segmentation=False,
@@ -202,7 +202,7 @@ class MainCameraScissorROI:
         finally:
             self._crop = None
         image = np.asarray(image, dtype=np.float32)
-        x0, y0, x1, y1 = self._crop
+        x0, y0, x1, y1 = crop
         expected = (y1 - y0, x1 - x0, 3)
         if image.shape != expected:
             raise RuntimeError(f"scissor readback shape {image.shape} != expected {expected} at t={time_s}")
@@ -214,7 +214,7 @@ class MainCameraScissorROI:
         """Render link labels for an optional same-state occlusion audit."""
         if not self._installed:
             raise RuntimeError("install scissor renderer before rendering")
-        self.set_crop(crop_xyxy)
+        crop = self.set_crop(crop_xyxy)
         try:
             _, _, segmentation, _ = self.camera.render(
                 rgb=False, depth=False, segmentation=True, force_render=True,
@@ -222,7 +222,7 @@ class MainCameraScissorROI:
         finally:
             self._crop = None
         segmentation = np.asarray(segmentation, dtype=np.int32)
-        x0, y0, x1, y1 = self._crop
+        x0, y0, x1, y1 = crop
         expected = (y1 - y0, x1 - x0)
         if segmentation.shape != expected:
             raise RuntimeError(
