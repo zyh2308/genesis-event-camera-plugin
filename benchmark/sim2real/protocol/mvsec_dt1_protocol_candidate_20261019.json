@@ -9,24 +9,19 @@
     "repository": "https://github.com/ruizhao26/STE-FlowNet.git",
     "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
     "checkpoint_rule": "synthetic validation best from the completed corrected-v2 dt1 seed0 run; real results cannot select or change weights",
-    "checkpoint_index": {
+    "selected_synthetic_best": {
       "eventgenesis": {
         "run_arm": "EventGenesis",
         "selected_epoch": 33,
-        "path_on_g1": null,
-        "size_bytes": null,
-        "sha256": null,
-        "status": "must be filled from current g1 artifact audit before test registration"
+        "selection_source": "completed corrected-v2 dt1 seed0 synthetic validation LPIPS best"
       },
       "v2e": {
         "run_arm": "V2E",
         "selected_epoch": 20,
-        "path_on_g1": null,
-        "size_bytes": null,
-        "sha256": null,
-        "status": "must be filled from current g1 artifact audit before test registration"
+        "selection_source": "completed corrected-v2 dt1 seed0 synthetic validation LPIPS best"
       }
-    }
+    },
+    "artifact_binding_schema": "manifest.checkpoint_binding; each score artifact carries checkpoint_sha256 and must match the registered weight file"
   },
   "sequences": [
     "indoor_flying1",

@@ -403,6 +403,14 @@ def evaluate_pair_manifest(
 
 def self_test() -> dict[str, Any]:
     """Small hand-calculated checks; no dataset, checkpoint, or model loaded."""
+    candidate_protocol = json.loads(DEFAULT_PROTOCOL.read_text())
+    candidate_manifest = json.loads(DEFAULT_MANIFEST.read_text())
+    if "checkpoint_index" in candidate_protocol.get("model", {}):
+        raise AssertionError("candidate protocol must not define a second checkpoint_index schema")
+    if candidate_protocol.get("model", {}).get("artifact_binding_schema") != "manifest.checkpoint_binding; each score artifact carries checkpoint_sha256 and must match the registered weight file":
+        raise AssertionError("candidate protocol does not point to the evaluator's manifest.checkpoint_binding schema")
+    if set(candidate_manifest.get("checkpoint_binding", {})) != {"eventgenesis", "v2e"}:
+        raise AssertionError("candidate test manifest checkpoint_binding arms differ from the evaluator contract")
     gt = np.zeros((2, *SENSOR_HW), dtype=np.float32)
     pred = np.zeros_like(gt)
     event = np.zeros(EVENT_SHAPE, dtype=np.uint8)
@@ -623,6 +631,12 @@ def self_test() -> dict[str, Any]:
         },
         "arm_input_mismatch": "rejected",
         "component_broadcast": "rejected",
+        "candidate_checkpoint_schema": {
+            "status": "pass",
+            "protocol_selection_field": "model.selected_synthetic_best",
+            "artifact_weight_binding_field": "manifest.checkpoint_binding",
+            "two_competing_checkpoint_index_fields": False,
+        },
         "real_score_authorization": "closed_without_review-linked authorization record",
     }
 
