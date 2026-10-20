@@ -17,10 +17,11 @@ import numpy as np
 from genesis_event_plugin.physics_warp import interpolate_se3
 
 try:
-    from numba import njit
+    from numba import njit, prange
     _NUMBA_COMPOSER_AVAILABLE = True
 except Exception:  # pragma: no cover - the reference NumPy path remains available.
     _NUMBA_COMPOSER_AVAILABLE = False
+    prange = range
     def njit(*args, **kwargs):
         def decorate(function):
             return function
@@ -84,6 +85,63 @@ def _frontmost_prepared_numba(radiance, times, min_depth, has_surface, front_lab
             supported_pixels += 1
     return (out, out_depth, out_labels, support, supported_pixels,
             two_sided_pixels, one_sided_pixels)
+
+
+@njit(cache=True, nogil=True, parallel=True)
+def _frontmost_prepared_numba_logcached(radiance, log_radiance, times, min_depth,
+                                        has_surface, front_label, conflicting,
+                                        before_idx, after_idx, has_before, has_after,
+                                        query_time):
+    """Parallel gather of cached log samples; NumPy retains the final exp ufunc."""
+    height, width = min_depth.shape
+    blend_log = np.empty((height, width), dtype=np.float64)
+    out = np.full((height, width), np.nan, dtype=np.float32)
+    out_depth = np.full((height, width), np.inf, dtype=np.float32)
+    out_labels = np.full((height, width), -1, dtype=np.int64)
+    support = np.zeros((height, width), dtype=np.bool_)
+    two_sided = np.zeros((height, width), dtype=np.bool_)
+    one_sided_counts = np.zeros(height, dtype=np.int64)
+    for y in prange(height):
+        row_one_sided = 0
+        for x in range(width):
+            if not has_surface[y, x] or conflicting[y, x]:
+                blend_log[y, x] = 0.0
+                continue
+            before = has_before[y, x]
+            after = has_after[y, x]
+            if not before and not after:
+                blend_log[y, x] = 0.0
+                continue
+            if before and after:
+                bi = before_idx[y, x]
+                ai = after_idx[y, x]
+                bt = times[bi]
+                at = times[ai]
+                span = at - bt
+                if span < 1e-12:
+                    span = 1e-12
+                frac = (query_time - bt) / span
+                if frac < 0.0:
+                    frac = 0.0
+                elif frac > 1.0:
+                    frac = 1.0
+                blend_log[y, x] = ((1.0 - frac) * float(log_radiance[bi, y, x])
+                                   + frac * float(log_radiance[ai, y, x]))
+                two_sided[y, x] = True
+            elif before:
+                out[y, x] = radiance[before_idx[y, x], y, x]
+                blend_log[y, x] = 0.0
+                row_one_sided += 1
+            else:
+                out[y, x] = radiance[after_idx[y, x], y, x]
+                blend_log[y, x] = 0.0
+                row_one_sided += 1
+            out_depth[y, x] = min_depth[y, x]
+            out_labels[y, x] = front_label[y, x]
+            support[y, x] = True
+        one_sided_counts[y] = row_one_sided
+    return (blend_log, out, out_depth, out_labels, support, two_sided,
+            one_sided_counts)
 
 
 def interpolate_body_poses(poses0: dict[int, np.ndarray], poses1: dict[int, np.ndarray],
@@ -297,6 +355,24 @@ def _frontmost_composite(
                 "ambiguous_pixels": int((has_surface & conflicting).sum()),
                 "backend": "numba_fused",
             }
+        if prepared.get("composition_backend", "numpy") == "numba_parallel_logcached":
+            blend_log, out, out_depth, out_labels, support, two_sided, one_sided_counts = (
+                _frontmost_prepared_numba_logcached(
+                    radiance, prepared["log_radiance"], times, min_depth, has_surface,
+                    front_label, conflicting, before_idx, after_idx, has_before, has_after,
+                    float(query_time),
+                )
+            )
+            out[two_sided] = np.exp(blend_log[two_sided])
+            return out, out_depth, out_labels, {
+                "valid": support,
+                "supported_pixels": int(np.count_nonzero(support)),
+                "two_sided_photometric_pixels": int(np.count_nonzero(two_sided)),
+                "one_sided_photometric_pixels": int(one_sided_counts.sum()),
+                "unobserved_pixels": int((~has_surface).sum()),
+                "ambiguous_pixels": int((has_surface & conflicting).sum()),
+                "backend": "numba_parallel_logcached",
+            }
     two_sided = has_before & has_after
     one_sided = has_before ^ has_after
     before_value = np.take_along_axis(radiance, before_idx[None, ...], axis=0)[0]
@@ -395,13 +471,15 @@ def prepare_static_reference_composite(
     """
     if not static_references:
         raise ValueError("at least one static reference is required")
-    if composition_backend not in {"numpy", "numba_fused"}:
+    if composition_backend not in {"numpy", "numba_fused", "numba_parallel_logcached"}:
         raise ValueError(f"unsupported static composition backend {composition_backend!r}")
-    if composition_backend == "numba_fused" and not _NUMBA_COMPOSER_AVAILABLE:
-        raise RuntimeError("numba_fused static composition requested but Numba is unavailable")
+    if composition_backend.startswith("numba_") and not _NUMBA_COMPOSER_AVAILABLE:
+        raise RuntimeError(f"{composition_backend} static composition requested but Numba is unavailable")
     motion_ids = np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64)
     radiance = np.stack([np.asarray(frame["radiance"], dtype=np.float32)
                          for frame in static_references])
+    log_radiance = (np.log(np.maximum(radiance, float(floor))).astype(np.float32)
+                    if composition_backend == "numba_parallel_logcached" else None)
     depths, labels = [], []
     for frame in static_references:
         frame_labels = np.asarray(frame["labels"], dtype=np.int64)
@@ -431,6 +509,7 @@ def prepare_static_reference_composite(
         query_indices[round(q, 9)] = (before_idx, after_idx, has_before, has_after)
     return {
         "radiance": radiance,
+        "log_radiance": log_radiance,
         "depth": depth,
         "labels": labels,
         "valid": valid,

@@ -471,13 +471,17 @@ def main() -> int:
                 raise ValueError(f"max-source-views must be in [2, {len(source_frames)}]")
             source_render_s = float(sum(render_time_by_time[float(t)] for t in source_times))
             preparation_started = time.perf_counter()
+            moving_projection_prepare_started = time.perf_counter()
             prepared_motion_sources = [prepare_moving_projection_source(
                 frame["depth"], frame["segmentation"], K, camera_pose, pose_ids,
             ) for frame in source_frames]
+            moving_projection_prepare_wall_s = time.perf_counter() - moving_projection_prepare_started
+            surface_raster_prepare_started = time.perf_counter()
             prepared_raster_sources = [prepare_surface_raster_source(
                 frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
                 raster_labels=set(pose_ids.tolist()),
             ) for frame in source_frames]
+            surface_raster_prepare_wall_s = time.perf_counter() - surface_raster_prepare_started
             static_refs = [{
                 "time_s": float(source["time_s"]), "radiance": source["radiance_luma"],
                 "depth": source["depth"], "labels": source["segmentation"],
@@ -930,6 +934,8 @@ def main() -> int:
                         "rendered_crop_arrays_file": f"episode_{episode_id:03d}/candidate_roi_replay_arrays.npz",
                     },
                     "source_preparation_wall_s": float(preparation_wall_s),
+                    "moving_projection_source_prepare_wall_s": float(moving_projection_prepare_wall_s),
+                    "surface_raster_source_prepare_wall_s": float(surface_raster_prepare_wall_s),
                     "static_visibility_preparation_wall_s": float(static_preparation_wall_s),
                     "reconstruction_wall_s": reconstruction_wall_s,
                     "reconstruction_components_wall_s": {
@@ -940,12 +946,22 @@ def main() -> int:
                                                               - raster_wall_s - composition_wall_s)),
                     },
                     "dvs_wall_s": candidate_dvs_s,
+                    "one_time_roi_setup_wall_s_amortized": float(
+                        roi_camera_setup_wall_s / max(1, len(episodes))
+                        if main_scissor_enabled else 0.0
+                    ),
                     "total_production_wall_s_estimate": float(source_render_s + sum(render_time_by_time[t] for t in fallback_times)
                                                                  + roi_render_wall_s + preparation_wall_s
+                                                                 + static_preparation_wall_s
+                                                                 + (roi_camera_setup_wall_s / max(1, len(episodes))
+                                                                    if main_scissor_enabled else 0.0)
                                                                  + reconstruction_wall_s + candidate_dvs_s),
                     "ratio_to_all_state_direct_render_plus_dvs": float(
                         (source_render_s + sum(render_time_by_time[t] for t in fallback_times)
-                         + roi_render_wall_s + preparation_wall_s + reconstruction_wall_s + candidate_dvs_s)
+                         + roi_render_wall_s + preparation_wall_s + static_preparation_wall_s
+                         + (roi_camera_setup_wall_s / max(1, len(episodes))
+                            if main_scissor_enabled else 0.0)
+                         + reconstruction_wall_s + candidate_dvs_s)
                         / max(1e-12, sum(render_per_frame) + direct_dvs_s)
                     ),
                     "event_count": int(len(candidate_events)), "region_event_counts": candidate_region,
@@ -1008,6 +1024,14 @@ def main() -> int:
         writer = csv.DictWriter(stream, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(inference_records)
+    batch_candidate_total_s = float(sum(
+        record["candidate"]["total_production_wall_s_estimate"]
+        for record in episode_records.values()
+    ))
+    batch_direct_total_s = float(sum(
+        record["direct_render"]["wall_s_all_trace_plus_dvs"]
+        for record in episode_records.values()
+    ))
     summary = {
         "experiment_id": str(candidate_cfg["experiment_id"]),
         "code_commit": __import__("subprocess").check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
@@ -1037,9 +1061,35 @@ def main() -> int:
         "response": {"model": "physical_log", "threshold_on_off": 0.2,
                      "noise_bandwidth_refractory": "disabled", "radiometry": "Genesis native linear HDR luminance"},
         "episodes": episode_records,
+        "batch_cost_comparison": {
+            "episode_count": int(len(episode_records)),
+            "candidate_total_wall_s_including_amortized_roi_setup": batch_candidate_total_s,
+            "direct_total_wall_s_all_trace_render_plus_dvs": batch_direct_total_s,
+            "candidate_to_direct_ratio": float(batch_candidate_total_s / max(1e-12, batch_direct_total_s)),
+        },
         "inference_rows": "all_query_inference.csv",
         "old_checkpoint_interpretation": "diagnostic only; checkpoints were trained on old generated events and do not determine candidate radiometric correctness",
         "common_reference_policy": "no ranking; compare candidate reconstruction with direct renders at the same exact logged robot states; models receive event tensors only; GT is scored after inference",
+        "cost_accounting": {
+            "candidate_total_includes": [
+                "exact selected source HDR render time",
+                "moving projection and surface-raster source preparation",
+                "static visibility and temporal-index preparation",
+                "per-query projection, rasterization, composition, and exact scissored HDR repair",
+                "candidate DVS event generation",
+                "one-time ROI/scissor installation amortized evenly across this run's episodes",
+            ],
+            "direct_total_includes": [
+                "all exact trace-state Direct-HDR frame render time",
+                "Direct-HDR comparator DVS event generation",
+            ],
+            "excluded_from_both": [
+                "shared Genesis scene construction",
+                "offline segmentation audit renders and their analysis",
+                "model inference and diagnostic artifact serialization",
+            ],
+            "numba_jit": "JIT time is included in whichever timed source-preparation or reconstruction call first triggers compilation; the runtime log and per-component times preserve cold/warm differences.",
+        },
     }
     (output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     _write_hash_manifest(output)
