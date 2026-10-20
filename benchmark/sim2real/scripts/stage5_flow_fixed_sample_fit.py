@@ -47,7 +47,10 @@ def optimizer_steps(optimizer: torch.optim.Optimizer) -> list[int]:
 
 def source_commit() -> str:
     try:
-        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True, check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        ).stdout.strip()
     except (FileNotFoundError, subprocess.CalledProcessError):
         manifest = ROOT / "SOURCE_FILE_HASHES.json"
         if not manifest.is_file():
@@ -79,7 +82,7 @@ def evaluate_fixed(model, sample, gt, valid, active, device) -> dict:
     with torch.inference_mode():
         outputs = model(events, 352, use_dt4=False, flow_seq=False)
         composite, scales = multiscale_supervised_epe(outputs, gt_tensor, valid_tensor)
-        pred = model_output_to_flow_hw(outputs[0])[:, 46:306, 3:349][0].detach().cpu().numpy()
+        pred = model_output_to_flow_hw(outputs[0])[:, 46:306, 3:349][0]
     if pred.shape != gt.shape or not np.isfinite(pred).all():
         raise RuntimeError(f"invalid fixed-window flow output: {pred.shape}")
     return {

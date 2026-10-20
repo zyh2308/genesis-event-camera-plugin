@@ -1,0 +1,26 @@
+{
+  "schema": "stage5_flow_fixed_network_fit_attempt_v1",
+  "run_id": "20261021-stage5-flow-fixed-sample-fit-v1",
+  "status": "failed_before_optimizer_update",
+  "started_utc": "2026-10-20T17:46:53Z",
+  "finished_utc": "2026-10-20T17:47:51Z",
+  "duration_seconds": 58,
+  "source_commit": "785b78c89b127331a832244c7b495ff203930083",
+  "fixed_sample_id": "s2_00/dt1_144",
+  "optimizer_updates_per_arm": {
+    "eventgenesis": 0,
+    "v2e": 0
+  },
+  "failure_stage": "initial evaluation at update 0 before the first optimizer step",
+  "root_cause": "model_output_to_flow_hw returns a NumPy array, but evaluate_fixed called .detach() on the array",
+  "repair": "retain the NumPy output directly; the strict output shape/finiteness check remains in place",
+  "raw_remote_log": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-fixed-sample-fit-v1/driver.log",
+    "sha256": "05aeb998cc1c4073c0a1a4dd5691464c65b7a8b5e9be2bd01f5d4317a537d744",
+    "exit_code": 1
+  },
+  "no_checkpoint_written": true,
+  "real_data_used": false,
+  "real_scores_opened": false,
+  "record_created_utc": "2026-10-20T17:49:05.118018+00:00"
+}
