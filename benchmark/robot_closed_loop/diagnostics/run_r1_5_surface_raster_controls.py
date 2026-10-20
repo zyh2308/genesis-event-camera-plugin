@@ -280,6 +280,41 @@ def check_foreground_occlusion() -> dict:
     }
 
 
+def check_true_unknown_requests_render() -> dict:
+    """An unsupported pixel must stay unknown and request a real render."""
+    shape = (5, 7)
+    radiance0 = np.ones(shape, dtype=np.float32)
+    radiance1 = np.full(shape, 1.1, dtype=np.float32)
+    depth0 = np.full(shape, 2.0, dtype=np.float32)
+    depth1 = np.full(shape, 2.0, dtype=np.float32)
+    labels0 = np.full(shape, 3, dtype=np.int64)
+    labels1 = np.full(shape, 3, dtype=np.int64)
+    visible0 = np.ones(shape, dtype=bool)
+    visible1 = np.ones(shape, dtype=bool)
+    unknown_pixel = (2, 3)
+    visible0[unknown_pixel] = False
+    visible1[unknown_pixel] = False
+    out, supported, request, diag = compose_surface_warps(
+        radiance0, depth0, labels0, visible0,
+        radiance1, depth1, labels1, visible1,
+        0.5,
+    )
+    passed = (
+        not supported[unknown_pixel]
+        and request[unknown_pixel]
+        and np.isnan(out[unknown_pixel])
+        and int(request.sum()) == 1
+        and diag["no_source_fraction"] == 1.0 / (shape[0] * shape[1])
+    )
+    return {
+        "passed": bool(passed),
+        "unknown_pixel_yx": list(unknown_pixel),
+        "unknown_value_is_nan": bool(np.isnan(out[unknown_pixel])),
+        "render_request_pixel_count": int(request.sum()),
+        "no_source_fraction": float(diag["no_source_fraction"]),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
@@ -298,6 +333,7 @@ def main():
         ("analytic_weak_change_plane", check_analytic_weak_change),
         ("smooth_luminance_ramp", check_luminance_ramps),
         ("foreground_background_occlusion", check_foreground_occlusion),
+        ("true_unknown_requests_render", check_true_unknown_requests_render),
     ]
     for name, function in controls:
         tick = time.perf_counter()

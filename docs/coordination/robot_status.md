@@ -810,39 +810,31 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 目前不把块定位归结为一个已完全定位的 bug，也不建议切换 frozen core 或立即重训。可提交的最小精确端点 NumPy/Torch patch 是一般性正确性修复候选，`git apply --check` 通过，但先交研究侧审查，并界定所有旧 Ours 插值事件及其模型结果必须作为旧 core 版本单独标识。主要事件分布差异仍来自端点之间的生成路径；下一步只在 benchmark 诊断层增加“区间内亮度连续变化 + 遮挡/对应不确定像素请求 direct render”的候选，对两 episodes 的静态、平滑亮度 ramp、真实中间运动和 21 query phases 比较图像、逐子帧/总事件量与成本。若这组一般性控制通过且事件量明显接近 direct reference，再考虑经审查的 core 改动与一次匹配小重训；否则先把最小复现和替代路径交研究侧决定。闭环成功、真实事件硬件保真、正式 Ours/V2E 排名目前都没有由本轮实验建立。
 
-#### R1.5 后续：连续表面空间采样候选（2026-10-21，候选实现已提交，g1 episode 回放待执行）
+#### R1.5：连续表面采样候选验证结果（2026-10-21）
 
-本阶段先依研究审查 `robot_r1_5_followup_audit_2026-10-21/REVIEW_AND_SOLUTION.md` 收窄的机制，实现 benchmark 独立候选，未触碰冻结 `genesis_event_plugin/`。检查 `e79e656ac00f7847b98db9e12bf43b093f3afff1..59bedc5` 显示冻结 core 无文件差异。候选将相邻深度/分割样本构成局部连续三角面，按面覆盖和透视校正面深度做 z-buffer；不同 segmentation 或超过局部焦距/像素 footprint 连续性约束的边断开。端点间只对同标签、投影深度匹配的表面做 log-radiance 时间插值；单边支持、孔洞和共面标签冲突显式请求 full-frame render。它没有扩大统一 z-buffer epsilon、关闭遮挡、取整运动、删除事件或改阈值。候选目前是 NumPy CPU 诊断实现；若服务器装有 Numba 可选使用，其余环境走纯 NumPy/Python，未增加软件依赖。最大局部 3D 边长参数为 4 个深度与焦距缩放的像素 footprint，是候选拓扑连续性门限，不是点样本可见性容差，后续以真实缓存的 request 比例/耗时复核。
+本阶段针对研究侧复现的“连续斜面微小投影移动却出现大亮度跳变”实现并验证了 benchmark 独立 surface-raster 候选。候选将同标签且局部三维连续的相邻深度样本连接成投影三角形，以透视校正插值和深度 z-buffer 覆盖像素；不会把近邻样本放大成整像素遮挡。事件生成配置、阈值及 radiance 输入保持不变。`genesis_event_plugin/` frozen core 未修改。
 
-- 代码 commit `59bedc52e70c80611748cf15d00111128efabe46`，已推 `origin/exp/robot-closed-loop-v1`。候选配置 [`r1_5_surface_raster_candidate_20261021a.json`](../../benchmark/robot_closed_loop/configs/r1_5_surface_raster_candidate_20261021a.json) SHA256 `eb7278f69c6a7dc586e3254356b22ee121cb90219244a3ad45862586811adc05`；候选实现 SHA256 `74b18a926f33a70740bbdc44a33d543b9c3ee9d7e99df4b2649e0bd3f04b8dd5`；控制脚本 SHA256 `875eea94acbb07596a1176f612b86720a0be5c1b8205b094e4c0e4e7fd69290b`；episode replay 脚本 SHA256 `a87ed86c72fa9687070e051fd246a141f098874f28e204f34d1c08783bbd47d0`。
-- **已做的本机工程控制（非 g1 实验验收）：** `run_r1_5_surface_raster_controls.py` 五项都通过。静态事件 `0`；递增/递减斜面在投影位移 `±1e-5 px` 时、1984 个内部像素均无 `>0.2` log 差，最大连续采样误差约 `1.55e-6`；解析面 `0.25X+Z=1`、相机双向各移动 1 mm/40 ms、真实最大 log 变化 `0.0303/0.0305 < 0.2`，事件均为 `0`；正/负 `0.5` log ramp 的 `4/8 ms` 阈值事件时刻误差均低于 `1.3 ns`；两层真正重叠的 foreground/background 控制由 z-buffer 选中较近的 foreground。解析平面的图像边缘产生补渲染请求；这是显式未知区，不以边界颜色差视为候选正确性。此检查使用本机 CPU 与现有 DVS 像素响应，未依赖 checkpoint。
-- **g1 执行状态：** 已确认专用新 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a` 位于候选代码 commit。旧执行树及其遗留未跟踪结果没有改动。GPU 当前有其他作业占用，本阶段候选控制与回放计划仅用 CPU。预检发现另有用户 Stage-5 SSH 会话正在运行，故尚未并发开启远程执行；不触碰其进程，空闲后依下列命令继续。
-- **当前尚未完成：** g1 五项控制重跑；Episode 004 中心及 005 +55 mm 在全部真实 trace/query rows 的逐子帧亮度、有效区域误差、区域 raw-event/polarity 分布、source seam burst、全部 query 推理；候选所需 exact endpoint/fallback render 次数和 wall、重建、DVS 分项成本；小预算新数据重训、未参与候选选择的新 episode 定位稳定性及短闭环；候选是否足以提交 core 变更审查。旧 checkpoint 只作诊断，不用单点误差决定正确性；新训练与闭环均未启动。
+**通用数值控制（g1 实测，通过）：** 五项检查均通过：静止零事件；增/减深度斜面在 `±1e-5 px` 微动时内部 1984/1984 像素均没有 `>0.2` log 跳变（最大误差 `1.55e-6`）；解析 `0.25X+Z=1` 斜面相机双向横移 `1 mm/40 ms`，真实亮度变化 `0.03025/0.03053 < 0.2` 且事件数均为 0；平滑 `±0.5` log ramp 在 4/8 ms 产生阈值事件，最大时序误差 `1.26 ns`；前景/背景重叠由 z-buffer 正确选择较近的前景。控制输出 [`controls.json`](../../benchmark/robot_closed_loop/results/r1_5_surface_raster_controls_20261021a/controls.json) SHA256 `1b805a0aa053fee2721b43c89b72db27923a0a607e1ea46f8d93c0ba63776a3b`；清单 SHA256 `0c89836d8dca5db5ec93313fc2fcc1a689db0931d5c58aef2ccfaaab8ddfecc0`。g1 Numba 首次 JIT 包含在总计 5.035 秒控制耗时中；不是稳定稳态性能数据。
 
-g1 复跑顺序（先运行五项模型无关控制，只有通过后运行两集缓存 replay；不启动 cadence 矩阵）：
+针对真实未知区再增加的单像素控制确认：两个 source warp 都无覆盖时，输出保持 NaN 并且恰好请求一次 direct render。它在本机 NumPy fallback 下通过，结果归档为 [`local unknown smoke`](../../benchmark/robot_closed_loop/results/r1_5_surface_raster_unknown_request_local_smoke_20261021a/README.md)；这是 g1 五项控制之后新增的开发级检查，尚未在 g1 复跑。
 
-```bash
-cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a
-export PYTHONDONTWRITEBYTECODE=1
-PY=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
-OUT=benchmark/robot_closed_loop/results/r1_5_surface_raster_controls_20261021a
-mkdir -p "$OUT"
-"$PY" benchmark/robot_closed_loop/diagnostics/run_r1_5_surface_raster_controls.py \
-  --output "$OUT/controls.json"
-```
+**真实缓存短片段（g1 实测，候选未通过非退化验收）：** 重放中心 episode 004 与 `+55 mm` episode 005 的全部已记录 trace 行；每集 47 个状态，真实时间间隔为 0.5–1 ms、有效均值约 1.15 kHz，没有合成不存在的物理状态。每集 42 个非端点中间时刻都触发整帧 direct-render fallback。候选每帧平均请求像素分别为 16.493% 和 16.113%；其中无任一表面覆盖的区域为 14.907% 和 14.549%，单侧覆盖为 1.586% 和 1.565%，共面标签冲突为 0。由于 renderer 只有整帧接口，任一请求都使该帧全量直渲。
 
-```bash
-cd /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a
-export PYTHONDONTWRITEBYTECODE=1
-PY=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
-RESULTS=benchmark/robot_closed_loop/results
-"$PY" benchmark/robot_closed_loop/diagnostics/run_r1_5_surface_raster_cached_replay.py \
-  --cache-root "$RESULTS/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059" \
-  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
-  --control-config benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json \
-  --ours-checkpoint "$RESULTS/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
-  --v2e-checkpoint "$RESULTS/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
-  --output "$RESULTS/r1_5_surface_raster_cached_replay_20261021a"
-```
+启用 fallback 后，候选和 exact logged-state Direct-HDR 的输出 raw event 数组逐元素完全相同：episode 004 为 2,807 个、episode 005 为 4,618 个。这说明最终输出没有原 warp 伪影，但原因是两个短片段的所有中间帧都直接渲染；不能据此声称 surface-raster 已消除真实片段异常。fallback 前，在已覆盖像素上图像误差较小（逐帧有效区域 log-error P95 均值 `6.04e-5 / 4.37e-4`），但约 15% 画面仍无可用表面支持，必须保持 unknown/fallback。
 
-实验归档目录尚未生成，故当前没有 g1 结果哈希。g1 输出需同时保存 `summary.json`、`all_query_inference.csv`、逐 trace-row `frame_metrics.jsonl`、candidate/direct raw events、代表性可视化与 `SHA256SUMS`；该报告届时记录真实执行 commit、配置、缓存输入和 checkpoint 哈希。Stage-5 连接忙碌只延后执行，不改变任务路线。
+| 每集 47 状态 | 004 中心 | 005 +55 mm |
+|---|---:|---:|
+| 候选 full-frame fallback | 42/42 | 42/42 |
+| 候选总生产估时 | 4.925 s | 4.230 s |
+| exact direct render + DVS | 1.369 s | 1.552 s |
+| 相对 direct 路径 | 3.60× | 2.72× |
+
+在这两条片段上该候选不仅退化成全量中间帧直渲，而且比 direct 路径更慢，现状不适合作为生产重建器。旧 Ours checkpoint 在上述相同 direct-event 输入的 14 个唯一 query 上平均 XY 误差为 64.2 mm（最大 167.1 mm）；旧 V2E checkpoint 为 8.9 mm（最大 14.4 mm）。这些是旧权重诊断，不是新训练成绩。鉴于候选输出逐元素等同 reference、且计算更贵，本阶段没有执行新训练或闭环，避免把 direct-render 训练结果误报为 raster 修复带来的稳定感知。
+
+**版本和数据：** 候选代码 commit `59bedc52e70c80611748cf15d00111128efabe46`；scorer 边界修复 `a5388db102da884bf3e05da0f19f55d1d67dbcc3`；g1 supervised launcher commit `a92f25019982affb34427631e1c6921bf9ad4aa6`（run 中实际执行 commit）；frozen core base `e79e656ac00f7847b98db9e12bf43b093f3afff1`，无 core diff。配置 `r1_5_surface_raster_candidate_20261021a.json` SHA256 `eb7278f69c6a7dc586e3254356b22ee121cb90219244a3ad45862586811adc05`。实现 SHA256 `74b18a926f33a70740bbdc44a33d543b9c3ee9d7e99df4b2649e0bd3f04b8dd5`，replay 脚本 SHA256 `1eca8a4ed75f00efb5f4cc6d7d208223f9b206ccf7400e2201fe18d912571335`，控制脚本 SHA256 `875eea94acbb07596a1176f612b86720a0be5c1b8205b094e4c0e4e7fd69290b`。episode 004/005 的 trace SHA256 为 `3f07e4e7a0846827be7a3d5decf7c6197d77ca0237bacff55f2c45a70a04349c` / `f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d`；source-cache SHA256 为 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7` / `91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434`；render-evidence SHA256 为 `b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321` / `f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236`。输出清单 SHA256 `07a1009c6b7ab382f35a50fde57f5f7a24a4e0a90c8e899924f1ccf16f3c9730`，summary SHA256 `6ab3cece2029ae4ae852dd753eab1475d25a8ce6f2299d5f0d2aedc9610dbc76`。
+
+复跑指引、逐帧误差、分区事件数、query 记录和输出限制见 [`R1.5 cached replay report`](../../benchmark/robot_closed_loop/results/r1_5_surface_raster_cached_replay_20261021b/README.md)。`20261021a/` 保留因浮点末端 timestamp 边界提前中止的部分文件，并有 README 标明不可用于结论。
+
+**当前结论与下一步：** 采样反例在独立连续面控制中已修复；真实短片段的最终事件异常只通过每个中间时刻整帧直渲被消除，因此候选尚未证明能以重建方式解决实片段。没有新数据训练、未选候选 episode 定位稳定性验证，也没有短闭环恢复。建议保持 frozen core 与旧结果不变，下一轮只针对这两集约 15% 的无表面支持区改善表面覆盖/未知区判定，并在目标片段达到低 fallback 率且成本优于 direct-render 后，才做原预算新训练和未选 episode 验证；目前不推荐切换 frozen core、不推荐开始 Ours/V2E 排名。若找不到能保证遮挡正确且降低未知区的候选，应把高频 Direct-HDR 限定为 reference，并另行讨论研究上可接受的生成路径。
+
+**g1 commands:** controls and replay were detached via tmux launcher in the isolated worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_surface_20261021a`; replay inputs remained in the existing read-only diagnostics worktree. The exact commands and logs are preserved under `benchmark/robot_closed_loop/results/runtime_logs/` on g1. In the repository, the equivalent replay command is documented in the report linked above. The old `20261019d` cadence worktree and the active Stage-5 data transfer/processes were not altered.

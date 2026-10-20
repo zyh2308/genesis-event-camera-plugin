@@ -1,0 +1,225 @@
+{
+  "candidate": "diagnostic_continuous_surface_triangles_v1",
+  "implementation_file": "benchmark/robot_closed_loop/diagnostics/r1_5_surface_raster_candidate.py",
+  "frozen_core_modified": false,
+  "device": "cpu",
+  "static_zero_events": {
+    "passed": true,
+    "event_count": 0,
+    "max_abs_radiance_error": 1.1920928955078125e-07,
+    "render_request_fraction": 0.0,
+    "raster": {
+      "backend": "numba",
+      "visible_fraction": 1.0,
+      "unknown_fraction": 0.0,
+      "input_valid_fraction": 1.0,
+      "continuous_edge_fraction": 0.9654947916666666,
+      "projected_triangle_coverage": 1536,
+      "max_pixel_scale": 4.0,
+      "surface_topology": "same_label_and_focal_scaled_3d_edge",
+      "visibility_method": "perspective_correct_triangle_zbuffer"
+    },
+    "compose": {
+      "same_surface_fraction": 1.0,
+      "depth_occlusion_selection_fraction": 0.0,
+      "one_sided_support_fraction": 0.0,
+      "no_source_fraction": 0.0,
+      "coplanar_label_conflict_fraction": 0.0,
+      "render_request_fraction": 0.0
+    },
+    "wall_time_s": 4.932819250971079
+  },
+  "bidirectional_micro_motion": {
+    "passed": true,
+    "cases": [
+      {
+        "depth_slope": "decreasing",
+        "projected_shift_px": -1e-05,
+        "valid_interior_pixels": 1984,
+        "max_abs_log_error": 1.430511474609375e-06,
+        "pixels_over_log_0_2": 0,
+        "max_radiance_change": 5.7220458984375e-06,
+        "raster": {
+          "backend": "numba",
+          "visible_fraction": 0.984375,
+          "unknown_fraction": 0.015625,
+          "input_valid_fraction": 1.0,
+          "continuous_edge_fraction": 0.9689127604166666,
+          "projected_triangle_coverage": 2016,
+          "max_pixel_scale": 4.0,
+          "surface_topology": "same_label_and_focal_scaled_3d_edge",
+          "visibility_method": "perspective_correct_triangle_zbuffer"
+        }
+      },
+      {
+        "depth_slope": "decreasing",
+        "projected_shift_px": 1e-05,
+        "valid_interior_pixels": 1984,
+        "max_abs_log_error": 1.430511474609375e-06,
+        "pixels_over_log_0_2": 0,
+        "max_radiance_change": 5.7220458984375e-06,
+        "raster": {
+          "backend": "numba",
+          "visible_fraction": 0.984375,
+          "unknown_fraction": 0.015625,
+          "input_valid_fraction": 1.0,
+          "continuous_edge_fraction": 0.9689127604166666,
+          "projected_triangle_coverage": 2016,
+          "max_pixel_scale": 4.0,
+          "surface_topology": "same_label_and_focal_scaled_3d_edge",
+          "visibility_method": "perspective_correct_triangle_zbuffer"
+        }
+      },
+      {
+        "depth_slope": "increasing",
+        "projected_shift_px": -1e-05,
+        "valid_interior_pixels": 1984,
+        "max_abs_log_error": 1.3113021850585938e-06,
+        "pixels_over_log_0_2": 0,
+        "max_radiance_change": 5.662441253662109e-06,
+        "raster": {
+          "backend": "numba",
+          "visible_fraction": 0.984375,
+          "unknown_fraction": 0.015625,
+          "input_valid_fraction": 1.0,
+          "continuous_edge_fraction": 0.9689127604166666,
+          "projected_triangle_coverage": 2016,
+          "max_pixel_scale": 4.0,
+          "surface_topology": "same_label_and_focal_scaled_3d_edge",
+          "visibility_method": "perspective_correct_triangle_zbuffer"
+        }
+      },
+      {
+        "depth_slope": "increasing",
+        "projected_shift_px": 1e-05,
+        "valid_interior_pixels": 1984,
+        "max_abs_log_error": 1.5497207641601562e-06,
+        "pixels_over_log_0_2": 0,
+        "max_radiance_change": 5.781650543212891e-06,
+        "raster": {
+          "backend": "numba",
+          "visible_fraction": 0.984375,
+          "unknown_fraction": 0.015625,
+          "input_valid_fraction": 1.0,
+          "continuous_edge_fraction": 0.9689127604166666,
+          "projected_triangle_coverage": 2016,
+          "max_pixel_scale": 4.0,
+          "surface_topology": "same_label_and_focal_scaled_3d_edge",
+          "visibility_method": "perspective_correct_triangle_zbuffer"
+        }
+      }
+    ],
+    "wall_time_s": 0.0037077516317367554
+  },
+  "analytic_weak_change_plane": {
+    "passed": true,
+    "plane": "0.25*X+Z=1",
+    "duration_s": 0.04,
+    "source_cadence_hz": 100,
+    "subsamples_per_interval": 2,
+    "directions": [
+      {
+        "camera_motion_sign": -1,
+        "absolute_translation_m": 0.001,
+        "max_true_log_change": 0.03025081753730774,
+        "threshold": 0.2,
+        "event_count": 0,
+        "render_requested_pixel_samples": 256,
+        "child_max_abs_log_error_vs_analytic": 0.003531038761138916
+      },
+      {
+        "camera_motion_sign": 1,
+        "absolute_translation_m": 0.001,
+        "max_true_log_change": 0.030534952878952026,
+        "threshold": 0.2,
+        "event_count": 0,
+        "render_requested_pixel_samples": 256,
+        "child_max_abs_log_error_vs_analytic": 0.003532707691192627
+      }
+    ],
+    "wall_time_s": 0.028786742128431797
+  },
+  "smooth_luminance_ramp": {
+    "passed": true,
+    "threshold": 0.2,
+    "ramp_duration_s": 0.01,
+    "ramps": [
+      {
+        "log_radiance_delta": 0.5,
+        "event_count": 640,
+        "unique_polarities": [
+          1
+        ],
+        "expected_polarity": 1,
+        "event_time_min_s": 0.003999999940395392,
+        "event_time_max_s": 0.008000000476837188,
+        "expected_threshold_times_s": [
+          0.004,
+          0.008
+        ],
+        "time_match_max_abs_s": 4.768371877905686e-10
+      },
+      {
+        "log_radiance_delta": -0.5,
+        "event_count": 640,
+        "unique_polarities": [
+          -1
+        ],
+        "expected_polarity": -1,
+        "event_time_min_s": 0.003999998748303412,
+        "event_time_max_s": 0.007999999880790705,
+        "expected_threshold_times_s": [
+          0.004,
+          0.008
+        ],
+        "time_match_max_abs_s": 1.2516965883918596e-09
+      }
+    ],
+    "wall_time_s": 0.06679902877658606
+  },
+  "foreground_background_occlusion": {
+    "passed": true,
+    "overlap_pixel_yx": [
+      16,
+      20
+    ],
+    "winner_label": 2,
+    "winner_depth": 1.0,
+    "winner_radiance": 0.8999999761581421,
+    "depth_background_m": 2.0,
+    "raster_background": {
+      "backend": "numba",
+      "visible_fraction": 1.0,
+      "unknown_fraction": 0.0,
+      "input_valid_fraction": 1.0,
+      "continuous_edge_fraction": 0.9654947916666666,
+      "projected_triangle_coverage": 1536,
+      "max_pixel_scale": 4.0,
+      "surface_topology": "same_label_and_focal_scaled_3d_edge",
+      "visibility_method": "perspective_correct_triangle_zbuffer"
+    },
+    "raster_foreground": {
+      "backend": "numba",
+      "visible_fraction": 0.16666666666666666,
+      "unknown_fraction": 0.8333333333333334,
+      "input_valid_fraction": 0.16666666666666666,
+      "continuous_edge_fraction": 0.15299479166666666,
+      "projected_triangle_coverage": 256,
+      "max_pixel_scale": 4.0,
+      "surface_topology": "same_label_and_focal_scaled_3d_edge",
+      "visibility_method": "perspective_correct_triangle_zbuffer"
+    },
+    "composition": {
+      "same_surface_fraction": 0.0,
+      "depth_occlusion_selection_fraction": 0.16666666666666666,
+      "one_sided_support_fraction": 0.8333333333333334,
+      "no_source_fraction": 0.0,
+      "coplanar_label_conflict_fraction": 0.0,
+      "render_request_fraction": 0.8333333333333334
+    },
+    "render_request_fraction": 0.8333333333333334,
+    "wall_time_s": 0.0027076024562120438
+  },
+  "passed": true,
+  "total_wall_time_s": 5.034838695079088
+}
