@@ -1,0 +1,27 @@
+{
+  "experiment_id": "r1_5_scissor_roi_probe_20261021t",
+  "purpose": "measure exact main-camera scissor repair and assembled cost for the two-moving-view surface candidate S",
+  "source_support_masks_from": "r1_5_multiref_surface_cached_replay_20261021s",
+  "trace_window_s": [0.5505, 0.5905],
+  "roi_rule": "per-frame tight integer bounding box of the current two-view candidate unknown/request mask; no GT used to select or size the ROI",
+  "render_path": {
+    "camera": "existing fixed main camera at native resolution and projection",
+    "channels": ["scene-linear HDR RGB"],
+    "rasterization": "full scene with the original depth test, clipped by OpenGL scissor to the request bounding box",
+    "readback": "partial MSAA color blit and scene-linear HDR readback for the same ROI",
+    "repaired_values": "only pixels explicitly marked unknown by the two-view candidate"
+  },
+  "audit": {
+    "compare": "every scissor HDR sample against same-state full-frame HDR at the exact same pixel; separately compare link segmentation over each request ROI",
+    "direct_cost": "measure full-resolution HDR-only rendering plus DVS on the same saved trace rows",
+    "candidate_cost": "S source/preparation/reconstruction timings plus fresh main-camera scissor HDR-only repair and fresh DVS; label as assembled estimate",
+    "state_alignment": "restore the exact logged robot state before each full-frame and each scissor crop render"
+  },
+  "boundaries": {
+    "archived_robot_trace_only": true,
+    "no_physics_step_or_new_rollout": true,
+    "no_training_or_ranking": true,
+    "frozen_simulator_core_modified": false,
+    "downstream_gt_input": false
+  }
+}
