@@ -1,0 +1,33 @@
+{
+  "experiment_id": "r1_5_surface_raster_candidate_20261021a",
+  "purpose": "diagnostic candidate for continuous-surface intermediate projection; no frozen-core change",
+  "backend": "NumPy CPU; optional Numba acceleration if already installed",
+  "rasterization": {
+    "primitive": "projected triangles built from adjacent source depth-grid samples",
+    "connectivity": "same segmentation label and 3D edge length <= 4 local pixel footprints",
+    "depth_visibility": "perspective-correct interpolated triangle depth z-buffer",
+    "temporal_radiance": "log-domain interpolation only when both endpoint surfaces have matching label and projected depth",
+    "unknown_pixels": "explicit render request; never filled by suppressing events or by changing the pixel threshold",
+    "endpoint_policy": "exact recorded endpoint image is authoritative",
+    "max_pixel_scale": 4.0,
+    "depth_tie_tolerance": "float32 numerical tie only, scaled to scene depth"
+  },
+  "pixel_response": {
+    "log_threshold_on_off": 0.2,
+    "threshold_mismatch": 0.0,
+    "bandwidth": "disabled",
+    "leak_noise_refractory": "disabled",
+    "radiometry": "log of linear radiance; physical_log model used only in timing controls"
+  },
+  "controls": [
+    "static zero events",
+    "increasing and decreasing continuous depth slopes under +/-1e-5 px projected motion",
+    "analytic 0.25*X+Z=1 textured plane under +/-1 mm / 40 ms camera motion",
+    "positive and negative 0.5 log-radiance ramps over 10 ms",
+    "foreground/background overlap with depth-based visibility"
+  ],
+  "frozen_simulator_core_modified": false,
+  "ranking_or_formal_test": false,
+  "new_physics_rollout": false,
+  "large_scale_training": false
+}
