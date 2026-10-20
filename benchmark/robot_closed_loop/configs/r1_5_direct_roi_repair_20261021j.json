@@ -1,0 +1,67 @@
+{
+  "experiment_id": "r1_5_direct_roi_repair_20261021j",
+  "purpose": "diagnostic only: test exact-ray cropped direct renders as a repair for candidate unknown pixels",
+  "candidate_reconstruction_config": "r1_5_multiref_surface_candidate_20261021i.json",
+  "candidate_only": true,
+  "formal_ranking": false,
+  "new_physics_rollout": false,
+  "roi": {
+    "camera_name": "direct_roi_exact",
+    "crop_xyxy": [
+      80,
+      0,
+      320,
+      128
+    ],
+    "selection_basis": "fixed development ROI covering every request-mask pixel in both archived episode_004/005 i masks; masks are retained and this ROI is not asserted to generalize beyond these clips",
+    "render_pixels": 30720,
+    "fraction_of_full_frame_pixels": 0.4,
+    "auxiliary_camera": {
+      "same_pose_as_fixed_reference": true,
+      "culling_fov_deg": 40.0,
+      "projection": "bundled pyrender IntrinsicsCamera with exact source fx/fy and principal point shifted by crop origin",
+      "render_channels": [
+        "scene-linear HDR radiance",
+        "depth",
+        "link segmentation"
+      ]
+    },
+    "repair_rule": "copy exact auxiliary-camera radiance only into candidate request pixels inside this crop; do not dilate, filter, or alter sensor thresholds",
+    "outside_crop_rule": "charge a full-frame direct render fallback for any request pixels outside the crop"
+  },
+  "evaluation": {
+    "episodes": [
+      4,
+      5
+    ],
+    "window_start_s": 0.5505,
+    "window_end_s": 0.5905,
+    "query_start_s": 0.5855,
+    "source_endpoint_rate_hz": 100,
+    "query_times": "only existing saved physical-state rows; no new state interpolation beyond the candidate's existing geometric method",
+    "camera_alignment_checks": [
+      "full-frame crop vs auxiliary ROI HDR luminance",
+      "full-frame crop vs auxiliary ROI depth",
+      "full-frame crop vs auxiliary ROI link segmentation"
+    ],
+    "event_checks": [
+      "candidate vs full Direct-HDR exact timestamp/pixel/polarity event match",
+      "separate requested-interval and supported-interval event agreement",
+      "old Ours/V2E checkpoints remain diagnostic only"
+    ],
+    "required_reporting": [
+      "crop render time and pixels",
+      "full-frame fallback count",
+      "request pixels repaired",
+      "event exact-match fractions",
+      "same-state object position estimate errors",
+      "total candidate path cost vs all-state Direct-HDR reference"
+    ]
+  },
+  "research_boundaries": {
+    "frozen_simulator_core_modified": false,
+    "GT_segmentation_depth_pose_inputs_to_downstream_model": false,
+    "reference_source": "same cached physical and robot state rows and same fixed camera as archived development clips",
+    "new_data_generation_or_training": false
+  }
+}

@@ -16,6 +16,7 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate imp
     prepare_static_reference_composite,
     project_moving_source_to_target,
 )
+from benchmark.robot_closed_loop.diagnostics.r1_5_direct_roi_render import cropped_intrinsics
 from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate import (
     prepare_surface_raster_source,
     surface_raster_warp,
@@ -36,6 +37,30 @@ def _ref(t, rad, depth, label, visible=None):
 def run_controls() -> dict:
     started = time.perf_counter()
     tests = {}
+    K_source = np.asarray([
+        [448.7, 0.0, 160.0],
+        [0.0, 448.7, 120.0],
+        [0.0, 0.0, 1.0],
+    ])
+    crop = (80, 0, 320, 128)
+    K_crop = cropped_intrinsics(K_source, crop)
+    camera_points = np.asarray([
+        [-0.8, 0.4, 1.0], [-0.25, 0.1, 1.0], [0.0, 0.0, 1.0],
+        [0.35, -0.2, 1.0], [0.9, -0.5, 1.0],
+    ], dtype=np.float64)
+    pixels_source = (K_source @ camera_points.T).T
+    pixels_crop = (K_crop @ camera_points.T).T
+    pixels_source = pixels_source[:, :2] / pixels_source[:, 2:3]
+    pixels_crop = pixels_crop[:, :2] / pixels_crop[:, 2:3]
+    pixel_mapping_error = np.max(np.abs(pixels_crop - pixels_source + np.asarray(crop[:2])))
+    assert pixel_mapping_error < 1e-12
+    tests["asymmetric_crop_intrinsics_preserve_source_rays"] = {
+        "pass": True,
+        "crop_xyxy": list(crop),
+        "max_projected_pixel_mapping_error": float(pixel_mapping_error),
+        "source_intrinsics": K_source.tolist(),
+        "crop_intrinsics": K_crop.tolist(),
+    }
     assert moving_reference_indices(1, 2, 5, 2) == [1, 2]
     assert moving_reference_indices(1, 2, 5, 5) == [0, 1, 2, 3, 4]
     tests["dynamic_reference_subset_is_bracketing_only"] = {
@@ -216,7 +241,7 @@ def run_controls() -> dict:
     tests["prepared_static_visibility_matches_uncached_bitwise"] = {
         "pass": True, "queries": 3, "evidence": "radiance/support/request/label/depth exact match",
     }
-    return {"suite": "r1_5_multiref_surface_controls_20261021i",
+    return {"suite": "r1_5_direct_roi_controls_20261021j",
             "tests": tests, "all_pass": all(x["pass"] for x in tests.values()),
             "wall_s": time.perf_counter() - started,
             "frozen_simulator_core_modified": False}

@@ -4,8 +4,11 @@
 The runner re-renders only exact saved robot/target trace states on g1. It
 does not advance physics or synthesize state rows. Those exact direct frames
 are used both for the 100 Hz candidate endpoints and as references at logged
-query rows. A render request at a logged time is serviced by the already
-measured full-frame direct render and charged to the candidate path.
+query rows. By default, a render request at a logged time is charged as a
+full-frame direct-render fallback. The optional ROI diagnostic instead uses a
+cropped auxiliary camera with the exact off-axis intrinsics of that fixed
+camera crop, and charges any request outside the configured crop as a full
+fallback.
 """
 
 from __future__ import annotations
@@ -16,6 +19,7 @@ import hashlib
 import json
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 import h5py
@@ -52,6 +56,10 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate imp
     prepare_static_reference_composite,
     project_moving_source_to_target,
 )
+from benchmark.robot_closed_loop.diagnostics.r1_5_direct_roi_render import (
+    configure_intrinsics_crop_camera,
+    crop_render_to_frame_dict,
+)
 from genesis_event_plugin.dvs_emulator import DvsEmulator
 from genesis_event_plugin.genesis_adapter import camera_to_world_cv
 from genesis_event_plugin.noise_model import DvsNoiseConfig
@@ -62,10 +70,7 @@ from benchmark.robot_closed_loop.event_state_model import five_bin_tensor
 
 def _render_exact_logged_state(env, row: dict, pose_bodies: dict) -> dict:
     """Render only the HDR/depth/segmentation channels used by this method."""
-    env.robot.set_qpos(np.asarray(row["robot_qpos"], dtype=np.float32), zero_velocity=True)
-    obj = row["object"]
-    target_qpos = np.asarray(list(obj["position_m"]) + list(obj["orientation_wxyz"]), dtype=np.float32)
-    env.target.set_qpos(target_qpos, zero_velocity=True)
+    _set_exact_logged_state(env, row)
     hdr, depth, seg, _ = env.camera.render(
         rgb=True, depth=True, segmentation=True, radiance=True, force_render=True,
     )
@@ -82,6 +87,14 @@ def _render_exact_logged_state(env, row: dict, pose_bodies: dict) -> dict:
         "segmentation": seg,
         "poses": {int(seg_id): _pose(body) for seg_id, body in pose_bodies.items()},
     }
+
+
+def _set_exact_logged_state(env, row: dict) -> None:
+    """Restore only an already logged robot/target state; never step physics."""
+    env.robot.set_qpos(np.asarray(row["robot_qpos"], dtype=np.float32), zero_velocity=True)
+    obj = row["object"]
+    target_qpos = np.asarray(list(obj["position_m"]) + list(obj["orientation_wxyz"]), dtype=np.float32)
+    env.target.set_qpos(target_qpos, zero_velocity=True)
 
 
 def _rows(path: Path) -> list[dict]:
@@ -143,6 +156,48 @@ def _region_counts(events: np.ndarray, frame_records: list[dict],
         else:
             out["background"] += 1
     return out
+
+
+def _exact_event_match_by_support(
+    candidate_events: np.ndarray,
+    direct_events: np.ndarray,
+    times: np.ndarray,
+    request_masks: np.ndarray,
+    width: int,
+) -> dict:
+    """Compare exact (timestamp, pixel, polarity) event multisets by support."""
+    def counters(events: np.ndarray) -> dict[str, Counter]:
+        result = {"requested_interval": Counter(), "supported_interval": Counter()}
+        for event in events:
+            t, x, y, p = event
+            x_i, y_i = int(x), int(y)
+            if not (0 <= x_i < width and 0 <= y_i < request_masks.shape[1]):
+                raise ValueError(f"event coordinate {(x_i, y_i)} lies outside request-mask dimensions")
+            hi = int(np.clip(np.searchsorted(times, float(t), side="left"), 1, len(times) - 1))
+            lo = hi - 1
+            requested = bool(request_masks[lo, y_i, x_i] or request_masks[hi, y_i, x_i])
+            region = "requested_interval" if requested else "supported_interval"
+            key = (int(round(float(t) * 1_000_000_000)), x_i, y_i, int(np.sign(p)))
+            result[region][key] += 1
+        return result
+
+    candidate = counters(candidate_events)
+    direct = counters(direct_events)
+    result = {}
+    for region in ("requested_interval", "supported_interval"):
+        cand_counter = candidate[region]
+        direct_counter = direct[region]
+        matches = sum(min(count, direct_counter.get(key, 0)) for key, count in cand_counter.items())
+        result[region] = {
+            "candidate_events": int(sum(cand_counter.values())),
+            "direct_events": int(sum(direct_counter.values())),
+            "exact_timestamp_pixel_polarity_matches": int(matches),
+            "candidate_exact_match_fraction": float(matches / max(1, sum(cand_counter.values()))),
+            "direct_exact_recall_fraction": float(matches / max(1, sum(direct_counter.values()))),
+        }
+    result["timestamp_quantization_s"] = 1e-9
+    result["matching_rule"] = "multiset equality on timestamp rounded to 1 ns, x, y, and polarity; partitioned by whether either adjacent full-frame comparison request mask includes the event pixel"
+    return result
 
 
 def _write_event_montage(path: Path, frame: dict, events: np.ndarray,
@@ -217,6 +272,8 @@ def main() -> int:
     parser.add_argument("--scene-config", type=Path, required=True)
     parser.add_argument("--control-config", type=Path, required=True)
     parser.add_argument("--candidate-config", type=Path, required=True)
+    parser.add_argument("--roi-repair-config", type=Path, default=None,
+                        help="optional exact-ray direct-render crop repair for candidate request pixels")
     parser.add_argument("--ours-checkpoint", type=Path, required=True)
     parser.add_argument("--v2e-checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -239,6 +296,13 @@ def main() -> int:
     scene_cfg = json.loads(args.scene_config.read_text(encoding="utf-8"))
     scene_cfg["shared_control"] = json.loads(args.control_config.read_text(encoding="utf-8"))
     candidate_cfg = json.loads(args.candidate_config.read_text(encoding="utf-8"))
+    roi_repair_cfg = (json.loads(args.roi_repair_config.read_text(encoding="utf-8"))
+                      if args.roi_repair_config is not None else None)
+    roi_cfg = roi_repair_cfg["roi"] if roi_repair_cfg else None
+    roi_camera_name = str(roi_cfg["camera_name"]) if roi_cfg else None
+    roi_xyxy = tuple(int(v) for v in roi_cfg["crop_xyxy"]) if roi_cfg else None
+    if roi_cfg and len(roi_xyxy) != 4:
+        raise ValueError("roi.crop_xyxy must contain four integers")
     moving_edge_guard_px = int(candidate_cfg.get("geometry", {}).get("moving_edge_guard_px", 0))
     if moving_edge_guard_px < 0:
         raise ValueError("candidate geometry moving_edge_guard_px must be non-negative")
@@ -270,6 +334,10 @@ def main() -> int:
     multiref_path = Path(__file__).with_name("r1_5_multiref_surface_candidate.py")
     inputs[str(multiref_path.resolve())] = _sha256(multiref_path.resolve())
     inputs[str(args.candidate_config.resolve())] = _sha256(args.candidate_config.resolve())
+    roi_helper_path = Path(__file__).with_name("r1_5_direct_roi_render.py")
+    inputs[str(roi_helper_path.resolve())] = _sha256(roi_helper_path.resolve())
+    if args.roi_repair_config is not None:
+        inputs[str(args.roi_repair_config.resolve())] = _sha256(args.roi_repair_config.resolve())
     for path in (args.ours_checkpoint, args.v2e_checkpoint):
         inputs[str(path.resolve())] = _sha256(path.resolve())
 
@@ -279,8 +347,32 @@ def main() -> int:
     episode_records = {}
     inference_records = []
     try:
-        env = build_robot_scene(scene_cfg, dt_s=float(scene_cfg["physics"]["dt_s"]), segmentation_level="link")
+        diagnostic_camera_specs = {}
+        if roi_cfg:
+            x0, y0, x1, y1 = roi_xyxy
+            diagnostic_camera_specs[roi_camera_name] = {
+                "resolution_wh": [x1 - x0, y1 - y0],
+                # Use a broad renderer culling frustum; the auxiliary node is
+                # then assigned exact off-axis intrinsics for the crop rays.
+                "vertical_fov_deg": float(roi_cfg.get(
+                    "culling_fov_deg", scene_cfg["camera"]["vertical_fov_deg"],
+                )),
+            }
+        scene_build_started = time.perf_counter()
+        env = build_robot_scene(
+            scene_cfg, dt_s=float(scene_cfg["physics"]["dt_s"]), segmentation_level="link",
+            diagnostic_camera_specs=diagnostic_camera_specs,
+        )
+        scene_build_wall_s = time.perf_counter() - scene_build_started
         env.camera.render(rgb=True, depth=True, segmentation=True, radiance=True, force_render=True)
+        roi_camera = None
+        roi_camera_info = None
+        roi_camera_setup_wall_s = 0.0
+        if roi_cfg:
+            roi_setup_started = time.perf_counter()
+            roi_camera = env.diagnostic_cameras[roi_camera_name]
+            roi_camera_info = configure_intrinsics_crop_camera(env.camera, roi_camera, roi_xyxy)
+            roi_camera_setup_wall_s = time.perf_counter() - roi_setup_started
         pose_bodies = _resolve_motion_bodies(env)
         pose_ids = np.asarray(sorted(pose_bodies), dtype=np.int32)
         camera_pose = np.asarray(camera_to_world_cv(env.camera), dtype=np.float64)
@@ -376,12 +468,21 @@ def main() -> int:
 
             candidate_frames = []
             candidate_pre_fallback_frames = []
+            candidate_final_frames = []
             candidate_request_masks = []
             frame_metrics = []
+            roi_frame_metrics = []
+            roi_crop_luma_frames = []
+            roi_crop_depth_frames = []
+            roi_crop_seg_frames = []
+            roi_crop_times = []
             reconstruction_wall_s = 0.0
             projection_wall_s = 0.0
             raster_wall_s = 0.0
             composition_wall_s = 0.0
+            roi_render_wall_s = 0.0
+            roi_render_pixels = 0
+            roi_repaired_pixels = 0
             fallback_times = []
             query_source_meta = []
             for row, direct in zip(trace, direct_frames):
@@ -389,7 +490,10 @@ def main() -> int:
                 exact_source_index = np.flatnonzero(np.isclose(source_times, t, atol=1e-8, rtol=0))
                 request_mask = np.zeros((height, width), dtype=bool)
                 candidate_pre_fallback = np.asarray(direct["radiance_luma"], dtype=np.float32).copy()
+                candidate_final_luma = candidate_pre_fallback.copy()
                 diagnostics = {"mode": "exact_direct_endpoint"}
+                roi_metric = None
+                full_frame_fallback = False
                 if exact_source_index.size:
                     candidate = direct
                     lower_time = upper_time = t
@@ -453,18 +557,68 @@ def main() -> int:
                         "valid_fraction": float(candidate_valid.mean()),
                         "request_fraction": float(request_mask.mean()),
                     }
-                    # These are the exact logged physical rows already rendered
-                    # for comparison. A request is charged as a full-frame
-                    # render in the candidate runtime estimate; no synthetic
-                    # intermediate state is created.
-                    if np.any(request_mask):
+                    candidate = dict(direct)
+                    candidate_final_luma = np.asarray(candidate_pre_fallback, dtype=np.float32).copy()
+                    residual_request = request_mask.copy()
+                    if roi_camera is not None and np.any(request_mask):
+                        _set_exact_logged_state(env, row)
+                        roi_started = time.perf_counter()
+                        crop_frame = crop_render_to_frame_dict(roi_camera, t)
+                        roi_elapsed = time.perf_counter() - roi_started
+                        roi_render_wall_s += roi_elapsed
+                        x0, y0, x1, y1 = roi_xyxy
+                        roi_render_pixels += int((x1 - x0) * (y1 - y0))
+                        crop_luma = np.asarray(crop_frame["radiance_luma"], dtype=np.float32)
+                        crop_depth = np.asarray(crop_frame["depth"], dtype=np.float32)
+                        crop_seg = np.asarray(crop_frame["segmentation"], dtype=np.int32)
+                        direct_luma_crop = np.asarray(direct["radiance_luma"], dtype=np.float32)[y0:y1, x0:x1]
+                        direct_depth_crop = np.asarray(direct["depth"], dtype=np.float32)[y0:y1, x0:x1]
+                        direct_seg_crop = np.asarray(direct["segmentation"], dtype=np.int32)[y0:y1, x0:x1]
+                        crop_depth_valid = np.isfinite(crop_depth) & np.isfinite(direct_depth_crop)
+                        crop_log_error = np.abs(
+                            np.log(np.maximum(crop_luma, 1e-6))
+                            - np.log(np.maximum(direct_luma_crop, 1e-6))
+                        )
+                        local_request = request_mask[y0:y1, x0:x1]
+                        candidate_crop = candidate_final_luma[y0:y1, x0:x1]
+                        candidate_crop[local_request] = crop_luma[local_request]
+                        candidate_final_luma[y0:y1, x0:x1] = candidate_crop
+                        residual_request[y0:y1, x0:x1] = False
+                        patched = int(local_request.sum())
+                        roi_repaired_pixels += patched
+                        roi_crop_luma_frames.append(crop_luma.copy())
+                        roi_crop_depth_frames.append(crop_depth.copy())
+                        roi_crop_seg_frames.append(crop_seg.copy())
+                        roi_crop_times.append(t)
+                        roi_metric = {
+                            "time_s": t,
+                            "render_wall_s": float(roi_elapsed),
+                            "crop_xyxy": [x0, y0, x1, y1],
+                            "request_pixels_in_crop": patched,
+                            "request_pixels_outside_crop": int(residual_request.sum()),
+                            "crop_luma_exact_equal_full_frame_crop": bool(np.array_equal(crop_luma, direct_luma_crop)),
+                            "crop_luma_abs_max_vs_full_frame_crop": float(np.max(np.abs(crop_luma - direct_luma_crop))),
+                            "crop_log_abs_p99_vs_full_frame_crop": float(np.percentile(crop_log_error, 99)),
+                            "crop_segmentation_mismatch_pixels_vs_full_frame_crop": int(np.count_nonzero(crop_seg != direct_seg_crop)),
+                            "crop_depth_compared_pixels": int(crop_depth_valid.sum()),
+                            "crop_depth_abs_max_m_vs_full_frame_crop": float(np.max(np.abs(crop_depth[crop_depth_valid] - direct_depth_crop[crop_depth_valid]))) if crop_depth_valid.any() else None,
+                            "crop_depth_abs_p99_m_vs_full_frame_crop": float(np.percentile(np.abs(crop_depth[crop_depth_valid] - direct_depth_crop[crop_depth_valid]), 99)) if crop_depth_valid.any() else None,
+                        }
+                        roi_frame_metrics.append(roi_metric)
+                    # Any request outside the exact crop remains unknown and
+                    # receives the original full-frame direct fallback.
+                    if np.any(residual_request):
                         fallback_times.append(t)
+                        full_frame_fallback = True
                         candidate = direct
+                        candidate_final_luma = np.asarray(direct["radiance_luma"], dtype=np.float32).copy()
                     else:
-                        candidate = dict(direct)
-                        candidate["radiance_luma"] = candidate_pre_fallback
+                        candidate["radiance_luma"] = candidate_final_luma
+                    if not np.isfinite(candidate_final_luma).all():
+                        raise RuntimeError(f"candidate frame at {t} has non-finite radiance outside its render requests")
                 candidate_frames.append(candidate)
                 candidate_pre_fallback_frames.append(candidate_pre_fallback.copy())
+                candidate_final_frames.append(candidate_final_luma.copy())
                 candidate_request_masks.append(request_mask.copy())
                 direct_luma = np.asarray(direct["radiance_luma"], dtype=np.float32)
                 if diagnostics["mode"] != "exact_direct_endpoint":
@@ -497,7 +651,11 @@ def main() -> int:
                     frame_metrics.append({
                         "time_s": t, "source_lo_s": lower_time, "source_hi_s": upper_time,
                         "alpha": alpha, "render_request_fraction": float(request_mask.mean()),
-                        "used_direct_fallback": bool(np.any(request_mask)),
+                        "used_direct_fallback": bool(full_frame_fallback),
+                        "used_roi_direct_render": bool(roi_metric is not None),
+                        "roi_render_wall_s": float(roi_metric["render_wall_s"]) if roi_metric else 0.0,
+                        "roi_request_pixels_patched": int(roi_metric["request_pixels_in_crop"]) if roi_metric else 0,
+                        "roi_request_pixels_outside_crop": int(roi_metric["request_pixels_outside_crop"]) if roi_metric else int(request_mask.sum()),
                         "valid_pixels": int(evaluated.sum()),
                         "log_abs_error_mean_valid": float(err[evaluated].mean()) if evaluated.any() else None,
                         "log_abs_error_p95_valid": float(np.percentile(err[evaluated], 95)) if evaluated.any() else None,
@@ -522,12 +680,29 @@ def main() -> int:
                         "direct_radiance_p01_p50_p99": np.percentile(direct_luma, [1, 50, 99]).tolist(),
                         "diagnostics": diagnostics,
                     })
+                if roi_metric is not None:
+                    roi_frame_metrics[-1]["candidate_post_repair_log_abs_error_p95_requested"] = (
+                        float(np.percentile(
+                            np.abs(
+                                np.log(np.maximum(candidate_final_luma[request_mask], 1e-6))
+                                - np.log(np.maximum(direct_luma[request_mask], 1e-6))
+                            ), 95,
+                        )) if request_mask.any() else None
+                    )
                 query_source_meta.append({"time_s": t, "mode": diagnostics["mode"],
-                                          "alpha": alpha, "fallback": bool(np.any(request_mask))})
+                                          "alpha": alpha,
+                                          "fallback": bool(np.any(request_mask) and (
+                                              roi_metric is None or roi_metric["request_pixels_outside_crop"] > 0
+                                          )),
+                                          "roi_rendered": bool(roi_metric is not None),
+                                          "roi_repaired_pixels": int(roi_metric["request_pixels_in_crop"]) if roi_metric else 0})
 
             candidate_events, candidate_dvs_s = _events_from_frames(candidate_frames)
             direct_events, direct_dvs_s = _events_from_frames(direct_frames)
             request_mask_stack = np.stack(candidate_request_masks).astype(bool)
+            event_match_by_support = _exact_event_match_by_support(
+                candidate_events, direct_events, times, request_mask_stack, width,
+            )
             unsupported_direct_events = 0
             supported_direct_events = 0
             unsupported_event_regions = {"target": 0, "robot": 0, "background": 0, "unknown": 0}
@@ -555,13 +730,32 @@ def main() -> int:
             ep_output.mkdir(parents=True, exist_ok=False)
             np.savez_compressed(ep_output / "candidate_surface_raw_events.npz", events=candidate_events)
             np.savez_compressed(ep_output / "direct_logged_state_raw_events.npz", events=direct_events)
+            np.savez_compressed(
+                ep_output / "candidate_roi_replay_arrays.npz",
+                times_s=times,
+                candidate_reconstruction_radiance_luma=np.stack(candidate_pre_fallback_frames).astype(np.float32),
+                candidate_final_radiance_luma=np.stack(candidate_final_frames).astype(np.float32),
+                request_masks=request_mask_stack.astype(np.uint8),
+                roi_times_s=np.asarray(roi_crop_times, dtype=np.float64),
+                roi_radiance_luma=(np.stack(roi_crop_luma_frames).astype(np.float32)
+                                   if roi_crop_luma_frames else np.empty((0, 0, 0), dtype=np.float32)),
+                roi_depth=(np.stack(roi_crop_depth_frames).astype(np.float32)
+                           if roi_crop_depth_frames else np.empty((0, 0, 0), dtype=np.float32)),
+                roi_segmentation=(np.stack(roi_crop_seg_frames).astype(np.int32)
+                                  if roi_crop_seg_frames else np.empty((0, 0, 0), dtype=np.int32)),
+            )
             np.savez_compressed(ep_output / "candidate_render_request_masks.npz",
                                 times_s=times, masks=request_mask_stack.astype(np.uint8))
             with (ep_output / "frame_metrics.jsonl").open("w", encoding="utf-8") as stream:
                 for metric in frame_metrics:
                     stream.write(json.dumps(metric, separators=(",", ":")) + "\n")
+            with (ep_output / "roi_frame_metrics.jsonl").open("w", encoding="utf-8") as stream:
+                for metric in roi_frame_metrics:
+                    stream.write(json.dumps(metric, separators=(",", ":")) + "\n")
             with (ep_output / "candidate_frames.csv").open("w", newline="", encoding="utf-8") as stream:
-                writer = csv.DictWriter(stream, fieldnames=["time_s", "mode", "alpha", "fallback"])
+                writer = csv.DictWriter(stream, fieldnames=[
+                    "time_s", "mode", "alpha", "fallback", "roi_rendered", "roi_repaired_pixels",
+                ])
                 writer.writeheader()
                 writer.writerows(query_source_meta)
 
@@ -604,7 +798,7 @@ def main() -> int:
             # centered, episode 005 is the +55 mm lateral failure diagnostic.
             visual_idx = min(range(len(times)), key=lambda i: abs(float(times[i]) - 0.5855))
             direct = direct_frames[visual_idx]
-            candidate_radiance = candidate_pre_fallback_frames[visual_idx]
+            candidate_radiance = candidate_final_frames[visual_idx]
             unknown = candidate_request_masks[visual_idx]
             _write_event_montage(ep_output / "candidate_vs_direct_0p5855.png",
                                  direct, candidate_events, candidate_radiance, unknown,
@@ -619,6 +813,7 @@ def main() -> int:
                                       "effective_mean_hz": float(1.0 / intervals.mean())},
                 "direct_render": {"exact_trace_state_count": len(trace), "wall_s_all_for_audit": float(sum(render_per_frame)),
                                   "wall_s_source_100hz_endpoints": source_render_s,
+                                  "wall_s_all_trace_plus_dvs": float(sum(render_per_frame) + direct_dvs_s),
                                   "source_endpoint_cache_rerender_checks": endpoint_rerender_checks,
                                   "dense_direct_cache_rerender_checks": dense_rerender_checks},
                 "candidate": {
@@ -630,6 +825,22 @@ def main() -> int:
                     "full_frame_fallback_count": len(fallback_times),
                     "full_frame_fallback_times_s": fallback_times,
                     "fallback_render_wall_s": float(sum(render_time_by_time[t] for t in fallback_times)),
+                    "roi_direct_render": {
+                        "enabled": bool(roi_cfg),
+                        "camera_setup_wall_s": float(roi_camera_setup_wall_s),
+                        "crop_render_wall_s": float(roi_render_wall_s),
+                        "crop_render_count": int(len(roi_crop_times)),
+                        "crop_render_pixels": int(roi_render_pixels),
+                        "crop_fraction_of_full_frame_pixels": (
+                            float((roi_render_pixels / (len(roi_crop_times) * width * height)))
+                            if roi_crop_times else 0.0
+                        ),
+                        "requested_pixels_repaired": int(roi_repaired_pixels),
+                        "remaining_full_frame_fallback_count": int(len(fallback_times)),
+                        "camera_projection": roi_camera_info,
+                        "per_frame_evidence_file": f"episode_{episode_id:03d}/roi_frame_metrics.jsonl",
+                        "rendered_crop_arrays_file": f"episode_{episode_id:03d}/candidate_roi_replay_arrays.npz",
+                    },
                     "source_preparation_wall_s": float(preparation_wall_s),
                     "static_visibility_preparation_wall_s": float(static_preparation_wall_s),
                     "reconstruction_wall_s": reconstruction_wall_s,
@@ -642,10 +853,17 @@ def main() -> int:
                     },
                     "dvs_wall_s": candidate_dvs_s,
                     "total_production_wall_s_estimate": float(source_render_s + sum(render_time_by_time[t] for t in fallback_times)
-                                                                 + preparation_wall_s + reconstruction_wall_s + candidate_dvs_s),
+                                                                 + roi_render_wall_s + preparation_wall_s
+                                                                 + reconstruction_wall_s + candidate_dvs_s),
+                    "ratio_to_all_state_direct_render_plus_dvs": float(
+                        (source_render_s + sum(render_time_by_time[t] for t in fallback_times)
+                         + roi_render_wall_s + preparation_wall_s + reconstruction_wall_s + candidate_dvs_s)
+                        / max(1e-12, sum(render_per_frame) + direct_dvs_s)
+                    ),
                     "event_count": int(len(candidate_events)), "region_event_counts": candidate_region,
+                    "exact_event_match_vs_direct_by_support": event_match_by_support,
                     "request_mask_event_sensitivity_only": {
-                        "interpretation": "Direct-reference events located on pixels lacking candidate support at either adjacent frame; a sensitivity diagnostic only, not a postprocessed candidate event stream.",
+                        "interpretation": "Pre-repair direct-reference event overlap on candidate request pixels, retained to show how many direct events fell in areas that needed exact ROI rendering.",
                         "unsupported_pixel_interval_fraction": float(np.mean(
                             request_mask_stack[:-1] | request_mask_stack[1:])),
                         "direct_events_on_unsupported_pixel_intervals": int(unsupported_direct_events),
@@ -672,7 +890,8 @@ def main() -> int:
                 "frame_metrics_file": f"episode_{episode_id:03d}/frame_metrics.jsonl",
                 "candidate_raw_events_file": f"episode_{episode_id:03d}/candidate_surface_raw_events.npz",
                 "direct_raw_events_file": f"episode_{episode_id:03d}/direct_logged_state_raw_events.npz",
-                "candidate_path_semantics": "independent diagnostic; exact source endpoints; moving labels are selectively rasterized from all already-rendered 100 Hz views into interpolated target poses; fixed-camera static labels reuse observed pixels; per-pixel depth chooses visibility; unknown mask at each existing logged state triggers a charged full direct-render fallback",
+                "candidate_path_semantics": ("independent diagnostic; exact source endpoints; moving labels are selectively rasterized from all already-rendered 100 Hz views into interpolated target poses; fixed-camera static labels reuse observed pixels; per-pixel depth chooses visibility; request pixels are repaired only by exact-ray direct rendering from a cropped auxiliary camera; any request outside the fixed crop triggers the original full-frame direct fallback"
+                                             if roi_cfg else "independent diagnostic; exact source endpoints; moving labels are selectively rasterized from all already-rendered 100 Hz views into interpolated target poses; fixed-camera static labels reuse observed pixels; per-pixel depth chooses visibility; unknown mask at each existing logged state triggers a charged full direct-render fallback"),
                 "direct_render_is_offline": True,
                 "new_physics_rollout": False,
                 "frozen_simulator_core_modified": False,
@@ -698,13 +917,22 @@ def main() -> int:
         "frozen_core_base": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
         "frozen_core_modified": False,
         "candidate_config_sha256": _sha256(args.candidate_config.resolve()),
+        "roi_repair_config_sha256": (_sha256(args.roi_repair_config.resolve())
+                                      if args.roi_repair_config is not None else None),
         "inputs_sha256": inputs,
         "checkpoint_sha256": checkpoint_hashes,
         "scene_and_rig": {"camera_resolution_wh": [width, height], "vertical_fov_deg": fov,
                            "camera_pose_source": "Genesis official robot scene; same fixed side camera as cached R1.5",
                            "source_endpoint_rate_hz": 1.0 / args.source_interval,
                            "source_views_per_query": int(args.max_source_views),
-                           "moving_source_views_per_query": int(args.moving_source_views)},
+                           "moving_source_views_per_query": int(args.moving_source_views),
+                           "scene_build_wall_s_with_diagnostic_cameras": float(scene_build_wall_s)},
+        "direct_roi_repair_method": {
+            "enabled": bool(roi_cfg),
+            "config": roi_cfg,
+            "camera_projection": roi_camera_info,
+            "implementation_boundary": "diagnostic-only use of Genesis 1.2.2 Rasterizer camera node plus bundled pyrender IntrinsicsCamera; no simulator core file or normal camera path is changed",
+        },
         "rendered_exact_trace_window_s": [args.start, args.end],
         "query_window_s": [args.query_start, args.end],
         "response": {"model": "physical_log", "threshold_on_off": 0.2,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
@@ -62,6 +62,7 @@ class RobotScene:
     finger_dofs: np.ndarray
     dt_s: float
     config: Dict[str, Any]
+    diagnostic_cameras: Dict[str, Any] = field(default_factory=dict)
 
     def reset_episode(self, position_m: Sequence[float], heading_rad: float = 0.0) -> None:
         """Episode-boundary reset; no target state is overwritten during motion."""
@@ -244,6 +245,7 @@ def build_free_slide_scene(
 def build_robot_scene(
     config: Dict[str, Any], *, dt_s: Optional[float] = None,
     segmentation_level: Optional[str] = None,
+    diagnostic_camera_specs: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> RobotScene:
     import genesis as gs
 
@@ -290,6 +292,18 @@ def build_robot_scene(
         fov=float(camera_cfg["vertical_fov_deg"]),
         GUI=False,
     )
+    diagnostic_cameras = {}
+    for camera_name, camera_spec in (diagnostic_camera_specs or {}).items():
+        if not camera_name or camera_name == "main":
+            raise ValueError(f"invalid diagnostic camera name: {camera_name!r}")
+        diagnostic_cameras[camera_name] = scene.add_camera(
+            res=tuple(int(v) for v in camera_spec["resolution_wh"]),
+            pos=tuple(camera_cfg["position_m"]),
+            lookat=tuple(camera_cfg["lookat_m"]),
+            up=tuple(camera_cfg["up_m"]),
+            fov=float(camera_spec.get("vertical_fov_deg", camera_cfg["vertical_fov_deg"])),
+            GUI=False,
+        )
     scene.build()
 
     dof = config["robot"]
@@ -342,4 +356,5 @@ def build_robot_scene(
         finger_dofs=finger_dofs,
         dt_s=dt,
         config=config,
+        diagnostic_cameras=diagnostic_cameras,
     )
