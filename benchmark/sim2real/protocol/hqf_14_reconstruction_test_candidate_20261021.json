@@ -1,0 +1,78 @@
+{
+  "schema": "hqf_14_reconstruction_test_candidate_v1",
+  "status": "study_role_frozen_engineering_candidate_unscored",
+  "real_scores_authorized": false,
+  "dataset_role": {
+    "primary": "HQF all 14 sequences",
+    "extension": "HS-ERGB only; not a substitute for HQF primary",
+    "decision_source": "reviews/recon_flow_localization_20261019/REVIEW.md",
+    "rationale": "HQF supplies high-quality aligned reference frames for event reconstruction and is natively supported by the locked EVREAL MemMapDataset configuration; HS-ERGB remains a video-interpolation extension requiring a distinct target-time protocol."
+  },
+  "sources": {
+    "official_paper_dataset_page": "https://timostoff.github.io/20ecnn",
+    "official_dataset_folder": "https://drive.google.com/drive/folders/18Xdr6pxJX0ZXTrXW9tK0hC3ZpmKDIt6_",
+    "official_evreal_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+    "official_evreal_hqf_config": "config/dataset/HQF.json",
+    "evreal_hqf_config_sha256": "to_be_filled_from_locked_source_checkout"
+  },
+  "sequences": [
+    "bike_bay_hdr",
+    "boxes",
+    "desk",
+    "desk_fast",
+    "desk_hand_only",
+    "desk_slow",
+    "engineering_posters",
+    "high_texture_plants",
+    "poster_pillar_1",
+    "poster_pillar_2",
+    "reflective_materials",
+    "slow_and_fast_desk",
+    "slow_hand",
+    "still_life"
+  ],
+  "raw_bag_contract": {
+    "extension": ".bag",
+    "event_topic": "/dvs/events",
+    "reference_image_topic": "/dvs/image_raw",
+    "native_sensor_hw": [180, 240],
+    "source_time_unit": "ROS header timestamp seconds",
+    "event_polarity_encoding": "0=OFF, 1=ON"
+  },
+  "model": {
+    "architecture": "pinned event_cnn_minimal E2VIDRecurrent",
+    "weights": "new corrected-Stage5 synthetic-best checkpoint, selected only by synthetic LPIPS-VGG validation",
+    "public_pretrained_checkpoint_substitution": false,
+    "inference_input": "events only, five signed temporal bins between reference-frame endpoints",
+    "sequence_start": "reset recurrent state once at the first endpoint of each sequence; never carry state across sequences",
+    "geometry": "pad native 180x240 using the pinned E2VID CropParameters, run inference, crop output back to the exact native raster"
+  },
+  "time_alignment": {
+    "reference_endpoint": "reference image timestamp",
+    "event_window": "events strictly after previous image endpoint and at or before current reference image timestamp",
+    "first_endpoint": "use the pinned EVREAL endpoint convention and preserve its initial event range; no future event is allowed",
+    "sequence_end": "include the final reference endpoint exactly once"
+  },
+  "photometry_and_metrics": {
+    "model_output_and_reference_range": "float32 [0,1] on the same native grayscale pixel grid",
+    "brightness_or_histogram_fit_to_real_GT": false,
+    "primary_metric": "LPIPS-AlexNet",
+    "secondary_metrics": ["SSIM", "PSNR", "MSE"],
+    "metric_values_per_frame": true,
+    "aggregation": "arithmetic mean over evaluated frames within each sequence; then equal arithmetic mean over all 14 sequences",
+    "sequence_weights": "equal; never proportional to frame count",
+    "checkpoint_selection_uses_real_data": false
+  },
+  "expected_converted_files_per_sequence": [
+    "events_ts.npy",
+    "events_xy.npy",
+    "events_p.npy",
+    "images.npy",
+    "images_ts.npy",
+    "image_event_indices.npy",
+    "metadata.json",
+    "conversion_manifest.json"
+  ],
+  "real_data_used_for_training_or_selection": false,
+  "real_scoring_enabled": false
+}

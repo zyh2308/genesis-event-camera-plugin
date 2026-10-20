@@ -1,0 +1,51 @@
+{
+  "schema": "stage5_flow_fixed_sample_fit_v1",
+  "purpose": "Bounded GT-supervised STE-FlowNet memorization diagnostic; independent from official self-supervised run",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "source_training_config": "configs/stage4_corrected_v2_flowdt1_seed0.json",
+  "data_manifest": "stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms/training_bank_manifest.json",
+  "sample": {
+    "rollout_id": "s2_00",
+    "split": "train",
+    "window_index": 48,
+    "sample_id": "s2_00/dt1_144",
+    "selection_basis": "predeclared physical-label window with nonzero motion; no event-count filtering and independent of generator event totals",
+    "expected_flow_unit": "pixels per 30ms endpoint interval",
+    "event_bins": 5
+  },
+  "pairing": {
+    "arms": ["eventgenesis", "v2e"],
+    "same_initialization_seed": 0,
+    "same_physical_rollout_and_label": true,
+    "same_optimizer_and_budget": true,
+    "random_augmentation": false,
+    "sample_rotation": false,
+    "sample_replacement": false,
+    "optimizer": "Adam",
+    "learning_rate": 0.0004,
+    "weight_decay_weights": 0.0004,
+    "weight_decay_biases": 0.0,
+    "betas": [0.9, 0.999],
+    "batch_size": 1
+  },
+  "diagnostic_budget": {
+    "updates_per_arm": 200,
+    "evaluate_updates": [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
+    "no_parameter_or_gradient_progress_stop": "fail if all parameter deltas remain zero by update 20, or if any required gradient/loss becomes non-finite",
+    "memorization_pass": {
+      "four_scale_robust_objective_ratio_final_to_initial_max": 0.5,
+      "full_valid_epe_ratio_final_to_initial_max": 0.5,
+      "common_event_active_epe_ratio_final_to_initial_max": 0.7,
+      "all_arms_must_pass": true
+    }
+  },
+  "mask": {
+    "full": "shared physical flow validity",
+    "common_event_active": "shared physical flow validity AND union of nonzero pixels in the normal paired EventGenesis and V2E five-bin event tensors",
+    "same_mask_for_both_models": true
+  },
+  "checkpoint_selection": false,
+  "official_protocol_changed": false
+}

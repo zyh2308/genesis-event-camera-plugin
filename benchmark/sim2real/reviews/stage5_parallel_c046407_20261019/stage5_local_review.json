@@ -1,0 +1,427 @@
+{
+  "observed_utc": "2026-10-19T13:13:53.199257+00:00",
+  "source_hash_checks": {
+    "benchmark/sim2real/configs/stage5_flow_scene_coverage_pilot_v1.json": true,
+    "benchmark/sim2real/scripts/generate_stage5_flow_coverage_bank.py": true,
+    "benchmark/sim2real/scripts/finalize_stage5_v2e_coverage_pilot.py": true,
+    "benchmark/sim2real/scripts/stage5_flow_coverage_statistics.py": true,
+    "benchmark/sim2real/scripts/stage5_flow_scale_target_audit.py": true,
+    "benchmark/sim2real/scripts/stage5_flow_subset_active_eval.py": true
+  },
+  "json_structure": {
+    "flow_input_perturbation_results.json": {
+      "data_manifest_sha256": "1f9aff5164c71301a7406c9981c31ef0d5df381df81641cf2a1d397e8df246b1",
+      "data_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/20261017-stage4-flowdt1-seed0-corrected-v5/steflow_30ms",
+      "device": "cuda:0",
+      "finished_utc": "2026-10-19T09:26:25.581146+00:00",
+      "fixed_window_rule": "dt1_000 from all eight registered validation rollouts; two per each of four fixed strata",
+      "frozen_masks_and_inputs": "list[8]",
+      "input_variants": [
+        "all_zero_raw_events",
+        "normal",
+        "reversed_five_time_bins"
+      ],
+      "interpretation_limit": "input sensitivity is not evidence that the model decoded correct motion; fixed 8-window synthetic diagnosis only",
+      "mask_rule": "same valid mask and same frozen union of normal EventGenesis/V2E active pixels for every variant",
+      "model_source": [
+        "bytes_verified",
+        "commit",
+        "files_verified",
+        "repository",
+        "tree_sha256",
+        "verification"
+      ],
+      "models": [
+        "eventgenesis",
+        "v2e"
+      ],
+      "real_data_used": false,
+      "real_scores_authorized": false,
+      "schema": "stage5_flow_input_perturbation_v1",
+      "started_utc": "2026-10-19T09:25:22.761316+00:00",
+      "status": "completed",
+      "training_config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+      "sha256": "7e627c6d583322ce71c8df9ec7af53786a891828b460359b9c368dc7e0c9c2ed"
+    },
+    "pose_generic_mechanism_result.json": {
+      "schema_version": 1,
+      "scope": "short synthetic-only event-only SingleShotPose pilot; not E-POSE real evaluation",
+      "created_utc": "2026-10-19T09:30:04Z",
+      "source_commit": "2c282619101f9f31666dd18b42393375bea1600f",
+      "source_verification": [
+        "repository",
+        "commit",
+        "verification",
+        "files_verified",
+        "bytes_verified",
+        "tree_sha256"
+      ],
+      "shared_h5": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/shared_trajectory.h5",
+      "shared_h5_sha256": "68011b77d292ca5600fb10b3464af26c958c785d2258e8a8cfea0db35b15763d",
+      "v2e_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/v2e_events",
+      "data_config": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage2/20261016-s2-pilot-v1/shared/config.json",
+      "data_config_sha256": "ddfae9eed5428b123a5417747789ccab8442b7568acd5e0a6ad68a9f10cee1e2",
+      "pilot_config": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-sim2real-stage5-flowdiag-exec-20261019-v2/benchmark/sim2real/configs/pose_stage4_seed0_eval_stable.json",
+      "pilot_config_sha256": "84e3cb0c38c18134093449bdc6194d30f0dfc8b57c154b9baeb7530ca2f53c87",
+      "seed": 0,
+      "epochs": 31,
+      "confidence_pretrain_epochs": 15,
+      "planned_confidence_supervised_updates": 128,
+      "minimum_required_confidence_supervised_updates": 128,
+      "model_inference_inputs": "list[1]",
+      "training_supervision": "list[1]",
+      "forbidden_inputs_not_used": "list[8]",
+      "input_encoding": [
+        "source",
+        "window",
+        "channels",
+        "fixed_count_scale_per_channel",
+        "normalization",
+        "resize_hw",
+        "inference_inputs"
+      ],
+      "physical_object_scope": "generic Genesis box with configured dimensions; no E-POSE class/CAD match in this pilot",
+      "paired_labels_equal": true,
+      "results": "list[2]",
+      "sha256": "dc2d0add3de2d2ed89fdba9a81cdec172c309b727dd5e2e7b097249cfa8abb21"
+    },
+    "gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/summary.json": {
+      "arms": [
+        "eventgenesis",
+        "v2e"
+      ],
+      "batch_size": 1,
+      "config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+      "created_utc": "2026-10-19T10:03:01.591955+00:00",
+      "data_manifest_sha256": "1f9aff5164c71301a7406c9981c31ef0d5df381df81641cf2a1d397e8df246b1",
+      "finished_utc": "2026-10-19T10:13:49.160483+00:00",
+      "fixed_training_sample_indices_per_rollout": "list[2]",
+      "flow_gt_used_for_optimizer": true,
+      "objective": "equal-weight four-scale robust endpoint error from the pinned STE-FlowNet Charbonnier family; target vector resized per scale; validity coverage >=0.999",
+      "paired_initial_hash": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+      "protocol_status": "separate diagnostic; no formal protocol or checkpoint selection change",
+      "real_data_used": false,
+      "schema": "stage5_steflow_synthetic_gt_supervised_pilot_v2",
+      "source": [
+        "bytes_verified",
+        "commit",
+        "files_verified",
+        "repository",
+        "tree_sha256",
+        "verification"
+      ],
+      "status": "complete",
+      "train_windows_per_rollout": 2,
+      "training_rollouts": "list[4]",
+      "training_samples": 8,
+      "updates_per_arm": 80,
+      "validation_rollouts": "list[8]",
+      "validation_windows_per_rollout": 1,
+      "sha256": "e3f287b0a0dbf45c8077f505513634f0105172e661e31eb12e8414138891da5e",
+      "arm_keys": {
+        "eventgenesis": [
+          "checkpoint",
+          "final_state_sha256",
+          "independent_validation",
+          "independent_validation_mean_epe_px_per_30ms",
+          "independent_validation_zero_flow_mean_epe_px_per_30ms",
+          "initial_state_sha256",
+          "source_patch",
+          "train_eval_output_parity",
+          "train_subset",
+          "train_subset_mean_epe_px_per_30ms",
+          "updates",
+          "wall_seconds"
+        ],
+        "v2e": [
+          "checkpoint",
+          "final_state_sha256",
+          "independent_validation",
+          "independent_validation_mean_epe_px_per_30ms",
+          "independent_validation_zero_flow_mean_epe_px_per_30ms",
+          "initial_state_sha256",
+          "source_patch",
+          "train_eval_output_parity",
+          "train_subset",
+          "train_subset_mean_epe_px_per_30ms",
+          "updates",
+          "wall_seconds"
+        ]
+      }
+    },
+    "gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/summary.json": {
+      "arms": [
+        "eventgenesis",
+        "v2e"
+      ],
+      "config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+      "data_manifest_sha256": "1f9aff5164c71301a7406c9981c31ef0d5df381df81641cf2a1d397e8df246b1",
+      "finished_utc": "2026-10-19T10:16:45.506048+00:00",
+      "flow_unit": "px_per_30ms_interval",
+      "mask_rule": "common valid GT intersected with union of pixels active in the paired normal EventGenesis and V2E five-bin inputs; same mask is used for both trained models",
+      "real_data_used": false,
+      "schema": "stage5_flow_gt_subset_active_eval_v1",
+      "source_commit": "7dfaa8028b1309ee10cb66bbab32173133718740",
+      "started_utc": "2026-10-19T10:16:09.648535+00:00",
+      "status": "complete",
+      "training_sample_indices_per_rollout": "list[2]",
+      "validation_sample_index": 0,
+      "sha256": "eb386e568cd4b748416027e1c3a0e008922c2f2b8bdc3bfb2a0fbf16319f75cd",
+      "arm_keys": {
+        "eventgenesis": [
+          "checkpoint",
+          "source_patch",
+          "train",
+          "train_active_macro_epe",
+          "train_full_valid_macro_epe",
+          "validation",
+          "validation_active_macro_epe",
+          "validation_full_valid_macro_epe"
+        ],
+        "v2e": [
+          "checkpoint",
+          "source_patch",
+          "train",
+          "train_active_macro_epe",
+          "train_full_valid_macro_epe",
+          "validation",
+          "validation_active_macro_epe",
+          "validation_full_valid_macro_epe"
+        ]
+      }
+    },
+    "gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/summary.json": {
+      "arms": [
+        "eventgenesis",
+        "v2e"
+      ],
+      "config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+      "data_manifest_sha256": "1f9aff5164c71301a7406c9981c31ef0d5df381df81641cf2a1d397e8df246b1",
+      "finished_utc": "2026-10-19T10:23:46.445743+00:00",
+      "flow_unit": "px_per_30ms_interval",
+      "objective": "same four-scale equal-weight robust endpoint function as the bounded diagnostic; per-scale target vectors are resized in pixels and scaled by W_out/W_in, H_out/H_in; validity area coverage >=0.999",
+      "real_data_used": false,
+      "samples": "list[16]",
+      "schema": "stage5_flow_multiscale_target_audit_v1",
+      "source_commit": "7dfaa8028b1309ee10cb66bbab32173133718740",
+      "started_utc": "2026-10-19T10:22:59.042864+00:00",
+      "status": "complete",
+      "sha256": "0ce037d6a97e2b0e2b0feb2355ea325291264944339d099be251345f456ac621",
+      "arm_keys": {
+        "eventgenesis": [
+          "checkpoint",
+          "samples",
+          "scale_weights",
+          "source_patch"
+        ],
+        "v2e": [
+          "checkpoint",
+          "samples",
+          "scale_weights",
+          "source_patch"
+        ]
+      }
+    }
+  },
+  "fit_logs": {
+    "eventgenesis": {
+      "n": 80,
+      "ids": [
+        "s0_00/dt1_048",
+        "s0_00/dt1_144",
+        "s1_00/dt1_048",
+        "s1_00/dt1_144",
+        "s2_00/dt1_048",
+        "s2_00/dt1_144",
+        "s3_00/dt1_048",
+        "s3_00/dt1_144"
+      ],
+      "contiguous": true,
+      "first": {
+        "finite_gradient_tensors": 70,
+        "gradient_l2_norm": 7.195487022399902,
+        "loss": 0.5278832316398621,
+        "rollout_id": "s2_00",
+        "sample_id": "s2_00/dt1_048",
+        "scale_endpoint_losses": [
+          0.30219241976737976,
+          0.24186953902244568,
+          0.369128942489624,
+          1.198341965675354
+        ],
+        "time_utc": "2026-10-19T10:03:29.691737+00:00",
+        "update": 1
+      },
+      "last": {
+        "finite_gradient_tensors": 70,
+        "gradient_l2_norm": 1.2393927574157715,
+        "loss": 0.24787834286689758,
+        "rollout_id": "s2_00",
+        "sample_id": "s2_00/dt1_144",
+        "scale_endpoint_losses": [
+          0.5452336668968201,
+          0.265159010887146,
+          0.12607666850090027,
+          0.055044036358594894
+        ],
+        "time_utc": "2026-10-19T10:07:46.418063+00:00",
+        "update": 80
+      },
+      "first_cycle_loss": 0.4501336105167866,
+      "last_cycle_loss": 0.14286709413863719
+    },
+    "v2e": {
+      "n": 80,
+      "ids": [
+        "s0_00/dt1_048",
+        "s0_00/dt1_144",
+        "s1_00/dt1_048",
+        "s1_00/dt1_144",
+        "s2_00/dt1_048",
+        "s2_00/dt1_144",
+        "s3_00/dt1_048",
+        "s3_00/dt1_144"
+      ],
+      "contiguous": true,
+      "first": {
+        "finite_gradient_tensors": 70,
+        "gradient_l2_norm": 4.09149169921875,
+        "loss": 0.32594043016433716,
+        "rollout_id": "s2_00",
+        "sample_id": "s2_00/dt1_048",
+        "scale_endpoint_losses": [
+          0.27450913190841675,
+          0.1764514297246933,
+          0.21138747036457062,
+          0.6414136290550232
+        ],
+        "time_utc": "2026-10-19T10:08:42.469710+00:00",
+        "update": 1
+      },
+      "last": {
+        "finite_gradient_tensors": 70,
+        "gradient_l2_norm": 1.2099635601043701,
+        "loss": 0.25072264671325684,
+        "rollout_id": "s2_00",
+        "sample_id": "s2_00/dt1_144",
+        "scale_endpoint_losses": [
+          0.5342453122138977,
+          0.2744879424571991,
+          0.1299271583557129,
+          0.06423020362854004
+        ],
+        "time_utc": "2026-10-19T10:12:57.096769+00:00",
+        "update": 80
+      },
+      "first_cycle_loss": 0.2900347113609314,
+      "last_cycle_loss": 0.14304914802778512
+    }
+  },
+  "git_diff_core": [
+    "benchmark/sim2real/STAGE5_PARALLEL_HANDOFF_20261019.md",
+    "benchmark/sim2real/compat/e2vid_temporal_consistency.py",
+    "benchmark/sim2real/configs/stage5_flow_scene_coverage_pilot_v1.json",
+    "benchmark/sim2real/e2vid_stage5_gate.py",
+    "benchmark/sim2real/evidence/S5/20261019-epose-access/README.md",
+    "benchmark/sim2real/evidence/S5/20261019-epose-access/epose_access_audit.json",
+    "benchmark/sim2real/evidence/S5/20261019-epose-access/epose_access_recheck_20261019T0915Z.json",
+    "benchmark/sim2real/evidence/S5/20261019-epose-access/epose_access_recheck_20261019T0959Z.json",
+    "benchmark/sim2real/evidence/S5/20261019-epose-access/epose_access_recheck_20261019T1041Z.json",
+    "benchmark/sim2real/evidence/S5/20261019-mvsec-evaluator-preflight/README.md",
+    "benchmark/sim2real/evidence/S5/20261019-mvsec-evaluator-preflight/synthetic_self_test.json",
+    "benchmark/sim2real/evidence/S5/20261019-mvsec-evaluator-preflight/synthetic_self_test_v2.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/README.md",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/SHA256SUMS",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/coverage_pilot_preflight.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/diagnostic_summary.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/flow_input_perturbation_results.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_80_update_v1_retry4/eventgenesis_updates.jsonl",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_80_update_v1_retry4/summary.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_80_update_v1_retry4/v2e_updates.jsonl",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_80_update_v1_retry4_supervisor/exit.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_80_update_v1_retry4_supervisor/run.log",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/environment.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/command.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/eventgenesis_updates.jsonl",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/exit_code.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/finished_utc.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/run.log",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/source_commit.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/started_utc.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/summary.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/fit_run/v2e_updates.jsonl",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/command.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/eval.log",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/exit_code.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/finished_utc.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/started_utc.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/posthoc_active_eval/summary.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/audit.log",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/command.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/exit_code.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/finished_utc.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/source_commit.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/source_script_sha256.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/started_utc.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_7dfaa80/scale_target_audit/summary.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/gt_supervised_pilot/gt_supervised_8window_80update_v1_live_progress.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/launch_attempts/gt_supervised_80_update_v1_retry1_supervisor/exit.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/launch_attempts/gt_supervised_80_update_v1_retry1_supervisor/run.log",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/launch_attempts/gt_supervised_80_update_v1_retry3_supervisor/exit.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/launch_attempts/gt_supervised_80_update_v1_retry3_supervisor/run.log",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/launch_attempts/gt_supervised_80_update_v1_supervisor/exit.txt",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/parallel_evidence_index.json",
+    "benchmark/sim2real/evidence/S5/20261019-parallel-diagnostics/pose_generic_mechanism_result.json",
+    "benchmark/sim2real/evidence/S5/20261019-tc-aligntrue-preflight/README.md",
+    "benchmark/sim2real/evidence/S5/20261019-tc-aligntrue-preflight/geometry_cpu.json",
+    "benchmark/sim2real/evidence/S5/20261019-tc-aligntrue-preflight/geometry_cpu.stdout.log",
+    "benchmark/sim2real/evidence/S5/20261019-tc-aligntrue-preflight/geometry_cuda.json",
+    "benchmark/sim2real/protocol/mvsec_dt1_protocol_candidate_20261019.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/REVIEW.md",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/e2vid_warp_identity_probe.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/e2vid_warp_identity_probe.py",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/e2vid_warp_identity_probe_wsl.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/final_best_aggregation_verification.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/mvsec_schema_issue.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/reproduce_mvsec_schema_issue.py",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/review_hashes.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/run_e2vid_warp_probe.py",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/run_stage4_parallel_audit.py",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/stage4_parallel_audit.json",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/stage4_parallel_audit_remote.py",
+    "benchmark/sim2real/reviews/stage4_parallel_61554fb_20261019/summarize_parallel_review.py",
+    "benchmark/sim2real/scripts/audit_e2vid_tc_geometry.py",
+    "benchmark/sim2real/scripts/finalize_stage5_v2e_coverage_pilot.py",
+    "benchmark/sim2real/scripts/generate_stage5_flow_coverage_bank.py",
+    "benchmark/sim2real/scripts/prepare_e2vid_stage5_run.py",
+    "benchmark/sim2real/scripts/run_e2vid_stage5_segment.sh",
+    "benchmark/sim2real/scripts/stage4_mvsec_dt1_metrics.py",
+    "benchmark/sim2real/scripts/stage5_flow_coverage_statistics.py",
+    "benchmark/sim2real/scripts/stage5_flow_input_perturbation.py",
+    "benchmark/sim2real/scripts/stage5_flow_scale_target_audit.py",
+    "benchmark/sim2real/scripts/stage5_flow_subset_active_eval.py",
+    "benchmark/sim2real/scripts/stage5_flow_supervised_pilot.py",
+    "benchmark/sim2real/scripts/train_e2vid_stage5.py",
+    "benchmark/sim2real/sim2real_status.md",
+    "benchmark/sim2real/tasks/NEXT_PARALLEL_FIX_AND_DIAGNOSIS_20261019.md"
+  ],
+  "windows_epose_get": [
+    {
+      "url": "https://api.figshare.com/v2/articles/28106717",
+      "method": "GET",
+      "status": 403,
+      "content_type": "text/html",
+      "waf_action": null
+    },
+    {
+      "url": "https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717",
+      "method": "GET",
+      "status": 202,
+      "final_url": "https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717",
+      "content_type": "text/html; charset=UTF-8",
+      "waf_action": "challenge",
+      "read_bytes": 0,
+      "prefix": ""
+    }
+  ]
+}

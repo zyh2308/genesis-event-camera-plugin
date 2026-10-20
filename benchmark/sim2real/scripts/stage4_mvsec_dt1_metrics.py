@@ -274,11 +274,26 @@ def load_registered_artifact_pair(row: dict[str, Any], checkpoint_binding: dict[
     return loaded
 
 
-def evaluate_pair_manifest(manifest_path: Path, protocol_path: Path, authorization_path: Path) -> dict[str, Any]:
-    """Score registered paired artifact NPZs after the external approval gate."""
-    authorize_real_evaluation(protocol_path, manifest_path, authorization_path)
+def evaluate_pair_manifest(
+    manifest_path: Path,
+    protocol_path: Path,
+    authorization_path: Path | None,
+    *,
+    synthetic_fixture: bool = False,
+) -> dict[str, Any]:
+    """Score paired artifacts after authorization, or through a synthetic-only fixture."""
     manifest = json.loads(manifest_path.read_text())
     protocol = json.loads(protocol_path.read_text())
+    if synthetic_fixture:
+        if (manifest.get("test_data_scope") != "synthetic_fixture"
+                or manifest.get("real_data_used") is not False
+                or protocol.get("test_data_scope") != "synthetic_fixture"
+                or protocol.get("real_scores_authorized") is not False):
+            raise ValueError("synthetic evaluator fixture must be explicitly marked and cannot contain real data")
+    else:
+        if authorization_path is None:
+            raise PermissionError("MVSEC real scoring requires an explicit authorization record")
+        authorize_real_evaluation(protocol_path, manifest_path, authorization_path)
     checkpoint_binding = validate_checkpoint_binding(manifest)
     expected_by_sequence = manifest.get("registered_aps_start_indices", {})
     seen_by_sequence: dict[str, set[int]] = {seq: set() for seq in protocol["sequences"]}
@@ -368,11 +383,13 @@ def evaluate_pair_manifest(manifest_path: Path, protocol_path: Path, authorizati
             ])),
         }
     return {
-        "status": "authorized_real_score",
+        "status": "synthetic_only_entry_fixture" if synthetic_fixture else "authorized_real_score",
         "scope": "MVSEC dt1 fixed test; evaluation region, masks, and weights bound by frozen manifests",
         "protocol_sha256": sha256_file(protocol_path),
         "test_manifest_sha256": sha256_file(manifest_path),
-        "authorization_record": str(authorization_path.resolve()),
+        "authorization_record": None if synthetic_fixture else str(authorization_path.resolve()),
+        "real_data_used": not synthetic_fixture,
+        "real_scores_authorized": not synthetic_fixture,
         "checkpoint_binding": {arm: {key: value for key, value in item.items() if key != "resolved_path"}
                                for arm, item in checkpoint_binding.items()},
         "checkpoint_selection_or_generator_adjustment_from_real_scores": False,
@@ -485,9 +502,10 @@ def self_test() -> dict[str, Any]:
                 "sha256": sha256_file(checkpoint_path), "expected_epoch": 1,
             }
             artifact_path = root / f"{arm}.npz"
+            arm_prediction = pair_pred if arm == "eventgenesis" else np.zeros_like(pair_pred)
             np.savez_compressed(
                 artifact_path, event_input_native_uint8=pair_event,
-                prediction_px_per_interval=pair_pred, gt_px_per_interval=pair_gt,
+                prediction_px_per_interval=arm_prediction, gt_px_per_interval=pair_gt,
             )
             artifact_rows[arm] = {
                 "path": str(artifact_path), "sha256": sha256_file(artifact_path),
@@ -518,6 +536,47 @@ def self_test() -> dict[str, Any]:
             assert "checkpoint_binding differs from file" in str(exc)
         else:
             raise AssertionError("stale synthetic-best checkpoint hash must fail closed")
+
+        # Exercise the complete manifest-to-metric entry point using only
+        # generated arrays and temporary placeholder weight files. The
+        # synthetic_fixture flag is available solely as an explicit function
+        # argument; the CLI and normal evaluator remain behind real approval.
+        fixture_protocol_path = root / "synthetic_protocol.json"
+        fixture_manifest_path = root / "synthetic_manifest.json"
+        fixture_protocol_path.write_text(json.dumps({
+            "status": "synthetic_fixture",
+            "test_data_scope": "synthetic_fixture",
+            "real_scores_authorized": False,
+            "sequences": ["synthetic_fixture"],
+            "sequence_specs": {"synthetic_fixture": {"evaluation_rows": SENSOR_HW[0]}},
+        }))
+        fixture_manifest_path.write_text(json.dumps({
+            "status": "synthetic_fixture",
+            "test_data_scope": "synthetic_fixture",
+            "real_data_used": False,
+            "real_scores_authorized": False,
+            "registered_aps_start_indices": {"synthetic_fixture": [0]},
+            "checkpoint_binding": checkpoint_binding,
+            "windows": [{
+                "dt": 1,
+                "sequence": "synthetic_fixture",
+                "aps_start_index": 0,
+                "start_time_s": 0.0,
+                "end_time_s": 0.01,
+                "label_time_s": 0.01,
+                "event_window_convention": "(start_time_s, end_time_s]",
+                "event_count": 1,
+                "artifacts": artifact_rows,
+            }],
+        }))
+        full_entry = evaluate_pair_manifest(
+            fixture_manifest_path, fixture_protocol_path, None, synthetic_fixture=True
+        )
+        assert full_entry["status"] == "synthetic_only_entry_fixture"
+        assert full_entry["real_data_used"] is False and full_entry["real_scores_authorized"] is False
+        assert full_entry["scored_windows"] == {"synthetic_fixture": 1}
+        assert full_entry["sequence_summary"]["eventgenesis"]["equal_sequence_mean_aee_px_per_interval"] == 0.0
+        assert full_entry["sequence_summary"]["v2e"]["equal_sequence_mean_aee_px_per_interval"] == 5.0
     try:
         authorize_real_evaluation(DEFAULT_PROTOCOL, DEFAULT_MANIFEST, Path("/nonexistent/approval.json"))
     except FileNotFoundError:
@@ -550,11 +609,15 @@ def self_test() -> dict[str, Any]:
         },
         "empty_common_support": empty_metrics,
         "full_artifact_manifest_weight_binding_fixture": {
-            "status": "pass", "score_mode": "synthetic-only hand-built fixture",
+            "status": "pass", "score_mode": "synthetic-only full evaluator entry fixture",
             "checkpoint_schema": "manifest.checkpoint_binding",
             "pair_artifact_sha256_checked": True,
             "artifact_checkpoint_hash_bound_to_weight_file": True,
             "manual_aee_px_per_interval": fixture_metrics["aee_px_per_interval"],
+            "full_entry_status": full_entry["status"],
+            "full_entry_scored_windows": full_entry["scored_windows"],
+            "full_entry_eventgenesis_aee": full_entry["sequence_summary"]["eventgenesis"]["equal_sequence_mean_aee_px_per_interval"],
+            "full_entry_v2e_aee": full_entry["sequence_summary"]["v2e"]["equal_sequence_mean_aee_px_per_interval"],
             "stale_weight_hash_negative_control": "rejected",
             "real_data_used": False, "real_scores_authorized": False,
         },

@@ -29,11 +29,19 @@ def main() -> None:
     args = p.parse_args()
     bank, root = args.bank_root.resolve(), args.v2e_root.resolve()
     split = json.loads((bank / "registered_split.json").read_text())
-    if len(split) != 8 or sum(row["split"] == "train" for row in split) != 4:
-        raise RuntimeError("registered pilot split must contain 8 rollout rows with 4 train")
+    bank_manifest = json.loads((bank / "bank_manifest.json").read_text())
+    smoke = bank_manifest.get("schema") == "stage5_flow_scene_coverage_single_scene_smoke_v1"
+    if smoke:
+        if bank_manifest.get("scope") != "one_registered_rollout_smoke" or len(split) != 1:
+            raise RuntimeError("single-scene smoke manifest/split contract mismatch")
+    elif len(split) != 8 or sum(row["split"] == "train" for row in split) != 4:
+        raise RuntimeError("complete pilot split must contain 8 rollout rows with 4 train")
     rows = []
     for item in split:
         rollout = item["id"]
+        bank_row = next((row for row in bank_manifest["episodes"] if row["id"] == rollout), None)
+        if bank_row is None or bank_row["frames"] != 201:
+            raise RuntimeError(f"{rollout}: shared bank episode/frame count missing or unexpected")
         path, status_path = locate_shard_artifacts(root, rollout)
         status = json.loads(status_path.read_text())
         if (status.get("rollout") != rollout or status.get("exit_code") != 0
@@ -53,8 +61,8 @@ def main() -> None:
             if int(events[:, 1].max()) >= 346 or int(events[:, 2].max()) >= 260:
                 raise RuntimeError(f"{rollout}: V2E coordinates outside registered raster")
         input_files = sorted((bank / "v2e_input" / rollout).glob("*.png"))
-        if len(input_files) != 201:
-            raise RuntimeError(f"{rollout}: expected 201 V2E input endpoints, got {len(input_files)}")
+        if len(input_files) != int(bank_row["frames"]):
+            raise RuntimeError(f"{rollout}: V2E endpoint count {len(input_files)} != shared bank {bank_row['frames']}")
         input_frames = [{"path": str(image), "size_bytes": image.stat().st_size, "sha256": sha256(image)}
                         for image in input_files]
         rows.append({
@@ -80,10 +88,15 @@ def main() -> None:
             "elapsed_s": status.get("elapsed_s"),
             "exit_code": status["exit_code"],
         })
-    if len(rows) != 8 or sum(row["split"] == "train" for row in rows) != 4:
+    if smoke:
+        if len(rows) != 1:
+            raise RuntimeError("V2E single-scene smoke must contain exactly one paired rollout")
+    elif len(rows) != 8 or sum(row["split"] == "train" for row in rows) != 4:
         raise RuntimeError("V2E paired pilot bank incomplete or split mismatch")
     manifest = {
-        "schema": "stage5_v2e_coverage_pilot_raw_events_v1",
+        "schema": "stage5_v2e_coverage_single_scene_smoke_v1" if smoke else "stage5_v2e_coverage_pilot_raw_events_v1",
+        "scope": bank_manifest["scope"],
+        "complete_balanced_pilot": not smoke,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "bank_manifest_sha256": sha256(bank / "bank_manifest.json"),
         "config_sha256": sha256(bank / "stage5_coverage_pilot_config.json"),

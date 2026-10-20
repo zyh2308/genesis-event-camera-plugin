@@ -37,6 +37,7 @@ WIDTH, HEIGHT = 346, 260
 FPS, DT, DURATION = 100, 0.001, 2.0
 FRAMES = int(FPS * DURATION) + 1
 BANK_SCHEMA = "stage5_flow_scene_coverage_shared_bank_v1"
+SCENE_SMOKE_SCHEMA = "stage5_flow_scene_coverage_single_scene_smoke_v1"
 TOTAL_ROLLOUTS = 8
 
 
@@ -529,9 +530,11 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
 
 
 def main() -> None:
+    global TOTAL_ROLLOUTS
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--episode-id", help="generate one preregistered rollout as an isolated smoke; no full-bank statistics are implied")
     args = parser.parse_args()
     config_path = args.config.resolve()
     launch = json.loads(config_path.read_text())
@@ -560,6 +563,19 @@ def main() -> None:
         raise RuntimeError("coverage pilot config must freeze its 8 episode factor rows")
     root = args.output_root.resolve(); root.mkdir(parents=True, exist_ok=False)
     episodes = registered_episodes(design)
+    all_episode_ids = [episode["id"] for episode in episodes]
+    if args.episode_id is not None:
+        if args.episode_id not in all_episode_ids:
+            raise RuntimeError(f"episode is not in the frozen 8-rollout design: {args.episode_id}")
+        episodes = [episode for episode in episodes if episode["id"] == args.episode_id]
+        if len(episodes) != 1:
+            raise RuntimeError(f"expected one registered smoke rollout, got {len(episodes)}")
+        bank_schema = SCENE_SMOKE_SCHEMA
+        scope = "one_registered_rollout_smoke"
+    else:
+        bank_schema = BANK_SCHEMA
+        scope = "complete_balanced_8_rollout_pilot"
+    TOTAL_ROLLOUTS = len(episodes)
     (root / "registered_split.json").write_text(json.dumps(episodes, indent=2) + "\n")
     (root / "stage5_coverage_pilot_config.json").write_bytes(config_path.read_bytes())
 
@@ -570,7 +586,11 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     commit = subprocess.check_output(["git", "-C", str(repo_root), "rev-parse", "HEAD"], text=True).strip()
     manifest = {
-        "schema": BANK_SCHEMA, "created_utc": datetime.now(timezone.utc).isoformat(),
+        "schema": bank_schema, "scope": scope,
+        "complete_balanced_pilot": args.episode_id is None,
+        "frozen_design_episode_ids": all_episode_ids,
+        "generated_episode_ids": [episode["id"] for episode in episodes],
+        "created_utc": datetime.now(timezone.utc).isoformat(),
         "host": socket.gethostname(), "repo_commit": commit, "frozen_simulator_core": CORE,
         "config_sha256": sha256(config_path), "split_seed": launch["shared_bank"]["split_seed"],
         "flow_direction_check": verify_flow_direction(), "episodes": [],
@@ -578,7 +598,7 @@ def main() -> None:
     h5_path = root / "shared_trajectory.h5.partial"
     try:
         with h5py.File(h5_path, "w") as h5:
-            h5.attrs["schema"] = BANK_SCHEMA
+            h5.attrs["schema"] = bank_schema
             h5.attrs["config_sha256"] = manifest["config_sha256"]
             h5.attrs["frozen_simulator_core"] = CORE
             h5.attrs["split_unit"] = "whole independent rollout; validation groups have distinct scene_seed and trajectory ID"
@@ -600,8 +620,10 @@ def main() -> None:
     finally:
         gs.destroy()
     manifest["episodes"] = sorted(manifest["episodes"], key=lambda e: e["id"])
-    if len(manifest["episodes"]) != TOTAL_ROLLOUTS or sum(e["split"] == "train" for e in manifest["episodes"]) != 4:
-        raise RuntimeError("incomplete registered bank")
+    if len(manifest["episodes"]) != TOTAL_ROLLOUTS:
+        raise RuntimeError("incomplete registered bank/smoke")
+    if args.episode_id is None and sum(e["split"] == "train" for e in manifest["episodes"]) != 4:
+        raise RuntimeError("full pilot must preserve its 4/4 rollout split")
     os.replace(h5_path, root / "shared_trajectory.h5")
     manifest["bank_sha256"] = sha256(root / "shared_trajectory.h5")
     manifest["split_sha256"] = sha256(root / "registered_split.json")
