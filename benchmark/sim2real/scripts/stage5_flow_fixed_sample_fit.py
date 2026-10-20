@@ -105,6 +105,10 @@ def main() -> None:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--arms", nargs="+", choices=("eventgenesis", "v2e"),
+                        help="run a registered subset when resuming a preserved partial diagnostic")
+    parser.add_argument("--paired-reference-checkpoint", type=Path,
+                        help="require this run's initialized model hash to match a preserved paired checkpoint")
     args = parser.parse_args()
     config = json.loads(args.config.read_text())
     sample_cfg = config["sample"]
@@ -130,6 +134,23 @@ def main() -> None:
     manifest_hash = sha256(manifest_path)
     if manifest.get("flow_unit") != "pixels per 30ms endpoint interval":
         raise RuntimeError("expected shared 30 ms flow labels")
+    arms = args.arms or config["pairing"]["arms"]
+    if len(set(arms)) != len(arms) or any(arm not in config["pairing"]["arms"] for arm in arms):
+        raise RuntimeError(f"requested diagnostic arms are not a unique subset of the frozen pair: {arms}")
+    paired_reference = None
+    if args.paired_reference_checkpoint is not None:
+        paired_reference = torch.load(args.paired_reference_checkpoint, map_location="cpu", weights_only=False)
+        required_reference = {
+            "sample_id": sample_cfg["sample_id"], "data_manifest_sha256": manifest_hash,
+            "flow_unit": FLOW_UNIT, "real_data_used": False,
+        }
+        for key, expected in required_reference.items():
+            if paired_reference.get(key) != expected:
+                raise RuntimeError(f"paired reference checkpoint {key} mismatch: {paired_reference.get(key)!r} != {expected!r}")
+        if paired_reference.get("updates") != int(run_cfg["updates_per_arm"]):
+            raise RuntimeError("paired reference checkpoint is not from the registered full update budget")
+        if not isinstance(paired_reference.get("initial_state_sha256"), str):
+            raise RuntimeError("paired reference checkpoint lacks its initialized-state hash")
     rows = {(row["generator"], row["rollout_id"]): row for row in manifest["entries"]}
     rollout = sample_cfg["rollout_id"]
     paired = {}
@@ -183,6 +204,12 @@ def main() -> None:
         "budget_updates_per_arm": int(run_cfg["updates_per_arm"]),
         "evaluation_updates": run_cfg["evaluate_updates"],
         "optimizer_contract": config["pairing"],
+        "requested_arms": arms,
+        "paired_reference_checkpoint": (str(args.paired_reference_checkpoint.resolve())
+                                         if args.paired_reference_checkpoint is not None else None),
+        "paired_initial_state_reference_sha256": (
+            paired_reference["initial_state_sha256"] if paired_reference is not None else None
+        ),
         "mask_contract": config["mask"],
         "real_data_used": False,
         "formal_checkpoint_selection": False,
@@ -203,7 +230,7 @@ def main() -> None:
         arm: {"path": str(Path(rows[(arm, rollout)]["path"])), "sha256": rows[(arm, rollout)]["sha256"]}
         for arm in paired
     }
-    for arm in config["pairing"]["arms"]:
+    for arm in arms:
         random.seed(config["pairing"]["same_initialization_seed"])
         np.random.seed(config["pairing"]["same_initialization_seed"])
         torch.manual_seed(config["pairing"]["same_initialization_seed"])
@@ -213,6 +240,8 @@ def main() -> None:
         initial_hashes[arm] = initial_hash
         if len(set(initial_hashes.values())) > 1:
             raise RuntimeError("paired initial model weights differ")
+        if paired_reference is not None and initial_hash != paired_reference["initial_state_sha256"]:
+            raise RuntimeError(f"{arm}: initialized model does not match paired reference checkpoint")
         initial_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
         optimizer = torch.optim.Adam([
             {"params": model.bias_parameters(), "weight_decay": 0.0},
@@ -309,7 +338,9 @@ def main() -> None:
         with torch.inference_mode():
             expected = model_output_to_flow_hw(model(events, 352, use_dt4=False, flow_seq=False))
             actual = model_output_to_flow_hw(restored(events, 352, use_dt4=False, flow_seq=False))
-        restore_max_abs = float((expected - actual).abs().max().cpu())
+        # model_output_to_flow_hw returns a NumPy HWC/CHW adapter array.
+        # Keep this check on that public boundary instead of assuming a torch tensor.
+        restore_max_abs = float(np.max(np.abs(expected - actual)))
         restored_steps = optimizer_steps(restored_optimizer)
         if restore_max_abs != 0.0 or state_sha256(restored) != arm_result["final_state_sha256"] or restored_steps != [updates]:
             raise RuntimeError(f"{arm}: restored checkpoint prediction/state mismatch")
@@ -349,6 +380,7 @@ def main() -> None:
         "status": result["status"],
         "memorization_gate": result["memorization_gate"],
         "sample_id": sample_cfg["sample_id"],
+        "requested_arms": arms,
         "summary": {
             arm: {
                 "final_to_initial": row["memorization_ratios"],

@@ -39,6 +39,20 @@ def find_one(root: Path, filename: str) -> Path | None:
     return found[0] if found else None
 
 
+def find_registered_fragment_pairs(root: Path, sequence: str) -> list[dict]:
+    pairs = []
+    for data_path in sorted(root.rglob(f"{sequence}_registered_*_data.hdf5")):
+        gt_path = data_path.with_name(data_path.name[:-len("_data.hdf5")] + "_gt.hdf5")
+        pair = {
+            "fragment_id": data_path.name[:-len("_data.hdf5")],
+            "data": describe(data_path),
+            "ground_truth": describe(gt_path if gt_path.is_file() else None),
+            "status": "available_unscored" if gt_path.is_file() else "data_without_matching_gt",
+        }
+        pairs.append(pair)
+    return pairs
+
+
 def describe(path: Path | None) -> dict:
     if path is None:
         return {"exists": False}
@@ -59,20 +73,31 @@ def main() -> None:
     for sequence in SEQUENCES:
         data = find_one(root, f"{sequence}_data.hdf5")
         gt = find_one(root, f"{sequence}_gt.hdf5")
+        fragments = find_registered_fragment_pairs(root, sequence)
+        full_pair_available = bool(data and gt)
+        fragments_available = sum(row["status"] == "available_unscored" for row in fragments)
         rows.append({"sequence": sequence, "data": describe(data), "ground_truth": describe(gt),
-                     "status": "available_unscored" if data and gt else "incomplete"})
+                     "registered_fragment_pairs": fragments,
+                     "status": "available_unscored" if full_pair_available else (
+                         "registered_fragment_only" if fragments_available else "incomplete")})
     calibration = sorted(root.rglob("*calib*.zip"))
     calib_rows = [{"path": str(p.resolve()), "size_bytes": p.stat().st_size, "sha256": sha256(p)} for p in calibration]
     available = sum(row["status"] == "available_unscored" for row in rows)
+    fragment_count = sum(
+        1 for row in rows for fragment in row["registered_fragment_pairs"]
+        if fragment["status"] == "available_unscored"
+    )
     result = {
-        "schema": "mvsec_dt1_file_manifest_v1",
+        "schema": "mvsec_dt1_file_manifest_v2",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "source": "https://daniilidis-group.github.io/mvsec/",
         "candidate_protocol": "benchmark/sim2real/protocol/mvsec_dt1_protocol_candidate_20261019.json",
         "registered_sequence_count": len(SEQUENCES), "available_sequence_count": available,
+        "available_registered_fragment_pair_count": fragment_count,
         "calibration_files": calib_rows,
         "real_scores_computed": False, "real_scoring_enabled": False,
-        "status": "complete_unscored_inventory" if available == len(SEQUENCES) else "partial_inventory",
+        "status": "complete_unscored_inventory" if available == len(SEQUENCES) else (
+            "registered_fragments_only" if available == 0 and fragment_count else "partial_inventory"),
         "sequences": rows,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
