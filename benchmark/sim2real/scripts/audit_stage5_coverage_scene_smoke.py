@@ -117,6 +117,9 @@ def main() -> None:
         eg = np.asarray(group["eventgenesis_events_txyp"], dtype=np.float64)
         K = np.asarray(group["camera_intrinsics_K_px"], dtype=np.float64)
         segmentation = np.asarray(group["segmentation_link_idx"], dtype=np.int32)
+        saturated_channel_fraction_mean = float(group.attrs["render_signal_saturated_channel_fraction_mean"])
+        saturated_channel_fraction_max = float(group.attrs["render_signal_saturated_channel_fraction_max"])
+        renderer_backend = str(group.attrs["genesis_renderer_backend"])
     if times.shape != (201,) or not np.allclose(np.diff(times), .01, atol=1e-7, rtol=0):
         raise RuntimeError("shared scene endpoints are not 201 uniform 100 Hz timestamps")
     if signal.shape != (201, 260, 346, 3) or not np.isfinite(signal).all():
@@ -224,9 +227,9 @@ def main() -> None:
         "linearized_display_signal": {"representation": "gamma-2.2-decoded Genesis uint8 display RGB proxy; not native HDR radiance",
                      "shape": list(signal.shape), "range": [float(signal.min()), float(signal.max())],
                      "mean": float(signal.mean()),
-                     "saturated_channel_fraction_mean": float(group.attrs["render_signal_saturated_channel_fraction_mean"]),
-                     "saturated_channel_fraction_max": float(group.attrs["render_signal_saturated_channel_fraction_max"]),
-                     "renderer_backend": str(group.attrs["genesis_renderer_backend"]), "K_px": K.tolist(),
+                     "saturated_channel_fraction_mean": saturated_channel_fraction_mean,
+                     "saturated_channel_fraction_max": saturated_channel_fraction_max,
+                     "renderer_backend": renderer_backend, "K_px": K.tolist(),
                      "v2e_display_mapping": "fixed Rec.709 linear Y from shared proxy, exposure 1, Reinhard, sRGB, uint8"},
         "ground_truth": {"flow_shape": list(flow.shape), "valid_shape": list(valid.shape),
                          "unit": "forward source-pixel displacement per 30 ms endpoint interval",
