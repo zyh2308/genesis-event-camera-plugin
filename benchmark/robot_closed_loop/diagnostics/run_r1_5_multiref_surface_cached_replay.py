@@ -47,6 +47,7 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate impor
 from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
     compose_multireference_scene,
     interpolate_body_poses,
+    moving_reference_indices,
     prepare_moving_projection_source,
     prepare_static_reference_composite,
     project_moving_source_to_target,
@@ -224,7 +225,13 @@ def main() -> int:
     parser.add_argument("--query-start", type=float, default=0.5855)
     parser.add_argument("--source-interval", type=float, default=0.010)
     parser.add_argument("--max-source-views", type=int, default=5)
+    parser.add_argument("--moving-source-views", type=int, default=None,
+                        help="2 uses only bracketing dynamic views; max-source-views uses all dynamic references")
     args = parser.parse_args()
+    if args.moving_source_views is None:
+        args.moving_source_views = args.max_source_views
+    if args.moving_source_views not in (2, args.max_source_views):
+        raise ValueError("moving-source-views must be 2 or max-source-views")
     output = args.output.resolve()
     if output.exists():
         raise FileExistsError(output)
@@ -397,7 +404,12 @@ def main() -> int:
                     Talpha = interpolate_se3(camera_pose, camera_pose, alpha)
                     moving_refs = []
                     raster_diagnostics = []
+                    moving_source_indices = moving_reference_indices(
+                        lo, hi, len(source_frames), args.moving_source_views,
+                    )
                     for source_index, source in enumerate(source_frames):
+                        if source_index not in moving_source_indices:
+                            continue
                         projection_started = time.perf_counter()
                         uv, z, projected_valid = project_moving_source_to_target(
                             source["depth"], source["segmentation"], K,
@@ -464,6 +476,20 @@ def main() -> int:
                     depth_compare = evaluated & np.isfinite(candidate_depth) & np.isfinite(direct_depth)
                     same_label = depth_compare & (candidate_labels == direct_labels)
                     depth_error = np.abs(candidate_depth - direct_depth)
+                    mismatch_mask = evaluated & (candidate_labels != direct_labels)
+                    if mismatch_mask.any():
+                        label_pairs, label_pair_counts = np.unique(
+                            np.stack((candidate_labels[mismatch_mask], direct_labels[mismatch_mask]), axis=1),
+                            axis=0, return_counts=True,
+                        )
+                        mismatch_pairs = [
+                            {"candidate_label": int(pair[0]), "direct_label": int(pair[1]), "pixels": int(count)}
+                            for pair, count in zip(label_pairs, label_pair_counts)
+                        ]
+                    else:
+                        mismatch_pairs = []
+                    direct_dynamic = np.isin(direct_labels, pose_ids)
+                    candidate_dynamic = np.isin(candidate_labels, pose_ids)
                     frame_metrics.append({
                         "time_s": t, "source_lo_s": lower_time, "source_hi_s": upper_time,
                         "alpha": alpha, "render_request_fraction": float(request_mask.mean()),
@@ -481,6 +507,13 @@ def main() -> int:
                         "supported_depth_abs_p95_same_label_m": float(np.percentile(depth_error[same_label], 95)) if same_label.any() else None,
                         "supported_depth_compared_pixels": int(depth_compare.sum()),
                         "supported_depth_same_label_pixels": int(same_label.sum()),
+                        "supported_dynamic_occlusion_misses": int(np.count_nonzero(
+                            evaluated & direct_dynamic & ~candidate_dynamic)),
+                        "supported_false_dynamic_occlusions": int(np.count_nonzero(
+                            evaluated & ~direct_dynamic & candidate_dynamic)),
+                        "supported_wrong_dynamic_link_pixels": int(np.count_nonzero(
+                            evaluated & direct_dynamic & candidate_dynamic & (direct_labels != candidate_labels))),
+                        "supported_label_mismatch_pairs": mismatch_pairs,
                         "valid_radiance_p01_p50_p99": np.percentile(candidate_pre_fallback[np.isfinite(candidate_pre_fallback)], [1, 50, 99]).tolist(),
                         "direct_radiance_p01_p50_p99": np.percentile(direct_luma, [1, 50, 99]).tolist(),
                         "diagnostics": diagnostics,
@@ -493,6 +526,7 @@ def main() -> int:
             request_mask_stack = np.stack(candidate_request_masks).astype(bool)
             unsupported_direct_events = 0
             supported_direct_events = 0
+            unsupported_event_regions = {"target": 0, "robot": 0, "background": 0, "unknown": 0}
             for idx in range(1, len(times)):
                 lo, hi = times[idx - 1], times[idx]
                 interval_events = direct_events[(direct_events[:, 0] > lo) &
@@ -504,6 +538,15 @@ def main() -> int:
                 unsupported = request_mask_stack[idx - 1, ey, ex] | request_mask_stack[idx, ey, ex]
                 unsupported_direct_events += int(unsupported.sum())
                 supported_direct_events += int((~unsupported).sum())
+                event_labels = np.asarray(direct_frames[idx]["segmentation"])[ey, ex]
+                event_target = np.isin(event_labels, target_ids)
+                event_robot = np.isin(event_labels, robot_ids)
+                event_unknown = event_labels < 0
+                unsupported_event_regions["target"] += int(np.count_nonzero(unsupported & event_target))
+                unsupported_event_regions["robot"] += int(np.count_nonzero(unsupported & event_robot))
+                unsupported_event_regions["unknown"] += int(np.count_nonzero(unsupported & event_unknown))
+                unsupported_event_regions["background"] += int(np.count_nonzero(
+                    unsupported & ~(event_target | event_robot | event_unknown)))
             ep_output = output / f"episode_{episode_id:03d}"
             ep_output.mkdir(parents=True, exist_ok=False)
             np.savez_compressed(ep_output / "candidate_surface_raw_events.npz", events=candidate_events)
@@ -577,6 +620,7 @@ def main() -> int:
                 "candidate": {
                     "source_endpoint_interval_s": float(args.source_interval),
                     "source_views_per_query": int(args.max_source_views),
+                    "moving_source_views_per_query": int(args.moving_source_views),
                     "reconstructed_non_endpoint_frames": int(sum(x["mode"] != "exact_direct_endpoint" for x in query_source_meta)),
                     "full_frame_fallback_count": len(fallback_times),
                     "full_frame_fallback_times_s": fallback_times,
@@ -603,6 +647,7 @@ def main() -> int:
                         "direct_events_on_supported_pixel_intervals": int(supported_direct_events),
                         "direct_event_fraction_on_unsupported_pixel_intervals": float(
                             unsupported_direct_events / max(1, len(direct_events))),
+                        "unsupported_direct_event_regions": unsupported_event_regions,
                     },
                     "positive_events": int(np.count_nonzero(candidate_events[:, 3] > 0)) if len(candidate_events) else 0,
                     "negative_events": int(np.count_nonzero(candidate_events[:, 3] < 0)) if len(candidate_events) else 0,
@@ -653,7 +698,8 @@ def main() -> int:
         "scene_and_rig": {"camera_resolution_wh": [width, height], "vertical_fov_deg": fov,
                            "camera_pose_source": "Genesis official robot scene; same fixed side camera as cached R1.5",
                            "source_endpoint_rate_hz": 1.0 / args.source_interval,
-                           "source_views_per_query": int(args.max_source_views)},
+                           "source_views_per_query": int(args.max_source_views),
+                           "moving_source_views_per_query": int(args.moving_source_views)},
         "rendered_exact_trace_window_s": [args.start, args.end],
         "query_window_s": [args.query_start, args.end],
         "response": {"model": "physical_log", "threshold_on_off": 0.2,

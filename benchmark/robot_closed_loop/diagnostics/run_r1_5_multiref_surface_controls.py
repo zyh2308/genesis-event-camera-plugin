@@ -11,6 +11,7 @@ import numpy as np
 
 from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
     compose_multireference_scene,
+    moving_reference_indices,
     prepare_moving_projection_source,
     prepare_static_reference_composite,
     project_moving_source_to_target,
@@ -35,6 +36,11 @@ def _ref(t, rad, depth, label, visible=None):
 def run_controls() -> dict:
     started = time.perf_counter()
     tests = {}
+    assert moving_reference_indices(1, 2, 5, 2) == [1, 2]
+    assert moving_reference_indices(1, 2, 5, 5) == [0, 1, 2, 3, 4]
+    tests["dynamic_reference_subset_is_bracketing_only"] = {
+        "pass": True, "two_view_indices": [1, 2], "all_view_indices": [0, 1, 2, 3, 4],
+    }
     # The moving-only projection must agree with the frozen general projector
     # on every target sample; this checks its camera/body transform order.
     h = w = 16
@@ -190,7 +196,7 @@ def run_controls() -> dict:
     tests["prepared_static_visibility_matches_uncached_bitwise"] = {
         "pass": True, "queries": 3, "evidence": "radiance/support/request/label/depth exact match",
     }
-    return {"suite": "r1_5_multiref_surface_controls_20261021f",
+    return {"suite": "r1_5_multiref_surface_controls_20261021h",
             "tests": tests, "all_pass": all(x["pass"] for x in tests.values()),
             "wall_s": time.perf_counter() - started,
             "frozen_simulator_core_modified": False}

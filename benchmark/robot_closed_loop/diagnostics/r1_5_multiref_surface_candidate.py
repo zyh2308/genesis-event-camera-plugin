@@ -28,6 +28,17 @@ def interpolate_body_poses(poses0: dict[int, np.ndarray], poses1: dict[int, np.n
     return out
 
 
+def moving_reference_indices(lo: int, hi: int, source_count: int, requested_count: int) -> list[int]:
+    """Select dynamic surfaces from the bracketing views or all cached views."""
+    if not (0 <= int(lo) < int(hi) < int(source_count)):
+        raise ValueError("bracketing source indices must be ordered and in range")
+    if int(requested_count) == int(source_count):
+        return list(range(int(source_count)))
+    if int(requested_count) == 2:
+        return [int(lo), int(hi)]
+    raise ValueError("requested moving references must be 2 or source_count")
+
+
 def project_moving_source_to_target(
     depth: np.ndarray,
     labels: np.ndarray,
