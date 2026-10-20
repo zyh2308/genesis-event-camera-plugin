@@ -36,7 +36,10 @@
     "extension": ".bag",
     "event_topic": "/dvs/events",
     "reference_image_topic": "/dvs/image_raw",
-    "native_sensor_hw": [180, 240],
+    "native_sensor_hw": [
+      180,
+      240
+    ],
     "source_time_unit": "ROS header timestamp seconds",
     "event_polarity_encoding": "0=OFF, 1=ON"
   },
@@ -52,15 +55,20 @@
   },
   "time_alignment": {
     "reference_endpoint": "reference image timestamp",
-    "event_window": "events strictly after previous image endpoint and at or before current reference image timestamp",
+    "event_window": "EVREAL MemMapDataset receives end-exclusive offsets; each model input slice is events with previous image timestamp < t <= current reference image timestamp. The first interval begins at event offset 0, and no event after the current image is included.",
     "first_endpoint": "use the pinned EVREAL endpoint convention and preserve its initial event range; no future event is allowed",
-    "sequence_end": "include the final reference endpoint exactly once"
+    "sequence_end": "include the final reference endpoint exactly once",
+    "pinned_EVREAL_legacy_difference": "The pinned EVREAL bag_to_npy helper computes searchsorted(..., right)-1 but its MemMapDataset consumes the value as an exclusive event offset, omitting one event at each endpoint. This adapter uses searchsorted(..., right) end-exclusive offsets to implement the registered (previous,current] interval exactly; the dataset/model/metric interface remains pinned."
   },
   "photometry_and_metrics": {
     "model_output_and_reference_range": "float32 [0,1] on the same native grayscale pixel grid",
     "brightness_or_histogram_fit_to_real_GT": false,
     "primary_metric": "LPIPS-AlexNet",
-    "secondary_metrics": ["SSIM", "PSNR", "MSE"],
+    "secondary_metrics": [
+      "SSIM",
+      "PSNR",
+      "MSE"
+    ],
     "metric_values_per_frame": true,
     "aggregation": "arithmetic mean over evaluated frames within each sequence; then equal arithmetic mean over all 14 sequences",
     "sequence_weights": "equal; never proportional to frame count",

@@ -1,0 +1,269 @@
+{
+  "schema": "stage5_flow_scene_coverage_pilot_v2",
+  "purpose": "Isolated synthetic-only scene/support coverage pilot; not a formal training or checkpoint-selection protocol",
+  "source_training_config": "configs/stage4_corrected_v2_flowdt1_seed0.json",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "shared_bank": {
+    "version": "stage5_flow_scene_coverage_shared_bank_v2",
+    "rollouts": 8,
+    "duration_s": 2.0,
+    "train_rollouts": 4,
+    "validation_rollouts": 4,
+    "strata": [
+      "camera_motion_static_scene",
+      "independent_rigid_motion_static_camera",
+      "camera_and_independent_rigid_motion",
+      "combined_motion_with_occlusion"
+    ],
+    "rollouts_per_stratum": 2,
+    "train_per_stratum": 1,
+    "validation_per_stratum": 1,
+    "split_seed": 20261019,
+    "split_unit": "independent scene and physical rollout; train/validation IDs and seeds disjoint",
+    "sensor_wh": [
+      346,
+      260
+    ],
+    "physics_dt_s": 0.001,
+    "radiance_endpoint_hz": 100,
+    "expected_frames_per_rollout": 201,
+    "flow_window_s": 0.03,
+    "flow_label_unit": "pixels per 30ms endpoint interval",
+    "label_rule": "same 100 Hz physical states, endpoint projection, depth visibility, camera K and validity for EventGenesis and V2E",
+    "event_window_rule": "(t_i,t_i+3] on shared endpoints; 66 windows per two-second rollout; event counts never filter samples",
+    "render_signal_contract": {
+      "representation": "linearized_display_rgb_proxy",
+      "genesis_camera_render_api": "Genesis 1.2.2 public Camera.render returns uint8 display RGB and does not accept radiance=True",
+      "transfer": "inverse the pinned pyrender mesh.frag pow(color,1/2.2) with (rgb_uint8/255)^2.2",
+      "limitations": [
+        "8-bit quantization",
+        "display values are clamped to [0,1]",
+        "not native HDR radiance",
+        "no absolute radiometric calibration"
+      ],
+      "generator_parity": "EventGenesis receives the shared linearized proxy; V2E receives a fixed display encoding from the same proxy"
+    }
+  },
+  "flow_dt1": {
+    "window_duration_s": 0.03,
+    "physical_endpoint_stride": 3,
+    "label_unit": "forward source-pixel displacement per 30 ms interval",
+    "validity": "shared geometry, in-bounds target projection, and target-depth agreement; generator independent"
+  },
+  "coverage_factors": {
+    "texture_pattern": {
+      "checker": "2x2 checkerboard floor tiles and moving-object top panels",
+      "stripes": "2x2 vertical stripe floor tiles and moving-object top panels"
+    },
+    "texture_contrast": {
+      "high": [
+        [
+          0.025,
+          0.025,
+          0.025
+        ],
+        [
+          0.94,
+          0.94,
+          0.94
+        ]
+      ],
+      "medium": [
+        [
+          0.12,
+          0.16,
+          0.2
+        ],
+        [
+          0.56,
+          0.62,
+          0.68
+        ]
+      ]
+    },
+    "speed_class": {
+      "low": {
+        "frequency_scale": 0.7
+      },
+      "high": {
+        "frequency_scale": 1.4
+      }
+    },
+    "amplitude_class": {
+      "small": {
+        "amplitude_scale": 0.6
+      },
+      "large": {
+        "amplitude_scale": 1.4
+      }
+    },
+    "size_class": {
+      "small": {
+        "object_box_size_m": [
+          0.08,
+          0.1
+        ]
+      },
+      "large": {
+        "object_box_size_m": [
+          0.16,
+          0.18
+        ]
+      }
+    },
+    "layout_class": {
+      "spread": "object centers sampled over x/y ranges [-0.25,0.25]/[-0.20,0.20] m",
+      "clustered": "object centers sampled over x/y ranges [-0.12,0.12]/[-0.10,0.10] m"
+    },
+    "balanced_per_split": true
+  },
+  "stage5_flow_coverage_pilot": {
+    "episodes": [
+      {
+        "id": "s5p_00_train",
+        "stratum": "camera_motion_static_scene",
+        "split": "train",
+        "scene_seed": 2026101900,
+        "texture_pattern": "checker",
+        "texture_contrast": "high",
+        "speed_class": "low",
+        "amplitude_class": "small",
+        "size_class": "small",
+        "layout_class": "spread"
+      },
+      {
+        "id": "s5p_00_val",
+        "stratum": "camera_motion_static_scene",
+        "split": "validation",
+        "scene_seed": 2026101901,
+        "texture_pattern": "stripes",
+        "texture_contrast": "medium",
+        "speed_class": "high",
+        "amplitude_class": "large",
+        "size_class": "large",
+        "layout_class": "clustered"
+      },
+      {
+        "id": "s5p_01_train",
+        "stratum": "independent_rigid_motion_static_camera",
+        "split": "train",
+        "scene_seed": 2026102000,
+        "texture_pattern": "stripes",
+        "texture_contrast": "medium",
+        "speed_class": "high",
+        "amplitude_class": "large",
+        "size_class": "small",
+        "layout_class": "clustered"
+      },
+      {
+        "id": "s5p_01_val",
+        "stratum": "independent_rigid_motion_static_camera",
+        "split": "validation",
+        "scene_seed": 2026102001,
+        "texture_pattern": "checker",
+        "texture_contrast": "high",
+        "speed_class": "low",
+        "amplitude_class": "small",
+        "size_class": "large",
+        "layout_class": "spread"
+      },
+      {
+        "id": "s5p_02_train",
+        "stratum": "camera_and_independent_rigid_motion",
+        "split": "train",
+        "scene_seed": 2026102100,
+        "texture_pattern": "checker",
+        "texture_contrast": "medium",
+        "speed_class": "high",
+        "amplitude_class": "large",
+        "size_class": "large",
+        "layout_class": "spread"
+      },
+      {
+        "id": "s5p_02_val",
+        "stratum": "camera_and_independent_rigid_motion",
+        "split": "validation",
+        "scene_seed": 2026102101,
+        "texture_pattern": "stripes",
+        "texture_contrast": "high",
+        "speed_class": "low",
+        "amplitude_class": "small",
+        "size_class": "small",
+        "layout_class": "clustered"
+      },
+      {
+        "id": "s5p_03_train",
+        "stratum": "combined_motion_with_occlusion",
+        "split": "train",
+        "scene_seed": 2026102200,
+        "texture_pattern": "stripes",
+        "texture_contrast": "high",
+        "speed_class": "low",
+        "amplitude_class": "small",
+        "size_class": "large",
+        "layout_class": "clustered"
+      },
+      {
+        "id": "s5p_03_val",
+        "stratum": "combined_motion_with_occlusion",
+        "split": "validation",
+        "scene_seed": 2026102201,
+        "texture_pattern": "checker",
+        "texture_contrast": "medium",
+        "speed_class": "high",
+        "amplitude_class": "large",
+        "size_class": "small",
+        "layout_class": "spread"
+      }
+    ]
+  },
+  "generators": {
+    "eventgenesis": {
+      "entrypoint": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+      "input_space": "linear",
+      "response_mode": "physical_log",
+      "radiometric_calibration_status": "uncalibrated",
+      "warp_backend": "torch",
+      "device": "cuda:0",
+      "pos_thres": 0.2,
+      "neg_thres": 0.2,
+      "sigma_thres": 0.03,
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "noise_rate_cov_decades": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "refractory_period_s": 0.0005,
+      "seed": 42,
+      "input_source": "shared linearized_display_rgb_proxy"
+    },
+    "v2e": {
+      "repository": "https://github.com/SensorsINI/v2e",
+      "commit": "cac638444557a224ba6ee5c29260916f152c00bd",
+      "timestamp_resolution_s": 2.5e-05,
+      "thresholds_log_e": {
+        "positive": 0.2,
+        "negative": 0.2,
+        "sigma": 0.03
+      },
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "noise_rate_cov_decades": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "refractory_period_s": 0.0005,
+      "seed": 42
+    },
+    "v2e_input_mapping": "same shared linearized_display_rgb_proxy; fixed Rec.709 linear Y, Reinhard, sRGB and uint8 mapping",
+    "forbid_V2E_1ms_fallback": true,
+    "thresholds_changed_for_coverage": false
+  },
+  "downstream": {
+    "training_started_in_this_pilot": false,
+    "real_data_used": false,
+    "real_scoring_enabled": false,
+    "purpose": "measure per-rollout event counts, shared-valid event-active coverage, GT motion support, and generator support overlap before proposing any expanded training"
+  }
+}

@@ -1,4 +1,26 @@
-# Public-data Sim-to-Real status — Stage 5 parallel execution
+# Public-data Sim-to-Real status — Stage 5
+
+Updated **2026-10-20 18:32:33 UTC / 2026-10-21 03:32:33 JST**. The latest direct g1 observation was **18:27:54 UTC**. Active scope is reconstruction and optical flow; pose is paused at the user's request. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged. Training and selection remain synthetic-only; real scores are closed.
+
+| Route | Current verified state | Next action |
+|---|---|---|
+| **Reconstruction / E2VID+** | Corrected-TC seed 0 paired training is complete: 200 epochs / 12,000 updates per generator, exit 0. HQF all 14 raw bags are on g1 with matching hashes. Real bag topic/type inspection and synthetic event-only model adapter self-test passed. The first all-sequence conversion failed at sequence 5 due an end-exclusive endpoint-offset validation bug; the index adapter and independent boundary checks are corrected locally. | Deploy the corrected converter to a clean g1 execution snapshot, convert all 14 bags into a new output root, verify timestamps and complete manifest. Keep real scoring closed. |
+| **Optical flow / STE-FlowNet dt1** | Both EventGenesis and V2E completed 200 supervised updates on the same fixed synthetic sample, with shared GT, active-union mask and paired initialization. Both passed the registered memorization and restore checks; final full EPE is 0.0626 / 0.0470 px per 30 ms, below the 0.5415 zero-flow baseline. | The first new-scene smoke exposed that Genesis 1.2.2 `Camera.render()` has no `radiance=True` argument. A benchmark adapter now decodes the actual uint8 gamma-2.2 output into a clearly labeled linearized display proxy; actual rerun and eight-rollout design are pending. Do not start long training before a new independent bank passes. |
+| **Pose** | No new action. Paused per user request; no E-POSE probes. | Resume only after user notification. |
+
+The fixed-window network fit proves memorization capacity only; it does not establish independent-rollout generalization or a generator advantage. The 45-epoch self-supervised flow results/checkpoints and checkpoint-selection rule remain unchanged. HQF conversion/inference and MVSEC evaluation preparation are not real scoring.
+
+## Current handoff and evidence
+
+- Full two-line status, metrics, failure details, g1 paths and commands: [STAGE5_DUAL_LINE_HANDOFF_20261021.md](STAGE5_DUAL_LINE_HANDOFF_20261021.md).
+- Fixed-window paired fit: [machine summary](evidence/S5/20261021-recon-flow-localization/flow_paired_fixed_sample_fit_summary.json); per-arm logs and restore receipts are in sibling `flow_fixed_sample_fit_v4_eventgenesis/` and `flow_fixed_sample_fit_v5_v2e/` directories.
+- HQF failed conversion and raw logs: [attempt 01](evidence/S5/20261021-recon-flow-localization/hqf_conversion_attempt01/). Corrected timestamp code and tests are local pending commit. HQF raw file inventory/hash evidence and MVSEC manifest are in the same evidence root.
+- Scene smoke attempt `.../20261021-stage5-flow-coverage-v1-smoke-r2/` on g1 failed before completing its first capture due the unsupported renderer keyword; its original log and partial bank are preserved. GPU2 is now idle; no shared GPU cache was cleaned.
+- Current published source is `836fe01db81d541de3b056fb748f6f289c81596d`. Latest renderer/HQF corrections are uncommitted and not on g1/GitHub yet.
+
+## Historical snapshot
+
+The October 19 snapshot below is retained for provenance. Its status table and GPU observations are historical and are superseded by the current table above.
 
 Updated **2026-10-19 10:45:41 UTC / 19:45:41 JST**. L1 logs are current through 10:45:24 UTC; GPU ownership was refreshed at 10:45:41 UTC; official E-POSE access was rechecked at 10:41:48 UTC. Branch: `exp/public-sim2real-v1`; the coverage-pilot source/config snapshot is commit `e4b6cec453938bc6b6852d778f8c207c0917a5f8`, and the status/evidence updates are versioned on the same branch. Reviewed Stage 4 baseline: `61554fb0031609200bc5ddbf2340ec8d20722725`. Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` is unchanged. All training and checkpoint choice are synthetic-only; real scores remain closed.
 

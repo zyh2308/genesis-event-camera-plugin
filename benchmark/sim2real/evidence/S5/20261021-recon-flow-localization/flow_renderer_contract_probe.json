@@ -1,0 +1,46 @@
+{
+  "schema": "stage5_genesis_render_signal_contract_probe_v1",
+  "checked_utc": "2026-10-20T18:27:54Z",
+  "host": "g1.pkuml.org",
+  "environment": {
+    "python": "3.11.15",
+    "genesis": "1.2.2",
+    "torch": "2.5.1+cu121"
+  },
+  "camera_render_signature": "(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False, antialiasing=False, force_render=False)",
+  "camera_render_source_sha256": "b804e4740e15a0d707b1f2ae9e55525df49228ea850fee1bc76538c109cbf06b",
+  "rasterizer_source_sha256": "c72f56a4a2cd71578bed394c2c27daa36b918ea34fd19b9c1c64fbb4b8372b6f",
+  "mesh_fragment_shader_sha256": "76ad11db02b35cd14af48f81c297c727110491f812c050d549442e4c5a10d0e8",
+  "observed_renderer_contract": {
+    "rgb_return": "uint8 display RGB",
+    "transfer_shader": "frag_color = clamp(vec4(pow(color.xyz, vec3(1.0/2.2)), alpha), 0.0, 1.0)",
+    "native_radiance_keyword": false,
+    "native_hdr": false
+  },
+  "failed_actual_scene_smoke": {
+    "run_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v1-smoke-r2",
+    "bank_dir": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v1-smoke-r2",
+    "started_utc": "2026-10-20T18:22:30Z",
+    "finished_utc": "2026-10-20T18:25:53Z",
+    "exit_code": 1,
+    "failure": "TypeError: Camera.render() got an unexpected keyword argument 'radiance'",
+    "completed_physical_rollouts": 0,
+    "event_generators_started": [],
+    "complete_bank": false,
+    "preserved_partial_h5_bytes": 7016,
+    "real_data_used": false,
+    "real_scoring_enabled": false
+  },
+  "adapter_candidate": {
+    "signal_name": "linearized_display_rgb_proxy",
+    "transfer": "(rgb_uint8 / 255)^2.2",
+    "limitations": ["8-bit quantization", "clamped display output cannot recover clipped radiance", "no absolute radiometric calibration"],
+    "generator_parity": "EventGenesis receives the shared linearized proxy; V2E receives its fixed display mapping"
+  },
+  "gpu2_after_failure": {
+    "observed_utc": "2026-10-20T18:27:54Z",
+    "memory_used_mib": 1,
+    "utilization_percent": 0
+  },
+  "real_scoring_enabled": false
+}

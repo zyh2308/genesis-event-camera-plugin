@@ -98,9 +98,9 @@ def main() -> None:
         json.loads(split_path.read_text()),
         json.loads(v2e_manifest_path.read_text()),
     )
-    if bank_manifest.get("schema") != "stage5_flow_scene_coverage_shared_bank_v1":
+    if bank_manifest.get("schema") != "stage5_flow_scene_coverage_shared_bank_v2":
         raise RuntimeError("unexpected shared physical-bank schema")
-    if v2e_manifest.get("schema") != "stage5_v2e_coverage_pilot_raw_events_v1":
+    if v2e_manifest.get("schema") != "stage5_v2e_coverage_pilot_raw_events_v2":
         raise RuntimeError("unexpected V2E manifest schema")
     if sha256(bank_path) != bank_manifest.get("bank_sha256"):
         raise RuntimeError("shared physical bank hash mismatch")

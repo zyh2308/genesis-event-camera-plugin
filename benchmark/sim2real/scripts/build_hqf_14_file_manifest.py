@@ -60,16 +60,21 @@ def sequence_row(name: str, bag_root: Path, memmap_root: Path) -> dict:
                 "image_event_indices": np.load(sequence_dir / "image_event_indices.npy", mmap_mode="r").squeeze(),
             }
             indices = arrays["image_event_indices"].astype(np.int64)
-            if np.any(indices >= len(arrays["events_ts"])):
-                raise RuntimeError(f"{name}: image_event_indices points outside event timestamps")
-            if np.any(arrays["events_ts"][indices] > arrays["images_ts"] + 1e-12):
-                raise RuntimeError(f"{name}: an image endpoint maps to a future event")
+            event_ts, image_ts = arrays["events_ts"], arrays["images_ts"]
+            if np.any(indices < 0) or np.any(indices > len(event_ts)):
+                raise RuntimeError(f"{name}: image_event_indices contains an invalid end-exclusive event offset")
+            has_preceding = indices > 0
+            if np.any(event_ts[indices[has_preceding] - 1] > image_ts[has_preceding]):
+                raise RuntimeError(f"{name}: an event included by an image offset is after its endpoint")
+            has_following = indices < len(event_ts)
+            if np.any(event_ts[indices[has_following]] <= image_ts[has_following]):
+                raise RuntimeError(f"{name}: an event at or before an endpoint was omitted from its offset")
             conversion = json.loads((sequence_dir / "conversion_manifest.json").read_text())
             if bag.is_file() and conversion.get("source_bag", {}).get("bag_sha256") != row["raw_bag"].get("sha256"):
                 raise RuntimeError(f"{name}: MemMap conversion was built from a different raw bag hash")
             row["evreal_memmap"].update({
                 "schema_checks": info,
-                "event_image_endpoint_association": "image_event_indices selects latest event <= each image timestamp; next event, if present, is strictly later",
+                "event_image_endpoint_association": "image_event_indices is an end-exclusive event offset from searchsorted(events_ts,image_ts,right); previous-to-current EVREAL slices contain all events at or before the current endpoint and no future events",
                 "reference_images_are_evaluation_targets_only": True,
             })
             row["status"] = "ready_unscored"

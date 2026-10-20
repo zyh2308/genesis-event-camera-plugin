@@ -88,7 +88,7 @@ def main() -> None:
     bank_manifest = json.loads(bank_manifest_path.read_text())
     split = json.loads(split_path.read_text())
     v2e_manifest = json.loads(v2e_manifest_path.read_text())
-    if bank_manifest.get("schema") != "stage5_flow_scene_coverage_single_scene_smoke_v1" or len(split) != 1:
+    if bank_manifest.get("schema") != "stage5_flow_scene_coverage_single_scene_smoke_v2" or len(split) != 1:
         raise RuntimeError("this audit requires exactly one registered scene-smoke rollout")
     if not bank_manifest.get("complete_balanced_pilot") is False:
         raise RuntimeError("one-scene smoke must not claim full balanced-pilot completion")
@@ -110,7 +110,7 @@ def main() -> None:
             raise RuntimeError("single-rollout HDF5 groups differ from registered split")
         group = shared[f"episodes/{rollout}"]
         times = np.asarray(group["frame_timestamps_s"], dtype=np.float64)
-        radiance = np.asarray(group["radiance_linear_rgb"], dtype=np.float32)
+        signal = np.asarray(group["linearized_display_rgb_proxy"], dtype=np.float32)
         display = np.asarray(group["v2e_display_luma_u8"], dtype=np.uint8)
         flow = np.asarray(group["flow_forward_30ms_px"], dtype=np.float32)
         valid = np.asarray(group["flow_valid_30ms"], dtype=np.uint8).astype(bool)
@@ -119,8 +119,10 @@ def main() -> None:
         segmentation = np.asarray(group["segmentation_link_idx"], dtype=np.int32)
     if times.shape != (201,) or not np.allclose(np.diff(times), .01, atol=1e-7, rtol=0):
         raise RuntimeError("shared scene endpoints are not 201 uniform 100 Hz timestamps")
-    if radiance.shape != (201, 260, 346, 3) or not np.isfinite(radiance).all():
-        raise RuntimeError("linear radiance endpoints are missing, non-finite, or wrong-sized")
+    if signal.shape != (201, 260, 346, 3) or not np.isfinite(signal).all():
+        raise RuntimeError("linearized display RGB proxy endpoints are missing, non-finite, or wrong-sized")
+    if np.any(signal < 0) or np.any(signal > 1):
+        raise RuntimeError("linearized display RGB proxy is outside [0,1]")
     if display.shape != (201, 260, 346) or segmentation.shape != display.shape:
         raise RuntimeError("V2E display / renderer segmentation endpoint contract failed")
     if flow.shape != (66, 2, 260, 346) or valid.shape != (66, 260, 346) or not np.isfinite(flow).all():
@@ -141,7 +143,7 @@ def main() -> None:
             raise RuntimeError(f"{name} event time or coordinates exceed the shared scene")
 
     eg_us = eg.copy(); eg_us[:, 0] *= 1e6
-    gray = radiance @ np.asarray([.2126, .7152, .0722], dtype=np.float32)
+    gray = signal @ np.asarray([.2126, .7152, .0722], dtype=np.float32)
     rows = []
     for index in range(66):
         endpoint = index * 3
@@ -202,7 +204,7 @@ def main() -> None:
             "common_union_active_and_gt_ge_0_5px": int((valid_i & union & (magnitude >= .5)).sum()),
             "texture_pixels_gradient_gt_1_over_255": int((valid_i & textured).sum()),
             "valid_moving_texture_pixels": int(moving_texture.sum()),
-            "photo_warp_mae_linear_luma": photo_values,
+            "photo_warp_mae_linearized_display_proxy_luma": photo_values,
         })
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
@@ -219,9 +221,13 @@ def main() -> None:
             "v2e_count": int(len(v2)), "v2e_time_unit": "microseconds from pinned V2E HDF5",
             "eventgenesis_hdf5_sha256": sha256(bank_path), "v2e_raw_hdf5_sha256": sha256(v2e_raw_path),
         },
-        "radiance": {"shape": list(radiance.shape), "range": [float(radiance.min()), float(radiance.max())],
-                     "mean": float(radiance.mean()), "K_px": K.tolist(),
-                     "v2e_display_mapping": "fixed Rec.709 linear Y, exposure 1, Reinhard, sRGB, uint8 from registered config"},
+        "linearized_display_signal": {"representation": "gamma-2.2-decoded Genesis uint8 display RGB proxy; not native HDR radiance",
+                     "shape": list(signal.shape), "range": [float(signal.min()), float(signal.max())],
+                     "mean": float(signal.mean()),
+                     "saturated_channel_fraction_mean": float(group.attrs["render_signal_saturated_channel_fraction_mean"]),
+                     "saturated_channel_fraction_max": float(group.attrs["render_signal_saturated_channel_fraction_max"]),
+                     "renderer_backend": str(group.attrs["genesis_renderer_backend"]), "K_px": K.tolist(),
+                     "v2e_display_mapping": "fixed Rec.709 linear Y from shared proxy, exposure 1, Reinhard, sRGB, uint8"},
         "ground_truth": {"flow_shape": list(flow.shape), "valid_shape": list(valid.shape),
                          "unit": "forward source-pixel displacement per 30 ms endpoint interval",
                          "valid_fraction_mean": float(valid.mean())},

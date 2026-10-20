@@ -136,6 +136,13 @@ def validate_sequence_files(sequence_path: Path) -> dict[str, Any]:
         raise ValueError("image_event_indices must use an integer dtype")
     if np.any(arrays["image_event_indices"] < 0) or np.any(arrays["image_event_indices"] > n_events):
         raise ValueError("image_event_indices contain out-of-range event offsets")
+    indices = arrays["image_event_indices"].astype(np.int64, copy=False)
+    has_preceding = indices > 0
+    if np.any(arrays["events_ts"][indices[has_preceding] - 1] > arrays["images_ts"][has_preceding]):
+        raise ValueError("an event included by an image end-exclusive offset is after that image timestamp")
+    has_following = indices < n_events
+    if np.any(arrays["events_ts"][indices[has_following]] <= arrays["images_ts"][has_following]):
+        raise ValueError("image event offset omits an event at or before its image timestamp")
     height, width = map(int, arrays["images"].shape[1:3])
     xy = arrays["events_xy"]
     if len(xy) and (xy[:, 0].min() < 0 or xy[:, 0].max() >= width or xy[:, 1].min() < 0 or xy[:, 1].max() >= height):
@@ -511,8 +518,7 @@ def make_self_test_fixture(output_root: Path, evreal_root: Path, model_root: Pat
     event_xy = np.asarray([[i % w, (2 * i) % h] for i in range(len(event_ts))], dtype=np.int16)
     event_p = np.asarray([i % 2 for i in range(len(event_ts))], dtype=np.uint8)
     image_ts = np.asarray([[0.005], [0.015], [0.025], [0.035]], dtype=np.float64)
-    event_indices = np.searchsorted(event_ts, image_ts.reshape(-1), side="right") - 1
-    event_indices = np.clip(event_indices, 0, len(event_ts)).astype(np.int64).reshape(-1, 1)
+    event_indices = np.searchsorted(event_ts, image_ts.reshape(-1), side="right").astype(np.int64).reshape(-1, 1)
     images = np.zeros((len(image_ts), h, w, 1), dtype=np.uint8)
     for name, arr in (
         ("events_ts.npy", event_ts),

@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "status": "mechanics_self_test_passed_not_real_HQF",
+  "created_at_utc": "2026-10-20T18:27:22Z",
+  "finished_at_utc": "2026-10-20T18:27:23Z",
+  "elapsed_seconds": 0.26257478900015485,
+  "task_scope": "candidate event-only reconstruction inference; no real-data score, checkpoint choice, or parameter tuning",
+  "sequence": {
+    "name": "bike_bay_hdr",
+    "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr",
+    "num_events": 10,
+    "num_frames_in_memmap": 4,
+    "num_samples_processed": 4,
+    "source_evreal_memmapdataset_length": 3,
+    "adapter_length": 4,
+    "sequence_start_timestamp_s": 0.005,
+    "sequence_end_timestamp_s": 0.035,
+    "timestamps_strictly_increasing": true,
+    "event_time_unit": "seconds (EVREAL bag_to_npy conversion contract)",
+    "frame_time_unit": "seconds (EVREAL bag_to_npy conversion contract)",
+    "sensor_resolution_hw": [
+      9,
+      11
+    ],
+    "raw_event_schema": "events_xy[N,2]=(x,y) pixels; events_ts[N] seconds; events_p[N] uint8 0=OFF/1=ON; EVREAL maps p to -1/+1 for its between_frames voxelizer",
+    "event_voxel_schema": "EVREAL MemMapDataset, num_bins=5, method=between_frames, shape [5,H,W], no additional event normalization",
+    "image_array_schema": "images[N,H,W,1] used only by EVREAL item packaging for shape bookkeeping; no reference pixel enters model or score",
+    "source_default_length_note": "pinned MemMapDataset.__len__ returns num_frames-1; this local inference-only adapter extends this instance to num_frames so the final legal endpoint is also processed; no EVREAL source files changed",
+    "data_shapes": {
+      "events_ts": [
+        10
+      ],
+      "events_xy": [
+        10,
+        2
+      ],
+      "events_p": [
+        10
+      ],
+      "images": [
+        4,
+        9,
+        11,
+        1
+      ],
+      "images_ts": [
+        4
+      ],
+      "image_event_indices": [
+        4
+      ]
+    },
+    "data_dtypes": {
+      "events_ts": "float64",
+      "events_xy": "int16",
+      "events_p": "uint8",
+      "images": "uint8",
+      "images_ts": "float64",
+      "image_event_indices": "int64"
+    },
+    "timestamp_bounds": {
+      "events_first_s": 0.001,
+      "events_last_s": 0.036,
+      "images_first_s": 0.005,
+      "images_last_s": 0.035
+    },
+    "samples": [
+      {
+        "sample_index": 0,
+        "event_start_index_inclusive": 2,
+        "event_end_index_exclusive": 2,
+        "event_count": 0,
+        "event_timestamp_first_s": null,
+        "event_timestamp_last_s": null,
+        "target_frame_index": 0,
+        "target_timestamp_s": 0.005,
+        "voxel_timestamp_s": 0.005,
+        "event_tensor_shape": [
+          5,
+          9,
+          11
+        ],
+        "model_input_shape": [
+          1,
+          5,
+          9,
+          11
+        ],
+        "model_padded_input_shape": [
+          1,
+          5,
+          12,
+          12
+        ],
+        "model_padded_output_shape": [
+          1,
+          1,
+          12,
+          12
+        ],
+        "cropped_output_shape": [
+          1,
+          1,
+          9,
+          11
+        ],
+        "reference_frame_shape_checked_only": [
+          1,
+          9,
+          11
+        ],
+        "output_min": 0.5639890432357788,
+        "output_max": 0.5714573860168457
+      },
+      {
+        "sample_index": 1,
+        "event_start_index_inclusive": 2,
+        "event_end_index_exclusive": 4,
+        "event_count": 2,
+        "event_timestamp_first_s": 0.008,
+        "event_timestamp_last_s": 0.012,
+        "target_frame_index": 1,
+        "target_timestamp_s": 0.015,
+        "voxel_timestamp_s": 0.015,
+        "event_tensor_shape": [
+          5,
+          9,
+          11
+        ],
+        "model_input_shape": [
+          1,
+          5,
+          9,
+          11
+        ],
+        "model_padded_input_shape": [
+          1,
+          5,
+          12,
+          12
+        ],
+        "model_padded_output_shape": [
+          1,
+          1,
+          12,
+          12
+        ],
+        "cropped_output_shape": [
+          1,
+          1,
+          9,
+          11
+        ],
+        "reference_frame_shape_checked_only": [
+          1,
+          9,
+          11
+        ],
+        "output_min": 0.5435471534729004,
+        "output_max": 0.6019715070724487
+      },
+      {
+        "sample_index": 2,
+        "event_start_index_inclusive": 4,
+        "event_end_index_exclusive": 7,
+        "event_count": 3,
+        "event_timestamp_first_s": 0.016,
+        "event_timestamp_last_s": 0.024,
+        "target_frame_index": 2,
+        "target_timestamp_s": 0.025,
+        "voxel_timestamp_s": 0.025,
+        "event_tensor_shape": [
+          5,
+          9,
+          11
+        ],
+        "model_input_shape": [
+          1,
+          5,
+          9,
+          11
+        ],
+        "model_padded_input_shape": [
+          1,
+          5,
+          12,
+          12
+        ],
+        "model_padded_output_shape": [
+          1,
+          1,
+          12,
+          12
+        ],
+        "cropped_output_shape": [
+          1,
+          1,
+          9,
+          11
+        ],
+        "reference_frame_shape_checked_only": [
+          1,
+          9,
+          11
+        ],
+        "output_min": 0.5429611206054688,
+        "output_max": 0.6007283329963684
+      },
+      {
+        "sample_index": 3,
+        "event_start_index_inclusive": 7,
+        "event_end_index_exclusive": 9,
+        "event_count": 2,
+        "event_timestamp_first_s": 0.028,
+        "event_timestamp_last_s": 0.032,
+        "target_frame_index": 3,
+        "target_timestamp_s": 0.035,
+        "voxel_timestamp_s": 0.035,
+        "event_tensor_shape": [
+          5,
+          9,
+          11
+        ],
+        "model_input_shape": [
+          1,
+          5,
+          9,
+          11
+        ],
+        "model_padded_input_shape": [
+          1,
+          5,
+          12,
+          12
+        ],
+        "model_padded_output_shape": [
+          1,
+          1,
+          12,
+          12
+        ],
+        "cropped_output_shape": [
+          1,
+          1,
+          9,
+          11
+        ],
+        "reference_frame_shape_checked_only": [
+          1,
+          9,
+          11
+        ],
+        "output_min": 0.5424598455429077,
+        "output_max": 0.5938588380813599
+      }
+    ]
+  },
+  "registered_inference": {
+    "registration_sequence": "bike_bay_hdr",
+    "registered_sequence_inventory": [
+      "bike_bay_hdr",
+      "boxes",
+      "desk",
+      "desk_fast",
+      "desk_hand_only",
+      "desk_slow",
+      "engineering_posters",
+      "high_texture_plants",
+      "poster_pillar_1",
+      "poster_pillar_2",
+      "reflective_materials",
+      "slow_and_fast_desk",
+      "slow_hand",
+      "still_life"
+    ],
+    "sequence_selection": "explicit sequence argument from the fixed 14-sequence inventory",
+    "saved_subset_rule": "save every 100th adapter output (0,100,...) and the final adapter output; deduplicate",
+    "saved_sample_indices": [
+      0,
+      3
+    ],
+    "saved_images": [
+      {
+        "sample_index": 0,
+        "target_timestamp_s": 0.005,
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_outputs/reconstruction_000000.png",
+        "sha256": "c32377581bd768b7443d8e5d57170877a79fa18fd1eda20f09833329a24c18b2",
+        "shape_hw": [
+          9,
+          11
+        ],
+        "dtype": "uint8",
+        "conversion": "clip raw candidate output to [0,1], round(255*x), uint8; no data-dependent normalization"
+      },
+      {
+        "sample_index": 3,
+        "target_timestamp_s": 0.035,
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_outputs/reconstruction_000003.png",
+        "sha256": "d60dabf80e38a1531a1078a714fb50f0bed987cedcc5047591e609de78bf9e29",
+        "shape_hw": [
+          9,
+          11
+        ],
+        "dtype": "uint8",
+        "conversion": "clip raw candidate output to [0,1], round(255*x), uint8; no data-dependent normalization"
+      }
+    ]
+  },
+  "model": {
+    "architecture": "event_cnn_minimal.model.model.E2VIDRecurrent",
+    "checkpoint_path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_random_untrained_stage2_schema.pt",
+    "checkpoint_sha256": "e182dc84848f9c59128db3d89762c68c2bd678f6220623dd9e4c450dea489495",
+    "checkpoint_generator_metadata": "fixture_only_untrained",
+    "checkpoint_model_args": {
+      "num_bins": 5,
+      "skip_type": "sum",
+      "recurrent_block_type": "convlstm",
+      "num_encoders": 2,
+      "base_num_channels": 2,
+      "num_residual_blocks": 1,
+      "use_upsample_conv": true,
+      "final_activation": "sigmoid",
+      "norm": "none",
+      "kernel_size": 3
+    },
+    "checkpoint_state_dict_key": "model",
+    "public_EVREAL_weights_loaded": false,
+    "model_source_path": "/tmp/sim2real-e2vid-clean.k28h6U",
+    "model_source_commit": "78aa471a66593f55e349303563997297fbc816e8",
+    "source_verification": {
+      "EVREAL": {
+        "repository": "EVREAL",
+        "commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+        "verification": "clean_git_checkout"
+      },
+      "event_cnn_minimal": {
+        "repository": "event_cnn_minimal",
+        "commit": "78aa471a66593f55e349303563997297fbc816e8",
+        "verification": "clean_git_checkout"
+      }
+    },
+    "device": "cpu",
+    "deterministic_inference": {
+      "torch_deterministic_algorithms": false,
+      "cudnn_deterministic": false,
+      "cudnn_benchmark": false
+    },
+    "recurrent_reset_calls": 1,
+    "reset_policy": "one reset at sequence start; no reset inside sequence",
+    "input_contract": "event-only; [1,5,H,W]",
+    "padded_resolution_hw": [
+      12,
+      12
+    ],
+    "output_contract_before_crop": [
+      1,
+      1,
+      12,
+      12
+    ],
+    "output_contract_after_crop": [
+      1,
+      1,
+      9,
+      11
+    ],
+    "finite_output_global_min": 0.5424598455429077,
+    "finite_output_global_max": 0.6019715070724487,
+    "reference_frame_pixels_used_as_input": false,
+    "real_GT_scoring_performed": false
+  },
+  "provenance": {
+    "evreal_source_path": "/tmp/sim2real-evreal-clean.Rguh0S",
+    "evreal_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+    "event_cnn_minimal_commit": "78aa471a66593f55e349303563997297fbc816e8",
+    "source_bundle_manifest": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/manifests/downstream_source_bundle.json",
+    "frozen_simulator_core_commit": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+    "data_files": {
+      "events_ts.npy": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/events_ts.npy",
+        "size_bytes": 208,
+        "sha256": "061836172f6c86b2782cef388e1eb1ebf99020e558d0a642d9457c5f5ecf5532"
+      },
+      "events_xy.npy": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/events_xy.npy",
+        "size_bytes": 168,
+        "sha256": "fe19e189da8ab0903454ae0596d8515fbc9c3b0c6600ffb7512be895ca2a4339"
+      },
+      "events_p.npy": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/events_p.npy",
+        "size_bytes": 138,
+        "sha256": "3fc86f58c5e879685484d81f0507fc34dba3ec2ae17d633ad997d57cc441a2b2"
+      },
+      "images.npy": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/images.npy",
+        "size_bytes": 524,
+        "sha256": "3ac45234b1a80c562674b116951e6506466ed1a81ecb64c5977ff911736738d7"
+      },
+      "images_ts.npy": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/images_ts.npy",
+        "size_bytes": 160,
+        "sha256": "69a665968209b78deefdc02c42a594ab485d398ebc4619214f6939629956c7ad"
+      },
+      "image_event_indices.npy": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/image_event_indices.npy",
+        "size_bytes": 160,
+        "sha256": "7f6b60ce7990b646f1a1befa938befefc440af5192d3d2d4fa014f77927928e2"
+      },
+      "metadata.json": {
+        "path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_adapter_selftest_v6/selftest_fixture/bike_bay_hdr/metadata.json",
+        "size_bytes": 47,
+        "sha256": "aa0d6acefcd34f3a3a7ba5adc95b606e71afa2798d603ef1ae2b0c55361f625e"
+      }
+    }
+  },
+  "self_test": {
+    "is_synthetic_fixture": true,
+    "not_HQF_real_data": true,
+    "not_a_model_quality_result": true
+  }
+}

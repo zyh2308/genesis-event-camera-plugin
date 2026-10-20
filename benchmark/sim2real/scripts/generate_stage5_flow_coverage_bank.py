@@ -2,10 +2,11 @@
 """Generate an isolated Stage-5 8-rollout scene-coverage pilot bank.
 
 The camera/object trajectories are deterministic scripted kinematic paths
-inside Genesis. Genesis advances at 1 ms; radiance, depth, segmentation, poses
-and labels are captured at the registered 100 Hz endpoints. EventGenesis uses
-the captured linear radiance and physical endpoint poses. V2E input frames are
-written from the same fixed display mapping.
+inside Genesis. Genesis advances at 1 ms; a linearized display RGB proxy,
+depth, segmentation, poses and labels are captured at the registered 100 Hz
+endpoints. The proxy preserves the renderer's clamped 8-bit gamma-coded
+signal and is not native HDR radiance. EventGenesis and V2E share that signal
+before the registered V2E display mapping.
 """
 from __future__ import annotations
 
@@ -36,8 +37,8 @@ STRATA = (
 WIDTH, HEIGHT = 346, 260
 FPS, DT, DURATION = 100, 0.001, 2.0
 FRAMES = int(FPS * DURATION) + 1
-BANK_SCHEMA = "stage5_flow_scene_coverage_shared_bank_v1"
-SCENE_SMOKE_SCHEMA = "stage5_flow_scene_coverage_single_scene_smoke_v1"
+BANK_SCHEMA = "stage5_flow_scene_coverage_shared_bank_v2"
+SCENE_SMOKE_SCHEMA = "stage5_flow_scene_coverage_single_scene_smoke_v2"
 TOTAL_ROLLOUTS = 8
 
 
@@ -141,16 +142,15 @@ def sha256(path: Path) -> str:
 
 
 def source_commit(repo_root: Path) -> str:
-    try:
+    if (repo_root / ".git").exists():
         return subprocess.check_output(["git", "-C", str(repo_root), "rev-parse", "HEAD"], text=True).strip()
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        manifest = repo_root / "SOURCE_FILE_HASHES.json"
-        if not manifest.is_file():
-            raise RuntimeError("execution source is neither a Git checkout nor a verified source archive")
-        commit = json.loads(manifest.read_text()).get("commit")
-        if not isinstance(commit, str) or len(commit) != 40:
-            raise RuntimeError("source archive manifest has no valid commit ID")
-        return commit
+    manifest = repo_root / "SOURCE_FILE_HASHES.json"
+    if not manifest.is_file():
+        raise RuntimeError("execution source is neither a Git checkout nor a verified source archive")
+    commit = json.loads(manifest.read_text()).get("commit")
+    if not isinstance(commit, str) or len(commit) != 40:
+        raise RuntimeError("source archive manifest has no valid commit ID")
+    return commit
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -171,6 +171,48 @@ def radiance_to_v2e_luma_u8(rgb: np.ndarray) -> np.ndarray:
     tone = y / (1.0 + y)
     srgb = np.where(tone <= 0.0031308, 12.92 * tone, 1.055 * np.power(tone, 1.0 / 2.4) - 0.055)
     return np.clip(np.rint(255.0 * srgb), 0, 255).astype(np.uint8)
+
+
+def genesis_display_rgb_to_linear_proxy(rgb: np.ndarray) -> tuple[np.ndarray, dict]:
+    """Decode Genesis 1.2.2's uint8 gamma-2.2 display RGB to a linear proxy.
+
+    The public Camera.render API returns display RGB, not native HDR radiance.
+    Its stock pyrender mesh shader applies pow(color, 1/2.2) and clamps to
+    [0,1]. Inverting that transfer cannot recover clipped values or 8-bit
+    quantization and must not be described as calibrated physical radiance.
+    """
+    encoded = np.asarray(rgb)
+    if encoded.ndim != 3 or encoded.shape[-1] != 3:
+        raise ValueError(f"Genesis display RGB must have shape [H,W,3], got {encoded.shape}")
+    if encoded.dtype != np.uint8:
+        raise TypeError(f"Genesis 1.2.2 pyrender output must be uint8, got {encoded.dtype}")
+    normalized = encoded.astype(np.float32) / np.float32(255.0)
+    linear_proxy = np.power(normalized, np.float32(2.2)).astype(np.float32)
+    if not np.isfinite(linear_proxy).all() or np.any(linear_proxy < 0) or np.any(linear_proxy > 1):
+        raise RuntimeError("gamma-decoded display signal is outside finite [0,1]")
+    metadata = {
+        "source": "Genesis 1.2.2 public Camera.render RGB output",
+        "source_dtype": str(encoded.dtype),
+        "source_range": [int(encoded.min()) if encoded.size else 0, int(encoded.max()) if encoded.size else 0],
+        "transfer_decode": "linear_proxy=(rgb_uint8/255)^2.2; inverse of pinned pyrender mesh.frag pow(color,1/2.2)",
+        "saturated_channel_fraction": float(np.mean(encoded == 255)) if encoded.size else 0.0,
+        "native_hdr_radiance": False,
+        "limitations": ["8-bit quantization", "renderer clamps encoded values to [0,1]", "no absolute radiometric calibration"],
+    }
+    return linear_proxy, metadata
+
+
+def genesis_renderer_source_hashes(gs) -> dict[str, str]:
+    root = Path(gs.__file__).resolve().parent
+    candidates = {
+        "vis/camera.py": root / "vis/camera.py",
+        "vis/rasterizer.py": root / "vis/rasterizer.py",
+        "ext/pyrender/shaders/mesh.frag": root / "ext/pyrender/shaders/mesh.frag",
+    }
+    missing = [name for name, path in candidates.items() if not path.is_file()]
+    if missing:
+        raise RuntimeError(f"cannot hash pinned Genesis renderer source files: {missing}")
+    return {name: sha256(path) for name, path in candidates.items()}
 
 
 def registered_episodes(design_rows: list[dict]) -> list[dict]:
@@ -348,11 +390,14 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     segmentation_map_cache = {}
 
     def frame_provider(active_scene, active_camera):
-        # HDR radiance and depth-only use different renderer passes. Combining
-        # them resolves multisample depth and breaks the center-ray contract.
-        rgb, _, _, _ = active_camera.render(
-            rgb=True, depth=False, segmentation=False, radiance=True, force_render=True
+        # Genesis 1.2.2 Camera.render has no radiance argument. Its stock
+        # pyrender shader emits clamped uint8 gamma-2.2 display RGB; decode it
+        # explicitly to a linearized proxy and record its non-HDR limits.
+        rgb_display, _, _, _ = active_camera.render(
+            rgb=True, depth=False, segmentation=False, force_render=True
         )
+        rgb_display = as_numpy(rgb_display)
+        linear_proxy, render_signal = genesis_display_rgb_to_linear_proxy(rgb_display)
         _, depth, raw_seg, _ = active_camera.render(
             rgb=False, depth=True, segmentation=True, force_render=True
         )
@@ -366,12 +411,18 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
             raise RuntimeError(f"renderer segmentation mapping changed inside rollout {episode['id']}")
         segmentation_map_cache.update(normalized_mapping)
         raw_seg = as_numpy(raw_seg).astype(np.int32)
-        payload = {"rgb": as_numpy(rgb).astype(np.float32), "radiance": as_numpy(rgb).astype(np.float32),
+        renderer_backend = (
+            "raytracer" if getattr(active_camera, "_raytracer", None) is not None
+            else "batch_renderer" if getattr(active_camera, "_batch_renderer", None) is not None
+            else "rasterizer"
+        )
+        payload = {"rgb": rgb_display.astype(np.float32) / np.float32(255.0), "radiance": linear_proxy,
                    "depth": as_numpy(depth).astype(np.float32),
                    "seg": segmentation_render_to_link(raw_seg, render_to_link),
                    "seg_render_idx": raw_seg,
                    "seg_render_to_link": normalized_mapping,
-                   "seg_render_to_renderer_key": renderer_key_mapping}
+                   "seg_render_to_renderer_key": renderer_key_mapping,
+                   "render_signal": render_signal, "renderer_backend": renderer_backend}
         frame_cache["last"] = payload
         return payload
 
@@ -402,6 +453,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         raise RuntimeError(f"first captured object pose differs from trajectory_pose(0): {initial_pose_error} m")
 
     times, radiance, depths, segmentations, raw_segmentations, camera_poses, object_poses, display, event_chunks = [], [], [], [], [], [], [], [], []
+    render_signal_saturated_fractions, renderer_backends = [], []
     started = time.monotonic()
     for endpoint in range(FRAMES):
         for substep in range(10 if endpoint else 0):
@@ -423,7 +475,7 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         if payload["depth"].shape != (HEIGHT, WIDTH) or payload["seg"].shape != (HEIGHT, WIDTH):
             raise RuntimeError("Genesis depth/segmentation shape mismatch")
         if not np.isfinite(payload["radiance"]).all():
-            raise RuntimeError("non-finite linear radiance")
+            raise RuntimeError("non-finite linearized display RGB proxy")
         if np.any(np.isnan(payload["depth"])) or np.any(np.isinf(payload["depth"])):
             raise RuntimeError("non-finite renderer depth")
         object_pixels = sum(int(np.count_nonzero(payload["seg"] == sid)) for sid in object_ids)
@@ -433,6 +485,8 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
         segmentations.append(payload["seg"]); raw_segmentations.append(payload["seg_render_idx"])
         camera_poses.append(state["camera_to_world"])
         object_poses.append(state["object_to_world"]); display.append(radiance_to_v2e_luma_u8(payload["radiance"]))
+        render_signal_saturated_fractions.append(payload["render_signal"]["saturated_channel_fraction"])
+        renderer_backends.append(payload["renderer_backend"])
         if endpoint:
             event_chunks.append(chunk)
         if endpoint % 20 == 0:
@@ -500,15 +554,22 @@ def run_episode(gs, episode: dict, root: Path, h5: h5py.File, completed_before: 
     group.attrs["timestamp_unit"] = "second, relative to rollout start"
     group.attrs["flow_contract"] = "forward source-pixel displacement from endpoint i to i+3; px per 30 ms interval"
     group.attrs["validity_contract"] = "source geometry, in-bounds target projection, and nearest-target-depth agreement within max(2 cm, 2%); common to both generators"
-    group.attrs["v2e_display_mapping"] = "Rec.709 linear Y, exposure 1, Reinhard, sRGB transfer, uint8 round-to-nearest; fixed across endpoints"
+    group.attrs["v2e_display_mapping"] = "Rec.709 on shared linearized display RGB proxy, exposure 1, Reinhard, sRGB transfer, uint8 round-to-nearest; fixed across endpoints"
     group.attrs["segmentation_contract"] = "renderer seg_idxc mapped through Camera._visualizer.segmentation_idx_dict; at segmentation_level=link, runtime (entity.idx, link.idx) tuple is reduced to physical link.idx; background -1"
-    group.attrs["depth_contract"] = "depth-only renderer pass with MSAA disabled; radiance captured separately"
+    group.attrs["depth_contract"] = "depth-only renderer pass with MSAA disabled; RGB captured in a separate pass"
+    group.attrs["render_signal_contract"] = "linearized display RGB proxy=(Genesis uint8 RGB/255)^2.2; 8-bit quantized and renderer-clamped, no native HDR or absolute radiometric calibration"
+    if len(set(renderer_backends)) != 1:
+        raise RuntimeError(f"Genesis renderer backend changed inside rollout {episode['id']}: {sorted(set(renderer_backends))}")
+    group.attrs["render_signal_saturated_channel_fraction_mean"] = float(np.mean(render_signal_saturated_fractions))
+    group.attrs["render_signal_saturated_channel_fraction_max"] = float(np.max(render_signal_saturated_fractions))
+    group.attrs["genesis_renderer_backend"] = renderer_backends[0]
     group.attrs["pixel_center_contract"] = "renderer K principal point shifted by -0.5 px for integer-index ray grid; same K used by EventGenesis and physical GT"
     group.attrs["trajectory_initialization_contract"] = "rigid object bodies are instantiated at trajectory_pose(t=0) before first capture"
     group.attrs["trajectory_initialization_max_abs_error_m"] = initial_pose_error
     group.attrs["ground_segmentation_link_id"] = ground_id
     group.create_dataset("frame_timestamps_s", data=times)
-    group.create_dataset("radiance_linear_rgb", data=np.stack(radiance).astype(np.float32), compression="gzip", compression_opts=1)
+    group.create_dataset("linearized_display_rgb_proxy", data=np.stack(radiance).astype(np.float32), compression="gzip", compression_opts=1)
+    group.create_dataset("render_signal_saturated_channel_fraction_per_frame", data=np.asarray(render_signal_saturated_fractions, dtype=np.float32))
     group.create_dataset("depth_m", data=np.stack(depths).astype(np.float32), compression="gzip", compression_opts=1)
     group.create_dataset("segmentation_link_idx", data=np.stack(segmentations).astype(np.int32), compression="gzip", compression_opts=1)
     group.create_dataset("segmentation_render_idx", data=np.stack(raw_segmentations).astype(np.int32), compression="gzip", compression_opts=1)
@@ -605,6 +666,16 @@ def main() -> None:
         "generated_episode_ids": [episode["id"] for episode in episodes],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "host": socket.gethostname(), "repo_commit": commit, "frozen_simulator_core": CORE,
+        "genesis_version": getattr(gs, "__version__", None),
+        "genesis_renderer_source_sha256": genesis_renderer_source_hashes(gs),
+        "render_signal_contract": {
+            "representation": "linearized_display_rgb_proxy",
+            "genesis_camera_render_api": "uint8 display RGB; public radiance=True argument is unsupported in installed Genesis 1.2.2",
+            "transfer": "pyrender mesh.frag applies pow(color,1/2.2), then clamps; benchmark inverse is (rgb_uint8/255)^2.2",
+            "native_hdr_radiance": False,
+            "absolute_radiometric_calibration": False,
+            "quantization_and_clipping_recorded_per_endpoint": True,
+        },
         "config_sha256": sha256(config_path), "split_seed": launch["shared_bank"]["split_seed"],
         "flow_direction_check": verify_flow_direction(), "episodes": [],
     }
@@ -619,6 +690,7 @@ def main() -> None:
             h5.attrs["resolution_wh"] = (WIDTH, HEIGHT)
             h5.attrs["coverage_factors"] = "registered texture pattern/contrast, camera/object motion speed/amplitude, and box size; balanced per split"
             h5.attrs["generator_thresholds_changed"] = False
+            h5.attrs["render_signal_contract"] = "linearized display RGB proxy=(Genesis uint8 RGB/255)^2.2; quantized/clamped, not native HDR radiance"
             h5.create_group("episodes")
             for idx, episode in enumerate(episodes, 1):
                 start = time.monotonic()

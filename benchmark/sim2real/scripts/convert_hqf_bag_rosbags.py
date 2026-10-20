@@ -32,6 +32,26 @@ def stamp_seconds(stamp: Any) -> float:
     return float(sec) + float(nsec) * 1e-9
 
 
+def image_endpoint_offsets(events_ts: np.ndarray, images_ts: np.ndarray) -> np.ndarray:
+    """Return EVREAL end-exclusive event offsets for right-inclusive endpoints."""
+    events_ts = np.asarray(events_ts, dtype=np.float64)
+    images_ts = np.asarray(images_ts, dtype=np.float64)
+    if events_ts.ndim != 1 or images_ts.ndim != 1:
+        raise ValueError("event and image timestamps must be one-dimensional")
+    if not np.isfinite(events_ts).all() or not np.isfinite(images_ts).all():
+        raise ValueError("event and image timestamps must be finite")
+    if np.any(np.diff(events_ts) < 0) or np.any(np.diff(images_ts) <= 0):
+        raise ValueError("event timestamps must be sorted and image timestamps strictly increasing")
+    offsets = np.searchsorted(events_ts, images_ts, side="right").astype(np.int64)
+    has_preceding = offsets > 0
+    if np.any(events_ts[offsets[has_preceding] - 1] > images_ts[has_preceding]):
+        raise RuntimeError("an included event occurs after its image endpoint")
+    has_following = offsets < len(events_ts)
+    if np.any(events_ts[offsets[has_following]] <= images_ts[has_following]):
+        raise RuntimeError("an event at or before the endpoint was omitted from its event offset")
+    return offsets
+
+
 def inspect_bag(bag_path: Path) -> dict:
     from rosbags.rosbag1 import Reader
 
@@ -167,12 +187,12 @@ def convert_bag(
     origin = min(float(events_ts_absolute.min()), float(images_ts_absolute.min()))
     events_ts = events_ts_absolute - origin
     images_ts = images_ts_absolute - origin
-    image_event_indices = np.searchsorted(events_ts, images_ts, side="right") - 1
-    image_event_indices = np.clip(image_event_indices, 0, len(events_ts) - 1).astype(np.int64)
+    # EVREAL consumes image_event_indices as end-exclusive offsets. Use the
+    # right insertion point itself to implement (previous,current] windows.
+    # The pinned legacy bag_to_npy subtracts one before storing this offset.
+    image_event_indices = image_endpoint_offsets(events_ts, images_ts)
     if len(image_event_indices) != len(images_ts) or np.any(np.diff(image_event_indices) < 0):
         raise RuntimeError("decoded image-to-event endpoint association is inconsistent")
-    if np.any(events_ts[image_event_indices] > images_ts + 1e-12):
-        raise RuntimeError("image_event_indices points to an event after the image endpoint")
 
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(tempfile.mkdtemp(prefix=f".{output_dir.name}.tmp-", dir=output_dir.parent))
@@ -195,7 +215,7 @@ def convert_bag(
             "image_timestamp_unit": "seconds, sensor_msgs/Image header.stamp",
             "time_origin_absolute_s": origin,
             "event_polarity_encoding": "0=OFF, 1=ON (same convention expected by pinned EVREAL loader)",
-            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=clip(searchsorted(events_ts,images_ts,right)-1)",
+            "conversion": "rosbags 0.11.7; event x/y/t/p read from embedded ROS1 types; mono8 reference images; image_event_indices=searchsorted(events_ts,images_ts,right) as an end-exclusive offset for EVREAL MemMapDataset",
         }
         (temporary / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
         files = {}
@@ -216,7 +236,7 @@ def convert_bag(
             "image_timestamp_relative_s": [float(images_ts[0]), float(images_ts[-1])],
             "event_encoding": {"xy": "int32 pixel coordinates", "time": "float64 seconds from min source timestamp", "polarity": "uint8 0=OFF/1=ON"},
             "reference_image_encodings": sorted(image_encodings),
-            "image_event_index_rule": "right-inclusive event endpoint; latest event timestamp <= image timestamp; clipped to [0,N-1] to match EVREAL bag_to_npy behavior",
+            "image_event_index_rule": "end-exclusive offset searchsorted(events_ts,image_ts,right), range [0,N]; EVREAL between_frames slices then contain all events at or before each image endpoint and no future events; initial interval starts at offset 0",
             "reference_images_used_as_model_input": False,
             "files": files,
         }

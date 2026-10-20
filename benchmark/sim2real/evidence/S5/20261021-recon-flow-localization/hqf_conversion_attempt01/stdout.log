@@ -1,0 +1,397 @@
+[2026-10-20T18:15:41Z] convert bike_bay_hdr
+{
+  "status": "pass",
+  "scope": "registered public HQF bag conversion for candidate event-only reconstruction inference; reference images are not read by the model",
+  "source_bag": {
+    "bag_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/bike_bay_hdr.bag",
+    "bag_size_bytes": 362570693,
+    "bag_sha256": "02797ab6240587bf6ccc352f6efc8325f8b9a49d4f69e5dba7f8a8d9ec452935",
+    "topics": [
+      {
+        "topic": "/dvs/events",
+        "message_type": "dvs_msgs/msg/EventArray",
+        "message_count": 2972,
+        "connection_id": 0,
+        "md5sum": "5e8beee5a6c107e504c2e78903c224b8",
+        "message_definition": "# This message contains an array of events\n# (0, 0) is at top-left corner of image\n#\n\nHeader header\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# an array of events\nEvent[] events\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n\n================================================================================\nMSG: dvs_msgs/Event\n# A DVS event\nuint16 x\nuint16 y\ntime ts\nbool polarity\n"
+      },
+      {
+        "topic": "/dvs/image_raw",
+        "message_type": "sensor_msgs/msg/Image",
+        "message_count": 2431,
+        "connection_id": 1,
+        "md5sum": "060021388200f6f0f447d0fcd9c64743",
+        "message_definition": "# This message contains an uncompressed image\n# (0, 0) is at top-left corner of image\n#\n\nHeader header        # Header timestamp should be acquisition time of image\n                     # Header frame_id should be optical frame of camera\n                     # origin of frame should be optical center of camera\n                     # +x should point to the right in the image\n                     # +y should point down in the image\n                     # +z should point into to plane of the image\n                     # If the frame_id here and the frame_id of the CameraInfo\n                     # message associated with the image conflict\n                     # the behavior is undefined\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# The legal values for encoding are in file src/image_encodings.cpp\n# If you want to standardize a new string format, join\n# ros-users@lists.sourceforge.net and send an email proposing a new encoding.\n\nstring encoding       # Encoding of pixels -- channel meaning, ordering, size\n                      # taken from the list of strings in include/sensor_msgs/image_encodings.h\n\nuint8 is_bigendian    # is this data bigendian?\nuint32 step           # Full row length in bytes\nuint8[] data          # actual matrix data, size is (step * rows)\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n"
+      }
+    ]
+  },
+  "topics": {
+    "event_topic": "/dvs/events",
+    "event_message_type": "dvs_msgs/msg/EventArray",
+    "event_messages": 2972,
+    "image_topic": "/dvs/image_raw",
+    "image_message_type": "sensor_msgs/msg/Image",
+    "image_messages": 2431
+  },
+  "event_count": 19763043,
+  "image_count": 2431,
+  "sensor_resolution_hw": [
+    180,
+    240
+  ],
+  "event_timestamp_absolute_s": [
+    1581815288.4909585,
+    1581815387.5409005
+  ],
+  "image_timestamp_absolute_s": [
+    1581815288.4921594,
+    1581815387.4488385
+  ],
+  "event_timestamp_relative_s": [
+    0.0,
+    99.04994201660156
+  ],
+  "image_timestamp_relative_s": [
+    0.0012009143829345703,
+    98.9578800201416
+  ],
+  "event_encoding": {
+    "xy": "int32 pixel coordinates",
+    "time": "float64 seconds from min source timestamp",
+    "polarity": "uint8 0=OFF/1=ON"
+  },
+  "reference_image_encodings": [
+    "mono8"
+  ],
+  "image_event_index_rule": "right-inclusive event endpoint; latest event timestamp <= image timestamp; clipped to [0,N-1] to match EVREAL bag_to_npy behavior",
+  "reference_images_used_as_model_input": false,
+  "files": {
+    "events_p.npy": {
+      "size_bytes": 19763171,
+      "sha256": "e682229a3037a2e543bad71a7ffd71bb3fe4addd97e4123a2af364ebe64d143d"
+    },
+    "events_ts.npy": {
+      "size_bytes": 158104472,
+      "sha256": "54704268a6218d55b1756280f40d84f546fb9873d36a51f934337a9f5ea0d864"
+    },
+    "events_xy.npy": {
+      "size_bytes": 158104472,
+      "sha256": "dbb8a264a360e88b79fc907d9b00040dd38ab0c90085c42f75de99608f9d86dd"
+    },
+    "image_event_indices.npy": {
+      "size_bytes": 19576,
+      "sha256": "b991ac54e5c7bc883e0a19c3bbe7022e162495b5968f8bab83199f89232f2a95"
+    },
+    "images.npy": {
+      "size_bytes": 105019328,
+      "sha256": "773ec67ab0f98be9faf354ff58ea2f6a3af00326e5854cee40516a5f20b8a981"
+    },
+    "images_ts.npy": {
+      "size_bytes": 19576,
+      "sha256": "366ca30664c7dcc0cf3dbdeb39aef13f77e7c28c09bc2a0556999407cd4e3f3e"
+    },
+    "metadata.json": {
+      "size_bytes": 850,
+      "sha256": "feae5ab21f8ae14f7eda37b121d7adcc8082956ae17dc83b2d37aa1770afe52d"
+    }
+  },
+  "output_dir": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap/bike_bay_hdr"
+}
+[2026-10-20T18:16:25Z] convert boxes
+{
+  "status": "pass",
+  "scope": "registered public HQF bag conversion for candidate event-only reconstruction inference; reference images are not read by the model",
+  "source_bag": {
+    "bag_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/boxes.bag",
+    "bag_size_bytes": 154165863,
+    "bag_sha256": "99ca9721e1e4ec3a27d4d6b920135d3c8d57f83dd74588f3a00a95326e95d603",
+    "topics": [
+      {
+        "topic": "/dvs/events",
+        "message_type": "dvs_msgs/msg/EventArray",
+        "message_count": 725,
+        "connection_id": 0,
+        "md5sum": "5e8beee5a6c107e504c2e78903c224b8",
+        "message_definition": "# This message contains an array of events\n# (0, 0) is at top-left corner of image\n#\n\nHeader header\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# an array of events\nEvent[] events\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n\n================================================================================\nMSG: dvs_msgs/Event\n# A DVS event\nuint16 x\nuint16 y\ntime ts\nbool polarity\n"
+      },
+      {
+        "topic": "/dvs/image_raw",
+        "message_type": "sensor_msgs/msg/Image",
+        "message_count": 540,
+        "connection_id": 1,
+        "md5sum": "060021388200f6f0f447d0fcd9c64743",
+        "message_definition": "# This message contains an uncompressed image\n# (0, 0) is at top-left corner of image\n#\n\nHeader header        # Header timestamp should be acquisition time of image\n                     # Header frame_id should be optical frame of camera\n                     # origin of frame should be optical center of camera\n                     # +x should point to the right in the image\n                     # +y should point down in the image\n                     # +z should point into to plane of the image\n                     # If the frame_id here and the frame_id of the CameraInfo\n                     # message associated with the image conflict\n                     # the behavior is undefined\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# The legal values for encoding are in file src/image_encodings.cpp\n# If you want to standardize a new string format, join\n# ros-users@lists.sourceforge.net and send an email proposing a new encoding.\n\nstring encoding       # Encoding of pixels -- channel meaning, ordering, size\n                      # taken from the list of strings in include/sensor_msgs/image_encodings.h\n\nuint8 is_bigendian    # is this data bigendian?\nuint32 step           # Full row length in bytes\nuint8[] data          # actual matrix data, size is (step * rows)\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n"
+      }
+    ]
+  },
+  "topics": {
+    "event_topic": "/dvs/events",
+    "event_message_type": "dvs_msgs/msg/EventArray",
+    "event_messages": 725,
+    "image_topic": "/dvs/image_raw",
+    "image_message_type": "sensor_msgs/msg/Image",
+    "image_messages": 540
+  },
+  "event_count": 10050781,
+  "image_count": 540,
+  "sensor_resolution_hw": [
+    180,
+    240
+  ],
+  "event_timestamp_absolute_s": [
+    1581818226.2405617,
+    1581818250.4005187
+  ],
+  "image_timestamp_absolute_s": [
+    1581818226.2621808,
+    1581818250.3558116
+  ],
+  "event_timestamp_relative_s": [
+    0.0,
+    24.15995693206787
+  ],
+  "image_timestamp_relative_s": [
+    0.021619081497192383,
+    24.11524987220764
+  ],
+  "event_encoding": {
+    "xy": "int32 pixel coordinates",
+    "time": "float64 seconds from min source timestamp",
+    "polarity": "uint8 0=OFF/1=ON"
+  },
+  "reference_image_encodings": [
+    "mono8"
+  ],
+  "image_event_index_rule": "right-inclusive event endpoint; latest event timestamp <= image timestamp; clipped to [0,N-1] to match EVREAL bag_to_npy behavior",
+  "reference_images_used_as_model_input": false,
+  "files": {
+    "events_p.npy": {
+      "size_bytes": 10050909,
+      "sha256": "33364a1c03fde1f36767201032f99ce9c8e0de144f7eafa37fa3115b8636bc57"
+    },
+    "events_ts.npy": {
+      "size_bytes": 80406376,
+      "sha256": "e807b4bf4f29957467dc144116c24bc25dc0635601bc9ac5d44485e0bad263d6"
+    },
+    "events_xy.npy": {
+      "size_bytes": 80406376,
+      "sha256": "00ba18672f2b8fc2037f5f26b58e923b2b94bc31976746be952527805649419d"
+    },
+    "image_event_indices.npy": {
+      "size_bytes": 4448,
+      "sha256": "f213aa7cd80b114ce2c6f8289188b5c683165002a64f93483290d3e3b7cbe292"
+    },
+    "images.npy": {
+      "size_bytes": 23328128,
+      "sha256": "23d7e3d85e54b0570667d7f1bb20030cb1350ee1a0f1057e291d72156a5fbed4"
+    },
+    "images_ts.npy": {
+      "size_bytes": 4448,
+      "sha256": "11bea598f7dc16d85bad9a076cd209ff2233bf84e4301e9cad3d942a1eee6078"
+    },
+    "metadata.json": {
+      "size_bytes": 843,
+      "sha256": "b853d258aa662bcdb3e00b70db79dc39eb7977c6add3167eedac2a443f567cca"
+    }
+  },
+  "output_dir": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap/boxes"
+}
+[2026-10-20T18:16:48Z] convert desk
+{
+  "status": "pass",
+  "scope": "registered public HQF bag conversion for candidate event-only reconstruction inference; reference images are not read by the model",
+  "source_bag": {
+    "bag_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk.bag",
+    "bag_size_bytes": 240534572,
+    "bag_sha256": "98d792e37427661708d0950f115709bc8d923d30718ce898c9450ff3971dcf2c",
+    "topics": [
+      {
+        "topic": "/dvs/events",
+        "message_type": "dvs_msgs/msg/EventArray",
+        "message_count": 1973,
+        "connection_id": 0,
+        "md5sum": "5e8beee5a6c107e504c2e78903c224b8",
+        "message_definition": "# This message contains an array of events\n# (0, 0) is at top-left corner of image\n#\n\nHeader header\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# an array of events\nEvent[] events\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n\n================================================================================\nMSG: dvs_msgs/Event\n# A DVS event\nuint16 x\nuint16 y\ntime ts\nbool polarity\n"
+      },
+      {
+        "topic": "/dvs/image_raw",
+        "message_type": "sensor_msgs/msg/Image",
+        "message_count": 1491,
+        "connection_id": 1,
+        "md5sum": "060021388200f6f0f447d0fcd9c64743",
+        "message_definition": "# This message contains an uncompressed image\n# (0, 0) is at top-left corner of image\n#\n\nHeader header        # Header timestamp should be acquisition time of image\n                     # Header frame_id should be optical frame of camera\n                     # origin of frame should be optical center of camera\n                     # +x should point to the right in the image\n                     # +y should point down in the image\n                     # +z should point into to plane of the image\n                     # If the frame_id here and the frame_id of the CameraInfo\n                     # message associated with the image conflict\n                     # the behavior is undefined\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# The legal values for encoding are in file src/image_encodings.cpp\n# If you want to standardize a new string format, join\n# ros-users@lists.sourceforge.net and send an email proposing a new encoding.\n\nstring encoding       # Encoding of pixels -- channel meaning, ordering, size\n                      # taken from the list of strings in include/sensor_msgs/image_encodings.h\n\nuint8 is_bigendian    # is this data bigendian?\nuint32 step           # Full row length in bytes\nuint8[] data          # actual matrix data, size is (step * rows)\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n"
+      }
+    ]
+  },
+  "topics": {
+    "event_topic": "/dvs/events",
+    "event_message_type": "dvs_msgs/msg/EventArray",
+    "event_messages": 1973,
+    "image_topic": "/dvs/image_raw",
+    "image_message_type": "sensor_msgs/msg/Image",
+    "image_messages": 1491
+  },
+  "event_count": 13516351,
+  "image_count": 1491,
+  "sensor_resolution_hw": [
+    180,
+    240
+  ],
+  "event_timestamp_absolute_s": [
+    1581920242.0902267,
+    1581920307.8609927
+  ],
+  "image_timestamp_absolute_s": [
+    1581920242.1191537,
+    1581920307.7822616
+  ],
+  "event_timestamp_relative_s": [
+    0.0,
+    65.77076601982117
+  ],
+  "image_timestamp_relative_s": [
+    0.028927087783813477,
+    65.69203495979309
+  ],
+  "event_encoding": {
+    "xy": "int32 pixel coordinates",
+    "time": "float64 seconds from min source timestamp",
+    "polarity": "uint8 0=OFF/1=ON"
+  },
+  "reference_image_encodings": [
+    "mono8"
+  ],
+  "image_event_index_rule": "right-inclusive event endpoint; latest event timestamp <= image timestamp; clipped to [0,N-1] to match EVREAL bag_to_npy behavior",
+  "reference_images_used_as_model_input": false,
+  "files": {
+    "events_p.npy": {
+      "size_bytes": 13516479,
+      "sha256": "33eb440dc1fe8af52d6037b859ed7d1f5767a660efc8bd4cd635c6b78b27f7a0"
+    },
+    "events_ts.npy": {
+      "size_bytes": 108130936,
+      "sha256": "c5936ca74422675040046cbedd3d4c3fac5e0e01c95f9fb20382b475b9bc6d1a"
+    },
+    "events_xy.npy": {
+      "size_bytes": 108130936,
+      "sha256": "619fbc01c30a4de7dab716164d322f2dea9d0206272df6e4453516348f9cf44e"
+    },
+    "image_event_indices.npy": {
+      "size_bytes": 12056,
+      "sha256": "c0052726ee758b47aac09d9168bf75a777fa9c5eb5b8c86b9f13bc48c3f90be2"
+    },
+    "images.npy": {
+      "size_bytes": 64411328,
+      "sha256": "3cc17a497e1acf5452ffd1e79ea84ae7abce03b71526c3d19e4e45e2ff7838ea"
+    },
+    "images_ts.npy": {
+      "size_bytes": 12056,
+      "sha256": "a45774adcc291934cacf2fde9090d36208eab5f3cd04c5db2c29ab9493b57eb3"
+    },
+    "metadata.json": {
+      "size_bytes": 842,
+      "sha256": "b3667c215fa39c7a91dfb053f1713048e424e6f58cdfc19cfd65d7135aae2d55"
+    }
+  },
+  "output_dir": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap/desk"
+}
+[2026-10-20T18:17:19Z] convert desk_fast
+{
+  "status": "pass",
+  "scope": "registered public HQF bag conversion for candidate event-only reconstruction inference; reference images are not read by the model",
+  "source_bag": {
+    "bag_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-raw/desk_fast.bag",
+    "bag_size_bytes": 195603169,
+    "bag_sha256": "102f14526db7851da5064504013ebe2a665c351d2e13c86171179ac5e75f851f",
+    "topics": [
+      {
+        "topic": "/dvs/events",
+        "message_type": "dvs_msgs/msg/EventArray",
+        "message_count": 959,
+        "connection_id": 0,
+        "md5sum": "5e8beee5a6c107e504c2e78903c224b8",
+        "message_definition": "# This message contains an array of events\n# (0, 0) is at top-left corner of image\n#\n\nHeader header\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# an array of events\nEvent[] events\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n\n================================================================================\nMSG: dvs_msgs/Event\n# A DVS event\nuint16 x\nuint16 y\ntime ts\nbool polarity\n"
+      },
+      {
+        "topic": "/dvs/image_raw",
+        "message_type": "sensor_msgs/msg/Image",
+        "message_count": 724,
+        "connection_id": 1,
+        "md5sum": "060021388200f6f0f447d0fcd9c64743",
+        "message_definition": "# This message contains an uncompressed image\n# (0, 0) is at top-left corner of image\n#\n\nHeader header        # Header timestamp should be acquisition time of image\n                     # Header frame_id should be optical frame of camera\n                     # origin of frame should be optical center of camera\n                     # +x should point to the right in the image\n                     # +y should point down in the image\n                     # +z should point into to plane of the image\n                     # If the frame_id here and the frame_id of the CameraInfo\n                     # message associated with the image conflict\n                     # the behavior is undefined\n\nuint32 height         # image height, that is, number of rows\nuint32 width          # image width, that is, number of columns\n\n# The legal values for encoding are in file src/image_encodings.cpp\n# If you want to standardize a new string format, join\n# ros-users@lists.sourceforge.net and send an email proposing a new encoding.\n\nstring encoding       # Encoding of pixels -- channel meaning, ordering, size\n                      # taken from the list of strings in include/sensor_msgs/image_encodings.h\n\nuint8 is_bigendian    # is this data bigendian?\nuint32 step           # Full row length in bytes\nuint8[] data          # actual matrix data, size is (step * rows)\n\n================================================================================\nMSG: std_msgs/Header\n# Standard metadata for higher-level stamped data types.\n# This is generally used to communicate timestamped data \n# in a particular coordinate frame.\n# \n# sequence ID: consecutively increasing ID \nuint32 seq\n#Two-integer timestamp that is expressed as:\n# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n# time-handling sugar is provided by the client library\ntime stamp\n#Frame this data is associated with\n# 0: no frame\n# 1: global frame\nstring frame_id\n"
+      }
+    ]
+  },
+  "topics": {
+    "event_topic": "/dvs/events",
+    "event_message_type": "dvs_msgs/msg/EventArray",
+    "event_messages": 959,
+    "image_topic": "/dvs/image_raw",
+    "image_message_type": "sensor_msgs/msg/Image",
+    "image_messages": 724
+  },
+  "event_count": 12622934,
+  "image_count": 724,
+  "sensor_resolution_hw": [
+    180,
+    240
+  ],
+  "event_timestamp_absolute_s": [
+    1581920320.1186407,
+    1581920352.0779207
+  ],
+  "image_timestamp_absolute_s": [
+    1581920320.1216378,
+    1581920351.9836688
+  ],
+  "event_timestamp_relative_s": [
+    0.0,
+    31.959280014038086
+  ],
+  "image_timestamp_relative_s": [
+    0.002997159957885742,
+    31.865028142929077
+  ],
+  "event_encoding": {
+    "xy": "int32 pixel coordinates",
+    "time": "float64 seconds from min source timestamp",
+    "polarity": "uint8 0=OFF/1=ON"
+  },
+  "reference_image_encodings": [
+    "mono8"
+  ],
+  "image_event_index_rule": "right-inclusive event endpoint; latest event timestamp <= image timestamp; clipped to [0,N-1] to match EVREAL bag_to_npy behavior",
+  "reference_images_used_as_model_input": false,
+  "files": {
+    "events_p.npy": {
+      "size_bytes": 12623062,
+      "sha256": "db7223c26d2144fdafe15d272e860c3d8b5f4583715b84899e9bb1434f5b2fa0"
+    },
+    "events_ts.npy": {
+      "size_bytes": 100983600,
+      "sha256": "c9c2923dbb0fde73108f20129e88cb227dabf8a69a38769d19de5e9ed67642fd"
+    },
+    "events_xy.npy": {
+      "size_bytes": 100983600,
+      "sha256": "ca980f2b36731d81f3d0231cf72c5868a024bb29f2ce6c3343a4b3fa35a4fc08"
+    },
+    "image_event_indices.npy": {
+      "size_bytes": 5920,
+      "sha256": "9ce72a621250a3fd14026a026b0b04f5585cc1829eac5c28c36a9d3fe2ee4e89"
+    },
+    "images.npy": {
+      "size_bytes": 31276928,
+      "sha256": "f4976f2051c26fd73e849a0df9fbb24b4710abdf86aef6f1293facfb640093da"
+    },
+    "images_ts.npy": {
+      "size_bytes": 5920,
+      "sha256": "7b1789c51c13f66dd8713e264cdaff699f427defa5f4f17be3d0b0e947685338"
+    },
+    "metadata.json": {
+      "size_bytes": 847,
+      "sha256": "8c04eeeb8f9da1427a0ffaaca61cf94c53cc4b5986c38761e47a56cf60f9482d"
+    }
+  },
+  "output_dir": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap/desk_fast"
+}
+[2026-10-20T18:17:48Z] convert desk_hand_only

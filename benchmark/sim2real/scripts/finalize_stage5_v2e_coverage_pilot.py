@@ -30,7 +30,7 @@ def main() -> None:
     bank, root = args.bank_root.resolve(), args.v2e_root.resolve()
     split = json.loads((bank / "registered_split.json").read_text())
     bank_manifest = json.loads((bank / "bank_manifest.json").read_text())
-    smoke = bank_manifest.get("schema") == "stage5_flow_scene_coverage_single_scene_smoke_v1"
+    smoke = bank_manifest.get("schema") == "stage5_flow_scene_coverage_single_scene_smoke_v2"
     if smoke:
         if bank_manifest.get("scope") != "one_registered_rollout_smoke" or len(split) != 1:
             raise RuntimeError("single-scene smoke manifest/split contract mismatch")
@@ -94,7 +94,7 @@ def main() -> None:
     elif len(rows) != 8 or sum(row["split"] == "train" for row in rows) != 4:
         raise RuntimeError("V2E paired pilot bank incomplete or split mismatch")
     manifest = {
-        "schema": "stage5_v2e_coverage_single_scene_smoke_v1" if smoke else "stage5_v2e_coverage_pilot_raw_events_v1",
+        "schema": "stage5_v2e_coverage_single_scene_smoke_v2" if smoke else "stage5_v2e_coverage_pilot_raw_events_v2",
         "scope": bank_manifest["scope"],
         "complete_balanced_pilot": not smoke,
         "created_utc": datetime.now(timezone.utc).isoformat(),
