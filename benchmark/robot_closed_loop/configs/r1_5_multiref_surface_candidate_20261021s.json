@@ -1,0 +1,49 @@
+{
+  "experiment_id": "r1_5_multiref_surface_candidate_20261021s",
+  "purpose": "reduce dynamic projection work by using only the two exact source views bracketing each query, then repair explicit unsupported pixels with exact-ray direct rendering",
+  "candidate_only": true,
+  "frozen_simulator_core_modified": false,
+  "derived_from_config": "r1_5_multiref_surface_candidate_20261021k.json",
+  "source_references": {
+    "rate_hz": 200,
+    "source_interval_s": 0.005,
+    "all_static_views_per_query": 9,
+    "moving_views_per_query": 2,
+    "moving_selection": "only the two exact keyframes bracketing the saved query",
+    "additional_physics_states": 0,
+    "states": "only already logged physical/robot state rows; no synthetic trajectory samples"
+  },
+  "geometry": {
+    "static_labels": "reuse observed fixed-camera pixels and depth from all nine exact source views",
+    "moving_labels": "project the two bracketing source views using source-link to interpolated target-link SE3, then rasterize same-label continuous surface triangles",
+    "visibility": "per-pixel nearest interpolated depth across dynamic source surfaces and observed static background; ties remain unsupported",
+    "moving_edge_guard_px": 1,
+    "moving_edge_guard_rule": "pixels adjacent to projected moving-front evidence remain unsupported until repaired by exact camera rendering",
+    "unobserved_or_ambiguous": "remain explicit exact-render requests; no inpainting or sensor-threshold changes",
+    "depth_tie_rtol": 0.001,
+    "depth_tie_atol_m": 0.00002,
+    "surface_connectivity_max_local_pixel_scale": 4.0
+  },
+  "radiometry": {
+    "source": "Genesis scene-linear HDR luminance",
+    "temporal_interpolation": "log-domain interpolation between observations of the same frontmost label and depth",
+    "single_sided_observation": "hold nearest observed source sample and report separately",
+    "floor": 1e-6
+  },
+  "pixel_response": {
+    "model": "physical_log",
+    "threshold_on_off": 0.2,
+    "threshold_mismatch": 0.0,
+    "bandwidth": "disabled",
+    "leak_noise_refractory": "disabled"
+  },
+  "evaluation": {
+    "episodes": [4, 5],
+    "role": "cached development diagnostics only",
+    "queries": "all exact saved state rows in the same 40 ms window",
+    "exact_roi_repair": "only pixels marked unsupported by this candidate; evaluate with same-state main-camera scissor path",
+    "old_checkpoints": "diagnostic only, trained on prior event-generation domain",
+    "ranking": false,
+    "formal_test": false
+  }
+}
