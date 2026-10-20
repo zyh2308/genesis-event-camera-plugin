@@ -162,7 +162,7 @@ def main() -> int:
                 t = trace_times[idx]
                 _set_exact_logged_state(env, row)
                 started = time.perf_counter()
-                hdr, = env.camera.render(
+                hdr, _, _, _ = env.camera.render(
                     rgb=True, depth=False, segmentation=False, radiance=True, force_render=True,
                 )
                 hdr_render_s = time.perf_counter() - started

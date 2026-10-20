@@ -195,7 +195,7 @@ class MainCameraScissorROI:
             raise RuntimeError("install scissor renderer before rendering")
         self.set_crop(crop_xyxy)
         try:
-            image, = self.camera.render(
+            image, _, _, _ = self.camera.render(
                 rgb=True, depth=False, segmentation=False,
                 radiance=True, force_render=True,
             )
