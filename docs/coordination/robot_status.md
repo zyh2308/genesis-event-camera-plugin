@@ -818,6 +818,8 @@ bash benchmark/robot_closed_loop/diagnostics/run_r1_native_hdr_development.sh r1
 
 针对真实未知区再增加的单像素控制确认：两个 source warp 都无覆盖时，输出保持 NaN 并且恰好请求一次 direct render。它在本机 NumPy fallback 下通过，结果归档为 [`local unknown smoke`](../../benchmark/robot_closed_loop/results/r1_5_surface_raster_unknown_request_local_smoke_20261021a/README.md)；这是 g1 五项控制之后新增的开发级检查，尚未在 g1 复跑。
 
+上述附加控制与结果由 commit `8c84e3b` 交付；当前控制脚本 SHA256 `4ad85279ba11046edaf862174820bd59e0de911bdb54d93350655881ef513d16`。g1 五项控制的旧脚本 SHA256 仍按其实际执行版本保留在上方，二者不可混为一次运行。
+
 **真实缓存短片段（g1 实测，候选未通过非退化验收）：** 重放中心 episode 004 与 `+55 mm` episode 005 的全部已记录 trace 行；每集 47 个状态，真实时间间隔为 0.5–1 ms、有效均值约 1.15 kHz，没有合成不存在的物理状态。每集 42 个非端点中间时刻都触发整帧 direct-render fallback。候选每帧平均请求像素分别为 16.493% 和 16.113%；其中无任一表面覆盖的区域为 14.907% 和 14.549%，单侧覆盖为 1.586% 和 1.565%，共面标签冲突为 0。由于 renderer 只有整帧接口，任一请求都使该帧全量直渲。
 
 启用 fallback 后，候选和 exact logged-state Direct-HDR 的输出 raw event 数组逐元素完全相同：episode 004 为 2,807 个、episode 005 为 4,618 个。这说明最终输出没有原 warp 伪影，但原因是两个短片段的所有中间帧都直接渲染；不能据此声称 surface-raster 已消除真实片段异常。fallback 前，在已覆盖像素上图像误差较小（逐帧有效区域 log-error P95 均值 `6.04e-5 / 4.37e-4`），但约 15% 画面仍无可用表面支持，必须保持 unknown/fallback。
