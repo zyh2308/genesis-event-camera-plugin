@@ -30,10 +30,11 @@ except Exception:  # pragma: no cover - depends on the execution environment.
 
 @njit(cache=False)
 def _raster_triangles_numba(image, labels, uv, z, vertex_valid, edge_valid,
-                            out, zbuf, out_label, tie_tolerance, height, width):
+                            out, zbuf, out_label, tie_tolerance,
+                            y_begin, y_end, x_begin, x_end, height, width):
     triangle_vertices = np.array(((0, 1, 3), (0, 3, 2)), dtype=np.int64)
-    for y in range(height - 1):
-        for x in range(width - 1):
+    for y in range(y_begin, y_end):
+        for x in range(x_begin, x_end):
             ids = np.array((y * width + x, y * width + x + 1,
                             (y + 1) * width + x, (y + 1) * width + x + 1), dtype=np.int64)
             for tri_index in range(2):
@@ -138,6 +139,7 @@ def surface_raster_warp(
     K: np.ndarray,
     *,
     max_pixel_scale: float = 4.0,
+    raster_labels: set[int] | None = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Dict[str, object]]:
     """Rasterize local continuous surfaces into the intermediate camera.
 
@@ -161,18 +163,39 @@ def surface_raster_warp(
     valid &= np.isfinite(image) & np.isfinite(depth) & (depth > 1e-6)
     valid &= np.isfinite(z) & (z > 1e-6) & np.isfinite(uv).all(axis=0)
     valid &= labels >= 0
-    edges = _continuous_edges(depth, valid, K, labels, max_pixel_scale)
+    if raster_labels is None:
+        topology_valid = valid
+    else:
+        topology_valid = valid & np.isin(labels, np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64))
+    edges = _continuous_edges(depth, topology_valid, K, labels, max_pixel_scale)
     height, width = depth.shape
     out = np.full((height, width), np.nan, dtype=np.float32)
     zbuf = np.full((height, width), np.inf, dtype=np.float32)
     out_labels = np.full((height, width), -1, dtype=np.int64)
     finite_z = z[valid]
     tie_tolerance = max(1e-7, 8.0 * np.finfo(np.float32).eps * float(np.median(finite_z))) if finite_z.size else 1e-7
-    _raster_triangles_numba(
-        image.reshape(-1), labels.reshape(-1), uv.reshape(2, -1), z.reshape(-1),
-        valid.reshape(-1), edges.reshape(3, -1), out, zbuf, out_labels,
-        tie_tolerance, height, width,
-    )
+    if raster_labels is None:
+        labels_to_process = np.unique(labels[valid])
+    else:
+        labels_to_process = np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64)
+    for surface_label in labels_to_process:
+        label_valid = valid & (labels == int(surface_label))
+        ys, xs = np.nonzero(label_valid)
+        if not len(ys):
+            continue
+        # A dynamic scene can have large static backgrounds but only small
+        # moving objects. Restrict the cell scan to each source label's own
+        # bounding box; projected triangle bounds are still clipped in the
+        # output image. This preserves the same topology and z test.
+        y0 = max(0, int(ys.min()) - 1)
+        y1 = min(height - 1, int(ys.max()) + 1)
+        x0 = max(0, int(xs.min()) - 1)
+        x1 = min(width - 1, int(xs.max()) + 1)
+        _raster_triangles_numba(
+            image.reshape(-1), labels.reshape(-1), uv.reshape(2, -1), z.reshape(-1),
+            label_valid.reshape(-1), edges.reshape(3, -1), out, zbuf, out_labels,
+            tie_tolerance, y0, y1, x0, x1, height, width,
+        )
     visibility = np.isfinite(zbuf) & np.isfinite(out)
     diag = {
         "backend": "numba" if _NUMBA else "numpy_python_fallback",
@@ -184,6 +207,8 @@ def surface_raster_warp(
         "max_pixel_scale": float(max_pixel_scale),
         "surface_topology": "same_label_and_focal_scaled_3d_edge",
         "visibility_method": "perspective_correct_triangle_zbuffer",
+        "rasterized_label_count": int(len(labels_to_process)),
+        "rasterized_labels": [int(x) for x in labels_to_process.tolist()],
     }
     return out, zbuf, out_labels, visibility, diag
 
