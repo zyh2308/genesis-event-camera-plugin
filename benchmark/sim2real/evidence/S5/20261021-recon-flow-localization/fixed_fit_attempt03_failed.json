@@ -1,0 +1,31 @@
+{
+  "schema": "stage5_flow_fixed_network_fit_attempt_v1",
+  "run_id": "20261021-stage5-flow-fixed-sample-fit-v3",
+  "status": "failed_before_optimizer_update",
+  "started_utc": "2026-10-20T17:51:31Z",
+  "finished_utc": "2026-10-20T17:51:44Z",
+  "duration_seconds": 13,
+  "source_commit": "13c80784b0831957dcab89f513d38d3e9fe898c5",
+  "fixed_sample_id": "s2_00/dt1_144",
+  "optimizer_updates_per_arm": {
+    "eventgenesis": 0,
+    "v2e": 0
+  },
+  "initial_eventgenesis_metrics_at_update0": {
+    "full_valid_epe_px_per_30ms": 0.5670031854204644,
+    "zero_flow_full_valid_epe_px_per_30ms": 0.5415052769046999,
+    "common_event_active_epe_px_per_30ms": 1.6816646317903927,
+    "zero_flow_common_event_active_epe_px_per_30ms": 0.3297169939119213
+  },
+  "failure_stage": "backward on first update, before optimizer.step",
+  "root_cause": "strict PyTorch deterministic mode has no CUDA grid_sampler_2d_backward kernel for STE-FlowNet warping loss",
+  "repair": "keep deterministic algorithms enabled with warn_only=True; seed all RNGs and preserve cudnn deterministic setting; both arms use the same environment/path",
+  "raw_remote_log": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-fixed-sample-fit-v3/driver.log",
+    "sha256": "13d2709e5985bf9125e1d547fc3dde9ee84bebcf3531a9eb7c13d2f8dd3a692e",
+    "exit_code": 1
+  },
+  "no_optimizer_updates": true,
+  "real_data_used": false,
+  "created_utc": "2026-10-20T17:52:40.341157+00:00"
+}

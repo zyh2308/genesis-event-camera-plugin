@@ -119,7 +119,11 @@ def main() -> None:
     torch.cuda.set_device(device)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True)
+    # STE-FlowNet's warping loss backpropagates through CUDA grid_sample,
+    # for which PyTorch does not provide a deterministic backward kernel.
+    # Keep all deterministic kernels enforced where available and surface the
+    # known exception as a warning instead of aborting before the first step.
+    torch.use_deterministic_algorithms(True, warn_only=True)
 
     manifest_path = args.data_root.resolve() / "training_bank_manifest.json"
     manifest = json.loads(manifest_path.read_text())
@@ -182,6 +186,13 @@ def main() -> None:
         "mask_contract": config["mask"],
         "real_data_used": False,
         "formal_checkpoint_selection": False,
+        "determinism": {
+            "seeded_python_numpy_torch_and_cuda": True,
+            "cudnn_deterministic": True,
+            "deterministic_algorithms_requested": True,
+            "warn_only_for_unsupported_ops": True,
+            "known_cuda_nondeterministic_backward": "grid_sampler_2d_backward_cuda used by the STE warping loss",
+        },
         "arms": {},
     }
     initial_hashes = {}
