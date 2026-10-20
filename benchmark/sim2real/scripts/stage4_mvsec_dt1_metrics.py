@@ -32,6 +32,11 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def sha256_array(value: np.ndarray) -> str:
+    contiguous = np.ascontiguousarray(value)
+    return hashlib.sha256(memoryview(contiguous).cast("B")).hexdigest()
+
+
 def _binary_mask(mask: np.ndarray, shape: tuple[int, int], label: str) -> np.ndarray:
     value = np.asarray(mask)
     if value.shape != shape:
@@ -253,13 +258,13 @@ def validate_checkpoint_binding(manifest: dict[str, Any], arms: set[str] | None 
     return checked
 
 
-def load_registered_artifact_pair(row: dict[str, Any], checkpoint_binding: dict[str, dict[str, Any]]) -> dict[str, dict[str, np.ndarray]]:
+def load_registered_artifact_pair(row: dict[str, Any], checkpoint_binding: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """Hash-check candidate files and bind each to its registered checkpoint."""
     arm_paths = row.get("artifacts")
     arms = set(checkpoint_binding)
     if not isinstance(arm_paths, dict) or set(arm_paths) != arms:
         raise ValueError(f"each registered window must list exactly {sorted(arms)}")
-    loaded: dict[str, dict[str, np.ndarray]] = {}
+    loaded: dict[str, dict[str, Any]] = {}
     for arm, item in arm_paths.items():
         path = Path(item["path"])
         if not path.is_file() or sha256_file(path) != item.get("sha256"):
@@ -271,7 +276,48 @@ def load_registered_artifact_pair(row: dict[str, Any], checkpoint_binding: dict[
             if any(key not in bundle for key in required):
                 raise ValueError(f"{arm} artifact lacks required arrays: {required}")
             loaded[arm] = {key: np.asarray(bundle[key]) for key in required}
+            metadata_keys = ("sample_index", "event_count", "start_time_s", "end_time_s")
+            missing_metadata = [key for key in metadata_keys if key not in bundle]
+            if missing_metadata:
+                raise ValueError(f"{arm} artifact lacks registered window metadata: {missing_metadata}")
+            loaded[arm]["artifact_metadata"] = {
+                key: np.asarray(bundle[key]).item()
+                for key in metadata_keys
+            }
     return loaded
+
+
+def validate_window_artifact_binding(
+    row: dict[str, Any], loaded_pair: dict[str, dict[str, Any]],
+) -> dict[str, str]:
+    """Bind event/GT arrays and window coordinates to the registered real row."""
+    checked: dict[str, str] = {}
+    expected_event_sha = row.get("event_input_sha256")
+    expected_gt_sha = row.get("gt_flow_sha256")
+    expected_index = row.get("aps_start_index")
+    expected_count = row.get("event_count")
+    expected_start = row.get("start_time_s")
+    expected_end = row.get("end_time_s")
+    for arm, data in loaded_pair.items():
+        events = data["event_input_native_uint8"]
+        gt = data["gt_px_per_interval"]
+        event_sha = sha256_array(events)
+        gt_sha = sha256_array(gt)
+        if expected_event_sha is not None and event_sha != expected_event_sha:
+            raise ValueError(f"{arm} event tensor SHA differs from the pre-registered MVSEC window")
+        if expected_gt_sha is not None and gt_sha != expected_gt_sha:
+            raise ValueError(f"{arm} GT flow SHA differs from the pre-registered MVSEC window")
+        metadata = data.get("artifact_metadata", {})
+        if "sample_index" in metadata and expected_index is not None and int(metadata["sample_index"]) != int(expected_index):
+            raise ValueError(f"{arm} artifact sample index differs from its manifest row")
+        if "event_count" in metadata and expected_count is not None and int(metadata["event_count"]) != int(expected_count):
+            raise ValueError(f"{arm} artifact raw event count differs from its manifest row")
+        if "start_time_s" in metadata and expected_start is not None and float(metadata["start_time_s"]) != float(expected_start):
+            raise ValueError(f"{arm} artifact start timestamp differs from its manifest row")
+        if "end_time_s" in metadata and expected_end is not None and float(metadata["end_time_s"]) != float(expected_end):
+            raise ValueError(f"{arm} artifact end timestamp differs from its manifest row")
+        checked[arm] = event_sha
+    return checked
 
 
 def evaluate_pair_manifest(
@@ -320,6 +366,7 @@ def evaluate_pair_manifest(
             raise ValueError(f"unregistered APS index {sample_index} for {sequence}")
         sequence_spec = protocol["sequence_specs"][sequence]
         loaded = load_registered_artifact_pair(row, checkpoint_binding)
+        validate_window_artifact_binding(row, loaded)
         eg, v2e = loaded["eventgenesis"], loaded["v2e"]
         if not np.array_equal(eg["gt_px_per_interval"], v2e["gt_px_per_interval"], equal_nan=True):
             raise ValueError(f"paired GT differs for {sequence} APS {row['aps_start_index']}")
@@ -514,6 +561,8 @@ def self_test() -> dict[str, Any]:
             np.savez_compressed(
                 artifact_path, event_input_native_uint8=pair_event,
                 prediction_px_per_interval=arm_prediction, gt_px_per_interval=pair_gt,
+                sample_index=np.int64(0), event_count=np.int64(1),
+                start_time_s=np.float64(0.0), end_time_s=np.float64(0.01),
             )
             artifact_rows[arm] = {
                 "path": str(artifact_path), "sha256": sha256_file(artifact_path),
@@ -574,6 +623,8 @@ def self_test() -> dict[str, Any]:
                 "label_time_s": 0.01,
                 "event_window_convention": "(start_time_s, end_time_s]",
                 "event_count": 1,
+                "event_input_sha256": sha256_array(pair_event),
+                "gt_flow_sha256": sha256_array(pair_gt),
                 "artifacts": artifact_rows,
             }],
         }))
@@ -585,6 +636,49 @@ def self_test() -> dict[str, Any]:
         assert full_entry["scored_windows"] == {"synthetic_fixture": 1}
         assert full_entry["sequence_summary"]["eventgenesis"]["equal_sequence_mean_aee_px_per_interval"] == 0.0
         assert full_entry["sequence_summary"]["v2e"]["equal_sequence_mean_aee_px_per_interval"] == 5.0
+        bad_index_pair = {
+            arm: {**value, "artifact_metadata": dict(value["artifact_metadata"])}
+            for arm, value in loaded_pair.items()
+        }
+        bad_index_pair["v2e"]["artifact_metadata"]["sample_index"] = 1
+        try:
+            fixture_window = json.loads(fixture_manifest_path.read_text())["windows"][0]
+            validate_window_artifact_binding(fixture_window, bad_index_pair)
+        except ValueError as exc:
+            assert "sample index differs" in str(exc)
+        else:
+            raise AssertionError("artifact from a different APS index must fail closed")
+        metadata_free_path = root / "v2e_metadata_free.npz"
+        np.savez_compressed(
+            metadata_free_path,
+            event_input_native_uint8=pair_event,
+            prediction_px_per_interval=np.zeros_like(pair_pred),
+            gt_px_per_interval=pair_gt,
+        )
+        metadata_free_rows = json.loads(fixture_manifest_path.read_text())["windows"][0]
+        metadata_free_rows["artifacts"]["v2e"] = {
+            "path": str(metadata_free_path),
+            "sha256": sha256_file(metadata_free_path),
+            "checkpoint_sha256": checkpoint_binding["v2e"]["sha256"],
+        }
+        try:
+            load_registered_artifact_pair(metadata_free_rows, checked_binding)
+        except ValueError as exc:
+            assert "lacks registered window metadata" in str(exc)
+        else:
+            raise AssertionError("artifact without registered timestamps/index must fail closed")
+        mismatched_manifest = json.loads(fixture_manifest_path.read_text())
+        mismatched_manifest["windows"][0]["event_input_sha256"] = "0" * 64
+        mismatched_path = root / "synthetic_manifest_mismatched_input.json"
+        mismatched_path.write_text(json.dumps(mismatched_manifest))
+        try:
+            evaluate_pair_manifest(
+                mismatched_path, fixture_protocol_path, None, synthetic_fixture=True
+            )
+        except ValueError as exc:
+            assert "event tensor SHA differs" in str(exc)
+        else:
+            raise AssertionError("real-window event input hash mismatch must fail closed")
     try:
         authorize_real_evaluation(DEFAULT_PROTOCOL, DEFAULT_MANIFEST, Path("/nonexistent/approval.json"))
     except FileNotFoundError:
@@ -627,6 +721,9 @@ def self_test() -> dict[str, Any]:
             "full_entry_eventgenesis_aee": full_entry["sequence_summary"]["eventgenesis"]["equal_sequence_mean_aee_px_per_interval"],
             "full_entry_v2e_aee": full_entry["sequence_summary"]["v2e"]["equal_sequence_mean_aee_px_per_interval"],
             "stale_weight_hash_negative_control": "rejected",
+            "wrong_APS_index_metadata_negative_control": "rejected",
+            "missing_artifact_window_metadata_negative_control": "rejected",
+            "required_artifact_window_metadata": ["sample_index", "event_count", "start_time_s", "end_time_s"],
             "real_data_used": False, "real_scores_authorized": False,
         },
         "arm_input_mismatch": "rejected",

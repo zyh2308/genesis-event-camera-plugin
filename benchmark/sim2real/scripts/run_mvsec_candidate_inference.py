@@ -290,10 +290,19 @@ def official_flow_association_from_h5(
         )
     first = int(np.searchsorted(ts, start_time_s, side="right") - 1)
     last = int(np.searchsorted(ts, end_time_s, side="left") - 1)
+    end_timestamp_index = int(np.searchsorted(ts, end_time_s, side="left"))
+    end_matches_timestamp = (
+        end_timestamp_index < len(ts) and ts[end_timestamp_index] == end_time_s
+    )
     if first < 0 or last < first or last >= int(flow_dataset.shape[0]):
         raise IndexError(f"GT flow index interval [{first},{last}] invalid for {flow_dataset.shape}")
     if int(flow_dataset.shape[1]) != 2:
         raise ValueError(f"official flow_dist must be [N,2,H,W], got {flow_dataset.shape}")
+    # Read exactly the GT maps whose timestamp intervals intersect the APS
+    # window. In particular, when end_time_s equals a GT timestamp, the last
+    # contributing map is the preceding interval (last = endpoint_index - 1).
+    # A later compatibility step mirrors the pinned helper's zero-duration
+    # map read only on the control-flow path where that helper performs it.
     local_ts = ts[first:last + 2]
     local_flow = np.asarray(flow_dataset[first:last + 1], dtype=np.float64)
     if local_flow.shape[0] != len(local_ts) - 1:
@@ -305,13 +314,15 @@ def official_flow_association_from_h5(
     # excludes non-finite GT pixels; candidate_valid_mask below records and
     # masks them explicitly. Do not replace them with plausible flow vectors.
 
-    gt_iter = int(np.searchsorted(local_ts, start_time_s, side="right") - 1)
-    gt_dt = float(local_ts[gt_iter + 1] - local_ts[gt_iter])
-    x_flow = local_flow[gt_iter, 0].copy()
-    y_flow = local_flow[gt_iter, 1].copy()
+    gt_dt = float(local_ts[1] - local_ts[0])
     dt = end_time_s - start_time_s
-    if gt_dt > dt:
-        result = np.stack((x_flow * dt / gt_dt, y_flow * dt / gt_dt), axis=0)
+    if first == last and gt_dt > dt:
+        # Keep the pinned helper's short-window approximation when the entire
+        # APS interval is contained in one slower GT interval.
+        result = np.stack((local_flow[0, 0] * dt / gt_dt,
+                           local_flow[0, 1] * dt / gt_dt), axis=0)
+        right_endpoint_noop_applied = False
+        flow_indices_read = list(range(first, last + 1))
     else:
         x_idx, y_idx = np.meshgrid(np.arange(width), np.arange(height))
         x_idx = x_idx.astype(np.float32)
@@ -319,29 +330,54 @@ def official_flow_association_from_h5(
         orig_x, orig_y = x_idx.copy(), y_idx.copy()
         x_mask = np.ones((height, width), dtype=bool)
         y_mask = np.ones((height, width), dtype=bool)
-        scale = (local_ts[gt_iter + 1] - start_time_s) / gt_dt
-        _propagate_flow(x_flow, y_flow, x_idx, y_idx, x_mask, y_mask, float(scale))
-        gt_iter += 1
-        while local_ts[gt_iter + 1] < end_time_s:
-            x_flow = local_flow[gt_iter, 0]
-            y_flow = local_flow[gt_iter, 1]
-            _propagate_flow(x_flow, y_flow, x_idx, y_idx, x_mask, y_mask)
-            gt_iter += 1
-        final_dt = end_time_s - local_ts[gt_iter]
-        final_gt_dt = local_ts[gt_iter + 1] - local_ts[gt_iter]
-        _propagate_flow(local_flow[gt_iter, 0], local_flow[gt_iter, 1], x_idx, y_idx,
-                        x_mask, y_mask, float(final_dt / final_gt_dt))
+        for local_index, flow_index in enumerate(range(first, last + 1)):
+            interval_start = float(ts[flow_index])
+            interval_end = float(ts[flow_index + 1])
+            segment_start = max(start_time_s, interval_start)
+            segment_end = min(end_time_s, interval_end)
+            if segment_end <= segment_start:
+                raise RuntimeError(
+                    f"GT interval {flow_index} does not overlap requested window despite index selection"
+                )
+            scale = (segment_end - segment_start) / (interval_end - interval_start)
+            _propagate_flow(local_flow[local_index, 0], local_flow[local_index, 1],
+                            x_idx, y_idx, x_mask, y_mask, float(scale))
+        # Match the pinned STE helper's zero-duration final propagation at an
+        # exact interior GT timestamp. Although the displacement scale is 0,
+        # the upstream helper still samples this next map and updates its
+        # per-axis in-bounds masks. At the final available GT timestamp there
+        # is no following interval; skip that undefined no-op and retain the
+        # physically complete displacement through the requested endpoint.
+        right_endpoint_noop_applied = bool(
+            end_matches_timestamp
+            and end_timestamp_index == first + 1
+            and end_timestamp_index + 1 < len(ts)
+            and end_timestamp_index < int(flow_dataset.shape[0])
+        )
+        flow_indices_read = list(range(first, last + 1))
+        if right_endpoint_noop_applied:
+            noop_flow = np.asarray(flow_dataset[end_timestamp_index], dtype=np.float64)
+            if noop_flow.shape != (2, height, width):
+                raise ValueError(f"right-endpoint GT flow map has unexpected shape {noop_flow.shape}")
+            _propagate_flow(noop_flow[0], noop_flow[1], x_idx, y_idx,
+                            x_mask, y_mask, 0.0)
+            flow_indices_read.append(end_timestamp_index)
         x_shift, y_shift = x_idx - orig_x, y_idx - orig_y
         x_shift[~x_mask] = 0
         y_shift[~y_mask] = 0
         result = np.stack((x_shift, y_shift), axis=0)
     if result.shape != (2, height, width):
         raise RuntimeError(f"propagated GT has unexpected shape {result.shape}")
+    timestamps_used = local_ts.tolist()
+    if right_endpoint_noop_applied:
+        timestamps_used.append(float(ts[end_timestamp_index + 1]))
     association = {
         "algorithm": "pinned STE-FlowNet estimate_corresponding_gt_flow semantics",
         "gt_map_indices_inclusive": [first, last],
+        "gt_map_indices_read": flow_indices_read,
+        "right_endpoint_zero_duration_map_read": right_endpoint_noop_applied,
         "gt_interval_start_index": int(np.searchsorted(ts, start_time_s, side="right") - 1),
-        "gt_timestamps_used_s": local_ts.tolist(),
+        "gt_timestamps_used_s": timestamps_used,
         "start_time_s": float(start_time_s),
         "end_time_s": float(end_time_s),
         "flow_unit": FLOW_UNIT,
@@ -594,6 +630,10 @@ def write_window(output_dir: Path, row: dict[str, Any], padded_events: np.ndarra
         prediction_px_per_interval=prediction.astype(np.float32),
         gt_px_per_interval=gt.astype(np.float32),
         candidate_valid_mask=valid.astype(np.uint8),
+        sample_index=np.int64(row["sample_index"]),
+        event_count=np.int64(row["event_count"]),
+        start_time_s=np.float64(row["start_time_s"]),
+        end_time_s=np.float64(row["end_time_s"]),
     )
     row["prediction_artifact"] = str(path)
     row["prediction_artifact_sha256"] = sha256_file(path)

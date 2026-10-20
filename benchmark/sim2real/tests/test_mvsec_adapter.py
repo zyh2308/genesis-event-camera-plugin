@@ -166,18 +166,37 @@ class MVSECAdapterTests(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix=".h5") as stream:
             with h5py.File(stream.name, "w") as handle:
                 dataset = handle.create_dataset("flow_dist", data=flow)
-                actual, association = adapter.official_flow_association_from_h5(
-                    dataset, timestamps, 0.05, 0.25
+                # Include a non-aligned interval, an exact internal GT endpoint,
+                # and the last timestamp covered by the available GT maps.
+                for start, end, expected_indices, expected_center, expected_noop in (
+                    (0.05, 0.25, [0, 2], [2.0, -1.0], False),
+                    (0.05, 0.20, [0, 1], [1.5, -0.75], False),
+                    (0.10, 0.20, [1, 1], [1.0, -0.5], True),
+                ):
+                    actual, association = adapter.official_flow_association_from_h5(
+                        dataset, timestamps, start, end
+                    )
+                    expected_u, expected_v = estimate_corresponding_gt_flow(
+                        flow[:, 0], flow[:, 1], timestamps,
+                        np.array(start), np.array(end),
+                    )
+                    expected = np.stack((expected_u, expected_v), axis=0).astype(np.float32)
+                    self.assertEqual(actual.shape, (2, 260, 346))
+                    self.assertTrue(np.allclose(actual, expected, rtol=0, atol=1e-6))
+                    self.assertEqual(association["gt_map_indices_inclusive"], expected_indices)
+                    self.assertTrue(np.allclose(actual[:, 100, 100], expected_center, atol=1e-6))
+                    self.assertEqual(association["right_endpoint_zero_duration_map_read"], expected_noop)
+
+                # The pinned helper indexes one GT timestamp beyond the end
+                # when the window reaches the final available timestamp. The
+                # adapter must handle that physical boundary without reading
+                # beyond source data; its interior result remains exact.
+                final_endpoint, final_meta = adapter.official_flow_association_from_h5(
+                    dataset, timestamps, 0.30, 0.40
                 )
-                expected_u, expected_v = estimate_corresponding_gt_flow(
-                    flow[:, 0], flow[:, 1], timestamps,
-                    np.array(0.05), np.array(0.25),
-                )
-        expected = np.stack((expected_u, expected_v), axis=0).astype(np.float32)
-        self.assertEqual(actual.shape, (2, 260, 346))
-        self.assertTrue(np.allclose(actual, expected, rtol=0, atol=1e-6))
-        self.assertEqual(association["gt_map_indices_inclusive"], [0, 2])
-        self.assertTrue(np.allclose(actual[:, 100, 100], [2.0, -1.0], atol=1e-6))
+                self.assertTrue(np.isfinite(final_endpoint).all())
+                self.assertTrue(np.allclose(final_endpoint[:, 100, 100], [1.0, -0.5], atol=1e-6))
+                self.assertFalse(final_meta["right_endpoint_zero_duration_map_read"])
 
 
 if __name__ == "__main__":

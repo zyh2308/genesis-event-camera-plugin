@@ -1,0 +1,222 @@
+{
+  "candidate_manifest": "benchmark/sim2real/manifests/mvsec_dt1_test_manifest_candidate_20261021_v3.json",
+  "checkpoint_selection_metadata_correction": {
+    "corrected_v2_text": "synthetic validation full-valid EPE best",
+    "evidence": "benchmark/sim2real/evidence/S4/20261019-flow-final-archive/artifact_index.json and README.md",
+    "previous_v1_text": "synthetic validation LPIPS best",
+    "real_data_used": false,
+    "weights_changed": false
+  },
+  "crop_policy_reconciliation": {
+    "candidate_recommendation": "Use the full native 346x260 sensor raster for the primary sim-to-real comparison on all four sequences, with the common finite-nonzero-GT intersect common-event-active support. Record the exact legacy source ROI as a secondary compatibility diagnostic if research review requests it.",
+    "legacy_source_geometry": {
+      "center_crop_native_yxyx": [
+        2,
+        258,
+        45,
+        301
+      ],
+      "native_sensor_hw": [
+        260,
+        346
+      ],
+      "outdoor_day1_crop_after_center_crop_yxyx": [
+        0,
+        190,
+        0,
+        256
+      ],
+      "outdoor_day1_equivalent_native_yxyx": [
+        2,
+        192,
+        45,
+        301
+      ],
+      "source": "pinned STE-FlowNet main_steflow_dt1.py and multiscaleloss.py at eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6"
+    },
+    "paper_metric_definition": "AEE is averaged over active pixels where both GT and events are present; the paper does not specify a numeric rectangular crop.",
+    "rationale": "The candidates were trained and validated on shared native-resolution synthetic labels and use the native-resolution real adapter; a full sensor ROI avoids changing input geometry or introducing an outdoor-only crop into the primary comparison. This candidate does not claim exact reproduction of the historical paper/legacy implementation.",
+    "requires_research_freeze": true
+  },
+  "dt": 1,
+  "flow_gt": {
+    "association": "pinned estimate_corresponding_gt_flow semantics: each GT map is displacement to next GT timestamp; propagate/interpolate across APS endpoints using nearest-neighbor flow sampling",
+    "dataset_fields": [
+      "davis/left/flow_dist",
+      "davis/left/flow_dist_ts"
+    ],
+    "invalid_gt": "exclude any pixel where either component is non-finite or vector magnitude is zero",
+    "orientation": "native DAVIS left raster, [u,v] == [x,y] displacement, arrays [2,260,346]",
+    "unit": "px_per_interval (endpoint displacement in native sensor pixel coordinates)"
+  },
+  "input_output_geometry": {
+    "metric_crop": "apply official dataset-specific evaluation row crop after restoring the native raster; do not crop/resize GT independently",
+    "model_input": "Stage 3 real adapter representation, centered zero-pad event tensor to 352x352; do not resize event coordinates or scale counts",
+    "model_output": "require finite [1,2,352,352], crop the same recorded (y=46,x=3) pad offset back to [2,260,346]",
+    "native_sensor_hw": [
+      260,
+      346
+    ]
+  },
+  "metrics": {
+    "dataset_aggregate": "equal weight across the four registered sequences, irrespective of frame count",
+    "empty_sequence": "fail closed; no four-sequence aggregate if any registered sequence has no scored support",
+    "per_sequence": "mean per-window AEE and Outlier over non-empty common-support windows; record count and excluded empty windows",
+    "primary": {
+      "definition": "mean sqrt((u_pred-u_gt)^2+(v_pred-v_gt)^2) over the common valid mask",
+      "name": "AEE",
+      "unit": "pixels per dt1 APS interval"
+    },
+    "secondary": {
+      "all_valid_gt_aee": "optional diagnostic on finite nonzero GT without event-support intersection; cannot replace primary support",
+      "legacy_reference_only": "STE flow_error_dense reports fraction EPE < 3 px; report only as reference compatibility, not as the candidate Outlier metric",
+      "outlier_definition": "100 * mean(EPE > 3 px AND EPE > 0.05 * GT_vector_magnitude) over the same common valid mask",
+      "outlier_name": "Outlier-3px-and-5-percent"
+    }
+  },
+  "model": {
+    "architecture": "pinned official STE-FlowNet",
+    "artifact_binding_schema": "manifest.checkpoint_binding; each score artifact carries checkpoint_sha256 and must match the registered weight file",
+    "checkpoint_rule": "Use the existing corrected-v2 dt1 seed-0 synthetic-validation EPE best for each arm; do not use any real data or scores to select or change weights.",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "repository": "https://github.com/ruizhao26/STE-FlowNet.git",
+    "selected_synthetic_best": {
+      "eventgenesis": {
+        "run_arm": "EventGenesis",
+        "selected_epoch": 33,
+        "selection_metric": "full-valid synthetic EPE (px per 30 ms)",
+        "selection_source": "completed corrected-v2 dt1 seed0 synthetic validation full-valid EPE best; Stage-4 archive epoch 33"
+      },
+      "v2e": {
+        "run_arm": "V2E",
+        "selected_epoch": 20,
+        "selection_metric": "full-valid synthetic EPE (px per 30 ms)",
+        "selection_source": "completed corrected-v2 dt1 seed0 synthetic validation full-valid EPE best; Stage-4 archive epoch 20"
+      }
+    },
+    "selection_mask": "Historical full-valid synthetic mask. The newly authorized active-union checkpoint-selection rule applies only to future independently versioned training runs and does not retroactively change these checkpoints.",
+    "selection_metric": "Full shared-valid synthetic-validation EPE in pixels per 30 ms endpoint interval, matching the historical 45-epoch run."
+  },
+  "parent_candidate": "benchmark/sim2real/protocol/mvsec_dt1_protocol_candidate_20261019.json",
+  "primary_source_files": {
+    "MVSEC_download_and_dataset_description": "https://daniilidis-group.github.io/mvsec/",
+    "dt1_sequence_selection_and_outdoor_ranges": "https://github.com/ruizhao26/STE-FlowNet/blob/eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6/main_steflow_dt1.py",
+    "evaluator_and_timestamp_propagation": "https://github.com/ruizhao26/STE-FlowNet/blob/eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6/multiscaleloss.py"
+  },
+  "protocol_id": "mvsec-steflownet-dt1-20261021-candidate-v3",
+  "real_scores_authorized": false,
+  "schema_version": 1,
+  "scope_and_isolation": {
+    "real_scores_for_training_selection_or_generator_changes": false,
+    "status": "candidate only; research review must freeze protocol and authorize scoring before real metric artifacts are opened",
+    "training_and_checkpoint_selection": "synthetic train/validation only"
+  },
+  "sequence_specs": {
+    "indoor_flying1": {
+      "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301)",
+      "candidate_metric_roi_native_yxyx": [
+        0,
+        260,
+        0,
+        346
+      ],
+      "evaluation_rows": 260,
+      "legacy_code_metric_roi_native_yxyx": [
+        2,
+        258,
+        45,
+        301
+      ]
+    },
+    "indoor_flying2": {
+      "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301)",
+      "candidate_metric_roi_native_yxyx": [
+        0,
+        260,
+        0,
+        346
+      ],
+      "evaluation_rows": 260,
+      "legacy_code_metric_roi_native_yxyx": [
+        2,
+        258,
+        45,
+        301
+      ]
+    },
+    "indoor_flying3": {
+      "candidate_aps_index_rule": "pinned STE-FlowNet Test_loading: i > 20 and i+20 < number_of_APS_endpoints, intersected with complete event/APS/flow-GT common timestamp coverage",
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301)",
+      "candidate_metric_roi_native_yxyx": [
+        0,
+        260,
+        0,
+        346
+      ],
+      "evaluation_rows": 260,
+      "legacy_code_metric_roi_native_yxyx": [
+        2,
+        258,
+        45,
+        301
+      ]
+    },
+    "outdoor_day1": {
+      "candidate_aps_index_rule": "pinned STE-FlowNet outdoor_day1 validation intervals [9200,9600) and [10500,10900), intersected with loader boundary rule and complete event/APS/flow-GT common timestamp coverage",
+      "candidate_crop": "full native 260x346 raster; exact legacy ROI is center crop y=[2,258), x=[45,301), then first 190 rows, mapping to native y=[2,192), x=[45,301)",
+      "candidate_metric_roi_native_yxyx": [
+        0,
+        260,
+        0,
+        346
+      ],
+      "evaluation_rows": 260,
+      "legacy_code_metric_roi_native_yxyx": [
+        2,
+        192,
+        45,
+        301
+      ]
+    }
+  },
+  "sequences": [
+    "indoor_flying1",
+    "indoor_flying2",
+    "indoor_flying3",
+    "outdoor_day1"
+  ],
+  "source_code_hashes": {
+    "benchmark/sim2real/evidence/S4/20261019-flow-final-archive/artifact_index.json": "73acf718470e0874c38ceaa37f55db8eba720dbf595c3b98cfbc3c847446f432",
+    "benchmark/sim2real/scripts/audit_mvsec_real_window_contract.py": "eb748c1c14c9d216d8037a3bc5202745e61a0223a1c286e675de27a86260132a",
+    "benchmark/sim2real/scripts/register_mvsec_dt1_test_windows.py": "1598ef15c96cc8d755324ee95ad3fd05a91fb3bb77a53c3093066abc3195b8c6",
+    "benchmark/sim2real/scripts/run_mvsec_candidate_inference.py": "3668931a9fa2f007677e858584d78acaf1058dad64f35140807d9c77f6920d32",
+    "benchmark/sim2real/scripts/stage4_mvsec_dt1_metrics.py": "06b4265b6ef4d980c1d5edd552801d67c6920d7235953bf93b1cf90081546698",
+    "benchmark/sim2real/tests/test_mvsec_adapter.py": "5a96fd12a69ed0ffcfcb9f11f8652d37f00957c8b63a61d462d23a2cf6cdc44e"
+  },
+  "status": "candidate_pending_full_file_registration_and_research_freeze",
+  "support_mask": {
+    "common_mask": "one mask per sequence/window reused for both predictions",
+    "empty_support": "undefined window; preserve APS index and interval in common exclusion manifest, never convert to zero error or drop from registration",
+    "event_active": "any positive ON/OFF count in any of the five dt1 bins; EventGenesis and V2E artifacts must have bit-identical real event tensors, otherwise fail",
+    "rule": "finite nonzero GT vector AND pixel active in the common real event representation AND within the sequence-specific evaluation crop"
+  },
+  "task": "synthetic-trained EventGenesis vs V2E STE-FlowNet on public MVSEC left-camera data",
+  "time_and_events": {
+    "endpoint_definition": "APS endpoint i to i+1; actual interval duration is timestamp[i+1]-timestamp[i] seconds",
+    "event_polarity_mapping": "preserve +1 ON; map source OFF encoding 0 to -1 only as required by the pinned STE encoder",
+    "event_representation": "pinned STE-style equal-event-count Gaussian-weighted ON/OFF tensor; 5 slices per APS interval",
+    "inference_inputs": [
+      "real events only"
+    ],
+    "pairing": "both models receive bit-identical event representation from the same MVSEC interval; evaluation support is common and shared",
+    "raw_event_window": "(APS timestamp[i], APS timestamp[i+1]]"
+  },
+  "timestamp_endpoint_contract": {
+    "exact_right_endpoint": "Preserve the pinned STE helper zero-duration endpoint map read only when its control flow performs that step; skip a mathematically empty tail at the final available GT timestamp to avoid the upstream helper out-of-range access.",
+    "real_score_status": "preparation only; no candidate weights loaded and no real metrics computed",
+    "semantics": "For APS endpoint interval (t_start,t_end], compose only GT flow intervals that intersect the requested window, using nearest-neighbor flow propagation and endpoint displacement in native pixels.",
+    "validation": "Parity checked against STE-FlowNet eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6 on non-aligned, exact internal, and adjacent exact endpoint windows; final timestamp boundary separately checked for finite expected displacement."
+  }
+}
