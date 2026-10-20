@@ -31,7 +31,8 @@ except Exception:  # pragma: no cover - depends on the execution environment.
 @njit(cache=False)
 def _raster_triangles_numba(image, labels, uv, z, vertex_valid, edge_valid,
                             out, zbuf, out_label, tie_tolerance,
-                            y_begin, y_end, x_begin, x_end, height, width):
+                            y_begin, y_end, x_begin, x_end, height, width,
+                            target_label):
     triangle_vertices = np.array(((0, 1, 3), (0, 3, 2)), dtype=np.int64)
     for y in range(y_begin, y_end):
         for x in range(x_begin, x_end):
@@ -44,6 +45,8 @@ def _raster_triangles_numba(image, labels, uv, z, vertex_valid, edge_valid,
                 if not (vertex_valid[a] and vertex_valid[b] and vertex_valid[c]):
                     continue
                 if labels[a] != labels[b] or labels[a] != labels[c]:
+                    continue
+                if labels[a] != target_label:
                     continue
                 # edge_valid stores horizontal, vertical and down-right
                 # continuity.  These are topology checks, not z-buffer epsilons.
@@ -94,6 +97,53 @@ def _raster_triangles_numba(image, labels, uv, z, vertex_valid, edge_valid,
                                 # Exact coplanar overlap with distinct labels
                                 # is ambiguous; mark it so callers can render.
                                 out_label[py, px] = -2
+
+
+@njit(cache=False, nogil=True, parallel=True)
+def _raster_label_layers_numba(image, labels, uv, z, vertex_valid, edge_valid,
+                               labels_to_process, bboxes, tie_tolerance,
+                               out_layers, z_layers, label_layers, height, width):
+    """Rasterize independent semantic link layers concurrently.
+
+    Each label owns a private z-buffer, so parallel workers never race while
+    resolving overlapping triangles. The caller merges completed layers in
+    sorted label order with the serial reference's exact depth/tie rule.
+    """
+    for label_index in prange(labels_to_process.size):
+        y0 = bboxes[label_index, 0]
+        y1 = bboxes[label_index, 1]
+        x0 = bboxes[label_index, 2]
+        x1 = bboxes[label_index, 3]
+        if y1 < y0 or x1 < x0:
+            continue
+        _raster_triangles_numba(
+            image, labels, uv, z, vertex_valid, edge_valid,
+            out_layers[label_index], z_layers[label_index], label_layers[label_index],
+            tie_tolerance, y0, y1, x0, x1, height, width,
+            labels_to_process[label_index],
+        )
+
+
+@njit(cache=False, nogil=True)
+def _merge_raster_label_layers_numba(out_layers, z_layers, label_layers,
+                                     tie_tolerance, out, zbuf, out_label):
+    """Apply per-label z-buffers in the same deterministic order as the reference."""
+    label_count, height, width = z_layers.shape
+    for label_index in range(label_count):
+        for y in range(height):
+            for x in range(width):
+                fragment_z = z_layers[label_index, y, x]
+                fragment_luma = out_layers[label_index, y, x]
+                if not np.isfinite(fragment_z) or not np.isfinite(fragment_luma):
+                    continue
+                if fragment_z < zbuf[y, x] - tie_tolerance:
+                    zbuf[y, x] = fragment_z
+                    out[y, x] = fragment_luma
+                    out_label[y, x] = label_layers[label_index, y, x]
+                elif abs(fragment_z - zbuf[y, x]) <= tie_tolerance:
+                    out[y, x] = 0.5 * (out[y, x] + fragment_luma)
+                    if label_layers[label_index, y, x] != out_label[y, x]:
+                        out_label[y, x] = -2
 
 
 def _continuous_edges(depth: np.ndarray, valid: np.ndarray, K: np.ndarray,
@@ -178,6 +228,7 @@ def surface_raster_warp(
     max_pixel_scale: float = 4.0,
     raster_labels: set[int] | None = None,
     prepared_source: Dict[str, object] | None = None,
+    raster_backend: str = "numba_serial",
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Dict[str, object]]:
     """Rasterize local continuous surfaces into the intermediate camera.
 
@@ -198,6 +249,10 @@ def surface_raster_warp(
         raise ValueError("projected coordinates, depth, and validity have incompatible shapes")
     if K.shape != (3, 3) or max_pixel_scale <= 0:
         raise ValueError("K must be 3x3 and max_pixel_scale must be positive")
+    if raster_backend not in {"numba_serial", "numba_parallel_labels"}:
+        raise ValueError(f"unsupported surface raster backend {raster_backend!r}")
+    if raster_backend == "numba_parallel_labels" and not _NUMBA:
+        raise RuntimeError("numba_parallel_labels requires Numba")
     valid &= np.isfinite(image) & np.isfinite(depth) & (depth > 1e-6)
     valid &= np.isfinite(z) & (z > 1e-6) & np.isfinite(uv).all(axis=0)
     valid &= labels >= 0
@@ -231,32 +286,58 @@ def surface_raster_warp(
     else:
         if prepared_source is None:
             labels_to_process = np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64)
-    for surface_label in labels_to_process:
-        label_valid = valid & (labels == int(surface_label))
-        if bboxes is None:
-            ys, xs = np.nonzero(label_valid)
-            if not len(ys):
-                continue
-            # A dynamic scene can have large static backgrounds but only
-            # small moving objects. Restrict the cell scan to each source
-            # label's own bounding box; projected triangle bounds are still
-            # clipped in the output image.
-            y0 = max(0, int(ys.min()) - 1)
-            y1 = min(height - 1, int(ys.max()) + 1)
-            x0 = max(0, int(xs.min()) - 1)
-            x1 = min(width - 1, int(xs.max()) + 1)
-        else:
-            if int(surface_label) not in bboxes:
-                continue
-            y0, y1, x0, x1 = bboxes[int(surface_label)]
-        _raster_triangles_numba(
+    if raster_backend == "numba_parallel_labels":
+        label_bboxes = np.full((len(labels_to_process), 4), -1, dtype=np.int64)
+        for label_index, surface_label in enumerate(labels_to_process):
+            if bboxes is not None:
+                bounds = bboxes.get(int(surface_label))
+                if bounds is not None:
+                    label_bboxes[label_index] = bounds
+            else:
+                ys, xs = np.nonzero(valid & (labels == int(surface_label)))
+                if len(ys):
+                    label_bboxes[label_index] = (
+                        max(0, int(ys.min()) - 1), min(height - 1, int(ys.max()) + 1),
+                        max(0, int(xs.min()) - 1), min(width - 1, int(xs.max()) + 1),
+                    )
+        out_layers = np.full((len(labels_to_process), height, width), np.nan, dtype=np.float32)
+        z_layers = np.full((len(labels_to_process), height, width), np.inf, dtype=np.float32)
+        label_layers = np.full((len(labels_to_process), height, width), -1, dtype=np.int64)
+        _raster_label_layers_numba(
             image.reshape(-1), labels.reshape(-1), uv.reshape(2, -1), z.reshape(-1),
-            label_valid.reshape(-1), edges.reshape(3, -1), out, zbuf, out_labels,
-            tie_tolerance, y0, y1, x0, x1, height, width,
+            valid.reshape(-1), edges.reshape(3, -1), labels_to_process, label_bboxes,
+            tie_tolerance, out_layers, z_layers, label_layers, height, width,
         )
+        _merge_raster_label_layers_numba(
+            out_layers, z_layers, label_layers, tie_tolerance, out, zbuf, out_labels,
+        )
+    else:
+        for surface_label in labels_to_process:
+            label_valid = valid & (labels == int(surface_label))
+            if bboxes is None:
+                ys, xs = np.nonzero(label_valid)
+                if not len(ys):
+                    continue
+                # A dynamic scene can have large static backgrounds but only
+                # small moving objects. Restrict the cell scan to each source
+                # label's own bounding box; projected triangle bounds are still
+                # clipped in the output image.
+                y0 = max(0, int(ys.min()) - 1)
+                y1 = min(height - 1, int(ys.max()) + 1)
+                x0 = max(0, int(xs.min()) - 1)
+                x1 = min(width - 1, int(xs.max()) + 1)
+            else:
+                if int(surface_label) not in bboxes:
+                    continue
+                y0, y1, x0, x1 = bboxes[int(surface_label)]
+            _raster_triangles_numba(
+                image.reshape(-1), labels.reshape(-1), uv.reshape(2, -1), z.reshape(-1),
+                label_valid.reshape(-1), edges.reshape(3, -1), out, zbuf, out_labels,
+                tie_tolerance, y0, y1, x0, x1, height, width, int(surface_label),
+            )
     visibility = np.isfinite(zbuf) & np.isfinite(out)
     diag = {
-        "backend": "numba" if _NUMBA else "numpy_python_fallback",
+        "backend": raster_backend if _NUMBA else "numpy_python_fallback",
         "visible_fraction": float(visibility.mean()),
         "unknown_fraction": float((~visibility).mean()),
         "input_valid_fraction": float(valid.mean()),

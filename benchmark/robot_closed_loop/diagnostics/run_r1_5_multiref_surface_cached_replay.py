@@ -234,7 +234,8 @@ def _write_event_montage(path: Path, frame: dict, events: np.ndarray,
 
 def _query_models(events: np.ndarray, models: dict, query_times: list[float],
                   trace: list[dict], camera_pose: np.ndarray, intrinsics: np.ndarray,
-                  width: int, height: int, fixed_height: float, source_name: str) -> list[dict]:
+                  width: int, height: int, fixed_height: float, source_name: str,
+                  episode_id: int) -> list[dict]:
     rows = []
     for query_time in query_times:
         label = interpolate_trace_label(trace, query_time)
@@ -247,6 +248,7 @@ def _query_models(events: np.ndarray, models: dict, query_times: list[float],
                 intrinsics, fixed_height,
             )
             row = {
+                "episode_id": int(episode_id),
                 "query_time_s": float(query_time), "event_source": source_name,
                 "model": model_name, "state_available": bool(estimate.get("state_available")),
                 "label_method": label["label_method"],
@@ -498,6 +500,15 @@ def main() -> int:
             )
             static_preparation_wall_s = time.perf_counter() - static_prepare_started
             preparation_wall_s = time.perf_counter() - preparation_started
+            static_query_audit_wall_s = float(prepared_static.get(
+                "query_index_numpy_audit_wall_s_excluded_from_candidate_cost", 0.0,
+            ))
+            production_preparation_wall_s = max(
+                0.0, preparation_wall_s - static_query_audit_wall_s,
+            )
+            production_static_preparation_wall_s = max(
+                0.0, static_preparation_wall_s - static_query_audit_wall_s,
+            )
 
             candidate_frames = []
             candidate_pre_fallback_frames = []
@@ -514,6 +525,15 @@ def main() -> int:
             reconstruction_wall_s = 0.0
             projection_wall_s = 0.0
             raster_wall_s = 0.0
+            surface_raster_audit_wall_s = 0.0
+            surface_raster_audit_calls = 0
+            surface_raster_audit_mismatch_calls = 0
+            surface_raster_audit_support_mismatch_pixels = 0
+            surface_raster_audit_label_mismatch_pixels = 0
+            surface_raster_audit_radiance_mismatch_pixels = 0
+            surface_raster_audit_depth_mismatch_pixels = 0
+            surface_raster_audit_radiance_abs_max = 0.0
+            surface_raster_audit_depth_abs_max_m = 0.0
             composition_wall_s = 0.0
             moving_composition_wall_s = 0.0
             static_composition_wall_s = 0.0
@@ -570,8 +590,55 @@ def main() -> int:
                             source["radiance_luma"], source["depth"], source["segmentation"],
                             uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
                             prepared_source=prepared_raster_sources[source_index],
+                            raster_backend=str(candidate_cfg.get("geometry", {}).get(
+                                "surface_raster_backend", "numba_serial",
+                            )),
                         )
                         raster_wall_s += time.perf_counter() - raster_started
+                        if bool(candidate_cfg.get("runtime", {}).get(
+                            "audit_surface_raster_backend_against_serial", False,
+                        )):
+                            audit_started = time.perf_counter()
+                            serial_warp = surface_raster_warp(
+                                source["radiance_luma"], source["depth"], source["segmentation"],
+                                uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
+                                prepared_source=prepared_raster_sources[source_index],
+                                raster_backend="numba_serial",
+                            )
+                            surface_raster_audit_wall_s += time.perf_counter() - audit_started
+                            surface_raster_audit_calls += 1
+                            support_mismatch = warped[3] != serial_warp[3]
+                            label_mismatch = warped[2] != serial_warp[2]
+                            radiance_mismatch = ~np.isclose(
+                                warped[0], serial_warp[0], rtol=0.0, atol=0.0, equal_nan=True,
+                            )
+                            depth_mismatch = ~np.isclose(
+                                warped[1], serial_warp[1], rtol=0.0, atol=0.0, equal_nan=True,
+                            )
+                            support_count = int(np.count_nonzero(support_mismatch))
+                            label_count = int(np.count_nonzero(label_mismatch))
+                            radiance_count = int(np.count_nonzero(radiance_mismatch))
+                            depth_count = int(np.count_nonzero(depth_mismatch))
+                            if support_count or label_count or radiance_count or depth_count:
+                                surface_raster_audit_mismatch_calls += 1
+                            surface_raster_audit_support_mismatch_pixels += support_count
+                            surface_raster_audit_label_mismatch_pixels += label_count
+                            surface_raster_audit_radiance_mismatch_pixels += radiance_count
+                            surface_raster_audit_depth_mismatch_pixels += depth_count
+                            finite_radiance = np.isfinite(warped[0]) & np.isfinite(serial_warp[0])
+                            finite_depth = np.isfinite(warped[1]) & np.isfinite(serial_warp[1])
+                            if finite_radiance.any():
+                                surface_raster_audit_radiance_abs_max = max(
+                                    surface_raster_audit_radiance_abs_max,
+                                    float(np.max(np.abs(warped[0][finite_radiance]
+                                                        - serial_warp[0][finite_radiance]))),
+                                )
+                            if finite_depth.any():
+                                surface_raster_audit_depth_abs_max_m = max(
+                                    surface_raster_audit_depth_abs_max_m,
+                                    float(np.max(np.abs(warped[1][finite_depth]
+                                                        - serial_warp[1][finite_depth]))),
+                                )
                         moving_refs.append({
                             "time_s": float(source["time_s"]), "radiance": warped[0],
                             "depth": warped[1], "labels": warped[2], "visible": warped[3],
@@ -889,7 +956,7 @@ def main() -> int:
                                         ("direct_logged_state", direct_events)):
                 query_rows.extend(_query_models(
                     events, model_records, query_times, all_trace, camera_pose,
-                    intrinsics, width, height, fixed_height, source_name,
+                    intrinsics, width, height, fixed_height, source_name, episode_id,
                 ))
             inference_records.extend(query_rows)
             if frame_metrics:
@@ -924,6 +991,9 @@ def main() -> int:
                     "source_endpoint_interval_s": float(args.source_interval),
                     "source_views_per_query": int(args.max_source_views),
                     "moving_source_views_per_query": int(args.moving_source_views),
+                    "surface_raster_backend": str(candidate_cfg.get("geometry", {}).get(
+                        "surface_raster_backend", "numba_serial",
+                    )),
                     "moving_edge_guard_px": moving_edge_guard_px,
                     "static_composition_backend": str(prepared_static.get("composition_backend", "numpy")),
                     "static_query_index_build_wall_s": float(
@@ -965,10 +1035,14 @@ def main() -> int:
                         "per_frame_evidence_file": f"episode_{episode_id:03d}/roi_frame_metrics.jsonl",
                         "rendered_crop_arrays_file": f"episode_{episode_id:03d}/candidate_roi_replay_arrays.npz",
                     },
-                    "source_preparation_wall_s": float(preparation_wall_s),
+                    "source_preparation_wall_s": float(production_preparation_wall_s),
+                    "source_preparation_wall_s_including_diagnostic_audits": float(preparation_wall_s),
                     "moving_projection_source_prepare_wall_s": float(moving_projection_prepare_wall_s),
                     "surface_raster_source_prepare_wall_s": float(surface_raster_prepare_wall_s),
-                    "static_visibility_preparation_wall_s": float(static_preparation_wall_s),
+                    "static_visibility_preparation_wall_s": float(production_static_preparation_wall_s),
+                    "static_visibility_preparation_wall_s_including_diagnostic_audits": float(
+                        static_preparation_wall_s
+                    ),
                     "reconstruction_wall_s": reconstruction_wall_s,
                     "reconstruction_components_wall_s": {
                         "projection": float(projection_wall_s),
@@ -983,19 +1057,35 @@ def main() -> int:
                     "moving_pair_numpy_audit_wall_s_excluded_from_candidate_cost": float(
                         moving_pair_numpy_audit_wall_s
                     ),
+                    "surface_raster_serial_audit_wall_s_excluded_from_candidate_cost": float(
+                        surface_raster_audit_wall_s
+                    ),
+                    "surface_raster_serial_audit": {
+                        "requested": bool(candidate_cfg.get("runtime", {}).get(
+                            "audit_surface_raster_backend_against_serial", False,
+                        )),
+                        "call_count": int(surface_raster_audit_calls),
+                        "mismatch_call_count": int(surface_raster_audit_mismatch_calls),
+                        "support_mismatch_pixels": int(surface_raster_audit_support_mismatch_pixels),
+                        "label_mismatch_pixels": int(surface_raster_audit_label_mismatch_pixels),
+                        "radiance_mismatch_pixels": int(surface_raster_audit_radiance_mismatch_pixels),
+                        "depth_mismatch_pixels": int(surface_raster_audit_depth_mismatch_pixels),
+                        "radiance_abs_max": float(surface_raster_audit_radiance_abs_max),
+                        "depth_abs_max_m": float(surface_raster_audit_depth_abs_max_m),
+                    },
                     "dvs_wall_s": candidate_dvs_s,
                     "one_time_roi_setup_wall_s_amortized": float(
                         roi_camera_setup_wall_s / max(1, len(episodes))
                         if main_scissor_enabled else 0.0
                     ),
                     "total_production_wall_s_estimate": float(source_render_s + sum(render_time_by_time[t] for t in fallback_times)
-                                                                 + roi_render_wall_s + preparation_wall_s
+                                                                 + roi_render_wall_s + production_preparation_wall_s
                                                                  + (roi_camera_setup_wall_s / max(1, len(episodes))
                                                                     if main_scissor_enabled else 0.0)
                                                                  + reconstruction_wall_s + candidate_dvs_s),
                     "ratio_to_all_state_direct_render_plus_dvs": float(
                         (source_render_s + sum(render_time_by_time[t] for t in fallback_times)
-                         + roi_render_wall_s + preparation_wall_s
+                         + roi_render_wall_s + production_preparation_wall_s
                          + (roi_camera_setup_wall_s / max(1, len(episodes))
                             if main_scissor_enabled else 0.0)
                          + reconstruction_wall_s + candidate_dvs_s)
@@ -1084,6 +1174,9 @@ def main() -> int:
                            "source_endpoint_rate_hz": 1.0 / args.source_interval,
                            "source_views_per_query": int(args.max_source_views),
                            "moving_source_views_per_query": int(args.moving_source_views),
+                "surface_raster_backend": str(candidate_cfg.get("geometry", {}).get(
+                    "surface_raster_backend", "numba_serial",
+                )),
                            "scene_build_wall_s": float(scene_build_wall_s)},
         "direct_roi_repair_method": {
             "enabled": bool(roi_cfg),
@@ -1122,9 +1215,11 @@ def main() -> int:
             "excluded_from_both": [
                 "shared Genesis scene construction",
                 "offline segmentation audit renders and their analysis",
+                "optional NumPy equivalence audit time for cached static query indices",
+                "optional serial-equivalence audit time for parallel surface rasterization",
                 "model inference and diagnostic artifact serialization",
             ],
-            "preparation_subcomponents": "static_visibility_preparation_wall_s is a diagnostic subdivision of source_preparation_wall_s and is not added a second time.",
+            "preparation_subcomponents": "static_visibility_preparation_wall_s is the production subdivision of source_preparation_wall_s; *_including_diagnostic_audits fields retain diagnostic wall time, and NumPy query-index audit time is subtracted from production cost.",
             "numba_jit": "JIT time is included in whichever timed source-preparation or reconstruction call first triggers compilation; the runtime log and per-component times preserve cold/warm differences.",
         },
     }
