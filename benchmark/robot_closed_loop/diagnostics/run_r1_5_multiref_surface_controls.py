@@ -11,7 +11,12 @@ import numpy as np
 
 from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
     compose_multireference_scene,
+    prepare_moving_projection_source,
     project_moving_source_to_target,
+)
+from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate import (
+    prepare_surface_raster_source,
+    surface_raster_warp,
 )
 from genesis_event_plugin.physics_warp import project_endpoint_to_alpha
 
@@ -44,6 +49,11 @@ def run_controls() -> dict:
     uv, z, valid = project_moving_source_to_target(
         depth, labels, K, camera, camera, {10: body0}, target_body, [10],
     )
+    prepared_motion = prepare_moving_projection_source(depth, labels, K, camera, [10])
+    prepared_uv, prepared_z, prepared_valid = project_moving_source_to_target(
+        depth, labels, K, camera, camera, {10: body0}, target_body, [10],
+        prepared_source=prepared_motion,
+    )
     expected_uv, expected_z, expected_valid = project_endpoint_to_alpha(
         depth, labels, K, camera, camera, 1.0, 0, {10: body0}, target_body,
     )
@@ -51,10 +61,27 @@ def run_controls() -> dict:
     assert valid.sum() == expected_valid[labels == 10].sum()
     assert np.max(np.abs(uv[:, compare] - expected_uv[:, compare])) < 1e-5
     assert np.max(np.abs(z[compare] - expected_z[compare])) < 1e-6
+    assert np.array_equal(valid, prepared_valid)
+    assert np.array_equal(uv, prepared_uv) and np.array_equal(z, prepared_z)
+    raster_image = np.linspace(0.1, 1.0, h * w, dtype=np.float32).reshape(h, w)
+    raster_unprepared = surface_raster_warp(
+        raster_image, depth, labels, uv, z, valid, K, raster_labels={10},
+    )
+    prepared_raster = prepare_surface_raster_source(
+        raster_image, depth, labels, K, raster_labels={10},
+    )
+    raster_prepared = surface_raster_warp(
+        raster_image, depth, labels, uv, z, valid, K, raster_labels={10},
+        prepared_source=prepared_raster,
+    )
+    assert np.array_equal(raster_unprepared[3], raster_prepared[3])
+    assert np.allclose(raster_unprepared[0][raster_unprepared[3]],
+                       raster_prepared[0][raster_prepared[3]], atol=0.0, rtol=0.0)
     tests["moving_projection_matches_frozen_transform"] = {
         "pass": True, "compared_samples": int(compare.sum()),
         "uv_max_abs_error_px": float(np.max(np.abs(uv[:, compare] - expected_uv[:, compare]))),
         "depth_max_abs_error_m": float(np.max(np.abs(z[compare] - expected_z[compare]))),
+        "cached_projection_and_raster_bitwise_match": True,
     }
 
     # A background texel is hidden in one real source view and revealed in the

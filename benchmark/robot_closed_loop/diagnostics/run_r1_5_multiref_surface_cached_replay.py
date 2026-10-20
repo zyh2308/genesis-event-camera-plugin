@@ -40,10 +40,14 @@ from benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke import (
     _write_hash_manifest,
 )
 from benchmark.robot_closed_loop.robot_env import build_robot_scene
-from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate import surface_raster_warp
+from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate import (
+    prepare_surface_raster_source,
+    surface_raster_warp,
+)
 from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
     compose_multireference_scene,
     interpolate_body_poses,
+    prepare_moving_projection_source,
     project_moving_source_to_target,
 )
 from genesis_event_plugin.dvs_emulator import DvsEmulator
@@ -339,11 +343,24 @@ def main() -> int:
             if args.max_source_views != len(source_frames):
                 raise ValueError("this first multi-reference run requires all exact keyframes in the cached interval")
             source_render_s = float(sum(render_time_by_time[float(t)] for t in source_times))
+            preparation_started = time.perf_counter()
+            prepared_motion_sources = [prepare_moving_projection_source(
+                frame["depth"], frame["segmentation"], K, camera_pose, pose_ids,
+            ) for frame in source_frames]
+            prepared_raster_sources = [prepare_surface_raster_source(
+                frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
+                raster_labels=set(pose_ids.tolist()),
+            ) for frame in source_frames]
+            preparation_wall_s = time.perf_counter() - preparation_started
 
             candidate_frames = []
+            candidate_pre_fallback_frames = []
             candidate_request_masks = []
             frame_metrics = []
             reconstruction_wall_s = 0.0
+            projection_wall_s = 0.0
+            raster_wall_s = 0.0
+            composition_wall_s = 0.0
             fallback_times = []
             query_source_meta = []
             for row, direct in zip(trace, direct_frames):
@@ -369,15 +386,21 @@ def main() -> int:
                     Talpha = interpolate_se3(camera_pose, camera_pose, alpha)
                     moving_refs = []
                     raster_diagnostics = []
-                    for source in source_frames:
+                    for source_index, source in enumerate(source_frames):
+                        projection_started = time.perf_counter()
                         uv, z, projected_valid = project_moving_source_to_target(
                             source["depth"], source["segmentation"], K,
                             camera_pose, Talpha, source["poses"], target_poses, pose_ids,
+                            prepared_source=prepared_motion_sources[source_index],
                         )
+                        projection_wall_s += time.perf_counter() - projection_started
+                        raster_started = time.perf_counter()
                         warped = surface_raster_warp(
                             source["radiance_luma"], source["depth"], source["segmentation"],
                             uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
+                            prepared_source=prepared_raster_sources[source_index],
                         )
+                        raster_wall_s += time.perf_counter() - raster_started
                         moving_refs.append({
                             "time_s": float(source["time_s"]), "radiance": warped[0],
                             "depth": warped[1], "labels": warped[2], "visible": warped[3],
@@ -387,9 +410,11 @@ def main() -> int:
                         "time_s": float(source["time_s"]), "radiance": source["radiance_luma"],
                         "depth": source["depth"], "labels": source["segmentation"],
                     } for source in source_frames]
+                    composition_started = time.perf_counter()
                     candidate_pre_fallback, candidate_valid, request_mask, comp_diag = compose_multireference_scene(
                         moving_refs, static_refs, pose_ids.tolist(), t,
                     )
+                    composition_wall_s += time.perf_counter() - composition_started
                     comp_summary = {key: value for key, value in comp_diag.items()
                                     if not isinstance(value, np.ndarray)}
                     reconstruction_wall_s += time.perf_counter() - started
@@ -415,6 +440,7 @@ def main() -> int:
                         candidate = dict(direct)
                         candidate["radiance_luma"] = candidate_pre_fallback
                 candidate_frames.append(candidate)
+                candidate_pre_fallback_frames.append(candidate_pre_fallback.copy())
                 candidate_request_masks.append(request_mask.copy())
                 direct_luma = np.asarray(direct["radiance_luma"], dtype=np.float32)
                 if diagnostics["mode"] != "exact_direct_endpoint":
@@ -446,6 +472,8 @@ def main() -> int:
             ep_output.mkdir(parents=True, exist_ok=False)
             np.savez_compressed(ep_output / "candidate_surface_raw_events.npz", events=candidate_events)
             np.savez_compressed(ep_output / "direct_logged_state_raw_events.npz", events=direct_events)
+            np.savez_compressed(ep_output / "candidate_render_request_masks.npz",
+                                times_s=times, masks=np.stack(candidate_request_masks).astype(np.uint8))
             with (ep_output / "frame_metrics.jsonl").open("w", encoding="utf-8") as stream:
                 for metric in frame_metrics:
                     stream.write(json.dumps(metric, separators=(",", ":")) + "\n")
@@ -493,10 +521,10 @@ def main() -> int:
             # centered, episode 005 is the +55 mm lateral failure diagnostic.
             visual_idx = min(range(len(times)), key=lambda i: abs(float(times[i]) - 0.5855))
             direct = direct_frames[visual_idx]
-            candidate = candidate_frames[visual_idx]
+            candidate_radiance = candidate_pre_fallback_frames[visual_idx]
             unknown = candidate_request_masks[visual_idx]
             _write_event_montage(ep_output / "candidate_vs_direct_0p5855.png",
-                                 direct, candidate_events, candidate["radiance_luma"], unknown,
+                                 direct, candidate_events, candidate_radiance, unknown,
                                  f"episode {episode_id} t={times[visual_idx]:.4f}")
             intervals = np.diff(times)
             rec = {
@@ -517,10 +545,18 @@ def main() -> int:
                     "full_frame_fallback_count": len(fallback_times),
                     "full_frame_fallback_times_s": fallback_times,
                     "fallback_render_wall_s": float(sum(render_time_by_time[t] for t in fallback_times)),
+                    "source_preparation_wall_s": float(preparation_wall_s),
                     "reconstruction_wall_s": reconstruction_wall_s,
+                    "reconstruction_components_wall_s": {
+                        "projection": float(projection_wall_s),
+                        "surface_raster": float(raster_wall_s),
+                        "multireference_composition": float(composition_wall_s),
+                        "unattributed_overhead": float(max(0.0, reconstruction_wall_s - projection_wall_s
+                                                              - raster_wall_s - composition_wall_s)),
+                    },
                     "dvs_wall_s": candidate_dvs_s,
                     "total_production_wall_s_estimate": float(source_render_s + sum(render_time_by_time[t] for t in fallback_times)
-                                                                 + reconstruction_wall_s + candidate_dvs_s),
+                                                                 + preparation_wall_s + reconstruction_wall_s + candidate_dvs_s),
                     "event_count": int(len(candidate_events)), "region_event_counts": candidate_region,
                     "positive_events": int(np.count_nonzero(candidate_events[:, 3] > 0)) if len(candidate_events) else 0,
                     "negative_events": int(np.count_nonzero(candidate_events[:, 3] < 0)) if len(candidate_events) else 0,
@@ -561,7 +597,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(inference_records)
     summary = {
-        "experiment_id": "r1_5_multiref_surface_cached_replay_20261021d",
+        "experiment_id": "r1_5_multiref_surface_cached_replay_20261021e",
         "code_commit": __import__("subprocess").check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "frozen_core_base": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
         "frozen_core_modified": False,

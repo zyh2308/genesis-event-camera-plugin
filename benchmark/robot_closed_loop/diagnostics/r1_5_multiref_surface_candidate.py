@@ -37,6 +37,7 @@ def project_moving_source_to_target(
     source_poses: dict[int, np.ndarray],
     target_poses: dict[int, np.ndarray],
     moving_ids: Iterable[int],
+    prepared_source: dict | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Project only explicitly moving source samples into a target camera pose.
 
@@ -50,49 +51,87 @@ def project_moving_source_to_target(
     if depth.ndim != 2 or labels.shape != depth.shape or K.shape != (3, 3):
         raise ValueError("depth/labels must be matching HxW arrays and K must be 3x3")
     height, width = depth.shape
-    yy, xx = np.meshgrid(np.arange(height, dtype=np.float64),
-                         np.arange(width, dtype=np.float64), indexing="ij")
-    valid_depth = np.isfinite(depth) & (depth > 1e-6)
-    requested = np.isin(labels, np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64))
-    valid = valid_depth & requested
     uv = np.zeros((2, height, width), dtype=np.float32)
     z = np.full((height, width), np.inf, dtype=np.float32)
-    if not valid.any():
-        return uv, z, valid
-
-    source_indices = np.flatnonzero(valid.reshape(-1))
-    source_z = depth.reshape(-1)[source_indices].astype(np.float64)
-    source_x = xx.reshape(-1)[source_indices]
-    source_y = yy.reshape(-1)[source_indices]
-    camera_points = np.stack(((source_x - K[0, 2]) * source_z / K[0, 0],
-                              (source_y - K[1, 2]) * source_z / K[1, 1],
-                              source_z, np.ones_like(source_z)), axis=0)
-    world_points = np.asarray(camera_source, dtype=np.float64) @ camera_points
     camera_inverse = np.linalg.inv(np.asarray(camera_target, dtype=np.float64))
-    flat_labels = labels.reshape(-1)
     flat_uv = uv.reshape(2, -1)
     flat_z = z.reshape(-1)
-    for object_id in sorted({int(x) for x in moving_ids}):
+    if prepared_source is None:
+        yy, xx = np.meshgrid(np.arange(height, dtype=np.float64),
+                             np.arange(width, dtype=np.float64), indexing="ij")
+        valid_depth = np.isfinite(depth) & (depth > 1e-6)
+        requested = np.isin(labels, np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64))
+        source_indices = np.flatnonzero((valid_depth & requested).reshape(-1))
+        source_z = depth.reshape(-1)[source_indices].astype(np.float64)
+        source_x = xx.reshape(-1)[source_indices]
+        source_y = yy.reshape(-1)[source_indices]
+        camera_points = np.stack(((source_x - K[0, 2]) * source_z / K[0, 0],
+                                  (source_y - K[1, 2]) * source_z / K[1, 1],
+                                  source_z, np.ones_like(source_z)), axis=0)
+        world_points = np.asarray(camera_source, dtype=np.float64) @ camera_points
+        flat_labels = labels.reshape(-1)
+        per_label = {}
+        for object_id in sorted({int(x) for x in moving_ids}):
+            local = flat_labels[source_indices] == object_id
+            if local.any():
+                per_label[object_id] = (source_indices[local], world_points[:, local])
+    else:
+        if tuple(prepared_source["shape"]) != (height, width):
+            raise ValueError("prepared moving source shape does not match this frame")
+        per_label = prepared_source["per_label"]
+    for object_id, (indices, world_points) in per_label.items():
         if object_id not in source_poses or object_id not in target_poses:
-            continue
-        local = flat_labels[source_indices] == object_id
-        if not local.any():
             continue
         delta = np.asarray(target_poses[object_id], dtype=np.float64) @ np.linalg.inv(
             np.asarray(source_poses[object_id], dtype=np.float64))
-        target_world = delta @ world_points[:, local]
+        target_world = delta @ world_points
         target_camera = camera_inverse @ target_world
         target_z = target_camera[2]
         good = np.isfinite(target_camera).all(axis=0) & (target_z > 1e-6)
-        indices = source_indices[local][good]
+        indices = indices[good]
         target_z = target_z[good]
         flat_uv[0, indices] = K[0, 0] * target_camera[0, good] / target_z + K[0, 2]
         flat_uv[1, indices] = K[1, 1] * target_camera[1, good] / target_z + K[1, 2]
         flat_z[indices] = target_z.astype(np.float32)
-    valid &= np.isfinite(uv).all(axis=0) & np.isfinite(z) & (z > 1e-6)
+    moving_mask = np.isin(labels, np.asarray(sorted({int(x) for x in moving_ids}), dtype=np.int64))
+    valid = moving_mask & np.isfinite(uv).all(axis=0) & np.isfinite(z) & (z > 1e-6)
     uv[:, ~valid] = 0.0
     z[~valid] = np.inf
     return uv, z, valid
+
+
+def prepare_moving_projection_source(
+    depth: np.ndarray,
+    labels: np.ndarray,
+    K: np.ndarray,
+    camera_source: np.ndarray,
+    moving_ids: Iterable[int],
+) -> dict:
+    """Cache source camera rays/world points for repeated target-time warps."""
+    depth = np.asarray(depth, dtype=np.float32)
+    labels = np.asarray(labels, dtype=np.int64)
+    K = np.asarray(K, dtype=np.float64)
+    if depth.ndim != 2 or labels.shape != depth.shape or K.shape != (3, 3):
+        raise ValueError("depth/labels must be matching HxW arrays and K must be 3x3")
+    height, width = depth.shape
+    flat_depth = depth.reshape(-1)
+    flat_labels = labels.reshape(-1)
+    ids = sorted({int(x) for x in moving_ids})
+    valid = np.isfinite(flat_depth) & (flat_depth > 1e-6) & np.isin(flat_labels, ids)
+    source_indices = np.flatnonzero(valid)
+    per_label = {}
+    if source_indices.size:
+        source_z = flat_depth[source_indices].astype(np.float64)
+        yy, xx = np.divmod(source_indices, width)
+        camera_points = np.stack(((xx - K[0, 2]) * source_z / K[0, 0],
+                                  (yy - K[1, 2]) * source_z / K[1, 1],
+                                  source_z, np.ones_like(source_z)), axis=0)
+        world_points = np.asarray(camera_source, dtype=np.float64) @ camera_points
+        for object_id in ids:
+            local = flat_labels[source_indices] == object_id
+            if local.any():
+                per_label[object_id] = (source_indices[local], world_points[:, local])
+    return {"shape": (height, width), "per_label": per_label}
 
 
 def _frontmost_composite(

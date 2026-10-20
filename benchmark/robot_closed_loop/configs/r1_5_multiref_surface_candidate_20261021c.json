@@ -13,6 +13,7 @@
   "geometry": {
     "static_labels": "reuse actual fixed-camera pixels and depths from observed references",
     "moving_labels": "project source samples by source-body-to-interpolated-target-body SE3, then rasterize same-label continuous triangles",
+    "source_precomputation": "camera-ray transforms, surface-connectivity edges and label bounding boxes are cached once per 100 Hz keyframe",
     "visibility": "per-pixel nearest interpolated depth across moving references and observed static background",
     "unobserved_or_ambiguous": "request full direct render; no spatial inpainting or threshold change",
     "depth_tie_rtol": 0.001,

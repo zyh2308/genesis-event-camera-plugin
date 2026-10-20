@@ -129,6 +129,43 @@ def _continuous_edges(depth: np.ndarray, valid: np.ndarray, K: np.ndarray,
     return edge_ok
 
 
+def prepare_surface_raster_source(
+    image: np.ndarray,
+    source_depth: np.ndarray,
+    source_labels: np.ndarray,
+    K: np.ndarray,
+    *,
+    max_pixel_scale: float = 4.0,
+    raster_labels: set[int] | None = None,
+) -> Dict[str, object]:
+    """Cache source-only triangle topology for repeated target-time warps."""
+    image = np.asarray(image, dtype=np.float32)
+    depth = np.asarray(source_depth, dtype=np.float32)
+    labels = np.asarray(source_labels, dtype=np.int64)
+    if image.ndim != 2 or image.shape != depth.shape or labels.shape != depth.shape:
+        raise ValueError("candidate expects same-size HxW radiance, depth, and labels")
+    base_valid = np.isfinite(image) & np.isfinite(depth) & (depth > 1e-6) & (labels >= 0)
+    if raster_labels is None:
+        labels_to_process = np.unique(labels[base_valid])
+    else:
+        labels_to_process = np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64)
+    topology_valid = base_valid & np.isin(labels, labels_to_process)
+    edges = _continuous_edges(depth, topology_valid, np.asarray(K, dtype=np.float64),
+                              labels, max_pixel_scale)
+    bboxes = {}
+    for surface_label in labels_to_process:
+        ys, xs = np.nonzero(base_valid & (labels == int(surface_label)))
+        if len(ys):
+            h, w = depth.shape
+            bboxes[int(surface_label)] = (
+                max(0, int(ys.min()) - 1), min(h - 1, int(ys.max()) + 1),
+                max(0, int(xs.min()) - 1), min(w - 1, int(xs.max()) + 1),
+            )
+    return {"shape": image.shape, "base_valid": base_valid, "edges": edges,
+            "labels_to_process": labels_to_process, "bboxes": bboxes,
+            "max_pixel_scale": float(max_pixel_scale)}
+
+
 def surface_raster_warp(
     image: np.ndarray,
     source_depth: np.ndarray,
@@ -140,6 +177,7 @@ def surface_raster_warp(
     *,
     max_pixel_scale: float = 4.0,
     raster_labels: set[int] | None = None,
+    prepared_source: Dict[str, object] | None = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Dict[str, object]]:
     """Rasterize local continuous surfaces into the intermediate camera.
 
@@ -163,11 +201,24 @@ def surface_raster_warp(
     valid &= np.isfinite(image) & np.isfinite(depth) & (depth > 1e-6)
     valid &= np.isfinite(z) & (z > 1e-6) & np.isfinite(uv).all(axis=0)
     valid &= labels >= 0
-    if raster_labels is None:
-        topology_valid = valid
+    if prepared_source is None:
+        if raster_labels is None:
+            topology_valid = valid
+        else:
+            topology_valid = valid & np.isin(labels, np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64))
+        edges = _continuous_edges(depth, topology_valid, K, labels, max_pixel_scale)
+        if raster_labels is None:
+            labels_to_process = np.unique(labels[valid])
+        else:
+            labels_to_process = np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64)
+        bboxes = None
     else:
-        topology_valid = valid & np.isin(labels, np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64))
-    edges = _continuous_edges(depth, topology_valid, K, labels, max_pixel_scale)
+        if tuple(prepared_source["shape"]) != depth.shape:
+            raise ValueError("prepared raster source shape does not match this frame")
+        valid &= np.asarray(prepared_source["base_valid"], dtype=bool)
+        edges = np.asarray(prepared_source["edges"], dtype=bool)
+        labels_to_process = np.asarray(prepared_source["labels_to_process"], dtype=np.int64)
+        bboxes = prepared_source["bboxes"]
     height, width = depth.shape
     out = np.full((height, width), np.nan, dtype=np.float32)
     zbuf = np.full((height, width), np.inf, dtype=np.float32)
@@ -175,22 +226,29 @@ def surface_raster_warp(
     finite_z = z[valid]
     tie_tolerance = max(1e-7, 8.0 * np.finfo(np.float32).eps * float(np.median(finite_z))) if finite_z.size else 1e-7
     if raster_labels is None:
-        labels_to_process = np.unique(labels[valid])
+        if prepared_source is None:
+            labels_to_process = np.unique(labels[valid])
     else:
-        labels_to_process = np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64)
+        if prepared_source is None:
+            labels_to_process = np.asarray(sorted({int(x) for x in raster_labels}), dtype=np.int64)
     for surface_label in labels_to_process:
         label_valid = valid & (labels == int(surface_label))
-        ys, xs = np.nonzero(label_valid)
-        if not len(ys):
-            continue
-        # A dynamic scene can have large static backgrounds but only small
-        # moving objects. Restrict the cell scan to each source label's own
-        # bounding box; projected triangle bounds are still clipped in the
-        # output image. This preserves the same topology and z test.
-        y0 = max(0, int(ys.min()) - 1)
-        y1 = min(height - 1, int(ys.max()) + 1)
-        x0 = max(0, int(xs.min()) - 1)
-        x1 = min(width - 1, int(xs.max()) + 1)
+        if bboxes is None:
+            ys, xs = np.nonzero(label_valid)
+            if not len(ys):
+                continue
+            # A dynamic scene can have large static backgrounds but only
+            # small moving objects. Restrict the cell scan to each source
+            # label's own bounding box; projected triangle bounds are still
+            # clipped in the output image.
+            y0 = max(0, int(ys.min()) - 1)
+            y1 = min(height - 1, int(ys.max()) + 1)
+            x0 = max(0, int(xs.min()) - 1)
+            x1 = min(width - 1, int(xs.max()) + 1)
+        else:
+            if int(surface_label) not in bboxes:
+                continue
+            y0, y1, x0, x1 = bboxes[int(surface_label)]
         _raster_triangles_numba(
             image.reshape(-1), labels.reshape(-1), uv.reshape(2, -1), z.reshape(-1),
             label_valid.reshape(-1), edges.reshape(3, -1), out, zbuf, out_labels,
