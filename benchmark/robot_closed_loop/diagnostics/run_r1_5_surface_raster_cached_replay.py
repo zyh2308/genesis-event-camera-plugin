@@ -462,7 +462,7 @@ def main() -> int:
             for source_name, events in (("candidate_surface", candidate_events),
                                         ("direct_logged_state", direct_events)):
                 query_rows.extend(_query_models(
-                    events, model_records, query_times, trace, camera_pose,
+                    events, model_records, query_times, all_trace, camera_pose,
                     intrinsics, width, height, fixed_height, source_name,
                 ))
             inference_records.extend(query_rows)
@@ -543,7 +543,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(inference_records)
     summary = {
-        "experiment_id": "r1_5_surface_raster_cached_replay_20261021a",
+        "experiment_id": "r1_5_surface_raster_cached_replay_20261021b",
         "code_commit": __import__("subprocess").check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "frozen_core_base": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
         "frozen_core_modified": False,
