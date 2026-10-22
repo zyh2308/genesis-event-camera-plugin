@@ -1,14 +1,26 @@
-# Stage 5 双线执行交接（续）— 2026-10-21
+# Stage 5 双线执行交接（续）— 实时覆盖更新
 
-本页续接前一份 [Stage 5 双线交接](STAGE5_DUAL_LINE_HANDOFF_20261021.md)，保留旧页作历史快照。最新综合观测为 **2026-10-20 21:07:05 UTC / 2026-10-21 06:07:05 JST**。g1 在 20:57:04 重读的重建 summary 显示，两组均完成 200 epoch、12,000/12,000 updates，退出码 0。光流共享 bank 在 21:06:49 UTC 有 4/8 rollout 完成，刚开始 `s5q_02_train`（0/201 endpoints）；runner/worker `2229637/2229727` 仍存活。此时 GPU0 为 9,704/24,576 MiB、92% 利用率，GPU2 为 1 MiB、0%；其他 GPU 上的作业未触碰。WSL 在 21:07:05 UTC 的当前下载清单有 6/7 项完成 SHA 校验，`indoor_flying3_gt.hdf5` 正下载（临时文件 3,749,183,488 B）；本轮完成后还需 outdoor_day1 的 data/GT 与标定。实际 MVSEC `indoor_flying1` APS index 21 窗口审计通过：194 个事件、31.859 ms，GT位移单位已确认，未加载模型或计分。精确 GT 端点传播适配已修复，官方 helper 对照、8 项 adapter 检查和合成指标入口检查通过。位姿按用户要求暂停，未探测 E-POSE；训练与选点仍为 synthetic-only，真实评分关闭，frozen core `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未改。机器快照见[21:07:05状态 JSON](evidence/S5/20261021-recon-flow-localization/live_observation_20261020T210705Z.json)，早前状态仍保留。
+本次续接更新于 **2026-10-22 16:04 UTC / 2026-10-23 01:04 JST**。它覆盖下方较早快照中的“当前状态”，旧运行记录仍保留作证据。仓库基于 `b0f05e7ebc34ab9b2c96f728a3823a15b6ad220f`；本更新尚待提交。冻结核心 `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未修改。真实数据只做文件/接口核验，**真实模型评分仍关闭**；位姿依用户要求暂停。
 
-## 当前状态
+## 最新三线状态
 
-| 线路 | 已实际完成 | 当前运行/未完成 | 下一步 |
+| 线路 | 已核实完成 | 当前状态与阻塞 | 下一步 |
 |---|---|---|---|
-| **重建 / E2VID+** | 修正 TC 后 seed 0 两组各完成 200 epoch / 12,000 updates，run summary 为 `complete`，best/final 权重及完整 JSONL 曲线都在 g1。HQF 14/14 文件已转换并校验；HQF 主测、HS-ERGB 扩展、LPIPS-Alex 主指标和序列等权规则已按研究 review 登记，real score 关闭。两组候选模型都已在固定合成物理样本上完成事件输入→递归推理→200张输出→指标→独立 manifest/hash 复核。 | 未在 HQF 上运行候选 checkpoint 或计算真实分数。 | 归档验证回执和完整训练曲线摘要；保持真实评分门关闭。 |
-| **光流 / STE-FlowNet dt1** | 既有固定训练窗 GT 监督记忆诊断两组各 200 updates 均通过；一个新 v3 共享场景及光度 warp 审计通过。MVSEC 协议候选已修正 checkpoint 选择来源并新增固定样本真实文件窗口登记。合成指标入口 synthetic fixture 与实际 STE GT 传播对照共 8 项通过。 | 21:06:49 UTC 时八 rollout bank 为 4/8，`s5q_02_train` 刚开始；活跃 PID `2229637/2229727`。还没有新版自监督短训。WSL MVSEC 当前下载清单为 6/7 项完成，正在下载 `indoor_flying3_gt.hdf5`。 | 完成共享物理 bank，重新核验配对 V2E 事件与共同活跃区；随后运行固定预算 STE 自监督短诊断和独立 rollout 验证。完整 MVSEC 文件到齐后传至 g1 并生成全窗口 hash 绑定 manifest；研究冻结前不评分。 |
-| **位姿** | 无新增动作，按用户要求暂缓。 | E-POSE访问与下载探测暂停。 | 等用户通知后恢复。 |
+| **重建 / E2VID+** | g1 最近一次可读 summary（2026-10-20 20:57:04 UTC）记录 EventGenesis/V2E seed 0 各完成 200 epoch、12,000 optimizer updates、退出码 0；合成验证 best、final、完整曲线均有路径和 SHA。两组也完成固定合成 rollout 的 event-only 递归推理及独立产物核对。HQF 14 序列数据 manifest 已校验，HQF 主测、HS-ERGB 扩展角色已由研究审查确定。 | 没有 HQF 真实推理或评分。g1 本轮无法刷新；训练“完成”根据上述带时间戳的 summary，不宣称此次重新读取。 | 保持训练归档；真实评测须等待审查确认冻结后才打开。 |
+| **光流 / STE-FlowNet dt1** | 原配对 seed 0 训练 45 epoch / 8,910 updates 已结束；固定合成窗两组各 200 次 GT 监督更新能拟合单样本，证明网络/优化可记忆该窗；不证明独立泛化。另有共享场景 warp 诊断。MVSEC 的 indoor_flying1/2/3 各自固定 APS index 21 文件窗解析均通过。 | g1 八 rollout bank 的**当前进度未知**：最后确认于 2026-10-20 21:09:41 UTC，4/8 完整，活动 rollout `s5q_02_train` endpoint 60/201。2026-10-22 两次串行 SSH 均 ConnectTimeout（每次15秒，间隔至少60秒），按服务器保护规则停止远程操作。自监督新短训尚无可核实记录。 | 网络恢复后只做一次低频状态刷新；若 bank 已完整，先审计标签和配对 V2E，再跑登记的短自监督/独立 rollout 检查；证据不足前不扩成长训。 |
+| **位姿** | 无新增执行。 | 按用户要求暂停，未进行 E-POSE 探测或下载。 | 等用户通知。 |
+
+## 本次新增/确认的 MVSEC 文件审计
+
+审计在运行前固定了每序列 APS start index 21，不依据模型输出或事件数选窗。indoor_flying1/2/3 窗口时长均约 31.859 ms，事件数分别 194/176/133；事件表示均为 `[2,260,346,5]`，GT 单位按锁定 STE 接口为 `px_per_interval`。有效 GT 像素均为 89,960；共同事件活跃、有效且非零 GT 的交集分别为 35/31/26 像素。三份结果均明确 `candidate_weights_loaded=false`、`predictions_computed=false`、`real_scores_computed=false`。复现证据：[indoor_flying1](evidence/S5/20261021-recon-flow-localization/mvsec_real_file_window_audit_v1/indoor_flying1_aps000021_unscored.json)、[indoor_flying2/3 计划与结果](evidence/S5/20261021-recon-flow-localization/mvsec_real_file_window_audit_v2/)。各数据/GT 大小、SHA、时间戳和窗口端点写在 JSON 中；v2 运行 SHA 清单在该目录 `run/SHA256SUMS.txt`。
+
+WSL 的 MVSEC manifest 仍是 `failed`：室内三序列的 data/GT 六个 HDF5 和室内标定 ZIP 共 7 个文件已完成并校验；缺 `outdoor_day1_data.hdf5`、GT 和 outdoor calibration。首次 Drive 请求失败后，2026-10-22 16:02 UTC 做过一次间隔超过 24 小时的官方 HDF5 重试：退出码 1、下载 0 bytes，错误仍是 Google Drive “Too many users…”配额。详见[下载来源与重试审计](evidence/S5/20261021-recon-flow-localization/mvsec_download_route_audit_v1.json)及[隔离重试日志](</home/科研/Eventbased_WAM/runs/sim2real/20261023-mvsec-outdoor-official-hdf5-retry-v1/>). 官方页面也提供 ROS bag 镜像，但它不同于当前 HDF5 loader 契约，本轮未替换或转换；参见[MVSEC 官方下载页](https://daniilidis-group.github.io/mvsec/download/)。
+
+## g1 状态与同步边界
+
+本次续接只进行 WSL 文件/证据核验与报告整理，未占用 GPU、未启动训练；官方 HDF5 重试约3秒内因配额退出，下载0 bytes。
+
+本次两次 SSH 到 `zhaoyuhan@10.129.163.68` 均连接超时，第二次是在至少 60 秒退避后；未再尝试连接。因此不能声称 g1 当前训练/进程状态、远端 Git 状态或本次提交同步状态。最近的 g1 观测仍是下方记录的 2026-10-20 时间点。WSL 本地报告/证据可提交并推 GitHub；g1 同步要等连接恢复后验证。机器快照：[2026-10-22 16:04 UTC JSON](evidence/S5/20261021-recon-flow-localization/live_observation_20261022T160417Z.json)，SHA256 sidecar 同目录。
 
 ## 重建：既有完整训练和新合成端到端验证
 
@@ -66,9 +78,9 @@ V2E 同样已产出200张 float32 重建和指标文件（run：`/home/zhaoyuhan
 
 在这60个非空窗（总计651个像素）上，linearized display proxy 光度 MAE 宏平均为：GT warp `0.002193`、zero `0.004346`、reverse `0.005548`、错时 `+8 windows` `0.004956`。全有效区是静态像素主导（5,913,219像素），GT与zero仅 `7.25e-6` / `7.93e-6`，不可用于判定运动方向。独立解析平移 `(2.25,-1.5)` 的 GT warp MAE `0.000409`，zero `0.048684`，reverse `0.094059`，用于校验诊断坐标约定。该 proxy 来自 Genesis uint8 display RGB 的 gamma-2.2 解码，包含8-bit量化/裁剪，非 HDR、未作绝对辐射校准。以上只能说明一个 synthetic smoke 中指定动态活跃区有可观测信号、光度方向合理；不说明 generator 质量、网络已学会运动或真实域泛化。
 
-### 八 rollout 扩展仍在生成
+### 八 rollout 扩展：保留最后一次可确认状态
 
-g1 21:06:49 UTC 复查确认 tmux `s5_flow_v3_full_bank_eg_20261021` 的 runner/worker PID `2229637/2229727` 仍存活，输出目录 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts/`，run 目录 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg/`。源码快照 commit `7c55e3e5c2b253a13ebae5e2ba99e6f158809bc9`、配置 SHA256 `a64ca5000cbc40e8059450d4c6819b3206ffb0fca6715f17547733fdc4e4febe`。生成日志显示 4/8 rollout 已完整写入，刚开始 `s5q_02_train`；21:06:49 UTC 的 GPU0 为 9,704 MiB/92%，GPU2 1 MiB/0%。每条固定 201 个 100Hz render endpoint、66 个 30ms 标签/事件窗，预登记 4 train/4 validation。全 bank 仍在生成；V2E 事件配对与 STE 自监督短训未开。资源观察以各自时间戳为准，不将短期速率外推为完成时间。
+**以下为 2026-10-20 的历史观测，当前远端进度未知。** g1 21:06:49 UTC 复查确认 tmux `s5_flow_v3_full_bank_eg_20261021` 的 runner/worker PID `2229637/2229727` 仍存活，输出目录 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts/`，run 目录 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg/`。源码快照 commit `7c55e3e5c2b253a13ebae5e2ba99e6f158809bc9`、配置 SHA256 `a64ca5000cbc40e8059450d4c6819b3206ffb0fca6715f17547733fdc4e4febe`。生成日志显示 4/8 rollout 已完整写入，刚开始 `s5q_02_train`；21:06:49 UTC 的 GPU0 为 9,704 MiB/92%，GPU2 1 MiB/0%。每条固定 201 个 100Hz render endpoint、66 个 30ms 标签/事件窗，预登记 4 train/4 validation。当时全 bank 仍在生成；V2E 事件配对与 STE 自监督短训未开。2026-10-22 两次 SSH ConnectTimeout 后没有刷新该状态；请以本页开头的最新状态表为准，不将此历史进度写成当前进度。
 
 首个共享场景在同一配置、同一物理轨迹上已经完成实际双生成器检查：固定 `s5q_02_train`、66 个 30ms 窗口，8×8 地面格纹和 4×4 物体顶面纹理；两组均生成事件，GT 形状 `[66,2,260,346]`、平均有效率 0.99897。共同事件活跃有效区域平均覆盖 0.3702%；交集“活跃且 GT 位移≥0.5 px 且有纹理”的像素平均 9.86 个、60/66 窗非空。未与事件活跃区相交的全部有效运动纹理像素平均 14.1 个、62/66 窗非空。两种口径都显示绝对支持稀疏。线性化 display proxy 中，在活跃运动纹理子集上真值 warp MAE `0.00278`，零流 `0.01282`、反向 `0.01258`、错时 `0.01278`（宏平均相关像素数很少）；独立解析平移 `(2.25,-1.5)` 的 GT warp MAE `0.000409`，零流 `0.048684`、反向 `0.094059`。证据 [`flow_smoke_audit_v3_regionfix.json`](evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json)，shared HDF5 仍在 g1，SHA256 `5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f`。这证明当前标签/warp约定在一个固定可见纹理场景上相容，不证明模型泛化或生成器质量。
 
@@ -77,7 +89,7 @@ g1 21:06:49 UTC 复查确认 tmux `s5_flow_v3_full_bank_eg_20261021` 的 runner/
 
 协议候选v3覆盖`indoor_flying1/2/3`与`outdoor_day1`，真实评分继续关闭。主候选使用原生`260×346`画幅，另把STE历史中心crop列为兼容诊断；AEE、`EPE>3px AND EPE>5%|GT|` Outlier、空窗口与四序列等权规则见[dt1协议候选v3](protocol/mvsec_dt1_protocol_candidate_20261021_v3.json)。v2与更早候选作为历史保留。两模型仍通过`checkpoint_binding`绑定原45 epoch合成验证选出的synthetic-best（EG epoch33、V2E epoch20），不据新诊断改选旧权重。新增加的v3全窗口注册器会在加载权重前固定所有合格APS index、事件起止及数量、GT传播地图、共同mask计数、数据/GT/K文件hash和逐窗数组hash；零事件和空support行仍保留。候选完整清单模板见[manifest v3](manifests/mvsec_dt1_test_manifest_candidate_20261021_v3.json)。
 
-g1 旧 Stage-3 目录仍仅有 `indoor_flying1` 既有文件；Stage-5 完整文件通过 WSL 串行下载后，再复制到独立 g1 根目录 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-public-v2/`。截至 21:07:05 UTC，当前 WSL manifest 有 6/7 项完成，包括 indoor_flying1/2 data+GT、indoor_flying3 data 和室内标定；`indoor_flying3_gt.hdf5` 临时文件已到 3,749,183,488 B。当前批次完成后，下载器会继续请求 outdoor_day1 的 data/GT 与标定。完整文件和 hash 会在下载脚本完成后记录，随后再同步 g1 并逐文件复核 SHA。官方下载索引见 [MVSEC HDF5 source index](evidence/S5/20261021-recon-flow-localization/mvsec_official_hdf5_source_index_20261021.json)，g1 直连 Drive 的 ConnectTimeout 失败现场继续保留。
+截至 2026-10-20 的计划是将 Stage-5 文件复制到独立 g1 根目录 `/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-public-v2/`。这个段落后续由本页开头的 2026-10-22 更新覆盖：本地 manifest 最终有 7/8 项完成，indoor_flying3 GT 已完成校验，失败项为 outdoor_day1 data；间隔超过24小时的单次重试仍触发Drive配额错误。当前没有可确认的 g1 文件传输或全序列清单。官方下载索引见 [MVSEC HDF5 source index](evidence/S5/20261021-recon-flow-localization/mvsec_official_hdf5_source_index_20261021.json)，g1 直连 Drive 的 ConnectTimeout 失败现场继续保留。
 
 ### MVSEC真实文件窗口与评价器检查（未评分）
 
@@ -96,7 +108,7 @@ g1 旧 Stage-3 目录仍仅有 `indoor_flying1` 既有文件；Stage-5 完整文
 ## 命令与复现入口
 
 - 重建 synthetic fixture：`benchmark/sim2real/scripts/run_stage5_synthetic_reconstruction_fixture.sh`；对应模型推理、指标与交叉核验分别由 `infer_hqf_e2vid_candidate.py`、`evaluate_synthetic_reconstruction_fixture.py`、`verify_stage5_synthetic_reconstruction_fixture.py` 完成。
-- MVSEC本地暂存：WSL tmux `mvsec_wsl_dl_20261021`，PID78581；命令与日志在`/home/科研/Eventbased_WAM/runs/sim2real/20261021-mvsec-local-stage-v2/`，运行清单在`/home/科研/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2/public_download_manifest.json`。目前6/10文件校验完成，逐个串行下载。单窗检查命令：`python3 benchmark/sim2real/scripts/audit_mvsec_real_window_contract.py --data-root /home/科研/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2 --sequence indoor_flying1 --aps-start-index 21 --output benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/mvsec_real_file_window_audit_v1/indoor_flying1_aps000021_unscored.json`。完整注册入口：`python3 benchmark/sim2real/scripts/register_mvsec_dt1_test_windows.py --base-manifest benchmark/sim2real/manifests/mvsec_dt1_test_manifest_candidate_20261021_v3.json --protocol benchmark/sim2real/protocol/mvsec_dt1_protocol_candidate_20261021_v3.json --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-public-v2 --reported-root-on-g1 /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-public-v2 --output /tmp/mvsec_dt1_test_manifest_v3_registered.json`（完整注册输出先另存临时路径，审核后再冻结副本；不会覆盖模板）。
+- MVSEC本地暂存（历史运行，已失败退出）：命令和日志在`/home/科研/Eventbased_WAM/runs/sim2real/20261021-mvsec-local-stage-v2/`，manifest 在`/home/科研/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2/public_download_manifest.json`；7/8项完成，失败在outdoor_day1 data。后续配额重试见本页开头和机器证据。单窗检查命令：`python3 benchmark/sim2real/scripts/audit_mvsec_real_window_contract.py --data-root /home/科研/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2 --sequence indoor_flying1 --aps-start-index 21 --output benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/mvsec_real_file_window_audit_v1/indoor_flying1_aps000021_unscored.json`。完整注册入口：`python3 benchmark/sim2real/scripts/register_mvsec_dt1_test_windows.py --base-manifest benchmark/sim2real/manifests/mvsec_dt1_test_manifest_candidate_20261021_v3.json --protocol benchmark/sim2real/protocol/mvsec_dt1_protocol_candidate_20261021_v3.json --data-root /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-public-v2 --reported-root-on-g1 /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-public-v2 --output /tmp/mvsec_dt1_test_manifest_v3_registered.json`（完整注册输出先另存临时路径，审核后再冻结副本；不会覆盖模板）。
 - 光流新 bank：g1 detached 命令保存在 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-flow-coverage-v3-eight-rollouts-eg/command.txt`；实时 stdout/progress 在该目录。
 - 光流 paired adapter 与短训练入口已实现于 `scripts/prepare_stage5_flow_diagnostic_bank.py`、`scripts/train_stage5_flow_selfsup_diagnostic.py`，但必须等八条 bank 与 V2E artifact 完成，并在配置中登记确切 bank/manifest/code hash 后运行。
 - MVSEC数值/协议入口检查：`STE_FLOWNET_ROOT=/home/科研/Eventbased_WAM/external_sources/STE-FlowNet python3 -m unittest benchmark.sim2real.tests.test_mvsec_adapter -v`（8/8通过）；`python3 benchmark/sim2real/scripts/stage4_mvsec_dt1_metrics.py --self-test`（手算AEE 2.5px、Outlier 25%，错checkpoint/window index/缺失窗口metadata拒绝，真实评分保持关闭）。运行证据见`evidence/S5/20261021-recon-flow-localization/mvsec_metric_entry_selftest_v6/`。
@@ -109,4 +121,4 @@ g1 旧 Stage-3 目录仍仅有 `indoor_flying1` 既有文件；Stage-5 完整文
 - **尚待验证：** 八rollout bank完整生成和标签/支持统计、V2E成对输出、跨rollout事件活跃覆盖、STE原自监督目标的新短训是否超过零流及独立rollout泛化；MVSEC全量文件上传和全窗口清单待完成；真实评分等待研究核验与显式授权。
 - **对实验有效性的影响：** 已完成的45 epoch光流权重/选择结果未更改。GT监督固定窗只证明训练链路有记忆能力；单场景和单条MVSEC数据窗都不代表测试排名。新bank需配对V2E并验证独立rollout原自监督训练后，才决定是否建议正式扩训。
 
-机器可读实时记录、双 generator reconstruction verifier 结果及八 rollout bank 后续报告保存在本页与 `evidence/S5/20261021-recon-flow-localization/`。大数据/权重仍在 g1，仓库只纳入必要证据与 hash。
+本次续接证据索引见 [`continuation_evidence_index_20261022.json`](evidence/S5/20261021-recon-flow-localization/continuation_evidence_index_20261022.json)。机器可读实时记录、双 generator reconstruction verifier 结果及八 rollout bank 后续报告保存在本页与 `evidence/S5/20261021-recon-flow-localization/`。大数据/权重仍在 g1，仓库只纳入必要证据与 hash。

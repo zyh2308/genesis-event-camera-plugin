@@ -1,0 +1,44 @@
+{
+  "schema": "mvsec_unscored_window_audit_plan_v1",
+  "created_utc": "2026-10-20T21:08:22.626441+00:00",
+  "purpose": "Check real-file timestamp, event-window, event-representation and flow-GT loader contracts only; no model, prediction or candidate score.",
+  "selection_rule": "Use APS start index 21 in each named sequence, fixed before parsing and independent of candidate outputs or event counts.",
+  "aps_start_index": 21,
+  "sequences": [
+    "indoor_flying2",
+    "indoor_flying3"
+  ],
+  "artifact_bindings": [
+    {
+      "sequence": "indoor_flying2",
+      "kind": "data",
+      "source_path": "/home/\u79d1\u7814/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2/indoor_flying/indoor_flying2_data.hdf5",
+      "size_bytes": 2532552285,
+      "sha256": "a547babf4c20cbd558fd59d936cec588d3308761b8b2cb436a11e348ecc3d608"
+    },
+    {
+      "sequence": "indoor_flying2",
+      "kind": "gt",
+      "source_path": "/home/\u79d1\u7814/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2/indoor_flying/indoor_flying2_gt.hdf5",
+      "size_bytes": 4284255701,
+      "sha256": "a76038611c37a4492a6de9ccf8e2fca2c43e4364f03c976345e1da65dee5dcfb"
+    },
+    {
+      "sequence": "indoor_flying3",
+      "kind": "data",
+      "source_path": "/home/\u79d1\u7814/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2/indoor_flying/indoor_flying3_data.hdf5",
+      "size_bytes": 2625560959,
+      "sha256": "9706cd43d95b7249f56f385af622524e2893514166af9b651711c924d24240e9"
+    },
+    {
+      "sequence": "indoor_flying3",
+      "kind": "gt",
+      "source_path": "/home/\u79d1\u7814/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-download-v2/indoor_flying/indoor_flying3_gt.hdf5",
+      "size_bytes": 4454252233,
+      "sha256": "b22e4ff90d853d1237a40aff375b61171dd95b1623bb399644120c54c5c006e5"
+    }
+  ],
+  "candidate_weights_loaded": false,
+  "real_scores_computed": false,
+  "real_scoring_enabled": false
+}

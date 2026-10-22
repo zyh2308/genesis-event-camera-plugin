@@ -1,0 +1,69 @@
+{
+  "schema": "mvsec_official_download_route_audit_v1",
+  "observed_utc": "2026-10-22T16:00:17.163255+00:00",
+  "official_dataset_page": "https://daniilidis-group.github.io/mvsec/download/",
+  "official_hdf5_distribution": "The official page points to the public Google Drive folder for HDF5; the requested HDF5 ID is registered in the repository source index.",
+  "official_alternate_distribution": {
+    "format": "ROS bag files (not HDF5)",
+    "data_url": "https://visiondata.cis.upenn.edu/mvsec/outdoor_day/outdoor_day1_data.bag",
+    "ground_truth_url": "https://visiondata.cis.upenn.edu/mvsec/outdoor_day/outdoor_day1_gt.bag",
+    "calibration_url": "https://visiondata.cis.upenn.edu/mvsec/outdoor_day/outdoor_day_calib.zip",
+    "decision": "Not substituted for the registered HDF5 inputs; no candidate loader or GT derivation was changed."
+  },
+  "failed_hdf5_request": {
+    "name": "outdoor_day1_data.hdf5",
+    "drive_file_id": "1JLIrw2L24zIQBmqaWvef7G2t9tsMY3H0",
+    "started_utc": "2026-10-20T21:08:18.437267+00:00",
+    "finished_utc": "2026-10-20T21:08:23.180383+00:00",
+    "status": "failed",
+    "error_type": "FileURLRetrievalError",
+    "error": "Failed to retrieve file url:\n\n\tCannot retrieve the public link of the file. You may need to change\n\tthe permission to 'Anyone with the link', or have had many accesses.\n\tCheck FAQ in https://github.com/wkentaro/gdown?tab=readme-ov-file#faq.\n\nYou may still be able to access the file from the browser:\n\n\thttps://drive.google.com/uc?id=1JLIrw2L24zIQBmqaWvef7G2t9tsMY3H0\n\nbut Gdown can't. Please check connections and permissions.",
+    "download_run_root": "/home/科研/Eventbased_WAM/runs/sim2real/20261021-mvsec-local-stage-v2",
+    "stdout_sha256": "f1aab44e8fe548ce27638539c1ce8b65155523c9ac12f9a547051b5bc11a67f8",
+    "stderr_sha256": "8f96e36ba087f3594b0570935256ca8906e95155484fa5b87995d796a823d81b",
+    "manifest_sha256": "185a78c644e3cd88930b7e576b7a87c0950250838debaf84a778768062fb07f2"
+  },
+  "bounded_http_range_probes": [
+    {
+      "command": "curl -sS -L --range 0-0 --connect-timeout 10 --max-time 20 -o /dev/null -w ... https://drive.google.com/uc?export=download&id=1JLIrw2L24zIQBmqaWvef7G2t9tsMY3H0",
+      "result": "OpenSSL SSL_connect: Connection reset by peer; HTTP status 000; 0 bytes downloaded"
+    },
+    {
+      "command": "curl -sSI -L --connect-timeout 10 --max-time 20 -o /dev/null -w ... https://visiondata.cis.upenn.edu/mvsec/outdoor_day/outdoor_day1_data.bag",
+      "result": "OpenSSL SSL_connect: Connection reset by peer; HTTP status 000; 0 bytes downloaded"
+    }
+  ],
+  "local_manifest_status": "failed",
+  "complete_file_count": 7,
+  "manifest_entry_count": 8,
+  "real_scores_computed": false,
+  "real_scoring_enabled": false,
+  "next_action": "Do not retry again until the official Drive access/quota state changes. Preserve the indoor HDF5 files. The official ROS-bag mirrors are a different format and remain unsubstituted pending protocol approval.",
+  "updated_utc": "2026-10-22T16:04:17Z",
+  "official_hdf5_retry_after_quota_cooldown": {
+    "name": "outdoor_day1_data.hdf5",
+    "drive_file_id": "1JLIrw2L24zIQBmqaWvef7G2t9tsMY3H0",
+    "started_utc": "2026-10-22T16:02:18Z",
+    "finished_utc": "2026-10-22T16:02:21Z",
+    "exit_code": 1,
+    "error_type": "FileURLRetrievalError",
+    "error": "Too many users have viewed or downloaded this file recently. gdown reports the official Drive quota limit even after more than 24 hours.",
+    "command_file": "/home/科研/Eventbased_WAM/runs/sim2real/20261023-mvsec-outdoor-official-hdf5-retry-v1/command.txt",
+    "run_root": "/home/科研/Eventbased_WAM/runs/sim2real/20261023-mvsec-outdoor-official-hdf5-retry-v1",
+    "data_root": "/home/科研/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-outdoor-retry-20261023",
+    "run_file_sha256": {
+      "command.txt": "55b0287c9392bf1878da479cdbe7dc42ce416863db921ee5698ffb725184e4f3",
+      "environment.txt": "594aad47b843ce96887ebe29b558460d5f19562e751667670076d231974f579b",
+      "exit_code.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "finished_utc.txt": "5e383733cf93e9fe7819d3c6668e8aef02eff616cb0df1b94ae67d9628a6c168",
+      "run.sh": "f8717d2cafc618de7244b2e35ad55e6005f3b35f6050115971cee9969b343f17",
+      "started_utc.txt": "4ec3a6be99e3a06b95fe402430f6dd206e75ad018eca0eff0befd9cd3147b242",
+      "stderr.log": "c45e71f8f12aec24112d4c0afc8b38214bbd109ae6500fdd726f86f7f1fc6ab7",
+      "stdout.log": "5f2b1ed66b11c361301310e9f2b97bf886524d8a629fc10ba5cf86b79858f30c"
+    },
+    "retry_manifest_path": "/home/科研/Eventbased_WAM/data/sim2real/stage5/real/MVSEC-outdoor-retry-20261023/public_download_manifest.json",
+    "retry_manifest_sha256": "9880985f3ef26c3ca2dfbb2520501377439c536bcfa2d74b978a3416e2fd3240",
+    "downloaded_bytes": 0,
+    "status": "failed_quota"
+  }
+}
