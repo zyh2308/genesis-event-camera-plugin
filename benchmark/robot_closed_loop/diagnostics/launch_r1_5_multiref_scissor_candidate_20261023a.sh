@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_gl_surface_20261021af
+ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_gl_surface_20261023a
 PY=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
 CACHE=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059
 CHECKPOINT_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_multiref_20261021i
-RUN_ID=r1_5_multiref_scissor_candidate_20261021af
+RUN_ID=r1_5_multiref_scissor_candidate_20261023a
 OUTPUT="$ROOT/benchmark/robot_closed_loop/results/$RUN_ID"
 RUNTIME="$ROOT/benchmark/robot_closed_loop/results/runtime_logs/$RUN_ID"
 SESSION=$RUN_ID
-SCRIPT="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261021af.sh"
+SCRIPT="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261023a.sh"
 
 if (( $# == 1 )) && [[ "$1" == "--worker" ]]; then
   env PYTHONPATH="$ROOT" PYTHONDONTWRITEBYTECODE=1 \
@@ -22,7 +22,7 @@ if (( $# == 1 )) && [[ "$1" == "--worker" ]]; then
       --cache-root "$CACHE" \
       --scene-config "$ROOT/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json" \
       --control-config "$ROOT/benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json" \
-      --candidate-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261021af.json" \
+      --candidate-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261023a.json" \
       --roi-repair-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_main_scissor_repair_20261021x.json" \
       --ours-checkpoint "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
       --v2e-checkpoint "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
