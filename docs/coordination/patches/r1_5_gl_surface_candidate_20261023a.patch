@@ -1,0 +1,780 @@
+diff --git a/benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261023a.json b/benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261023a.json
+new file mode 100644
+index 0000000..a1c9ae6
+--- /dev/null
++++ b/benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261023a.json
+@@ -0,0 +1,56 @@
++{
++  "experiment_id": "r1_5_multiref_scissor_candidate_20261023a",
++  "purpose": "same cached R1.5 clips using hardware OpenGL triangle rasterization in the Genesis EGL context; diagnostic only",
++  "candidate_only": true,
++  "frozen_simulator_core_modified": false,
++  "derived_from_config": "r1_5_multiref_scissor_candidate_20261021ae.json",
++  "source_references": {
++    "rate_hz": 100,
++    "source_interval_s": 0.01,
++    "all_static_views_per_query": 5,
++    "moving_views_per_query": 2,
++    "moving_selection": "only the two exact keyframes bracketing each query",
++    "states": "only already logged physical/robot state rows; no synthetic trajectory samples"
++  },
++  "geometry": {
++    "static_labels": "fixed-camera static reference pixels with per-pixel temporal visibility",
++    "moving_labels": "two bracketing source views projected with source-link to target-link SE3 and rasterized as same-label continuous surface triangles",
++    "visibility": "nearest interpolated target depth across moving surfaces and observed static background; ambiguous ties remain unsupported",
++    "moving_edge_guard_px": 1,
++    "surface_connectivity_max_local_pixel_scale": 4.0,
++    "depth_tie_rtol": 0.001,
++    "depth_tie_atol_m": 2e-05,
++    "surface_raster_backend": "opengl_hw",
++    "static_composition_backend": "numba_parallel_logcached",
++    "moving_composition_backend": "numba_pair_fused",
++    "audit_static_query_indices_against_numpy": false
++  },
++  "radiometry": {
++    "source": "Genesis scene-linear HDR luminance",
++    "temporal_interpolation": "log domain between observations of the same frontmost label and depth",
++    "floor": 1e-06
++  },
++  "pixel_response": {
++    "model": "physical_log",
++    "threshold_on_off": 0.2,
++    "threshold_mismatch": 0.0,
++    "bandwidth": "disabled",
++    "leak_noise_refractory": "disabled"
++  },
++  "evaluation": {
++    "episodes": [4, 5],
++    "trace_window_s": [0.5505, 0.5905],
++    "role": "cached development diagnostics only",
++    "ranking": false,
++    "formal_test": false,
++    "new_physics_rollout": false
++  },
++  "runtime": {
++    "numba_threads": 1,
++    "gpu_policy": "Genesis EGL physical GPU 2; hardware OpenGL 3.3 rasterizer in the existing offscreen context; no CUDA tensor scatter",
++    "audit_moving_pair_against_numpy": false,
++    "audit_surface_raster_backend_against_serial": true,
++    "moving_pair_equivalence_evidence": "all 38 reconstructed rows in both episodes were exact against NumPy reference in experiment r1_5_multiref_scissor_candidate_20261021w",
++    "correctness_audit_cost": "serial CPU equivalence audit is diagnostic overhead and excluded from candidate production cost"
++  }
++}
+diff --git a/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261023a.sh b/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261023a.sh
+new file mode 100644
+index 0000000..7aa8f70
+--- /dev/null
++++ b/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261023a.sh
+@@ -0,0 +1,67 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_gl_surface_20261023a
++PY=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
++CACHE=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059
++CHECKPOINT_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_multiref_20261021i
++RUN_ID=r1_5_multiref_scissor_candidate_20261023a
++OUTPUT="$ROOT/benchmark/robot_closed_loop/results/$RUN_ID"
++RUNTIME="$ROOT/benchmark/robot_closed_loop/results/runtime_logs/$RUN_ID"
++SESSION=$RUN_ID
++SCRIPT="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261023a.sh"
++
++if (( $# == 1 )) && [[ "$1" == "--worker" ]]; then
++  env PYTHONPATH="$ROOT" PYTHONDONTWRITEBYTECODE=1 \
++    ROBOT_GENESIS_OVERLAY_PACKAGE=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis \
++    PYOPENGL_PLATFORM=egl EGL_DEVICE_ID=2 \
++    OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 TI_NUM_THREADS=1 \
++    NUMBA_NUM_THREADS=1 \
++    nice -n 10 "$PY" "$ROOT/benchmark/robot_closed_loop/diagnostics/run_with_robot_hdr_overlay.py" \
++      "$ROOT/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py" \
++      --cache-root "$CACHE" \
++      --scene-config "$ROOT/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json" \
++      --control-config "$ROOT/benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json" \
++      --candidate-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261023a.json" \
++      --roi-repair-config "$ROOT/benchmark/robot_closed_loop/configs/r1_5_main_scissor_repair_20261021x.json" \
++      --ours-checkpoint "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt" \
++      --v2e-checkpoint "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt" \
++      --source-interval 0.01 \
++      --max-source-views 5 \
++      --moving-source-views 2 \
++      --output "$OUTPUT" \
++      >"$RUNTIME/run.log" 2>&1 &
++  child=$!
++  printf '%s\n' "$child" >"$RUNTIME/run.pid"
++  set +e
++  wait "$child"
++  status=$?
++  set -e
++  printf '%s\n' "$status" >"$RUNTIME/run.exit"
++  exit "$status"
++fi
++
++if tmux has-session -t "$SESSION" 2>/dev/null; then
++  echo "tmux session already exists: $SESSION" >&2
++  exit 2
++fi
++for path in "$OUTPUT" "$RUNTIME"; do
++  if [[ -e "$path" ]]; then
++    echo "run path already exists; refusing to overwrite: $path" >&2
++    exit 2
++  fi
++done
++for episode in 004 005; do
++  for input in trace_window.jsonl same_state_source_cache.h5 rendered_frame_evidence.h5; do
++    [[ -f "$CACHE/episode_$episode/$input" ]] || { echo "missing $CACHE/episode_$episode/$input" >&2; exit 2; }
++  done
++done
++for checkpoint in ours_fit/spatial_event_state.pt v2e_fit/spatial_event_state.pt; do
++  [[ -f "$CHECKPOINT_ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/$checkpoint" ]]
++done
++mkdir -p "$RUNTIME"
++tmux new-session -d -s "$SESSION" "bash '$SCRIPT' --worker"
++sleep 2
++tmux has-session -t "$SESSION"
++echo "detached=1 session=$SESSION pid=$(cat "$RUNTIME/run.pid")"
++ps -p "$(cat "$RUNTIME/run.pid")" -o pid=,ppid=,stat=,etime=,args=
+diff --git a/benchmark/robot_closed_loop/diagnostics/r1_5_gl_surface_raster.py b/benchmark/robot_closed_loop/diagnostics/r1_5_gl_surface_raster.py
+new file mode 100644
+index 0000000..63e71c1
+--- /dev/null
++++ b/benchmark/robot_closed_loop/diagnostics/r1_5_gl_surface_raster.py
+@@ -0,0 +1,408 @@
++"""Diagnostic OpenGL triangle rasterizer for R1.5 surface reprojection.
++
++This uses the active Genesis headless EGL context, a private floating-point
++framebuffer, hardware triangle coverage, perspective-correct varying
++interpolation, and the hardware depth test. It is intentionally kept in the
++robot benchmark layer; it does not alter Genesis or the frozen event core.
++"""
++
++from __future__ import annotations
++
++from typing import Any
++
++import numpy as np
++
++from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate import (
++    _build_surface_triangles,
++    prepare_surface_raster_source,
++)
++
++
++_VERTEX_SHADER = r"""#version 330 core
++uniform sampler2D u_projected_uv;
++uniform sampler2D u_projected_depth;
++uniform sampler2D u_source_luma;
++uniform ivec2 u_size;
++uniform float u_near;
++uniform float u_far;
++
++out float v_luma;
++out float v_camera_z;
++
++void main() {
++    int id = gl_VertexID;
++    ivec2 p = ivec2(id % u_size.x, id / u_size.x);
++    float z = texelFetch(u_projected_depth, p, 0).r;
++    vec2 uv = texelFetch(u_projected_uv, p, 0).rg;
++    v_luma = texelFetch(u_source_luma, p, 0).r;
++    v_camera_z = z;
++
++    if (!(z > u_near) || z >= u_far || any(isnan(uv)) || any(isinf(uv))) {
++        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
++        return;
++    }
++
++    // Genesis/benchmark UVs use top-left image coordinates whose integer
++    // positions are pixel centers. OpenGL rasterizes half-integer centers.
++    float x_ndc = 2.0 * (uv.x + 0.5) / float(u_size.x) - 1.0;
++    float y_ndc = 1.0 - 2.0 * (uv.y + 0.5) / float(u_size.y);
++    float a = (u_far + u_near) / (u_far - u_near);
++    float b = -2.0 * u_far * u_near / (u_far - u_near);
++    gl_Position = vec4(x_ndc * z, y_ndc * z, a * z + b, z);
++}
++"""
++
++
++_FRAGMENT_SHADER = r"""#version 330 core
++uniform int u_label;
++in float v_luma;
++in float v_camera_z;
++layout(location = 0) out float out_luma;
++layout(location = 1) out float out_camera_z;
++layout(location = 2) out int out_label;
++void main() {
++    out_luma = v_luma;
++    out_camera_z = v_camera_z;
++    out_label = u_label;
++}
++"""
++
++
++def _scalar(gl: Any, value: Any) -> int:
++    return int(np.asarray(value).reshape(-1)[0])
++
++
++class GLContinuousSurfaceRasterizer:
++    """Rasterize prepared same-label surface triangles in Genesis' GL context."""
++
++    def __init__(self, camera: Any):
++        try:
++            from OpenGL import GL
++            from OpenGL.GL import shaders
++        except Exception as exc:  # pragma: no cover - server renderer runtime.
++            raise RuntimeError("PyOpenGL is required for the diagnostic GL backend") from exc
++
++        self.camera = camera
++        self.GL = GL
++        self.width, self.height = (int(v) for v in camera.res)
++        self.near = max(float(camera.near), 1e-4)
++        self.far = float(camera.far)
++        if not self.far > self.near:
++            raise ValueError(f"invalid camera clip range [{self.near}, {self.far}]")
++        self._rasterizer = getattr(camera, "_rasterizer", None)
++        self._renderer = getattr(self._rasterizer, "_renderer", None)
++        if self._renderer is None:
++            raise RuntimeError("GL surface backend requires Genesis offscreen rasterizer")
++        self._program = None
++        self._vao = None
++        self._fbo = None
++        self._color_textures: list[int] = []
++        self._depth_rbo = None
++        self._uv_texture = None
++        self._z_texture = None
++        self._active = False
++        self._prepared: list[dict] = []
++        self._uniforms: dict[str, int] = {}
++        self._allocate()
++
++    def _current(self):
++        self._renderer.make_current()
++        self._active = True
++
++    def _uncurrent(self):
++        if self._active:
++            self._renderer.make_uncurrent()
++            self._active = False
++
++    def _tex2d(self, internal_format: int, fmt: int, dtype: int,
++               data: np.ndarray | None = None) -> int:
++        gl = self.GL
++        tex = _scalar(gl, gl.glGenTextures(1))
++        gl.glBindTexture(gl.GL_TEXTURE_2D, tex)
++        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
++        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
++        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
++        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
++        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internal_format, self.width, self.height,
++                        0, fmt, dtype, data)
++        return tex
++
++    def _allocate(self):
++        gl = self.GL
++        self._current()
++        saved = {
++            "draw_fbo": _scalar(gl, gl.glGetIntegerv(gl.GL_DRAW_FRAMEBUFFER_BINDING)),
++            "read_fbo": _scalar(gl, gl.glGetIntegerv(gl.GL_READ_FRAMEBUFFER_BINDING)),
++            "renderbuffer": _scalar(gl, gl.glGetIntegerv(gl.GL_RENDERBUFFER_BINDING)),
++            "active_texture": _scalar(gl, gl.glGetIntegerv(gl.GL_ACTIVE_TEXTURE)),
++        }
++        saved["texture_2d"] = _scalar(gl, gl.glGetIntegerv(gl.GL_TEXTURE_BINDING_2D))
++        try:
++            from OpenGL.GL import shaders
++            self._program = int(shaders.compileProgram(
++                shaders.compileShader(_VERTEX_SHADER, gl.GL_VERTEX_SHADER),
++                shaders.compileShader(_FRAGMENT_SHADER, gl.GL_FRAGMENT_SHADER),
++                validate=False,
++            ))
++            self._uniforms = {
++                name: int(gl.glGetUniformLocation(self._program, name))
++                for name in ("u_projected_uv", "u_projected_depth", "u_source_luma",
++                             "u_size", "u_near", "u_far", "u_label")
++            }
++            self._vao = _scalar(gl, gl.glGenVertexArrays(1))
++            self._uv_texture = self._tex2d(gl.GL_RG32F, gl.GL_RG, gl.GL_FLOAT)
++            self._z_texture = self._tex2d(gl.GL_R32F, gl.GL_RED, gl.GL_FLOAT)
++
++            self._fbo = _scalar(gl, gl.glGenFramebuffers(1))
++            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self._fbo)
++            formats = (
++                (gl.GL_R32F, gl.GL_RED, gl.GL_FLOAT),
++                (gl.GL_R32F, gl.GL_RED, gl.GL_FLOAT),
++                (gl.GL_R32I, gl.GL_RED_INTEGER, gl.GL_INT),
++            )
++            for i, (internal, fmt, dtype) in enumerate(formats):
++                tex = self._tex2d(internal, fmt, dtype)
++                self._color_textures.append(tex)
++                gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0 + i,
++                                          gl.GL_TEXTURE_2D, tex, 0)
++            self._depth_rbo = _scalar(gl, gl.glGenRenderbuffers(1))
++            gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, self._depth_rbo)
++            gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH_COMPONENT32F,
++                                     self.width, self.height)
++            gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_ATTACHMENT,
++                                         gl.GL_RENDERBUFFER, self._depth_rbo)
++            draw_buffers = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(3)]
++            gl.glDrawBuffers(3, draw_buffers)
++            status = gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER)
++            if status != gl.GL_FRAMEBUFFER_COMPLETE:
++                raise RuntimeError(f"diagnostic surface FBO incomplete: 0x{status:x}")
++        finally:
++            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, saved["draw_fbo"])
++            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, saved["read_fbo"])
++            gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, saved["renderbuffer"])
++            gl.glBindTexture(gl.GL_TEXTURE_2D, saved["texture_2d"])
++            gl.glActiveTexture(saved["active_texture"])
++            self._uncurrent()
++
++    def prepare_sources(self, sources: list[dict], K: np.ndarray,
++                        moving_ids: set[int], max_pixel_scale: float = 4.0) -> list[dict]:
++        """Upload source radiance and continuity-filtered topology once per view."""
++        gl = self.GL
++        prepared = []
++        self._current()
++        old_active = _scalar(gl, gl.glGetIntegerv(gl.GL_ACTIVE_TEXTURE))
++        old_vao = _scalar(gl, gl.glGetIntegerv(gl.GL_VERTEX_ARRAY_BINDING))
++        gl.glActiveTexture(gl.GL_TEXTURE0 + 2)
++        old_unit2_texture = _scalar(gl, gl.glGetIntegerv(gl.GL_TEXTURE_BINDING_2D))
++        try:
++            gl.glBindVertexArray(self._vao)
++            for source in sources:
++                image = np.asarray(source["radiance_luma"], dtype=np.float32)
++                depth = np.asarray(source["depth"], dtype=np.float32)
++                labels = np.asarray(source["segmentation"], dtype=np.int64)
++                base = prepare_surface_raster_source(
++                    image, depth, labels, K, max_pixel_scale=max_pixel_scale,
++                    raster_labels=moving_ids, raster_backend="numba_serial",
++                )
++                triangles, tri_labels = _build_surface_triangles(
++                    labels, base["base_valid"] & np.isin(labels, base["labels_to_process"]),
++                    base["edges"], base["labels_to_process"],
++                )
++                used_vertices = np.unique(triangles.reshape(-1)) if triangles.size else np.empty(0, np.int64)
++                gl.glActiveTexture(gl.GL_TEXTURE0 + 2)
++                luma_tex = self._tex2d(gl.GL_R32F, gl.GL_RED, gl.GL_FLOAT,
++                                       np.ascontiguousarray(image))
++                index_buffers = {}
++                for label in np.unique(tri_labels):
++                    indices = np.ascontiguousarray(
++                        triangles[tri_labels == label].reshape(-1), dtype=np.uint32,
++                    )
++                    buffer = _scalar(gl, gl.glGenBuffers(1))
++                    gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, buffer)
++                    gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices,
++                                    gl.GL_STATIC_DRAW)
++                    index_buffers[int(label)] = (buffer, int(indices.size))
++                prepared.append({
++                    **base,
++                    "luma_texture": luma_tex,
++                    "index_buffers": index_buffers,
++                    "triangle_count": int(len(triangles)),
++                    "used_vertices": used_vertices,
++                    "source_time_s": float(source.get("time_s", np.nan)),
++                })
++            self._prepared.extend(prepared)
++        finally:
++            gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0)
++            gl.glBindVertexArray(old_vao)
++            gl.glBindTexture(gl.GL_TEXTURE_2D, old_unit2_texture)
++            gl.glActiveTexture(old_active)
++            self._uncurrent()
++        return prepared
++
++    def activate(self):
++        if self._active:
++            raise RuntimeError("Genesis GL context is already active")
++        self._current()
++
++    def deactivate(self):
++        self._uncurrent()
++
++    def warp_current(self, uv: np.ndarray, z: np.ndarray, projected_valid: np.ndarray,
++                     prepared_source: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray,
++                                                     np.ndarray, dict]:
++        """Rasterize one projected source while this object's GL context is current."""
++        if not self._active:
++            raise RuntimeError("call activate() before GL raster calls")
++        gl = self.GL
++        uv = np.asarray(uv, dtype=np.float32)
++        z = np.asarray(z, dtype=np.float32)
++        projected_valid = np.asarray(projected_valid, dtype=bool)
++        expected = (self.height, self.width)
++        if uv.shape != (2, *expected) or z.shape != expected or projected_valid.shape != expected:
++            raise ValueError("projected uv/z/valid shapes do not match the camera")
++        # The validated robot clips never move these cached surfaces behind the
++        # camera. Fail closed if one does, rather than allowing invalid
++        # triangle vertices to create partially clipped invented geometry.
++        used_vertices = prepared_source["used_vertices"]
++        if used_vertices.size and not projected_valid.reshape(-1)[used_vertices].all():
++            raise RuntimeError("GL raster path encountered a prepared surface vertex behind the camera")
++
++        uv_upload = np.ascontiguousarray(np.moveaxis(uv, 0, -1))
++        z_upload = np.ascontiguousarray(z)
++        saved = {
++            "draw_fbo": _scalar(gl, gl.glGetIntegerv(gl.GL_DRAW_FRAMEBUFFER_BINDING)),
++            "read_fbo": _scalar(gl, gl.glGetIntegerv(gl.GL_READ_FRAMEBUFFER_BINDING)),
++            "viewport": tuple(int(v) for v in gl.glGetIntegerv(gl.GL_VIEWPORT)),
++            "program": _scalar(gl, gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM)),
++            "vao": _scalar(gl, gl.glGetIntegerv(gl.GL_VERTEX_ARRAY_BINDING)),
++            "active_texture": _scalar(gl, gl.glGetIntegerv(gl.GL_ACTIVE_TEXTURE)),
++            "depth_func": _scalar(gl, gl.glGetIntegerv(gl.GL_DEPTH_FUNC)),
++            "depth_mask": bool(gl.glGetBooleanv(gl.GL_DEPTH_WRITEMASK)),
++            "depth_test": bool(gl.glIsEnabled(gl.GL_DEPTH_TEST)),
++            "blend": bool(gl.glIsEnabled(gl.GL_BLEND)),
++            "cull": bool(gl.glIsEnabled(gl.GL_CULL_FACE)),
++            "scissor": bool(gl.glIsEnabled(gl.GL_SCISSOR_TEST)),
++            "color_mask": tuple(bool(v) for v in gl.glGetBooleanv(gl.GL_COLOR_WRITEMASK)),
++        }
++        texture_bindings = []
++        for unit in range(3):
++            gl.glActiveTexture(gl.GL_TEXTURE0 + unit)
++            texture_bindings.append(_scalar(gl, gl.glGetIntegerv(gl.GL_TEXTURE_BINDING_2D)))
++        unpack_alignment = _scalar(gl, gl.glGetIntegerv(gl.GL_UNPACK_ALIGNMENT))
++        try:
++            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self._fbo)
++            gl.glViewport(0, 0, self.width, self.height)
++            gl.glDrawBuffers(3, [gl.GL_COLOR_ATTACHMENT0 + i for i in range(3)])
++            gl.glDisable(gl.GL_BLEND)
++            gl.glDisable(gl.GL_CULL_FACE)
++            gl.glDisable(gl.GL_SCISSOR_TEST)
++            gl.glEnable(gl.GL_DEPTH_TEST)
++            gl.glDepthFunc(gl.GL_LESS)
++            gl.glDepthMask(gl.GL_TRUE)
++            gl.glColorMask(gl.GL_TRUE, gl.GL_TRUE, gl.GL_TRUE, gl.GL_TRUE)
++            gl.glClearBufferfv(gl.GL_COLOR, 0, np.array([np.nan], np.float32))
++            gl.glClearBufferfv(gl.GL_COLOR, 1, np.array([np.inf], np.float32))
++            gl.glClearBufferiv(gl.GL_COLOR, 2, np.array([-1], np.int32))
++            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
++
++            gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
++            gl.glActiveTexture(gl.GL_TEXTURE0)
++            gl.glBindTexture(gl.GL_TEXTURE_2D, self._uv_texture)
++            gl.glTexSubImage2D(gl.GL_TEXTURE_2D, 0, 0, 0, self.width, self.height,
++                               gl.GL_RG, gl.GL_FLOAT, uv_upload)
++            gl.glActiveTexture(gl.GL_TEXTURE1)
++            gl.glBindTexture(gl.GL_TEXTURE_2D, self._z_texture)
++            gl.glTexSubImage2D(gl.GL_TEXTURE_2D, 0, 0, 0, self.width, self.height,
++                               gl.GL_RED, gl.GL_FLOAT, z_upload)
++            gl.glActiveTexture(gl.GL_TEXTURE2)
++            gl.glBindTexture(gl.GL_TEXTURE_2D, prepared_source["luma_texture"])
++
++            gl.glUseProgram(self._program)
++            gl.glUniform1i(self._uniforms["u_projected_uv"], 0)
++            gl.glUniform1i(self._uniforms["u_projected_depth"], 1)
++            gl.glUniform1i(self._uniforms["u_source_luma"], 2)
++            gl.glUniform2i(self._uniforms["u_size"], self.width, self.height)
++            gl.glUniform1f(self._uniforms["u_near"], self.near)
++            gl.glUniform1f(self._uniforms["u_far"], self.far)
++            gl.glBindVertexArray(self._vao)
++            draw_count = 0
++            for label, (buffer, count) in sorted(prepared_source["index_buffers"].items()):
++                if not count:
++                    continue
++                gl.glUniform1i(self._uniforms["u_label"], int(label))
++                gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, buffer)
++                gl.glDrawElements(gl.GL_TRIANGLES, count, gl.GL_UNSIGNED_INT, None)
++                draw_count += 1
++
++            luma = np.empty((self.height, self.width), np.float32)
++            camera_z = np.empty_like(luma)
++            labels = np.empty((self.height, self.width), np.int32)
++            for attachment, output, fmt, dtype in (
++                (0, luma, gl.GL_RED, gl.GL_FLOAT),
++                (1, camera_z, gl.GL_RED, gl.GL_FLOAT),
++                (2, labels, gl.GL_RED_INTEGER, gl.GL_INT),
++            ):
++                gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0 + attachment)
++                gl.glReadPixels(0, 0, self.width, self.height, fmt, dtype, output)
++        finally:
++            gl.glBindVertexArray(saved["vao"])
++            gl.glUseProgram(saved["program"])
++            for unit, texture in enumerate(texture_bindings):
++                gl.glActiveTexture(gl.GL_TEXTURE0 + unit)
++                gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
++            gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, unpack_alignment)
++            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, saved["draw_fbo"])
++            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, saved["read_fbo"])
++            gl.glViewport(*saved["viewport"])
++            gl.glDepthFunc(saved["depth_func"])
++            gl.glDepthMask(gl.GL_TRUE if saved["depth_mask"] else gl.GL_FALSE)
++            gl.glColorMask(*saved["color_mask"])
++            for capability, enabled in ((gl.GL_DEPTH_TEST, saved["depth_test"]),
++                                        (gl.GL_BLEND, saved["blend"]),
++                                        (gl.GL_CULL_FACE, saved["cull"]),
++                                        (gl.GL_SCISSOR_TEST, saved["scissor"])):
++                (gl.glEnable if enabled else gl.glDisable)(capability)
++            gl.glActiveTexture(saved["active_texture"])
++
++        luma = luma[::-1].copy()
++        camera_z = camera_z[::-1].copy()
++        labels = labels[::-1].copy()
++        support = (labels >= 0) & np.isfinite(luma) & np.isfinite(camera_z)
++        luma[~support] = np.nan
++        camera_z[~support] = np.inf
++        diagnostics = {
++            "backend": "opengl_hardware_triangles_depth_buffer",
++            "triangle_count": int(prepared_source["triangle_count"]),
++            "draw_calls": int(draw_count),
++            "supported_pixels": int(support.sum()),
++            "projected_valid_fraction": float(projected_valid.mean()),
++        }
++        return luma, camera_z, labels.astype(np.int64), support, diagnostics
++
++    def close(self):
++        gl = self.GL
++        self._current()
++        try:
++            for source in self._prepared:
++                textures = [source.get("luma_texture")]
++                buffers = [b for b, _ in source.get("index_buffers", {}).values()]
++                textures = [x for x in textures if x]
++                if textures:
++                    gl.glDeleteTextures(textures)
++                if buffers:
++                    gl.glDeleteBuffers(len(buffers), buffers)
++            if self._color_textures:
++                gl.glDeleteTextures(self._color_textures)
++            if self._uv_texture:
++                gl.glDeleteTextures([self._uv_texture, self._z_texture])
++            if self._depth_rbo:
++                gl.glDeleteRenderbuffers(1, [self._depth_rbo])
++            if self._fbo:
++                gl.glDeleteFramebuffers(1, [self._fbo])
++            if self._vao:
++                gl.glDeleteVertexArrays(1, [self._vao])
++            if self._program:
++                gl.glDeleteProgram(self._program)
++        finally:
++            self._uncurrent()
++
+diff --git a/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py b/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py
+index d0a134c..d594bcf 100644
+--- a/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py
++++ b/benchmark/robot_closed_loop/diagnostics/run_r1_5_multiref_surface_cached_replay.py
+@@ -48,6 +48,9 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate impor
+     prepare_surface_raster_source,
+     surface_raster_warp,
+ )
++from benchmark.robot_closed_loop.diagnostics.r1_5_gl_surface_raster import (
++    GLContinuousSurfaceRasterizer,
++)
+ from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
+     compose_multireference_scene,
+     interpolate_body_poses,
+@@ -352,6 +355,8 @@ def main() -> int:
+     inputs[str(roi_helper_path.resolve())] = _sha256(roi_helper_path.resolve())
+     scissor_helper_path = Path(__file__).with_name("r1_5_scissor_roi_render.py")
+     inputs[str(scissor_helper_path.resolve())] = _sha256(scissor_helper_path.resolve())
++    gl_surface_helper_path = Path(__file__).with_name("r1_5_gl_surface_raster.py")
++    inputs[str(gl_surface_helper_path.resolve())] = _sha256(gl_surface_helper_path.resolve())
+     if args.roi_repair_config is not None:
+         inputs[str(args.roi_repair_config.resolve())] = _sha256(args.roi_repair_config.resolve())
+     for path in (args.ours_checkpoint, args.v2e_checkpoint):
+@@ -362,6 +367,7 @@ def main() -> int:
+     env = None
+     roi_camera = None
+     main_scissor = None
++    gl_surface_rasterizer = None
+     episode_records = {}
+     inference_records = []
+     try:
+@@ -383,6 +389,11 @@ def main() -> int:
+         )
+         scene_build_wall_s = time.perf_counter() - scene_build_started
+         env.camera.render(rgb=True, depth=True, segmentation=True, radiance=True, force_render=True)
++        raster_backend = str(candidate_cfg.get("geometry", {}).get(
++            "surface_raster_backend", "numba_serial",
++        ))
++        if raster_backend == "opengl_hw":
++            gl_surface_rasterizer = GLContinuousSurfaceRasterizer(env.camera)
+         roi_camera = None
+         roi_camera_info = None
+         main_scissor_info = None
+@@ -479,10 +490,19 @@ def main() -> int:
+             ) for frame in source_frames]
+             moving_projection_prepare_wall_s = time.perf_counter() - moving_projection_prepare_started
+             surface_raster_prepare_started = time.perf_counter()
+-            prepared_raster_sources = [prepare_surface_raster_source(
+-                frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
+-                raster_labels=set(pose_ids.tolist()),
+-            ) for frame in source_frames]
++            if gl_surface_rasterizer is not None:
++                prepared_raster_sources = gl_surface_rasterizer.prepare_sources(
++                    source_frames, K, set(pose_ids.tolist()),
++                    max_pixel_scale=float(candidate_cfg.get("geometry", {}).get(
++                        "surface_connectivity_max_local_pixel_scale", 4.0,
++                    )),
++                )
++            else:
++                prepared_raster_sources = [prepare_surface_raster_source(
++                    frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
++                    raster_labels=set(pose_ids.tolist()),
++                    raster_backend=raster_backend,
++                ) for frame in source_frames]
+             surface_raster_prepare_wall_s = time.perf_counter() - surface_raster_prepare_started
+             static_refs = [{
+                 "time_s": float(source["time_s"]), "radiance": source["radiance_luma"],
+@@ -575,75 +595,88 @@ def main() -> int:
+                     moving_source_indices = moving_reference_indices(
+                         lo, hi, len(source_frames), args.moving_source_views, alpha,
+                     )
+-                    for source_index, source in enumerate(source_frames):
+-                        if source_index not in moving_source_indices:
+-                            continue
+-                        projection_started = time.perf_counter()
+-                        uv, z, projected_valid = project_moving_source_to_target(
+-                            source["depth"], source["segmentation"], K,
+-                            camera_pose, Talpha, source["poses"], target_poses, pose_ids,
+-                            prepared_source=prepared_motion_sources[source_index],
+-                        )
+-                        projection_wall_s += time.perf_counter() - projection_started
+-                        raster_started = time.perf_counter()
+-                        warped = surface_raster_warp(
+-                            source["radiance_luma"], source["depth"], source["segmentation"],
+-                            uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
+-                            prepared_source=prepared_raster_sources[source_index],
+-                            raster_backend=str(candidate_cfg.get("geometry", {}).get(
+-                                "surface_raster_backend", "numba_serial",
+-                            )),
+-                        )
+-                        raster_wall_s += time.perf_counter() - raster_started
+-                        if bool(candidate_cfg.get("runtime", {}).get(
+-                            "audit_surface_raster_backend_against_serial", False,
+-                        )):
+-                            audit_started = time.perf_counter()
+-                            serial_warp = surface_raster_warp(
+-                                source["radiance_luma"], source["depth"], source["segmentation"],
+-                                uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
+-                                prepared_source=prepared_raster_sources[source_index],
+-                                raster_backend="numba_serial",
++                    if gl_surface_rasterizer is not None:
++                        context_started = time.perf_counter()
++                        gl_surface_rasterizer.activate()
++                        raster_wall_s += time.perf_counter() - context_started
++                    try:
++                        for source_index, source in enumerate(source_frames):
++                            if source_index not in moving_source_indices:
++                                continue
++                            projection_started = time.perf_counter()
++                            uv, z, projected_valid = project_moving_source_to_target(
++                                source["depth"], source["segmentation"], K,
++                                camera_pose, Talpha, source["poses"], target_poses, pose_ids,
++                                prepared_source=prepared_motion_sources[source_index],
+                             )
+-                            surface_raster_audit_wall_s += time.perf_counter() - audit_started
+-                            surface_raster_audit_calls += 1
+-                            support_mismatch = warped[3] != serial_warp[3]
+-                            label_mismatch = warped[2] != serial_warp[2]
+-                            radiance_mismatch = ~np.isclose(
+-                                warped[0], serial_warp[0], rtol=0.0, atol=0.0, equal_nan=True,
+-                            )
+-                            depth_mismatch = ~np.isclose(
+-                                warped[1], serial_warp[1], rtol=0.0, atol=0.0, equal_nan=True,
+-                            )
+-                            support_count = int(np.count_nonzero(support_mismatch))
+-                            label_count = int(np.count_nonzero(label_mismatch))
+-                            radiance_count = int(np.count_nonzero(radiance_mismatch))
+-                            depth_count = int(np.count_nonzero(depth_mismatch))
+-                            if support_count or label_count or radiance_count or depth_count:
+-                                surface_raster_audit_mismatch_calls += 1
+-                            surface_raster_audit_support_mismatch_pixels += support_count
+-                            surface_raster_audit_label_mismatch_pixels += label_count
+-                            surface_raster_audit_radiance_mismatch_pixels += radiance_count
+-                            surface_raster_audit_depth_mismatch_pixels += depth_count
+-                            finite_radiance = np.isfinite(warped[0]) & np.isfinite(serial_warp[0])
+-                            finite_depth = np.isfinite(warped[1]) & np.isfinite(serial_warp[1])
+-                            if finite_radiance.any():
+-                                surface_raster_audit_radiance_abs_max = max(
+-                                    surface_raster_audit_radiance_abs_max,
+-                                    float(np.max(np.abs(warped[0][finite_radiance]
+-                                                        - serial_warp[0][finite_radiance]))),
++                            projection_wall_s += time.perf_counter() - projection_started
++                            raster_started = time.perf_counter()
++                            if gl_surface_rasterizer is not None:
++                                warped = gl_surface_rasterizer.warp_current(
++                                    uv, z, projected_valid, prepared_raster_sources[source_index],
++                                )
++                            else:
++                                warped = surface_raster_warp(
++                                    source["radiance_luma"], source["depth"], source["segmentation"],
++                                    uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
++                                    prepared_source=prepared_raster_sources[source_index],
++                                    raster_backend=raster_backend,
++                                )
++                            raster_wall_s += time.perf_counter() - raster_started
++                            if bool(candidate_cfg.get("runtime", {}).get(
++                                "audit_surface_raster_backend_against_serial", False,
++                            )):
++                                audit_started = time.perf_counter()
++                                serial_warp = surface_raster_warp(
++                                    source["radiance_luma"], source["depth"], source["segmentation"],
++                                    uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
++                                    prepared_source=prepared_raster_sources[source_index],
++                                    raster_backend="numba_serial",
++                                )
++                                surface_raster_audit_wall_s += time.perf_counter() - audit_started
++                                surface_raster_audit_calls += 1
++                                support_mismatch = warped[3] != serial_warp[3]
++                                label_mismatch = warped[2] != serial_warp[2]
++                                radiance_mismatch = ~np.isclose(
++                                    warped[0], serial_warp[0], rtol=0.0, atol=0.0, equal_nan=True,
+                                 )
+-                            if finite_depth.any():
+-                                surface_raster_audit_depth_abs_max_m = max(
+-                                    surface_raster_audit_depth_abs_max_m,
+-                                    float(np.max(np.abs(warped[1][finite_depth]
+-                                                        - serial_warp[1][finite_depth]))),
++                                depth_mismatch = ~np.isclose(
++                                    warped[1], serial_warp[1], rtol=0.0, atol=0.0, equal_nan=True,
+                                 )
+-                        moving_refs.append({
+-                            "time_s": float(source["time_s"]), "radiance": warped[0],
+-                            "depth": warped[1], "labels": warped[2], "visible": warped[3],
+-                        })
+-                        raster_diagnostics.append(warped[4])
++                                support_count = int(np.count_nonzero(support_mismatch))
++                                label_count = int(np.count_nonzero(label_mismatch))
++                                radiance_count = int(np.count_nonzero(radiance_mismatch))
++                                depth_count = int(np.count_nonzero(depth_mismatch))
++                                if support_count or label_count or radiance_count or depth_count:
++                                    surface_raster_audit_mismatch_calls += 1
++                                surface_raster_audit_support_mismatch_pixels += support_count
++                                surface_raster_audit_label_mismatch_pixels += label_count
++                                surface_raster_audit_radiance_mismatch_pixels += radiance_count
++                                surface_raster_audit_depth_mismatch_pixels += depth_count
++                                finite_radiance = np.isfinite(warped[0]) & np.isfinite(serial_warp[0])
++                                finite_depth = np.isfinite(warped[1]) & np.isfinite(serial_warp[1])
++                                if finite_radiance.any():
++                                    surface_raster_audit_radiance_abs_max = max(
++                                        surface_raster_audit_radiance_abs_max,
++                                        float(np.max(np.abs(warped[0][finite_radiance]
++                                                            - serial_warp[0][finite_radiance]))),
++                                    )
++                                if finite_depth.any():
++                                    surface_raster_audit_depth_abs_max_m = max(
++                                        surface_raster_audit_depth_abs_max_m,
++                                        float(np.max(np.abs(warped[1][finite_depth]
++                                                            - serial_warp[1][finite_depth]))),
++                                    )
++                            moving_refs.append({
++                                "time_s": float(source["time_s"]), "radiance": warped[0],
++                                "depth": warped[1], "labels": warped[2], "visible": warped[3],
++                            })
++                            raster_diagnostics.append(warped[4])
++                    finally:
++                        if gl_surface_rasterizer is not None:
++                            context_started = time.perf_counter()
++                            gl_surface_rasterizer.deactivate()
++                            raster_wall_s += time.perf_counter() - context_started
+                     composition_started = time.perf_counter()
+                     candidate_pre_fallback, candidate_valid, request_mask, comp_diag = compose_multireference_scene(
+                         moving_refs, static_refs, pose_ids.tolist(), t,
+@@ -1140,6 +1173,8 @@ def main() -> int:
+                               "candidate_total_estimate_s": rec["candidate"]["total_production_wall_s_estimate"]},
+                              separators=(",", ":")), flush=True)
+     finally:
++        if gl_surface_rasterizer is not None:
++            gl_surface_rasterizer.close()
+         if main_scissor is not None:
+             main_scissor.close()
+         if roi_camera is not None:

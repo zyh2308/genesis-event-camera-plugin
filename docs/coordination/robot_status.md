@@ -1,8 +1,24 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-21（Asia/Tokyo）
-**阶段：** R1.5 连续表面候选已完成 g1 缓存片段验证，并测试了 CPU 4/8/16 线程与 PyTorch CUDA triangle-scatter 实现。真实片段渲染请求降至约 0.91%/0.95%，无整帧回退；遮挡指标总体接近 Direct-HDR。事件一致性没有恢复，所有成对候选仍慢于 Direct-HDR，最佳观测配对仍为 1.36×，CUDA 配对为 5.17×。不启动重训或短闭环；方向选择和证据见文末“R1.5 surface coverage/cost closeout”。冻结 core 未改，任务/相机/控制/评分不变。候选实现末端为 `2d60e28`，结果归档提交为 `9fbaf06`。本地 HEAD `55f1fe5`；HTTPS 推送遇到 TLS 握手失败，GitHub SSH 推送因本机无 `ssh-askpass` 且 host key 未验证而失败；提交仍在本地 `exp/robot-closed-loop-v1` 分支。
+**更新时间：** 2026-10-23（Asia/Tokyo）
+**阶段：** R1.5 先前 CPU/CUDA surface candidate 的 g1 缓存片段验证已完成：请求像素降至约 0.91%/0.95%，但事件一致性未恢复，且所有已测配对仍慢于 Direct-HDR（最佳 1.36×）。本轮新增独立 OpenGL 硬件三角形栅格候选，代码与静态检查已提交至本地分支；本轮两次 g1 SSH 预检均在连接阶段超时，未执行任何远端命令，因此没有该候选的运行、正确性、遮挡、覆盖率或成本结果。待 g1 恢复后按下方 R1.5 OpenGL 候选入口执行一次缓存回放。冻结 core 未改，任务/相机/控制/评分不变。本地 HEAD `10a0661`，分支领先 origin 9 个提交；先前 HTTPS/SSH push 均失败，本轮未重试推送。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
+
+## R1.5 OpenGL 表面栅格候选（2026-10-23；仅静态校验，g1 运行受网络阻塞）
+
+- **目标：** 在不放宽表面支持/遮挡规则的前提下，验证 OpenGL 硬件三角形覆盖、透视插值和深度缓冲，争取降低前一版 CPU 候选的栅格成本。候选只在 robot benchmark 诊断层，frozen core 未改；不对真实片段正确性或成本作结论。
+- **候选代码：** 本地 branch `exp/robot-closed-loop-v1`，source commit `7a4ce0b`，本轮 pinned config/launcher commit `10a0661`。GL rasterizer SHA256 `ff52bc04a40cdd8b5882e9b96176f331865123f82451b6f6b04ff5f02cf05ee0`；replay runner SHA256 `fd24acca33a708b0326ac394da9e9820748eb1ca9958c46621895505e427cb91`；config [`r1_5_multiref_scissor_candidate_20261023a.json`](../../benchmark/robot_closed_loop/configs/r1_5_multiref_scissor_candidate_20261023a.json) SHA256 `414d3860348d3541e3a6fe16c586691a5a74d27ecf9e9493e1f0a01df5c0c25e`；launcher SHA256 `615d2d58ae4f9c1211a25fc1a1ee8464cb48d0f0df7f6937d0f15a5719701d4a`。与服务器基线 `1f5c181` 的四文件部署 patch 已归档到 [`patches/r1_5_gl_surface_candidate_20261023a.patch`](patches/r1_5_gl_surface_candidate_20261023a.patch)，SHA256 `466b5821ccfa1e69b772296893f0cb6ca1c725135ad78ab6074aafdf7529b822`（42,591 bytes；尚未部署）。
+- **输入与配置：** 复用缓存 episode 004/005，不生成新物理轨迹；配置固定 `100 Hz` 缓存 source views、每查询 5 个 static references + 2 个相邻 moving references、scene-linear HDR luminance、相同 `physical_log` pixel response；候选开 CPU serial raster 审计，但审计耗时明确不算生产成本。checkpoint、source cache、state trace 仍来自 g1 的 `r1_failure_chain_diagnosis_20261019a` 和 `r1_native_hdr_small9_retrain_20261019a`。
+- **已完成：** Python 编译、JSON 解析、launcher `bash -n`、`git diff --check` 均通过；审阅了随仓库 Genesis HDR overlay 的 EGL context 生命周期。未完成 GLSL 编译/运行、像素级等价、静止/微动/弱斜面/亮度 ramp/真实遮挡回归，也未测 scissor repair 数量和成本。
+- **网络阻塞证据：** 2026-10-23（Tokyo）对 `zhaoyuhan@10.129.163.68:22` 做了两次串行 BatchMode 预检（每次 ConnectTimeout=10s），均在 SSH connect 阶段超时；第一与第二次间隔超过 60s。远端命令未开始，未创建 worktree/output、未上传 patch、未检查/占用 GPU。本轮遵守共享服务器规则停止重试。部署和实验结果均待 g1 恢复。
+- **复跑入口（服务器部署完成后）：** 在隔离 worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1_5_gl_surface_20261023a` 应用上述 patch，并确认 GPU 2 空闲后运行：
+
+  ```bash
+  bash benchmark/robot_closed_loop/diagnostics/launch_r1_5_multiref_scissor_candidate_20261023a.sh
+  ```
+
+  预期输出 `benchmark/robot_closed_loop/results/r1_5_multiref_scissor_candidate_20261023a/` 和同名 `results/runtime_logs/`。运行报告必须记录实际 remote commit、配置/输入 manifest SHA256、serial equivalence 统计、支持率、遮挡错分、渲染请求/修复计数，以及 projection/raster/composition/repair/render/DVS 和 end-to-end wall time。候选与 Direct-HDR 同口径比较前不能声称低于直接渲染。
+- **当前判断：** 硬件 raster 是一个可检验的成本候选，不是已验证的改善。先前 ~15% unknown 的目标尚未达到（CPU surface candidate 约 1% request 只覆盖 ROI，不代表整图无支持率），且成本 gate 未通过；这一 GL 候选运行之前，不能决定是否进一步扩大补渲染区域或改采样策略。
 
 ## R1 原生 HDR 与失效链路诊断（2026-10-19；小规模开发批次）
 
