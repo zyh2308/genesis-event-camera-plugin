@@ -48,6 +48,9 @@ from benchmark.robot_closed_loop.diagnostics.r1_5_surface_raster_candidate impor
     prepare_surface_raster_source,
     surface_raster_warp,
 )
+from benchmark.robot_closed_loop.diagnostics.r1_5_gl_surface_raster import (
+    GLContinuousSurfaceRasterizer,
+)
 from benchmark.robot_closed_loop.diagnostics.r1_5_multiref_surface_candidate import (
     compose_multireference_scene,
     interpolate_body_poses,
@@ -352,6 +355,8 @@ def main() -> int:
     inputs[str(roi_helper_path.resolve())] = _sha256(roi_helper_path.resolve())
     scissor_helper_path = Path(__file__).with_name("r1_5_scissor_roi_render.py")
     inputs[str(scissor_helper_path.resolve())] = _sha256(scissor_helper_path.resolve())
+    gl_surface_helper_path = Path(__file__).with_name("r1_5_gl_surface_raster.py")
+    inputs[str(gl_surface_helper_path.resolve())] = _sha256(gl_surface_helper_path.resolve())
     if args.roi_repair_config is not None:
         inputs[str(args.roi_repair_config.resolve())] = _sha256(args.roi_repair_config.resolve())
     for path in (args.ours_checkpoint, args.v2e_checkpoint):
@@ -362,6 +367,7 @@ def main() -> int:
     env = None
     roi_camera = None
     main_scissor = None
+    gl_surface_rasterizer = None
     episode_records = {}
     inference_records = []
     try:
@@ -383,6 +389,11 @@ def main() -> int:
         )
         scene_build_wall_s = time.perf_counter() - scene_build_started
         env.camera.render(rgb=True, depth=True, segmentation=True, radiance=True, force_render=True)
+        raster_backend = str(candidate_cfg.get("geometry", {}).get(
+            "surface_raster_backend", "numba_serial",
+        ))
+        if raster_backend == "opengl_hw":
+            gl_surface_rasterizer = GLContinuousSurfaceRasterizer(env.camera)
         roi_camera = None
         roi_camera_info = None
         main_scissor_info = None
@@ -479,13 +490,19 @@ def main() -> int:
             ) for frame in source_frames]
             moving_projection_prepare_wall_s = time.perf_counter() - moving_projection_prepare_started
             surface_raster_prepare_started = time.perf_counter()
-            prepared_raster_sources = [prepare_surface_raster_source(
-                frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
-                raster_labels=set(pose_ids.tolist()),
-                raster_backend=str(candidate_cfg.get("geometry", {}).get(
-                    "surface_raster_backend", "numba_serial",
-                )),
-            ) for frame in source_frames]
+            if gl_surface_rasterizer is not None:
+                prepared_raster_sources = gl_surface_rasterizer.prepare_sources(
+                    source_frames, K, set(pose_ids.tolist()),
+                    max_pixel_scale=float(candidate_cfg.get("geometry", {}).get(
+                        "surface_connectivity_max_local_pixel_scale", 4.0,
+                    )),
+                )
+            else:
+                prepared_raster_sources = [prepare_surface_raster_source(
+                    frame["radiance_luma"], frame["depth"], frame["segmentation"], K,
+                    raster_labels=set(pose_ids.tolist()),
+                    raster_backend=raster_backend,
+                ) for frame in source_frames]
             surface_raster_prepare_wall_s = time.perf_counter() - surface_raster_prepare_started
             static_refs = [{
                 "time_s": float(source["time_s"]), "radiance": source["radiance_luma"],
@@ -578,75 +595,88 @@ def main() -> int:
                     moving_source_indices = moving_reference_indices(
                         lo, hi, len(source_frames), args.moving_source_views, alpha,
                     )
-                    for source_index, source in enumerate(source_frames):
-                        if source_index not in moving_source_indices:
-                            continue
-                        projection_started = time.perf_counter()
-                        uv, z, projected_valid = project_moving_source_to_target(
-                            source["depth"], source["segmentation"], K,
-                            camera_pose, Talpha, source["poses"], target_poses, pose_ids,
-                            prepared_source=prepared_motion_sources[source_index],
-                        )
-                        projection_wall_s += time.perf_counter() - projection_started
-                        raster_started = time.perf_counter()
-                        warped = surface_raster_warp(
-                            source["radiance_luma"], source["depth"], source["segmentation"],
-                            uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
-                            prepared_source=prepared_raster_sources[source_index],
-                            raster_backend=str(candidate_cfg.get("geometry", {}).get(
-                                "surface_raster_backend", "numba_serial",
-                            )),
-                        )
-                        raster_wall_s += time.perf_counter() - raster_started
-                        if bool(candidate_cfg.get("runtime", {}).get(
-                            "audit_surface_raster_backend_against_serial", False,
-                        )):
-                            audit_started = time.perf_counter()
-                            serial_warp = surface_raster_warp(
-                                source["radiance_luma"], source["depth"], source["segmentation"],
-                                uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
-                                prepared_source=prepared_raster_sources[source_index],
-                                raster_backend="numba_serial",
+                    if gl_surface_rasterizer is not None:
+                        context_started = time.perf_counter()
+                        gl_surface_rasterizer.activate()
+                        raster_wall_s += time.perf_counter() - context_started
+                    try:
+                        for source_index, source in enumerate(source_frames):
+                            if source_index not in moving_source_indices:
+                                continue
+                            projection_started = time.perf_counter()
+                            uv, z, projected_valid = project_moving_source_to_target(
+                                source["depth"], source["segmentation"], K,
+                                camera_pose, Talpha, source["poses"], target_poses, pose_ids,
+                                prepared_source=prepared_motion_sources[source_index],
                             )
-                            surface_raster_audit_wall_s += time.perf_counter() - audit_started
-                            surface_raster_audit_calls += 1
-                            support_mismatch = warped[3] != serial_warp[3]
-                            label_mismatch = warped[2] != serial_warp[2]
-                            radiance_mismatch = ~np.isclose(
-                                warped[0], serial_warp[0], rtol=0.0, atol=0.0, equal_nan=True,
-                            )
-                            depth_mismatch = ~np.isclose(
-                                warped[1], serial_warp[1], rtol=0.0, atol=0.0, equal_nan=True,
-                            )
-                            support_count = int(np.count_nonzero(support_mismatch))
-                            label_count = int(np.count_nonzero(label_mismatch))
-                            radiance_count = int(np.count_nonzero(radiance_mismatch))
-                            depth_count = int(np.count_nonzero(depth_mismatch))
-                            if support_count or label_count or radiance_count or depth_count:
-                                surface_raster_audit_mismatch_calls += 1
-                            surface_raster_audit_support_mismatch_pixels += support_count
-                            surface_raster_audit_label_mismatch_pixels += label_count
-                            surface_raster_audit_radiance_mismatch_pixels += radiance_count
-                            surface_raster_audit_depth_mismatch_pixels += depth_count
-                            finite_radiance = np.isfinite(warped[0]) & np.isfinite(serial_warp[0])
-                            finite_depth = np.isfinite(warped[1]) & np.isfinite(serial_warp[1])
-                            if finite_radiance.any():
-                                surface_raster_audit_radiance_abs_max = max(
-                                    surface_raster_audit_radiance_abs_max,
-                                    float(np.max(np.abs(warped[0][finite_radiance]
-                                                        - serial_warp[0][finite_radiance]))),
+                            projection_wall_s += time.perf_counter() - projection_started
+                            raster_started = time.perf_counter()
+                            if gl_surface_rasterizer is not None:
+                                warped = gl_surface_rasterizer.warp_current(
+                                    uv, z, projected_valid, prepared_raster_sources[source_index],
                                 )
-                            if finite_depth.any():
-                                surface_raster_audit_depth_abs_max_m = max(
-                                    surface_raster_audit_depth_abs_max_m,
-                                    float(np.max(np.abs(warped[1][finite_depth]
-                                                        - serial_warp[1][finite_depth]))),
+                            else:
+                                warped = surface_raster_warp(
+                                    source["radiance_luma"], source["depth"], source["segmentation"],
+                                    uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
+                                    prepared_source=prepared_raster_sources[source_index],
+                                    raster_backend=raster_backend,
                                 )
-                        moving_refs.append({
-                            "time_s": float(source["time_s"]), "radiance": warped[0],
-                            "depth": warped[1], "labels": warped[2], "visible": warped[3],
-                        })
-                        raster_diagnostics.append(warped[4])
+                            raster_wall_s += time.perf_counter() - raster_started
+                            if bool(candidate_cfg.get("runtime", {}).get(
+                                "audit_surface_raster_backend_against_serial", False,
+                            )):
+                                audit_started = time.perf_counter()
+                                serial_warp = surface_raster_warp(
+                                    source["radiance_luma"], source["depth"], source["segmentation"],
+                                    uv, z, projected_valid, K, raster_labels=set(pose_ids.tolist()),
+                                    prepared_source=prepared_raster_sources[source_index],
+                                    raster_backend="numba_serial",
+                                )
+                                surface_raster_audit_wall_s += time.perf_counter() - audit_started
+                                surface_raster_audit_calls += 1
+                                support_mismatch = warped[3] != serial_warp[3]
+                                label_mismatch = warped[2] != serial_warp[2]
+                                radiance_mismatch = ~np.isclose(
+                                    warped[0], serial_warp[0], rtol=0.0, atol=0.0, equal_nan=True,
+                                )
+                                depth_mismatch = ~np.isclose(
+                                    warped[1], serial_warp[1], rtol=0.0, atol=0.0, equal_nan=True,
+                                )
+                                support_count = int(np.count_nonzero(support_mismatch))
+                                label_count = int(np.count_nonzero(label_mismatch))
+                                radiance_count = int(np.count_nonzero(radiance_mismatch))
+                                depth_count = int(np.count_nonzero(depth_mismatch))
+                                if support_count or label_count or radiance_count or depth_count:
+                                    surface_raster_audit_mismatch_calls += 1
+                                surface_raster_audit_support_mismatch_pixels += support_count
+                                surface_raster_audit_label_mismatch_pixels += label_count
+                                surface_raster_audit_radiance_mismatch_pixels += radiance_count
+                                surface_raster_audit_depth_mismatch_pixels += depth_count
+                                finite_radiance = np.isfinite(warped[0]) & np.isfinite(serial_warp[0])
+                                finite_depth = np.isfinite(warped[1]) & np.isfinite(serial_warp[1])
+                                if finite_radiance.any():
+                                    surface_raster_audit_radiance_abs_max = max(
+                                        surface_raster_audit_radiance_abs_max,
+                                        float(np.max(np.abs(warped[0][finite_radiance]
+                                                            - serial_warp[0][finite_radiance]))),
+                                    )
+                                if finite_depth.any():
+                                    surface_raster_audit_depth_abs_max_m = max(
+                                        surface_raster_audit_depth_abs_max_m,
+                                        float(np.max(np.abs(warped[1][finite_depth]
+                                                            - serial_warp[1][finite_depth]))),
+                                    )
+                            moving_refs.append({
+                                "time_s": float(source["time_s"]), "radiance": warped[0],
+                                "depth": warped[1], "labels": warped[2], "visible": warped[3],
+                            })
+                            raster_diagnostics.append(warped[4])
+                    finally:
+                        if gl_surface_rasterizer is not None:
+                            context_started = time.perf_counter()
+                            gl_surface_rasterizer.deactivate()
+                            raster_wall_s += time.perf_counter() - context_started
                     composition_started = time.perf_counter()
                     candidate_pre_fallback, candidate_valid, request_mask, comp_diag = compose_multireference_scene(
                         moving_refs, static_refs, pose_ids.tolist(), t,
@@ -1143,6 +1173,8 @@ def main() -> int:
                               "candidate_total_estimate_s": rec["candidate"]["total_production_wall_s_estimate"]},
                              separators=(",", ":")), flush=True)
     finally:
+        if gl_surface_rasterizer is not None:
+            gl_surface_rasterizer.close()
         if main_scissor is not None:
             main_scissor.close()
         if roi_camera is not None:
