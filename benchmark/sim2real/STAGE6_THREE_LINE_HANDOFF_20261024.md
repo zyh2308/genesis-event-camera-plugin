@@ -2,6 +2,8 @@
 
 **范围：** 光流场景升级/入口修复、HQF 全 14 序列真实测试准备、E-POSE 样本与 CAD 契约审计。位姿已按本轮用户指令恢复推进。Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未修改。真实数据没有用于训练、checkpoint 选择或调参。
 
+**Git 同步：** Stage 6 工程交付已在 WSL 本地提交。推送 GitHub 时，配置的本地代理 `127.0.0.1:7890` 拒绝连接；单次直连约 60 秒无响应后停止。未确认 GitHub 同步成功，未修改 g1 共享工作树。见 [push 证据](evidence/20261024-stage6/github_push_attempt.json)。
+
 **最近服务器观测：** 2026-10-24 12:00:45 UTC（21:00:45 JST），来自 `zhaoyuhan@g1.pkuml.org` 的只读 SSH 会话：六张卡利用率为 68–94%；11:49:42 UTC 的前一轮 ownership-aware 快照显示六卡均有其他用户任务。未启动远程训练、推理或数据生成，也没有停止或修改任何进程。该次连接另核对了两份 E-POSE CAD 文件哈希和远程传输回执。远端共享工作树 11:49 时为 HEAD `b4f671b85ba1c2cf672c75afca71d108b4aa51a2` 且有其他未提交文件；本轮没有覆盖它。WSL 工作树起始 HEAD 为 `30503672019d87a7a85f7fbbbe9e557376d0c9db`。
 
 ## 当前判断
