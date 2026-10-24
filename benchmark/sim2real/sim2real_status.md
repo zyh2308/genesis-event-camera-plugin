@@ -1,21 +1,35 @@
-# Public-data Sim-to-Real status — Stage 5
+# Public-data Sim-to-Real status — 2026-10-24
 
-**最新 WSL 观测：2026-10-22 16:04 UTC / 2026-10-23 01:04 JST。** 三线详细证据与历史快照见 [Stage 5 双线交接（续）](STAGE5_DUAL_LINE_HANDOFF_20261021_CONTINUATION.md)。Frozen core `e79e656ac00f7847b98db9e12bf43b093f3afff1` 未改；训练/模型选择遵守 synthetic-only，真实评分关闭；位姿依用户要求暂停。
+**Last direct g1 GPU observation:** 2026-10-24 12:00:45 UTC / 21:00:45 JST. All six GPUs showed 68–94% utilization; the preceding 11:49:42 UTC ownership-aware snapshot confirmed other-user workloads on all six. This session launched no remote training, inference, or data generation, and did not modify or stop any remote process. See the time-stamped snapshots; neither is a reservation or guarantee of later availability.
 
-| 线路 | 状态 | 最新可核验进度 | 阻塞 / 下一交付 |
-|---|---|---|---|
-| 重建 E2VID+ | **合成训练完成；真实评分未做** | g1 summary（10月20日20:57 UTC）记录两组 seed 0 各 200 epoch / 12,000 updates、exit 0。合成 event-only 递归推理和产物 hash 核验完成。HQF 14 序列 manifest 已校验，HQF 主测 / HS-ERGB 扩展已按研究审查确定。 | 无 HQF 候选模型推理或分数。g1 状态本次无法刷新。等待正式真实测试冻结。 |
-| 光流 STE-FlowNet dt1 | **旧训练完成；新版有效性诊断未完成** | 旧配对训练两组各 45 epoch / 8,910 updates。固定窗监督拟合各 200 updates 证明单窗可记忆；MVSEC indoor_flying1/2/3 固定 APS 21 时间/事件/GT 接口审计通过，没有模型或评分。 | 八 rollout bank 最后一次确认 4/8（10月20日21:09:41 UTC），当前未知；两次 SSH 超时后停止远程访问。无可核验的新自监督短训。需恢复连接后核查 bank/V2E 配对，再做短训与独立 rollout 验证。 |
-| 位姿 | **按用户要求暂停** | 没有本阶段 E-POSE 访问、下载或训练。 | 等用户通知。 |
+Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` remains unchanged. Training/model selection is synthetic-only; true real scoring is report-only. The current unified report is [Stage 6 three-line handoff](STAGE6_THREE_LINE_HANDOFF_20261024.md).
 
-## MVSEC 数据可用性
+Evidence digest index: [Stage 6 files and SHA256](evidence/20261024-stage6/INDEX.md).
 
-本地 `MVSEC-download-v2` manifest 为 `failed`，7 个室内文件（3 序列 data/GT + indoor calibration）完成校验；outdoor_day1 HDF5 data/GT 与 outdoor 标定未齐。10月22日间隔超过24小时后的官方 HDF5 重试仍因 Google Drive 下载配额失败，退出码1、0 bytes。官方 ROS bag 是不同格式，本轮未替换当前协议。详见[下载审计](evidence/S5/20261021-recon-flow-localization/mvsec_download_route_audit_v1.json)。三条 indoor APS index 21 未评分文件审计见[运行证据](evidence/S5/20261021-recon-flow-localization/mvsec_real_file_window_audit_v2/)和 v1 indoor_flying1 结果。
+| Line | Verified state | Current blocker / next delivery |
+|---|---|---|
+| **Reconstruction — E2VID+ / HQF** | Corrected Stage5 seed-0 training completed at 200 epochs / 12,000 updates per generator. Frozen HQF v3 execution copy binds all 14 sequences, code/config/data manifests, and both synthetic-best checkpoints. Synthetic-only scorer self-test covered 56 paired frames and rejected four malformed cases; real-scoring flag omission is fail-closed (runner/scorer exit 2). No HQF model score has been run. | Current g1 refresh still shows all six GPUs at 68–94% utilization; actual data, weights, and pinned source checkout still require g1 hash preflight. Run both fixed seed-0 candidates over all registered HQF sequences once a GPU is safe. HS-ERGB remains an extension. |
+| **Optical flow — STE-FlowNet dt1** | Two entrypoint fingerprint bugs are fixed locally. CPU shim ran one Adam update across all four scales, 70/70 finite/nonzero gradient tensors, and checkpoint restore into ordinary `eval()` with identical output. A reproducible contact sheet from the old g1 toy-scene smoke now shows renderer proxy RGB, depth, GT flow, both event streams and static camera path. | Existing common active-valid coverage is 0.370%; moving-texture/event/GT intersection averages 14.1 pixels/window in that single smoke. No 100-update paired self-supervised run or independent rich-scene validation was performed. No mature room scene has been imported; current renderer signal is an 8-bit gamma-decoded display proxy, not native HDR radiance. A fresh WSL official ReplicaCAD download failed immediately at metadata access with `Connection refused`. |
+| **Pose — SingleShotPose / E-POSE** | E-POSE receipt: 18/18 archives and 2,377,982 extracted files. Captured g1 sample audit reports 717/717 event matches in one `block/r_01_gl` MAT/H5 window; local semantic audit independently checked time arithmetic, CAD correspondence (8,194 ordered vertices, max point difference `1e-8 m`), pose geometry, and projection. The matched wood-block XYZ and PLY CAD files were staged into a separate g1 asset directory and SHA256-verified. | Correct 2D keypoint projection differs from stored MAT labels by mean 16.450 px / max 32.744 px; reproducing the official shared-depth bug gives 0.166 px / 0.349 px. Preserve source data, rebuild geometric labels from CAD + pose + K. `cameraPose` is assigned fixed frame index 2 in source; first sample is internally consistent, so inspect another timestamp before assigning sample-level error. No paired synthetic training or independent eval/PnP run yet. |
 
-## 机器与仓库同步
+## Current blockers and resource policy
 
-- WSL 仓库：`/home/科研/Eventbased_WAM/repositories/gec-sim2real`
-- 分支：`exp/public-sim2real-v1`；更新前 HEAD：`b0f05e7ebc34ab9b2c96f728a3823a15b6ad220f`
-- Remote：`https://github.com/zyh2308/genesis-event-camera-plugin.git`
-- 本次交接更新和新证据待本地提交/推送；g1 本次两次 SSH 均 ConnectTimeout，远端状态未知，不声称已同步。
-- 最新机器快照：[live_observation_20261022T160417Z.json](evidence/S5/20261021-recon-flow-localization/live_observation_20261022T160417Z.json)，其 SHA256 sidecar 相邻保存。
+- g1 shared tree is separate from WSL code: WSL branch `exp/public-sim2real-v1`, start commit `30503672019d87a7a85f7fbbbe9e557376d0c9db`; remote working tree was at `b4f671b85ba1c2cf672c75afca71d108b4aa51a2` with unrelated existing uncommitted files. Keep it intact; use a distinct immutable execution checkout for future launches.
+- Latest g1 refresh showed high utilization on all six GPUs (68–94% at 12:00:45 UTC); the preceding 11:49:42 UTC snapshot observed other-user processes on all six. Do not use them until a fresh check finds a card safe under the local shared-server rules. A broader read-only file scan was interrupted and exited 255; do not cite it as complete.
+- The official ReplicaCAD page lists the 132 MB Interactive apartment dataset. A fresh WSL `hf download ai-habitat/ReplicaCAD_dataset --repo-type dataset --revision 3e8c7fe ...` attempt failed at metadata access with `Connection refused`; one direct no-proxy metadata request then timed out after five seconds. A previous g1 attempt failed with `Network is unreachable`. No package was obtained. This is an access/transfer blocker, not evidence that the dataset is unavailable. See [AI Habitat ReplicaCAD](https://aihabitat.org/datasets/replica_cad/) and its [official dataset card](https://huggingface.co/datasets/ai-habitat/ReplicaCAD_dataset).
+- The current Genesis rasterizer event-input path emits an 8-bit display RGB proxy with inverse gamma, quantization, clamping, and no radiometric calibration. Check whether a native radiance/HDR API exists before formal flow expansion; otherwise document the baseline consequence for research review.
+- Existing old reconstruction and flow training artifacts, old toy banks, and failed attempts remain preserved. No old real scores are used to change this version.
+
+## Reproducible evidence
+
+- Unified report: [STAGE6_THREE_LINE_HANDOFF_20261024.md](STAGE6_THREE_LINE_HANDOFF_20261024.md)
+- Flow CPU functional-path evidence: [fingerprint_cpu_shim.json](evidence/20261024-flow-entrypoint/fingerprint_cpu_shim.json)
+- Flow visual preview from existing g1 historical smoke (not a rich-scene run): [contact sheet](evidence/20261024-flow-scene-preview/repro_run1/s5q_02_train_dt1_000.png), [execution receipt](evidence/20261024-flow-scene-preview/repro_run1/preview_manifest.json)
+- Flow scene/observability evidence: [flow_smoke_audit_v3_regionfix.json](evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json)
+- HQF v3 fixed protocol candidate: [protocol JSON](protocol/hqf_14_reconstruction_test_candidate_20261021_v3.json); score gate remains closed until run preflight binds live hashes.
+- HQF frozen execution protocol and synthetic-only scorer gate: [frozen JSON](protocol/hqf_14_reconstruction_test_frozen_20261024_v1.json), [local validation record](evidence/20261024-hqf-eval-entry/local_validation_record.json)
+- E-POSE ingestion: [receipt](evidence/20261024-epose-ingestion/ingestion_receipt.json)
+- E-POSE sample semantic audit: [report](evidence/20261024-execution-refresh/epose_block_r01gl_semantic_audit_v1.md), [JSON](evidence/20261024-execution-refresh/epose_block_r01gl_semantic_audit_v1.json), and [SHA256 list](evidence/20261024-execution-refresh/epose_block_r01gl_semantic_audit_v1.SHA256SUMS.txt)
+- g1 refresh: [sanitized GPU/repo snapshot](evidence/20261024-execution-refresh/g1_live_resource_snapshot.json), [12:00:45 UTC GPU refresh](evidence/20261024-execution-refresh/g1_gpu_refresh_20261024T120045Z.json), and [E-POSE sample audit](evidence/20261024-execution-refresh/g1_sample_audit_stdout.txt). The raw broader refresh stdout is not staged because it contains other users' process command lines.
+
+All paths refer to checked-in small evidence or external g1 data paths recorded in those manifests. Checkpoint and dataset payloads remain on g1; this session has not yet produced a current-run reconstruction score, a rich-scene flow training result, or a pose training result. The verified E-POSE CAD transfer is recorded in [the machine manifest](manifests/epose_wood_block_cad_asset_manifest_20261024.json) and [receipt](evidence/20261024-execution-refresh/epose_cad_transfer_receipt.json).

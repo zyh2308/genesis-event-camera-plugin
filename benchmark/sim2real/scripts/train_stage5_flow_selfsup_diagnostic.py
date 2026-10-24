@@ -119,7 +119,7 @@ def prepare_paired_data(data_root: Path, generator: str):
 
 def registered_code_fingerprints(repo_root: Path, model_root: Path) -> dict[str, str]:
     paths = {
-        "benchmark/sim2real/scripts/train_stage5_flow_selfsup_diagnostic.py": HERE,
+        "benchmark/sim2real/scripts/train_stage5_flow_selfsup_diagnostic.py": repo_root / "benchmark/sim2real/scripts/train_stage5_flow_selfsup_diagnostic.py",
         "benchmark/sim2real/scripts/register_stage5_flow_selfsup_diagnostic_config.py": repo_root / "benchmark/sim2real/scripts/register_stage5_flow_selfsup_diagnostic_config.py",
         "benchmark/sim2real/scripts/prepare_stage5_flow_diagnostic_bank.py": repo_root / "benchmark/sim2real/scripts/prepare_stage5_flow_diagnostic_bank.py",
         "benchmark/sim2real/scripts/prepare_stage4_steflow_bank.py": repo_root / "benchmark/sim2real/scripts/prepare_stage4_steflow_bank.py",
@@ -127,7 +127,7 @@ def registered_code_fingerprints(repo_root: Path, model_root: Path) -> dict[str,
         "benchmark/sim2real/scripts/run_steflow_stage2_pilot.py": repo_root / "benchmark/sim2real/scripts/run_steflow_stage2_pilot.py",
         "benchmark/sim2real/scripts/train_steflow_stage4.py": repo_root / "benchmark/sim2real/scripts/train_steflow_stage4.py",
         "benchmark/sim2real/compat/steflow_align_corners.py": repo_root / "benchmark/sim2real/compat/steflow_align_corners.py",
-        "@model/models/steflow.py": model_root / "models/steflow.py",
+        "@model/models/STEFlow.py": model_root / "models/STEFlow.py",
         "@model/models/corr.py": model_root / "models/corr.py",
         "@model/multiscaleloss.py": model_root / "multiscaleloss.py",
     }

@@ -1,0 +1,51 @@
+{
+  "schema": "epose_wood_block_external_cad_manifest_v1",
+  "created_utc": "2026-10-24T11:58:00Z",
+  "purpose": "Stage the verified sample-matched public wood-block CAD into a separate g1 asset directory for later synthetic pilot work. Do not alter or unpack E-POSE raw archives.",
+  "source": {
+    "project": "E-Pose public source checkout",
+    "commit": "b96ae783fcb6de84e1e9c602e91bce941cab0234",
+    "object_class": "wood block / block",
+    "local_source_root": "/home/科研/Eventbased_WAM/external_sources/E_Pose"
+  },
+  "sample_pair": {
+    "recording_id": "block/r_01_gl",
+    "mat": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/block/block/r_01_gl/0001_data.mat",
+    "mat_sha256": "bd369f867e671a194b067ba03cf11664adb6b389b1762203aba3b2ed1b6edb0c",
+    "raw_h5": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/original_data/original_data/block/r_01_gl/data.h5",
+    "raw_h5_sha256": "a589e204be51970f128a39315954bdb814157945be90d6c63f56d739566f863a"
+  },
+  "unit_and_geometry": {
+    "explicit_unit_field_in_mat_h5": false,
+    "inferred_unit": "metres, strongly supported by source ROS transforms and matched CAD scale",
+    "cad_extent_m": [0.103917, 0.103464, 0.206003],
+    "xyz_to_ply_ordered_vertex_count": 8194,
+    "xyz_to_ply_max_abs_difference_m": 1.0000000022492017e-8
+  },
+  "assets": [
+    {
+      "source_relative_path": "xyz_data/wood block.xyz",
+      "g1_relative_path": "external/sim2real_assets/epose_wood_block_20261024/wood_block.xyz",
+      "size_bytes": 469394,
+      "sha256": "b86ea03231c65b6a3caa373737234f6815dfac2b9ce0b29e83ac5629b2fbf8f7",
+      "role": "point-cloud correspondence reference"
+    },
+    {
+      "source_relative_path": "obj_files/wood_block/google_16k/nontextured.ply",
+      "g1_relative_path": "external/sim2real_assets/epose_wood_block_20261024/nontextured.ply",
+      "size_bytes": 983765,
+      "sha256": "8c653731426cf73b5b5d4ffbfa3bdd4ebb14cb82d413da82559bce1b5ee3ab37",
+      "role": "sample-matched triangle mesh for the Genesis CAD pilot"
+    }
+  ],
+  "g1_stage_path": "/home/zhaoyuhan/Eventbased_WAM/external/sim2real_assets/epose_wood_block_20261024",
+  "remote_transfer_state": "verified_sha256_on_g1",
+  "remote_transfer_receipt": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/external/sim2real_assets/epose_wood_block_20261024/transfer_receipt.json",
+    "local_evidence_path": "benchmark/sim2real/evidence/20261024-execution-refresh/epose_cad_transfer_receipt.json",
+    "verified_utc": "2026-10-24T11:59:49Z",
+    "sha256": "e5d75678c14bc3a354ac5448b774e1299ed43a55b16996c57552cec9ef3043e4"
+  },
+  "raw_archives_retransferred_or_reunpacked": false,
+  "real_scoring_or_model_selection": false
+}

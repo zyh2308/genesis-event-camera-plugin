@@ -1,0 +1,105 @@
+{
+  "code_sha256": {
+    "benchmark/sim2real/scripts/freeze_hqf_v3_protocol.py": "72787c097874b4289e00f10102377f3926c4981d39cf0467e64570f6600e9add",
+    "benchmark/sim2real/scripts/run_hqf14_reconstruction_eval.py": "d3c2f14c0c402fc1ffcd5c02c3d47fbae370ce10824e833bc7eca2962cddb261",
+    "benchmark/sim2real/scripts/score_hqf14_reconstruction.py": "841cfbf27a7f881982a75ddd29965d76c5193a75836daa94fa9eca58dec5160e",
+    "benchmark/sim2real/scripts/test_hqf14_reconstruction_eval.py": "3e89da31b8193517fc2b8da3c37386864c889b0da00e2f1b0944aa976e2fd06a"
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "py_compile",
+        "benchmark/sim2real/scripts/freeze_hqf_v3_protocol.py",
+        "benchmark/sim2real/scripts/score_hqf14_reconstruction.py",
+        "benchmark/sim2real/scripts/run_hqf14_reconstruction_eval.py",
+        "benchmark/sim2real/scripts/test_hqf14_reconstruction_eval.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "benchmark/sim2real/scripts/freeze_hqf_v3_protocol.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-c",
+        "verify_frozen_protocol(frozen protocol)"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "benchmark/sim2real/scripts/test_hqf14_reconstruction_eval.py",
+        "--output",
+        "benchmark/sim2real/evidence/20261024-hqf-eval-entry/synthetic_scorer_contract_selftest_v2.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "benchmark/sim2real/scripts/score_hqf14_reconstruction.py"
+      ],
+      "exit_code": 2,
+      "expected": "refused because --enable-real-scoring was omitted"
+    },
+    {
+      "argv": [
+        "python3",
+        "benchmark/sim2real/scripts/run_hqf14_reconstruction_eval.py",
+        "--hqf-root",
+        "/nonexistent/hqf",
+        "--evreal-root",
+        "/nonexistent/evreal",
+        "--model-root",
+        "/nonexistent/model",
+        "--output-root",
+        "/tmp/hqf-real-run-must-not-start"
+      ],
+      "exit_code": 2,
+      "expected": "refused before preflight because --enable-real-scoring was omitted"
+    }
+  ],
+  "environment": {
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "python": "3.14.6 | packaged by Anaconda, Inc. | (main, Jun 18 2026, 21:28:09) [GCC 14.3.0]"
+  },
+  "host_scope": "local WSL workspace only; no SSH, download, real inference, or real metric access",
+  "protocol": {
+    "path": "benchmark/sim2real/protocol/hqf_14_reconstruction_test_frozen_20261024_v1.json",
+    "real_scoring_enabled": false,
+    "sequence_count": 14,
+    "sha256": "46656bbf0b02e3cddc79b9957cde9092b33bba0ecca48a7687c0e733cab97494",
+    "sidecar_checked": true
+  },
+  "recorded_at_utc": "2026-10-24T11:55:44Z",
+  "remote_requirements_not_verified_here": [
+    "actual g1 14-sequence memmaps against manifest hashes",
+    "actual g1 synthetic-best files against registered sizes/SHA256",
+    "pinned EVREAL and event_cnn_minimal checkout availability on g1",
+    "full 28-sequence model inference and LPIPS-Alex weights in g1 runtime"
+  ],
+  "schema": "hqf14_eval_entry_local_validation_v1",
+  "synthetic_selftest": {
+    "exit_code": 0,
+    "negative_checks_rejected": [
+      "13-of-14 dataset",
+      "misaligned event window",
+      "prediction artifact hash mismatch",
+      "wrong checkpoint binding"
+    ],
+    "paired_frame_rows": 56,
+    "path": "benchmark/sim2real/evidence/20261024-hqf-eval-entry/synthetic_scorer_contract_selftest_v2.json",
+    "real_data_used": false,
+    "real_scoring_enabled": false,
+    "sha256": "2ebb3055735cd7d39a3a4442c1683503fb9777fa7c9c95df7605b831eb3c9ce8",
+    "status": "synthetic_fixture_scorer_contract_pass_not_real_score"
+  }
+}

@@ -1,0 +1,693 @@
+{
+  "schema": "epose_block_r01gl_local_semantic_audit_v1",
+  "created_utc": "2026-10-24T11:51:08.980498+00:00",
+  "scope": {
+    "no_ssh": true,
+    "no_download": true,
+    "no_training": true,
+    "no_real_scoring": true,
+    "raw_h5_mat_arrays_available_locally": false,
+    "event_row_match_numbers_are_parsed_from_captured_g1_summary": true,
+    "local_independent_work": [
+      "event window offset/end arithmetic",
+      "official xyz/PLY point correspondence",
+      "CAD AABB corner to MAT camera-frame XYZ transform",
+      "camera-intrinsics reprojection and shared-z ablation",
+      "cameraPose/pose transform relation",
+      "official MATLAB source-line semantics"
+    ]
+  },
+  "inputs": {
+    "captured_g1_summary_path": "/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/20261024-execution-refresh/g1_sample_audit_stdout.txt",
+    "captured_g1_summary_sha256": "62c511feb5003ac6afdbf7d4d38de7715e63ca2bbde2e4b6d8113a2809d88883",
+    "g1_repo_head_recorded_in_summary": "b4f671b85ba1c2cf672c75afca71d108b4aa51a2",
+    "mat_path_recorded_in_summary": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/block/block/r_01_gl/0001_data.mat",
+    "mat_sha256_recorded_in_summary": "bd369f867e671a194b067ba03cf11664adb6b389b1762203aba3b2ed1b6edb0c",
+    "h5_path_recorded_in_summary": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/original_data/original_data/block/r_01_gl/data.h5",
+    "h5_sha256_recorded_in_summary": "a589e204be51970f128a39315954bdb814157945be90d6c63f56d739566f863a",
+    "epose_source_root": "/home/科研/Eventbased_WAM/external_sources/E_Pose",
+    "epose_source_git_head": "b96ae783fcb6de84e1e9c602e91bce941cab0234",
+    "source_file": "/home/科研/Eventbased_WAM/external_sources/E_Pose/CreateSaveDataset.m",
+    "source_file_sha256": "62c5668be502b42aee8e612e491a2f9e4b1acb19f984e03eb190f9556f09a438",
+    "xyz_file": "/home/科研/Eventbased_WAM/external_sources/E_Pose/xyz_data/wood block.xyz",
+    "xyz_sha256": "b86ea03231c65b6a3caa373737234f6815dfac2b9ce0b29e83ac5629b2fbf8f7",
+    "ply_file": "/home/科研/Eventbased_WAM/external_sources/E_Pose/obj_files/wood_block/google_16k/nontextured.ply",
+    "ply_sha256": "8c653731426cf73b5b5d4ffbfa3bdd4ebb14cb82d413da82559bce1b5ee3ab37"
+  },
+  "event_window_and_match": {
+    "sample": "block/r_01_gl/0001_data.mat paired with original_data/block/r_01_gl/data.h5",
+    "h5_mat_paths_share_recording_id": true,
+    "reported_h5_event_time_origin_s": 1715713676.2185817,
+    "mat_window_relative_s": [
+      0.06136798858642578,
+      0.07137298583984375
+    ],
+    "mapped_h5_window_absolute_s": [
+      1715713676.2799497,
+      1715713676.2899547
+    ],
+    "independently_computed_absolute_window_s": [
+      1715713676.2799497,
+      1715713676.2899547
+    ],
+    "label_time_s": 0.07137298583984375,
+    "mat_last_event_time_s": 0.07137298583984375,
+    "label_minus_window_end_s": 0.0,
+    "mapped_endpoint_minus_origin_plus_label_s": 0.0,
+    "mat_event_count": 717,
+    "g1_reported_h5_window_event_count": 717,
+    "g1_reported_count_after_matching": 717,
+    "g1_reported_xy_p_matches_within_20us": 717,
+    "g1_reported_nearest_time_error_s": {
+      "median": 0.0,
+      "max": 0.0
+    },
+    "event_xy_bounds": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        328.0,
+        259.0
+      ]
+    ],
+    "event_polarities": [
+      -1.0,
+      1.0
+    ],
+    "independent_arithmetic_checks_pass": true,
+    "captured_g1_row_matching_summary_passes_internal_count_checks": true,
+    "limitation": "Exact per-row H5/MAT matching was reported by the captured g1 summary, not recomputed here because neither raw array is locally available."
+  },
+  "cad_and_pose_geometry": {
+    "xyz_rows": 8194,
+    "ply_vertex_rows": 8194,
+    "same_order_pointwise_max_abs_difference_m": 1.0000000022492017e-08,
+    "same_order_pointwise_mean_abs_difference_m": 1.1579504962385116e-09,
+    "same_order_match_within_1e-7_m": true,
+    "cad_bbox_min_m": [
+      -0.028169,
+      -0.061617,
+      -5.7e-05
+    ],
+    "cad_bbox_max_m": [
+      0.075748,
+      0.041847,
+      0.205946
+    ],
+    "cad_bbox_extent_m": [
+      0.103917,
+      0.103464,
+      0.206003
+    ],
+    "mat_pose_camera_frame_from_object_assumption": [
+      [
+        0.9641970485895242,
+        -0.22948420819249304,
+        -0.12695061986296793,
+        0.137960083827245
+      ],
+      [
+        -0.1242750777149077,
+        -0.001397045066173823,
+        -0.989478083532995,
+        0.05517380260621807
+      ],
+      [
+        0.23060723438392972,
+        0.975085622763123,
+        -0.03017219324608312,
+        0.43201994322182014
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "mat_keypoint_xyz_camera_frame": [
+      [
+        0.20139577195756622,
+        0.0457481676616103,
+        0.49029140801763804
+      ],
+      [
+        0.22513846056979056,
+        0.045892707480906215,
+        0.3894079768923803
+      ],
+      [
+        0.10120860211883706,
+        0.058661262900761194,
+        0.4663296190959027
+      ],
+      [
+        0.1249512907310614,
+        0.05880580272005711,
+        0.365446187970645
+      ],
+      [
+        0.1752470177403017,
+        -0.15806036228178433,
+        0.4840766666777434
+      ],
+      [
+        0.19898970635252605,
+        -0.15791582246248842,
+        0.3831932355524857
+      ],
+      [
+        0.07505984790157255,
+        -0.14514726704263345,
+        0.46011487775600807
+      ],
+      [
+        0.09880253651379689,
+        -0.14500272722333754,
+        0.35923144663075035
+      ]
+    ],
+    "cad_bbox_corners_transformed_by_pose_max_abs_xyz_error_m": 1.6939234916801826e-05,
+    "cad_bbox_corners_transformed_by_pose_max_euclidean_error_m": 1.785912837408243e-05,
+    "K": [
+      [
+        292.52,
+        0.0,
+        172.61
+      ],
+      [
+        0.0,
+        293.19,
+        130.125
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "image_wh_inferred_from_event_coordinate_bounds": [
+      346,
+      260
+    ],
+    "fx_fy_cx_cy": [
+      292.52,
+      293.19,
+      172.61,
+      130.125
+    ],
+    "stored_uv": [
+      [
+        301.25069650715204,
+        159.298419301887
+      ],
+      [
+        318.9897454791946,
+        159.88125966829674
+      ],
+      [
+        234.20508990393915,
+        165.88292092426315
+      ],
+      [
+        249.3071258019712,
+        166.264751087485
+      ],
+      [
+        287.42310524167243,
+        26.059263156252232
+      ],
+      [
+        304.98149725648176,
+        24.522791042728286
+      ],
+      [
+        219.35763417924198,
+        39.351398928797465
+      ],
+      [
+        234.57585877558,
+        38.80442906896147
+      ]
+    ],
+    "correct_pinhole_projection_from_saved_camera_xyz_uv": [
+      [
+        292.76770672226,
+        157.48200658296057
+      ],
+      [
+        341.7321197147587,
+        164.6781773994591
+      ],
+      [
+        236.09629612933446,
+        167.00641384460752
+      ],
+      [
+        272.6267815886099,
+        177.30369242318784
+      ],
+      [
+        278.50904690349336,
+        34.39281374230814
+      ],
+      [
+        324.51369636435857,
+        9.299954847459993
+      ],
+      [
+        220.32961909871386,
+        37.63564727188336
+      ],
+      [
+        253.06430947676355,
+        11.779710373089111
+      ]
+    ],
+    "stored_uv_vs_correct_pinhole_error_px": {
+      "mean": 16.450069854357295,
+      "median": 17.722784773576002,
+      "max": 32.74382735602433,
+      "per_keypoint": [
+        8.675279295565085,
+        23.242762434572835,
+        2.1997493786879225,
+        25.80047619367519,
+        12.202807112579166,
+        24.763714257310312,
+        1.9719428064434987,
+        32.74382735602433
+      ]
+    },
+    "source_legacy_shared_z_projection_uv_before_undistortion": [
+      [
+        292.76770672226,
+        157.48200658296057
+      ],
+      [
+        306.9331829253389,
+        157.5684401384469
+      ],
+      [
+        232.99355926224425,
+        165.20392528529777
+      ],
+      [
+        247.1590354653231,
+        165.2903588407841
+      ],
+      [
+        277.1667121738117,
+        35.606277339191664
+      ],
+      [
+        291.33218837689054,
+        35.692710894678
+      ],
+      [
+        217.39256471379593,
+        43.3281960415289
+      ],
+      [
+        231.55804091687477,
+        43.414629597015235
+      ]
+    ],
+    "source_distortion_coefficients_k1_k2_p1_p2_k3": [
+      -0.362,
+      0.115,
+      0.0009576,
+      4.55e-06,
+      0.13
+    ],
+    "opencv_version_for_undistortion_approximation": "5.0.0",
+    "shared_z_legacy_projection_after_opencv_undistort_uv": [
+      [
+        301.5072235709042,
+        159.41036758701364
+      ],
+      [
+        319.31157980081434,
+        160.01723383131565
+      ],
+      [
+        234.27737383047673,
+        165.9327651858045
+      ],
+      [
+        249.41252878904578,
+        166.32905396460862
+      ],
+      [
+        287.53049156520603,
+        26.150676859520317
+      ],
+      [
+        305.12339325925427,
+        24.617843660419624
+      ],
+      [
+        219.3830815639063,
+        39.43432890588667
+      ],
+      [
+        234.61035172589385,
+        38.882637480900385
+      ]
+    ],
+    "stored_uv_vs_shared_z_undistorted_legacy_error_px": {
+      "mean": 0.16557283803016082,
+      "median": 0.1322475329822215,
+      "max": 0.34937988433957823,
+      "per_keypoint": [
+        0.27989025167037324,
+        0.34937988433957823,
+        0.08780328265100883,
+        0.1234692256824251,
+        0.1410258402820179,
+        0.17079073667149583,
+        0.08674647247162443,
+        0.08547701047276307
+      ]
+    },
+    "pose_length_unit_status": "metre-scale is strongly consistent with the official point cloud and ROS-style camera translations; source sample contains no explicit unit field",
+    "pose_projection_check_pass": true
+  },
+  "camera_pose_audit": {
+    "mat_cameraPose": [
+      [
+        0.9999625099766802,
+        0.0058633223810693955,
+        0.006371820131905445,
+        -0.1294616974440507
+      ],
+      [
+        0.006111231284536042,
+        -0.9991965081204319,
+        -0.039610491187590836,
+        -0.7924271801153322
+      ],
+      [
+        0.006134451346666039,
+        0.03964794585588204,
+        -0.9991948803392081,
+        0.4552938989380172
+      ]
+    ],
+    "official_T_obj_r_base_from_source": [
+      [
+        0.9649,
+        -0.2233,
+        -0.1329,
+        0.01097
+      ],
+      [
+        0.1212,
+        -0.03732,
+        0.98912,
+        -0.86408
+      ],
+      [
+        -0.2293,
+        -0.975808,
+        -0.008539,
+        0.026131
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "inverse_cameraPose_times_object_world_vs_mat_pose_max_abs": 0.0013220256097004751,
+    "translation_residual_m": 0.0008361055361816116,
+    "rotation_matrix_frobenius_residual": 0.0018867122433006284,
+    "cameraPose_translation_vs_first_h5_pose_m": 0.0025216486541917407,
+    "h5_camera_position_range_m_xyz": [
+      0.3967127826526263,
+      0.34540092539958767,
+      0.2231918167020393
+    ],
+    "source_cameraPose_assignment": [
+      [
+        308,
+        "allData{j,10} = T_dvs_r_base(1:3,1:4,2);"
+      ]
+    ],
+    "source_pose_assignment": [
+      [
+        205,
+        "allData{i,3} = T_object_r_dvs(:,:,i);"
+      ]
+    ],
+    "source_cameraPose_uses_constant_frame_index_2": true,
+    "sample_relation_consistent_with_inverse_camera_pose_times_object_world": true,
+    "confirmed": [
+      "In the captured first sample, inverse(cameraPose) multiplied by the official object-in-base transform matches MAT pose to millimetre/sub-degree scale (source transform is rounded).",
+      "The official MATLAB exporter assigns cameraPose from T_dvs_r_base(:,:,2) inside the per-frame loop, so the exporter source writes a fixed frame index rather than the current sample index.",
+      "The paired H5 sequence's full camera position varies over time; a fixed cameraPose cannot represent all samples in this moving sequence."
+    ],
+    "not_yet_confirmed": [
+      "Whether this fixed cameraPose value is wrong for this particular first MAT sample; the current sample transform is internally consistent, and the g1 summary does not provide the camera pose at the MAT timestamp or a second MAT sample.",
+      "Per-sample cameraPose behavior across later MAT files; no second MAT content was captured in the supplied summary."
+    ]
+  },
+  "official_source_semantics": {
+    "source_path": "/home/科研/Eventbased_WAM/external_sources/E_Pose/CreateSaveDataset.m",
+    "source_sha256": "62c5668be502b42aee8e612e491a2f9e4b1acb19f984e03eb190f9556f09a438",
+    "projection_lines": [
+      {
+        "line": 267,
+        "point_index": 1,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point1 = [intrinsicMatrix(1,1) * cam_point1(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point1(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point1';"
+      },
+      {
+        "line": 268,
+        "point_index": 2,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point2 = [intrinsicMatrix(1,1) * cam_point2(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point2(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point2';"
+      },
+      {
+        "line": 269,
+        "point_index": 3,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point3 = [intrinsicMatrix(1,1) * cam_point3(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point3(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point3';"
+      },
+      {
+        "line": 270,
+        "point_index": 4,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point4 = [intrinsicMatrix(1,1) * cam_point4(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point4(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point4';"
+      },
+      {
+        "line": 271,
+        "point_index": 5,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point5 = [intrinsicMatrix(1,1) * cam_point5(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point5(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point1';"
+      },
+      {
+        "line": 272,
+        "point_index": 6,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point6 = [intrinsicMatrix(1,1) * cam_point6(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point6(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point2';"
+      },
+      {
+        "line": 273,
+        "point_index": 7,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point7 = [intrinsicMatrix(1,1) * cam_point7(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point7(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point3';"
+      },
+      {
+        "line": 274,
+        "point_index": 8,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point8 = [intrinsicMatrix(1,1) * cam_point8(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point8(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point4';"
+      },
+      {
+        "line": 275,
+        "point_index": 9,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point9 = [intrinsicMatrix(1,1) * cam_point9(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point9(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point4';"
+      }
+    ],
+    "shared_depth_bug_points_2_to_9": [
+      {
+        "line": 268,
+        "point_index": 2,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point2 = [intrinsicMatrix(1,1) * cam_point2(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point2(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point2';"
+      },
+      {
+        "line": 269,
+        "point_index": 3,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point3 = [intrinsicMatrix(1,1) * cam_point3(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point3(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point3';"
+      },
+      {
+        "line": 270,
+        "point_index": 4,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point4 = [intrinsicMatrix(1,1) * cam_point4(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point4(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point4';"
+      },
+      {
+        "line": 271,
+        "point_index": 5,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point5 = [intrinsicMatrix(1,1) * cam_point5(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point5(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point1';"
+      },
+      {
+        "line": 272,
+        "point_index": 6,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point6 = [intrinsicMatrix(1,1) * cam_point6(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point6(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point2';"
+      },
+      {
+        "line": 273,
+        "point_index": 7,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point7 = [intrinsicMatrix(1,1) * cam_point7(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point7(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point3';"
+      },
+      {
+        "line": 274,
+        "point_index": 8,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point8 = [intrinsicMatrix(1,1) * cam_point8(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point8(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point4';"
+      },
+      {
+        "line": 275,
+        "point_index": 9,
+        "z_denominators": [
+          1,
+          1
+        ],
+        "source": "pixel_point9 = [intrinsicMatrix(1,1) * cam_point9(1) / (cam_point1(3)) + intrinsicMatrix(1,3), intrinsicMatrix(2,2) * cam_point9(2) / (cam_point1(3)) + intrinsicMatrix(2,3)];%intrinsic_matrix * cam_point4';"
+      }
+    ],
+    "shared_depth_bug_confirmed_in_source": true,
+    "source_event_semantics_lines": [
+      {
+        "line": 57,
+        "source": "temp_events(j, 1) = double(dvs_events_msgs{i}.Events(j).X);"
+      },
+      {
+        "line": 58,
+        "source": "temp_events(j, 2) = double(dvs_events_msgs{i}.Events(j).Y);"
+      },
+      {
+        "line": 59,
+        "source": "temp_events(j, 3) = double(dvs_events_msgs{i}.Events(j).Polarity);"
+      },
+      {
+        "line": 61,
+        "source": "if temp_events(j, 3) == 0"
+      },
+      {
+        "line": 62,
+        "source": "temp_events(j, 3) = -1;"
+      },
+      {
+        "line": 66,
+        "source": "temp_events(j, 4) = seconds(timeo);"
+      },
+      {
+        "line": 122,
+        "source": "frames{i-1,1} = [events_parallel_ext(indices_seg(i-1):indices_seg(i),1),(events_parallel_ext(indices_seg(i-1):indices_seg(i),2)),events_parallel_ext(indices_seg(i-1):indices_seg(i),4),events_parallel_ext(indices_seg(i-1):indices_seg(i),3)];"
+      },
+      {
+        "line": 305,
+        "source": "allData{j,7} = allData{j,2}.*BW_closed;"
+      },
+      {
+        "line": 306,
+        "source": "allData{j,8} = BW_closed;"
+      },
+      {
+        "line": 347,
+        "source": "cameraPose = allData{i,10}; % Assuming camera pose is in the ninth column"
+      },
+      {
+        "line": 350,
+        "source": "events =allData{i,1};"
+      }
+    ],
+    "mat_events_are_taken_from_full_raw_frame_buffer_before_masking": true,
+    "mat_event_layout": "[x,y,t,p] per exporter frame construction",
+    "h5_event_layout": "[x,y,p,t] as produced by source and as recorded in captured H5 row schema",
+    "gt_mask_usage": "mask is applied to event image/segmented image output; raw events variable is saved separately",
+    "distortion_coefficients_from_source": [
+      -0.362,
+      0.115,
+      0.0009576,
+      4.55e-06,
+      0.13
+    ],
+    "caveat": "Code semantics are source-audited. Only the captured r_01_gl/0001_data.mat sample values were numerically checked; other frames/recordings were not opened."
+  },
+  "conclusion": {
+    "supported": [
+      "The provided g1 summary names a same-recording block/r_01_gl H5/MAT pair and reports exact 717-to-717 event matching, all 717 spatial/polarity matches within 20 us, and zero nearest-time error; local script independently checks window/label arithmetic and count consistency.",
+      "The official E-POSE block.xyz and wood_block nontextured PLY are the same ordered point cloud to 1e-8 m, establishing a strong exact CAD correspondence for the block object.",
+      "The MAT pose and 3-D keypoint coordinates are geometrically self-consistent with that CAD point-cloud AABB to below 17 micrometres.",
+      "The stored 2-D keypoints align with the source's shared-depth projection plus undistortion (mean residual reported below 0.2 px), while correct per-point pinhole projection differs by about 16 px mean and up to 33 px; this strongly confirms the suspected common-depth bug in the saved 2-D labels.",
+      "The source exporter assigns cameraPose from frame index 2 inside the sample loop; that is a confirmed exporter bug/risk for later MAT rows of this moving sequence."
+    ],
+    "not_claimed": [
+      "No raw H5/MAT binaries were re-read locally; exact event matching is cited from the captured g1 sample-audit summary, while geometry was recomputed from captured MAT values and local CAD files.",
+      "No real model inference, training, or real scoring occurred.",
+      "No statement that the fixed cameraPose is wrong for this particular first sample; one sample is internally consistent."
+    ],
+    "recommended_data_handling": "Keep the source MAT/H5 immutable. For any downstream pose supervision/evaluation, recompute 2-D projections from verified CAD points and MAT pose/K rather than consume suspect keypointprojections(:,1:2); use pose as the primary transform only after sample-wise convention checks, and do not use cameraPose until per-sample semantics are resolved."
+  }
+}

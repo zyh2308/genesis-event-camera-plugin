@@ -1,0 +1,343 @@
+{
+  "data_integrity": {
+    "known_raw_data_exception": {
+      "evidence": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_source_timing_audit_summary.json",
+      "header_time_backward_jump_from_previous_s": 2147.396356,
+      "raw_bag_manifest": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_raw_download_manifest.json",
+      "retained_image_message_count_expected": 1266,
+      "sequence": "engineering_posters",
+      "source_image_index_zero_based": 528,
+      "source_image_message_count": 1267
+    },
+    "nonmonotonic_endpoint_rule": "Before inference, omit the offending reference target and its endpoint when its header timestamp is <= the last retained timestamp. Preserve the event stream unchanged; the next retained endpoint consumes all events since the previous retained endpoint. Record original source index, header timestamp, bag record timestamp, and image payload hash. Apply the rule without inspecting model outputs or metric values.",
+    "score_gate": "The 2026-10-24 user execution instruction freezes the already-reviewed v3 source-order/time-integrity rule for one first HQF evaluation. No score-based tuning, subset selection, or checkpoint selection is permitted.",
+    "score_gate_research_review_source": "reviews/recon_flow_localization_20261019/REVIEW.md",
+    "sequence_coverage": "All 14 registered HQF sequences remain in the dataset-level aggregate; only source frames that fail the fixed monotonic timestamp integrity rule are omitted.",
+    "source_image_order": "Preserve ROS bag record order. Use sensor_msgs/Image header.stamp as the image endpoint timestamp; do not sort frames or impute replacement timestamps.",
+    "strict_time_rule": "Retain a frame only when its header timestamp is strictly greater than the previous retained frame timestamp."
+  },
+  "dataset_role": {
+    "decision_source": "reviews/recon_flow_localization_20261019/REVIEW.md",
+    "extension": "HS-ERGB only; not a substitute for HQF primary",
+    "primary": "HQF all 14 sequences",
+    "rationale": "HQF supplies high-quality aligned reference frames for event reconstruction and is natively supported by the locked EVREAL MemMapDataset configuration; HS-ERGB remains a video-interpolation extension requiring a distinct target-time protocol."
+  },
+  "expected_converted_files_per_sequence": [
+    "events_ts.npy",
+    "events_xy.npy",
+    "events_p.npy",
+    "images.npy",
+    "images_ts.npy",
+    "image_event_indices.npy",
+    "metadata.json",
+    "conversion_manifest.json"
+  ],
+  "model": {
+    "architecture": "pinned event_cnn_minimal E2VIDRecurrent",
+    "geometry": "pad native 180x240 using the pinned E2VID CropParameters, run inference, crop output back to the exact native raster",
+    "inference_input": "events only, five signed temporal bins between reference-frame endpoints",
+    "model_args_source": "configs/stage4_corrected_v2_flowdt1_seed0.json::reconstruction.model_args",
+    "model_args_source_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+    "output_range_rule": "raw output is checked finite and logged, then clipped once to [0,1] before all metric calculations",
+    "public_pretrained_checkpoint_substitution": false,
+    "sequence_start": "reset recurrent state once at the first retained image, use that image only as the temporal boundary, then make the first model call on events from (t0,t1]; never carry state across sequences",
+    "weights": "new corrected-Stage5 synthetic-best checkpoint, selected only by synthetic LPIPS-VGG validation"
+  },
+  "photometry_and_metrics": {
+    "LPIPS_AlexNet_input": "repeat the grayscale [0,1] prediction and reference into 3 channels, then map linearly to [-1,1] for the pinned PerceptualSimilarity AlexNet network",
+    "MSE_input": "native grayscale float32 [0,1]",
+    "PSNR_input": "native grayscale float32 [0,1], data_range=1; exact match is +infinity",
+    "SSIM_input": "native grayscale float32 [0,1], data_range=1",
+    "aggregation": "arithmetic mean over evaluated frames within each sequence; then equal arithmetic mean over all 14 sequences",
+    "brightness_or_histogram_fit_to_real_GT": false,
+    "checkpoint_selection_uses_real_data": false,
+    "evaluated_endpoint_set": "all retained, strictly increasing HQF event endpoints after the first image boundary (indices 1..N-1) in each of the 14 sequences; the first image has no preceding event window and is excluded from model input and metrics; no output-selected frame subset",
+    "metric_values_per_frame": true,
+    "model_output_and_reference_range": "float32 [0,1] on the same native grayscale pixel grid",
+    "prediction_mapping": "clip the raw E2VID grayscale output to [0,1] once before metrics and preview export; no per-frame min-max, brightness fit, or histogram fit",
+    "primary_metric": "LPIPS-AlexNet",
+    "raw_model_output_recording": "retain finite raw min/max for audit; metrics use a deterministic clamp to [0,1]",
+    "secondary_metrics": [
+      "SSIM",
+      "PSNR",
+      "MSE"
+    ],
+    "sequence_weights": "equal; never proportional to frame count"
+  },
+  "protocol_freeze": {
+    "checkpoint_bindings": {
+      "eventgenesis": {
+        "best_epoch": 170,
+        "best_synthetic_validation_lpips_vgg": 0.041166816372424364,
+        "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+        "checkpoint_sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc",
+        "checkpoint_size_bytes": 171428482,
+        "selection": "corrected Stage-5 synthetic LPIPS-VGG best; real HQF is not used for selection"
+      },
+      "v2e": {
+        "best_epoch": 195,
+        "best_synthetic_validation_lpips_vgg": 0.08367991168051958,
+        "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/v2e/synthetic_best.pt",
+        "checkpoint_sha256": "598b1e7837b4b02b50a7f390889c7737ed797840043a3f23121f54dc99d050d8",
+        "checkpoint_size_bytes": 171428482,
+        "selection": "corrected Stage-5 synthetic LPIPS-VGG best; real HQF is not used for selection"
+      }
+    },
+    "data_manifest": {
+      "expected_sequence_count": 14,
+      "path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/20261021-hqf14-manifest-validation-v3/hqf_14_file_manifest_v3.json",
+      "sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add",
+      "status": "ready_unscored"
+    },
+    "execution_code": {
+      "benchmark/sim2real/scripts/freeze_hqf_v3_protocol.py": "72787c097874b4289e00f10102377f3926c4981d39cf0467e64570f6600e9add",
+      "benchmark/sim2real/scripts/infer_hqf_e2vid_candidate.py": "662d2819c3aa5f6fa3c4f35ed82fb19fde39be0b59076f49da664e2e59f7af56",
+      "benchmark/sim2real/scripts/run_hqf14_reconstruction_eval.py": "d3c2f14c0c402fc1ffcd5c02c3d47fbae370ce10824e833bc7eca2962cddb261",
+      "benchmark/sim2real/scripts/score_hqf14_reconstruction.py": "841cfbf27a7f881982a75ddd29965d76c5193a75836daa94fa9eca58dec5160e",
+      "benchmark/sim2real/scripts/test_hqf14_reconstruction_eval.py": "3e89da31b8193517fc2b8da3c37386864c889b0da00e2f1b0944aa976e2fd06a"
+    },
+    "execution_policy": "The user authorized the first fixed HQF v3 two-arm evaluation. This file freezes that candidate for the run; do not edit or use its scores to tune/select anything. The evaluation has not been run by this freeze step.",
+    "frozen_at_utc": "2026-10-24T11:54:43Z",
+    "metric_contract": {
+      "checkpoint_selection_uses_real_data": false,
+      "dataset_aggregation": "equal arithmetic mean of the 14 sequence means; not weighted by sequence length",
+      "per_frame": [
+        "LPIPS-AlexNet",
+        "SSIM",
+        "PSNR",
+        "MSE"
+      ],
+      "prediction_storage": "float32 [H,W], clipped once to [0,1] by the registered inference adapter",
+      "real_data_used_for_training_or_selection": false,
+      "sequence_aggregation": "arithmetic mean of all inferable frames in the sequence; PSNR exact-match frames have +infinity"
+    },
+    "model_config": {
+      "path": "benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+      "sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d"
+    },
+    "pre_registered_preview_indices": {
+      "bike_bay_hdr": {
+        "num_frames_including_anchor": 2431,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          608,
+          1215,
+          1822,
+          2430
+        ]
+      },
+      "boxes": {
+        "num_frames_including_anchor": 540,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          135,
+          270,
+          404,
+          539
+        ]
+      },
+      "desk": {
+        "num_frames_including_anchor": 1491,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          373,
+          745,
+          1117,
+          1490
+        ]
+      },
+      "desk_fast": {
+        "num_frames_including_anchor": 724,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          181,
+          362,
+          542,
+          723
+        ]
+      },
+      "desk_hand_only": {
+        "num_frames_including_anchor": 467,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          117,
+          233,
+          349,
+          466
+        ]
+      },
+      "desk_slow": {
+        "num_frames_including_anchor": 1434,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          359,
+          717,
+          1075,
+          1433
+        ]
+      },
+      "engineering_posters": {
+        "num_frames_including_anchor": 1266,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          317,
+          633,
+          949,
+          1265
+        ]
+      },
+      "high_texture_plants": {
+        "num_frames_including_anchor": 1090,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          273,
+          545,
+          817,
+          1089
+        ]
+      },
+      "poster_pillar_1": {
+        "num_frames_including_anchor": 998,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          250,
+          499,
+          748,
+          997
+        ]
+      },
+      "poster_pillar_2": {
+        "num_frames_including_anchor": 613,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          153,
+          306,
+          459,
+          612
+        ]
+      },
+      "reflective_materials": {
+        "num_frames_including_anchor": 619,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          155,
+          309,
+          463,
+          618
+        ]
+      },
+      "slow_and_fast_desk": {
+        "num_frames_including_anchor": 1744,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          436,
+          872,
+          1307,
+          1743
+        ]
+      },
+      "slow_hand": {
+        "num_frames_including_anchor": 901,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          225,
+          450,
+          675,
+          900
+        ]
+      },
+      "still_life": {
+        "num_frames_including_anchor": 1194,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          299,
+          597,
+          895,
+          1193
+        ]
+      }
+    },
+    "required_real_run_flag": "--enable-real-scoring",
+    "source_bundle": {
+      "path": "benchmark/sim2real/manifests/downstream_source_bundle.json",
+      "sha256": "828bccdaf0b046b56ee2b8c8230ebc3651b8ccfc16652ae7ea9a3f739dbabdb9"
+    },
+    "source_candidate": {
+      "path": "benchmark/sim2real/protocol/hqf_14_reconstruction_test_candidate_20261021_v3.json",
+      "sha256": "595b3517b58c946ee26c10154e35c4c39999e5832849d98acadde3094bdf162a"
+    },
+    "source_candidate_path": "benchmark/sim2real/protocol/hqf_14_reconstruction_test_candidate_20261021_v3.json",
+    "source_candidate_sha256": "595b3517b58c946ee26c10154e35c4c39999e5832849d98acadde3094bdf162a",
+    "training_artifact_manifest": {
+      "path": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/reconstruction_training_artifact_manifest.json",
+      "sha256": "087bbc25e2ba879ffa2a0855ad75c65ab241fc5ac127e575fb3bd7ee4c1848ce"
+    },
+    "training_config": {
+      "path": "benchmark/sim2real/configs/stage4_training_launch_v1.json",
+      "sha256": "48afa40d4afe36c287858b9d87556c4250b9535ade35a3952ff4cced53268074"
+    }
+  },
+  "raw_bag_contract": {
+    "event_polarity_encoding": "0=OFF, 1=ON",
+    "event_topic": "/dvs/events",
+    "extension": ".bag",
+    "native_sensor_hw": [
+      180,
+      240
+    ],
+    "reference_image_topic": "/dvs/image_raw",
+    "source_time_unit": "ROS header timestamp seconds"
+  },
+  "real_data_used_for_training_or_selection": false,
+  "real_scores_authorized": true,
+  "real_scoring_authorized": true,
+  "real_scoring_enabled": false,
+  "schema": "hqf_14_reconstruction_test_frozen_v1",
+  "sequences": [
+    "bike_bay_hdr",
+    "boxes",
+    "desk",
+    "desk_fast",
+    "desk_hand_only",
+    "desk_slow",
+    "engineering_posters",
+    "high_texture_plants",
+    "poster_pillar_1",
+    "poster_pillar_2",
+    "reflective_materials",
+    "slow_and_fast_desk",
+    "slow_hand",
+    "still_life"
+  ],
+  "sources": {
+    "evreal_hqf_config_sha256": "5ff01881f21f9a3eb079793231b57447a7ce4413e04ea2e7bcab8eb5ad344559",
+    "official_dataset_folder": "https://drive.google.com/drive/folders/18Xdr6pxJX0ZXTrXW9tK0hC3ZpmKDIt6_",
+    "official_evreal_commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+    "official_evreal_hqf_config": "config/dataset/HQF.json",
+    "official_paper_dataset_page": "https://timostoff.github.io/20ecnn",
+    "sequence_inventory_crosscheck": "fixed 14-name set in the official-source-compatible HQF conversion inventory; names checked against published E2HQV catalog"
+  },
+  "status": "frozen_execution_protocol_unscored",
+  "time_alignment": {
+    "event_window": "EVREAL MemMapDataset receives end-exclusive offsets; each model input slice is events with previous image timestamp < t <= current reference image timestamp. The first interval begins at event offset 0, and no event after the current image is included.",
+    "first_endpoint": "the first image initializes sequence time and recurrent state but is not passed through the model or scored; every later endpoint uses exactly the events in (previous_image_timestamp,current_image_timestamp] with no future event",
+    "nonmonotonic_source_images": "Apply data_integrity.nonmonotonic_endpoint_rule before endpoint association and event-only inference; no timestamps are fabricated.",
+    "pinned_EVREAL_legacy_difference": "The pinned EVREAL bag_to_npy helper computes searchsorted(..., right)-1 but its MemMapDataset consumes the value as an exclusive event offset, omitting one event at each endpoint. This adapter uses searchsorted(..., right) end-exclusive offsets to implement the registered (previous,current] interval exactly; the dataset/model/metric interface remains pinned.",
+    "reference_endpoint": "reference image timestamp",
+    "sequence_end": "include the final reference endpoint exactly once"
+  }
+}

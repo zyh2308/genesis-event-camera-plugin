@@ -66,7 +66,7 @@ def main() -> None:
         raise RuntimeError("paired adapter manifest fails the registered synthetic-only contract")
 
     code_paths = {
-        "benchmark/sim2real/scripts/register_stage5_flow_selfsup_diagnostic_config.py": HERE,
+        "benchmark/sim2real/scripts/register_stage5_flow_selfsup_diagnostic_config.py": repo / "benchmark/sim2real/scripts/register_stage5_flow_selfsup_diagnostic_config.py",
         "benchmark/sim2real/scripts/train_stage5_flow_selfsup_diagnostic.py": repo / "benchmark/sim2real/scripts/train_stage5_flow_selfsup_diagnostic.py",
         "benchmark/sim2real/scripts/prepare_stage5_flow_diagnostic_bank.py": repo / "benchmark/sim2real/scripts/prepare_stage5_flow_diagnostic_bank.py",
         "benchmark/sim2real/scripts/prepare_stage4_steflow_bank.py": repo / "benchmark/sim2real/scripts/prepare_stage4_steflow_bank.py",
@@ -74,7 +74,7 @@ def main() -> None:
         "benchmark/sim2real/scripts/run_steflow_stage2_pilot.py": repo / "benchmark/sim2real/scripts/run_steflow_stage2_pilot.py",
         "benchmark/sim2real/scripts/train_steflow_stage4.py": repo / "benchmark/sim2real/scripts/train_steflow_stage4.py",
         "benchmark/sim2real/compat/steflow_align_corners.py": repo / "benchmark/sim2real/compat/steflow_align_corners.py",
-        "@model/models/steflow.py": model / "models/steflow.py",
+        "@model/models/STEFlow.py": model / "models/STEFlow.py",
         "@model/models/corr.py": model / "models/corr.py",
         "@model/multiscaleloss.py": model / "multiscaleloss.py",
     }
