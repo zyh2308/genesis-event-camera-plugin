@@ -1,8 +1,18 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-23（Asia/Tokyo）
-**阶段：** R1.5 先前 CPU/CUDA surface candidate 的 g1 缓存片段验证已完成：请求像素降至约 0.91%/0.95%，但事件一致性未恢复，且所有已测配对仍慢于 Direct-HDR（最佳 1.36×）。本轮新增独立 OpenGL 硬件三角形栅格候选，代码与静态检查已提交至本地分支；本轮两次 g1 SSH 预检均在连接阶段超时，未执行任何远端命令，因此没有该候选的运行、正确性、遮挡、覆盖率或成本结果。待 g1 恢复后按下方 R1.5 OpenGL 候选入口执行一次缓存回放。冻结 core 未改，任务/相机/控制/评分不变。本地 HEAD `10a0661`，分支领先 origin 9 个提交；先前 HTTPS/SSH push 均失败，本轮未重试推送。
+**更新时间：** 2026-10-24（Asia/Tokyo）
+**阶段：** R1.5 现在优先核实光度时间变化与 renderer sampling contract。研究侧缓存隔离显示固定静态地面上的 endpoint log-linear 输入会少生成 38.6%/52.1% 的事件，且中间事件出现在端点差低于阈值的像素；因此端点残差不能证明区间内无光度变化。此次本地审查发现 HDR overlay 源码请求至多 4x MSAA，但不随帧记录真实 attachment samples/resolve；radiance 与 segmentation/depth 走不同 resolve 路径。g1 本轮 SSH 资源预检超时，未能确认当前 GPU 状态；考虑研究侧最近快照六卡均繁忙，本轮未启动 renderer，只完成 CPU/接口审查。详细数据、哈希、兼容方案和有界 2x2 后续实验见下方 `R1.5 photometric timing / sampling contract`。Frozen core 未改。此前 GL 栅格候选代码仍只做静态检查，尚无运行结果。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
+
+## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
+
+- 研究侧诊断包归档在 [`r1_5_photometric_sampling_contract_20261024a/`](../../benchmark/robot_closed_loop/results/r1_5_photometric_sampling_contract_20261024a/)。保留其原始脚本、JSON、NPZ、分区图像与内层 `SHA256SUMS`；本轮未重跑原六项控制或旧扫频。
+- Episode 004 / 005 的静态地面固定掩码为 61,322 / 61,039 px；同一理想 DVS 对真实中间缓存辐亮度生成 308 / 451 events，对端点 log-linear 序列生成 189 / 216 events，分别少 38.6% / 52.1%。端点差低于阈值的像素仍有 71 / 169 个直接缓存事件。配对事件时间差 median/P95 为 2.583/6.537 ms 和 2.593/6.353 ms；配对及 tolerance 口径见阶段报告。
+- 中点两端点连续表面候选在同标签共同有效区分别有 63 / 92 px 的 `abs(log error)>0.2`，其中地面 56 / 62 px、几何分割边缘带外 36 / 62 px。阴影是嫌疑项但未通过干预证实。该候选支持率 83.53% / 83.93%，这是双端点诊断配置，不能与此前 full multi-reference ROI 请求面积混为一谈。
+- Local HDR renderer overlay 的源代码哈希见阶段报告。源码显示 radiance color buffer 请求 `min(GL_MAX_SAMPLES,4)` 并由 MSAA buffer resolve 到 single-sample `RGBA16F`；segmentation 在 `GL_MULTISAMPLE` disabled 的独立 pass，depth 又独立 resolve。运行时 attachment sample 数、sample position 和具体 driver resolve 尚未读回。OpenGL 规范还区分可查询的 shading sample position 与不保证相同、不可由 `GetMultisamplefv` 查询的 coverage sample position；后续日志必须保留这个区别。
+- 报告给出 benchmark-level `FramePacket v1` 草案：保留线性 radiance、几何定义、采样/resolve 规则、renderer provenance、state timestamp 与真实 availability time；`geometry_support` 和 `radiance_temporal_support` 分开。`legacy_resolved` 缓存保持可复跑，但中间时刻光度状态默认 unknown，不从小 endpoint residual 推断可信。尚未改 frozen core，也未决定 per-sample buffer 的生产内存/耗时。
+- 本轮一个串行只读 g1 预检对 `zhaoyuhan@10.129.163.68:22` 超时，远端命令未执行。研究侧较早快照是 GPU0–5 利用率 85/83/94/94/95/94%，该快照不是本轮实时状态。无当前资源证明，因此本轮没有 renderer 数据或新成本测量。先前不同配置的 surface profile 仍为历史上下文：CPU AA 1.36×、CUDA AE 5.17× Direct-HDR，不能外推到这组实验。
+- 下一步明确且有界：GPU 资源重新确认空闲后，episode004/005 在真实 source/mid/end 时刻先做 `shadow on/off × multisample off/on`，并增加简单高反差轮廓控制；同一 condition 内 candidate 与 Direct-HDR 必须共用渲染设置。先用三个真实状态，只有初步结果不能分离贡献时才扩到已有十个状态。若影子关闭后地面变化仍在，再独立查反射和照明项。**当前未进入 core 切换或重训阶段。**
 
 ## R1.5 OpenGL 表面栅格候选（2026-10-23；仅静态校验，g1 运行受网络阻塞）
 
