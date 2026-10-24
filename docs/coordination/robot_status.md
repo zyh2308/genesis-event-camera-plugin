@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-24（Asia/Tokyo）
-**阶段：** R1.5 现在优先核实光度时间变化与 renderer sampling contract。研究侧缓存隔离显示固定静态地面上的 endpoint log-linear 输入会少生成 38.6%/52.1% 的事件，且中间事件出现在端点差低于阈值的像素；因此端点残差不能证明区间内无光度变化。此次本地审查发现 HDR overlay 源码请求至多 4x MSAA，但不随帧记录真实 attachment samples/resolve；radiance 与 segmentation/depth 走不同 resolve 路径。g1 本轮 SSH 资源预检超时，未能确认当前 GPU 状态；考虑研究侧最近快照六卡均繁忙，本轮未启动 renderer，只完成 CPU/接口审查。详细数据、哈希、兼容方案和有界 2x2 后续实验见下方 `R1.5 photometric timing / sampling contract`。Frozen core 未改。此前 GL 栅格候选代码仍只做静态检查，尚无运行结果。
+**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。研究侧缓存隔离显示固定静态地面上的 endpoint log-linear 输入会少生成 38.6%/52.1% 的事件，且中间事件出现在端点差低于阈值的像素；本地 CPU 空间统计进一步显示变化局部、非单调，不像全局曝光漂移，移动阴影是当前首要假设但尚未因果确认。HDR overlay 源码请求至多 4x MSAA，但不随帧记录真实 attachment samples/resolve；radiance 与 segmentation/depth 走不同 resolve 路径。g1 本轮 SSH 资源预检超时，研究侧最近快照六卡均繁忙，因此未启动 renderer，只做缓存与接口诊断。新的 CPU 分析、复跑命令和哈希见 [`r1_5_photometric_rootcause_cpu_20261024b`](../../benchmark/robot_closed_loop/results/r1_5_photometric_rootcause_cpu_20261024b/)，基线隔离结果见下方 `R1.5 photometric timing / sampling contract`。Frozen core 未改。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
@@ -13,6 +13,15 @@
 - 报告给出 benchmark-level `FramePacket v1` 草案：保留线性 radiance、几何定义、采样/resolve 规则、renderer provenance、state timestamp 与真实 availability time；`geometry_support` 和 `radiance_temporal_support` 分开。`legacy_resolved` 缓存保持可复跑，但中间时刻光度状态默认 unknown，不从小 endpoint residual 推断可信。尚未改 frozen core，也未决定 per-sample buffer 的生产内存/耗时。
 - 本轮一个串行只读 g1 预检对 `zhaoyuhan@10.129.163.68:22` 超时，远端命令未执行。研究侧较早快照是 GPU0–5 利用率 85/83/94/94/95/94%，该快照不是本轮实时状态。无当前资源证明，因此本轮没有 renderer 数据或新成本测量。先前不同配置的 surface profile 仍为历史上下文：CPU AA 1.36×、CUDA AE 5.17× Direct-HDR，不能外推到这组实验。
 - 下一步明确且有界：GPU 资源重新确认空闲后，episode004/005 在真实 source/mid/end 时刻先做 `shadow on/off × multisample off/on`，并增加简单高反差轮廓控制；同一 condition 内 candidate 与 Direct-HDR 必须共用渲染设置。先用三个真实状态，只有初步结果不能分离贡献时才扩到已有十个状态。若影子关闭后地面变化仍在，再独立查反射和照明项。**当前未进入 core 切换或重训阶段。**
+
+## R1.5 archived photometric root-cause follow-up（2026-10-24；本地 CPU）
+
+- **执行范围：** 复用 `r1_5_photometric_sampling_contract_20261024a` 已保存的 episode 004/005 HDR 帧和事件 NPZ；未初始化 Genesis、未重渲、未推进物理、未训练、未连接 g1。执行仓库分支 `exp/robot-closed-loop-v1`，基准 commit `7a19b4d824e7ed40d92c5cf8f58b3a3ef0c0e95c`，分析脚本 SHA256 `e41a1168e61a67e51cc6691378a666d2b252c69e02f7c0d1e5b677a113a692d2`。无新配置；精确输入和源码 commit/hash 记于结果 JSON。
+- **新统计：** 在静态固定地面区域，中心/+55 mm 的全局中位 log 亮度十个时刻范围均为 0；但端点模型误差超过 0.2 的地面像素有 71/96，亮度方向至少反转一次的像素有 161/208。真实 Direct-HDR→理想 DVS 事件分别为 308/451，分布在 73/108 个活动像素；所有事件均落在 endpoint residual `>0.05 log` 的像素上，其中 293/308 和 432/451 落在 `>0.20 log` 像素上。双极性像素为 28/48，前三大 8 邻接活动组覆盖活动像素的 57.5%/37.0%。统计脚本和逐集热图在结果目录，`SHA256SUMS` 可复核；原始缓存 SHA256 沿用前节 `0525…879d7 / 91c1…d434` 与 `b3af…c321 / f161…7236`。
+- **最可能的物理画面原因：** 移动物体/机械臂的投影阴影在静态地面上造成局部、非单调的 scene-linear 辐亮度变化。机器人场景只显式设置 `ambient_light`，Genesis 1.2.2 `VisOptions` 的默认 `shadow=True`、`plane_reflection=False`；画面中可见机器人阴影。此证据与阴影吻合，但没有 shadow-off 同状态干预，仍属优先假设，不是已确认唯一根因。静态地面中位数不变、活动事件局部聚集，削弱了全局曝光漂移解释。
+- **研究方法联系：** ESIM 的自适应步长由图像梯度和场景运动的亮度变化估计导出，并基于 Lambertian brightness-constancy 近似；若亮度因动态光照/阴影变化，几何运动界限不足，需可观测的光度采样或阴影可见性信号。[ESIM 论文](https://proceedings.mlr.press/v87/rebecq18a/rebecq18a.pdf)。V2E 对原始/插值灰度帧跑 DVS；插帧可利用输入图像证据，但无法保证重建源帧完全未观测到的瞬态变化。[V2E 官方实现](https://github.com/SensorsINI/v2e)。这解释的是两类生成路径能提供的证据不同，不构成方法排名。
+- **已排除/区分：** HDR shader 路径用 RGBA16F 输出 scene-linear radiance，不做 gamma 编码或 8-bit clip；本实验未提示全局亮度漂移。多采样颜色与单采样 segmentation/depth 分离仍可能影响几何轮廓和边缘对应，但固定地面事件测量绕开 warp，且离几何标签边缘至少 2 px，因此不应把地面时间变化归因于该轮廓采样问题。归档 Direct-HDR 的活动 renderer binary/source 与当前 overlay 是否完全一致仍未证实。
+- **下一步：** 资源允许时，用同一缓存实际状态做 `shadow on/off × multisample on/off` 小型 matched render；同时检查一个高反差轮廓控制。记录真实 renderbuffer sample count、driver、sampling/resolve、分区图像/事件与分项成本。若关阴影消除地面动态残差而轮廓差异不变，则把问题归到缺失动态照明项；若未消除，再查材质/阴影着色和 sample resolve。正式场景阴影不因消融结果而暗中改变。当前仍不切换 frozen core、不重训、不做排名。
 
 ## R1.5 OpenGL 表面栅格候选（2026-10-23；仅静态校验，g1 运行受网络阻塞）
 
