@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-24（Asia/Tokyo）
-**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。episode 004/005 CPU 缓存诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内。穷举平移同一轮廓后，真实位置在空间 null 的高端（上尾比例 2.17%/2.53%），但其他位置也能达到相同分数，因此这是有限的空间特异性证据，不是阴影因果证明。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。g1 串行 SSH 预检超时，远端命令未执行；本轮只完成 CPU 缓存分析。结果、复跑命令与哈希见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/) 和 [`r1_5_shadow_edge_spatial_null_cpu_20261024g`](../../benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g/)。HDR overlay 仍请求至多 4x MSAA，运行时样本/resolve 未核验。Frozen core 未改。
+**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。episode 004/005 CPU 缓存诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内。穷举平移同一轮廓后，真实位置在空间 null 的高端（上尾比例 2.17%/2.53%），但其他位置也能达到相同分数，因此这是有限的空间特异性证据，不是阴影因果证明。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。benchmark 层现已接入 `VisOptions.shadow` 消融入口，并准备同缓存状态开/关对照；未在 g1 实测。最新一次串行 SSH 只读预检连接超时，远端命令未执行；结果、哈希和复跑入口见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/)、[`r1_5_shadow_edge_spatial_null_cpu_20261024g`](../../benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g/) 和下方 `R1.5 matched shadow intervention readiness`。HDR overlay 运行时样本/resolve 仍未核验。Frozen core 未改。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
@@ -44,6 +44,27 @@
 - **方法：** 对同一时间并集解析阴影轮廓做穷举整数平移，范围由图像尺寸限定，并要求轮廓及 5 px 邻域不越出画面；只保留轮廓落入固定地面掩码的像素数处在真实位置 0.8–1.2 倍的位移。用二维相关一次计算全部位移的 `<=5 px` 事件比例，不抽样、不训练。初版要求整条轮廓 95% 落在地面，50,000 次提议仍没有可用位置；原因是解析轮廓有大部分不在可见地面掩码里。最终条件改为匹配实际可见轮廓长度，保留这一修订记录。
 - **结果及限度：** episode004 真实位置分数 `0.5844`，1,858 个可接受平移的中位数 `0`、95 分位 `0.4198`、最高值 `0.5844`、达到/超过真实分数的比例 `2.53%`；episode005 分数 `0.4412`，1,844 个平移的中位数 `0`、95 分位 `0.3493`、最高值 `0.4412`、上尾比例 `2.17%`。因此真实对齐处于这套简单空间 null 的高端，但最高分有其他位移并列；不能把上尾比例当正式假设检验 p 值，episode 也不是独立抽样。该结果比“对照均匀地面像素”更苛刻，仍只支持方块阴影是一个可能贡献源，不证明因果，也不识别历史 renderer 二进制。
 - **复跑：** `python benchmark/robot_closed_loop/diagnostics/check_r1_5_shadow_edge_spatial_null.py --output benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g`。完整数值与哈希见结果 JSON。这个 CPU null 不替代 g1 的同状态重复渲染、shadow-on/off 对照；远端连接恢复前不启动 GPU 实验。
+
+## R1.5 matched shadow intervention readiness（2026-10-24；尚未运行）
+
+- **实现：** `build_robot_scene(..., diagnostic_shadow=...)` 现在可在 benchmark 层显式传 `VisOptions.shadow`；默认 `None` 完全保留既有场景行为。frozen renderer、event core、物理轨迹和评分均不变。
+- **固定方案：** 配置 [`r1_5_shadow_on_off_cached_states_20261024h.json`](../../benchmark/robot_closed_loop/configs/r1_5_shadow_on_off_cached_states_20261024h.json) 指定 episode 004/005 的 0.5805、0.5855、0.5905 s 三个已记录状态；每种开关状态先做一次 renderer warmup，每个状态重复捕获两次。HDR、深度和分割同时读回；真实 DVS 在全画面输入上运行，地面掩码只在事件生成后用于评估。该最小设计每个 episode 共 14 次相机调用（含 warmup），两集两条件共 28 次；若三态已能区分光度变化，无需立即扩到全部十个状态。
+- **代码/配置身份：** shadow rerender runner [`diagnose_r1_5_shadow_on_off_cached_states.py`](../../benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_on_off_cached_states.py) SHA256 `80c5e81bb283250b648f21729205e414163a25bd8c050fdc3f9c59f4765e864e`；benchmark scene builder [`robot_env.py`](../../benchmark/robot_closed_loop/robot_env.py) SHA256 `8a941724f9041a5281a3e989f9374e94308c2551e21ff54a247c8fd453722cb4`；实验配置 SHA256 `4d02789497618e04f9fec75ce813a730968fa0d668725331abbd408b80f4f837`；基准场景配置沿用 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`。代码仅通过编译/JSON 解析和 diff whitespace 检查，**没有 renderer 运行证据**。
+- **远端状态：** 本轮对 `zhaoyuhan@10.129.163.68:22` 做一次串行只读预检，在 SSH connect 阶段超时；远端命令未开始，故没有本轮 GPU/PID/项目 worktree 的实时信息，也未启动或上传任务。遵守共享服务器退避规则，当前不继续重试。
+- **复跑命令（g1 资源确认后）：** 在目标 GPU 空闲、确认进程归属并进入该仓库 checkout 后，从仓库根目录运行：
+
+  ```bash
+  ROBOT_PYTHON="$HOME/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
+  GPU_ID=${GPU_ID:?set to a confirmed free GPU ID}
+  PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES= EGL_DEVICE_ID="$GPU_ID" PYOPENGL_PLATFORM=egl \
+    "$ROBOT_PYTHON" benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_on_off_cached_states.py \
+    --cache-root benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+    --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_on_off_cached_states_20261024h.json \
+    --output benchmark/robot_closed_loop/results/r1_5_shadow_on_off_cached_states_20261024h
+  ```
+
+- **判读：** 若 shadow-off 在固定地面显著降低 log-luma 的帧间变化和同一理想 DVS 的地面事件，同时 segmentation/depth 及目标轮廓保持一致，则可因果确认阴影解释了这些缓存片段的一部分光度异常；若不变，则转查其他光照/反射和当前/历史 renderer 差异。无论哪种结果，都还需完整十个 1 ms 状态和定位网络回放，才能评估对定位失效的贡献。
 
 ## R1.5 OpenGL 表面栅格候选（2026-10-23；仅静态校验，g1 运行受网络阻塞）
 

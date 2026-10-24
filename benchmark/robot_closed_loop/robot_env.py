@@ -246,6 +246,7 @@ def build_robot_scene(
     config: Dict[str, Any], *, dt_s: Optional[float] = None,
     segmentation_level: Optional[str] = None,
     diagnostic_camera_specs: Optional[Dict[str, Dict[str, Any]]] = None,
+    diagnostic_shadow: Optional[bool] = None,
 ) -> RobotScene:
     import genesis as gs
 
@@ -256,6 +257,10 @@ def build_robot_scene(
     vis_options = {"ambient_light": (0.25, 0.25, 0.25)}
     if segmentation_level is not None:
         vis_options["segmentation_level"] = str(segmentation_level)
+    if diagnostic_shadow is not None:
+        # Benchmark-only render ablation. None preserves the scene default;
+        # the override affects RGB/HDR rendering, not simulation or scoring.
+        vis_options["shadow"] = bool(diagnostic_shadow)
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=dt, gravity=tuple(physics["gravity_m_s2"])),
         vis_options=gs.options.VisOptions(**vis_options),
