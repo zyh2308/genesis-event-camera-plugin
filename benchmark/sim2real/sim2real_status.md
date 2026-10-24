@@ -6,7 +6,7 @@ Frozen simulator core `e79e656ac00f7847b98db9e12bf43b093f3afff1` remains unchang
 
 Evidence digest index: [Stage 6 files and SHA256](evidence/20261024-stage6/INDEX.md).
 
-The Stage 6 handoff is committed in WSL. GitHub push did not complete: the configured local proxy refused connection; one direct attempt was stopped after about 60 seconds without a response. g1's separate dirty shared tree was left untouched. See [push attempt record](evidence/20261024-stage6/github_push_attempt.json).
+The Stage 6 handoff is committed in WSL. GitHub sync is unconfirmed and should be treated as unsynced: the configured local proxy refused connection; one direct attempt was stopped after about 60 seconds without a response. g1's separate dirty shared tree was left untouched. See [push attempt record](evidence/20261024-stage6/github_push_attempt.json).
 
 | Line | Verified state | Current blocker / next delivery |
 |---|---|---|

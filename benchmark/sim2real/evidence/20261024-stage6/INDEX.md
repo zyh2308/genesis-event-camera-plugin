@@ -1,12 +1,12 @@
 # Stage 6 evidence index — 2026-10-24
 
-Generated UTC: 2026-10-24T12:09:22Z
+Generated UTC: 2026-10-24T12:09:42Z
 
 Files indexed: 68. Full SHA-256 and byte counts are in [index.json](index.json). Raw g1 refresh captures that include other users’ process command lines are intentionally excluded; sanitized, time-stamped snapshots are included.
 
 | File | Bytes | SHA-256 |
 |---|---:|---|
-| [`benchmark/sim2real/STAGE6_THREE_LINE_HANDOFF_20261024.md`](../../STAGE6_THREE_LINE_HANDOFF_20261024.md) | 12593 | `141321f6be86cd6b27e2c1945fa274ee22771f521c114b74e7585f45a24b00ba` |
+| [`benchmark/sim2real/STAGE6_THREE_LINE_HANDOFF_20261024.md`](../../STAGE6_THREE_LINE_HANDOFF_20261024.md) | 12613 | `0b62b3183080f378393c8f497f120de8c2806dc436670e6f8d5c291fb6c0a928` |
 | [`benchmark/sim2real/evidence/20261024-epose-ingestion/README.md`](../../evidence/20261024-epose-ingestion/README.md) | 1733 | `94035dd42311bf419eb56773a30c83431f6f557e1820089c2913dc3d22082de2` |
 | [`benchmark/sim2real/evidence/20261024-epose-ingestion/block_header_audit.json`](../../evidence/20261024-epose-ingestion/block_header_audit.json) | 741 | `d06984f46e53d99dbacdd0815598d6a327f9e5d185df4704f0f7cc4d8fb39a32` |
 | [`benchmark/sim2real/evidence/20261024-epose-ingestion/epose_ingest_server.py`](../../evidence/20261024-epose-ingestion/epose_ingest_server.py) | 8093 | `6fe3ed624eb91f8b35e58e533c08db7508dcf90158c310256d06cfafb4591801` |
@@ -55,7 +55,7 @@ Files indexed: 68. Full SHA-256 and byte counts are in [index.json](index.json).
 | [`benchmark/sim2real/evidence/20261024-hqf-eval-entry/local_validation_record.json`](../../evidence/20261024-hqf-eval-entry/local_validation_record.json) | 3800 | `8a6ff121c382529ebca0c43011ff46725fd97e368469bdf0c1d958d6251d733e` |
 | [`benchmark/sim2real/evidence/20261024-hqf-eval-entry/synthetic_scorer_contract_selftest_v2.json`](../../evidence/20261024-hqf-eval-entry/synthetic_scorer_contract_selftest_v2.json) | 105235 | `2ebb3055735cd7d39a3a4442c1683503fb9777fa7c9c95df7605b831eb3c9ce8` |
 | [`benchmark/sim2real/evidence/20261024-replica-access/attempt.json`](../../evidence/20261024-replica-access/attempt.json) | 1444 | `0c55dc582fa49b5de26ef0212aba93a1ae746533ffb71059ff380122523c4ace` |
-| [`benchmark/sim2real/evidence/20261024-stage6/github_push_attempt.json`](../../evidence/20261024-stage6/github_push_attempt.json) | 914 | `04b4e2cd454ac51aa15b588e4de4cfd4ec85b03aac8ad473b5b63f4e1ecb0208` |
+| [`benchmark/sim2real/evidence/20261024-stage6/github_push_attempt.json`](../../evidence/20261024-stage6/github_push_attempt.json) | 935 | `f93d00d84f5313b38a2280a08093919c76b5046f0ecdb4ad5a9b18ef888d1329` |
 | [`benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json`](../../evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json) | 280492 | `9f5bf5e3a44d4a2ca167cb8ab3fa2f11bde9bb2388c520b22edf5e5022e84460` |
 | [`benchmark/sim2real/manifests/epose_wood_block_cad_asset_manifest_20261024.json`](../../manifests/epose_wood_block_cad_asset_manifest_20261024.json) | 2737 | `d1e3c766ae9d6f2b633e3374604abcf36edd66e5a8d5f4957cce072fd0bce476` |
 | [`benchmark/sim2real/protocol/hqf_14_reconstruction_test_candidate_20261021_v3.json`](../../protocol/hqf_14_reconstruction_test_candidate_20261021_v3.json) | 7646 | `595b3517b58c946ee26c10154e35c4c39999e5832849d98acadde3094bdf162a` |
@@ -73,4 +73,4 @@ Files indexed: 68. Full SHA-256 and byte counts are in [index.json](index.json).
 | [`benchmark/sim2real/scripts/test_hqf14_reconstruction_eval.py`](../../scripts/test_hqf14_reconstruction_eval.py) | 691 | `3e89da31b8193517fc2b8da3c37386864c889b0da00e2f1b0944aa976e2fd06a` |
 | [`benchmark/sim2real/scripts/train_stage5_flow_selfsup_diagnostic.py`](../../scripts/train_stage5_flow_selfsup_diagnostic.py) | 33570 | `6cdba3b1a806ab1a9e072da2fec2841b227e0c4437aacc8672a381c5d58a8263` |
 | [`benchmark/sim2real/scripts/validate_stage5_flow_entrypoint_cpu_shim.py`](../../scripts/validate_stage5_flow_entrypoint_cpu_shim.py) | 5819 | `d16fc3794f96fcd8bbdb105deb5c850d35eac807263d22c7f4ede0b2ce5a6590` |
-| [`benchmark/sim2real/sim2real_status.md`](../../sim2real_status.md) | 7971 | `860e89b7c971d26269bc21cbe1a2fc1a8bae3463f7ae907e680c5c7c7d60a1d6` |
+| [`benchmark/sim2real/sim2real_status.md`](../../sim2real_status.md) | 8003 | `0d1d33606eac83d4dac9afb53faeba7949a0482b657a9650f9e22b78cb37c63d` |
