@@ -17,7 +17,7 @@
 ## 证据解释与边界
 
 1. **场景支持不足是已证实事实，不是模型诊断结论。** 现有 66 窗 smoke 的共同事件活跃像素占共同有效区约 0.370%；满足事件支持、GT 运动≥0.5 px/30 ms、纹理梯度阈值的像素平均约 14.1。正确 GT 在全部共同运动纹理像素上的光度 MAE 没有稳定优于零流，像素数也太少；这只能说明当前物理 pilot 提供的可观测性弱，不能归因于任一事件生成器。
-2. **renderer 信号来源必须如实标记。** 审计记录 Genesis 1.2.2 rasterizer 的 uint8 display RGB，经固定 gamma 2.2 逆变换后作为事件输入。其有 8-bit 量化、clamp 且无辐射标定，不得称为 native HDR/linear radiance。正式扩训前应优先验证 renderer 的原生辐照度接口；若不能获得，要报告其对研究基线的影响。
+2. **renderer 信号来源必须如实标记。** g1 当前 `Eventbased_WAM` 环境安装 Genesis 1.2.2；默认 offscreen/Pyrender 的源码将 color buffer 定义为 uint8，camera sensor cache 也显式 cast 为 `torch.uint8`。当前生成输入仍是此前审计的 8-bit display RGB proxy，经固定 gamma 2.2 逆变换；存在量化、clamp 且没有辐射标定。本轮没有启动 renderer runtime。结论仅针对这个默认路径，不声称所有 Genesis backend 都无法提供原生 radiance。源码 SHA 和路径见[机器审计](evidence/20261024-execution-refresh/genesis_renderer_signal_source_audit.json)。该环境实际 PyTorch 为 2.5.1+cu121，而 Genesis 导入警告 Torch <2.8 不受支持；不要升级共享训练环境，后续应在隔离兼容环境验证 renderer。正式扩训前需把原生信号/API与此版本兼容性查清；未解决前不能把当前 proxy 描述为 HDR/radiance。
 3. **ReplicaCAD 当前是访问/部署阻塞，不是“数据集不存在”。** 官方页面与 Hugging Face 数据卡列出 Interactive 公寓场景和 CC BY 4.0。WSL 官方 `hf download` 在查询元数据时返回 `Connection refused`；单次 no-proxy 请求又在 5 秒后 TLS 超时；此前 g1 访问返回 `Network is unreachable`。本机也没有 Genesis 环境。本轮未下载或导入，也未把 RGB 视频冒充 Genesis bank。恢复下载后记录 revision/hash，再做单布局导入；若有结构性不兼容，再评估 HSSD。
 4. **HQF 真实测试未运行。** 本轮没有真实 LPIPS/SSIM/PSNR/MSE 分数，不存在根据 HQF 选择 checkpoint、挑序列或改变配置的动作。研究已接受 HQF 为主测；本轮工程目标是冻结和接通全量管线，但实际执行受共享 GPU 占用阻塞。
 5. **E-POSE 审计边界。** 行事件匹配数字来自本轮捕获的 g1 摘要；本机没有原始 H5/MAT 数组，独立脚本只重算时间算术、CAD 对应、pose 几何和投影，不宣称本机逐事件重算。MAT `cameraPose` 源码固定索引是已确认问题；但当前首个样本的 cameraPose 与 object pose 仍自洽，需另一时刻确认实际字段偏差。
@@ -41,6 +41,7 @@
 - Flow 入口 CPU 功能检查：[fingerprint_cpu_shim.json](evidence/20261024-flow-entrypoint/fingerprint_cpu_shim.json)
 - Flow 场景 smoke 与事件/几何/覆盖统计：[flow_scene_smoke_v3_regionfix.json](evidence/S5/20261021-recon-flow-localization/flow_scene_smoke_v3/flow_smoke_audit_v3_regionfix.json)
 - g1 最新只读状态：[GPU/repo 快照](evidence/20261024-execution-refresh/g1_live_resource_snapshot.json)、[12:00:45 UTC GPU 读数](evidence/20261024-execution-refresh/g1_gpu_refresh_20261024T120045Z.json)、[E-POSE 样本审计](evidence/20261024-execution-refresh/g1_sample_audit_stdout.txt)；此前较宽的目录扫描在 SSH 中断时被 Ctrl-C，退出码 255，只保留为不完整尝试。
+- Genesis 1.2.2 默认 renderer 源码与环境审计：[机器记录和 SHA](evidence/20261024-execution-refresh/genesis_renderer_signal_source_audit.json)；本轮只读源码，没有启动 GPU renderer。
 - E-POSE 导入收据：[ingestion_receipt.json](evidence/20261024-epose-ingestion/ingestion_receipt.json)
 - E-POSE 文件/样本核验：[g1_sample_audit_stdout.txt](evidence/20261024-execution-refresh/g1_sample_audit_stdout.txt)
 - E-POSE 可复现语义审计：[epose_block_r01gl_semantic_audit_v1.md](evidence/20261024-execution-refresh/epose_block_r01gl_semantic_audit_v1.md)、[机器结果](evidence/20261024-execution-refresh/epose_block_r01gl_semantic_audit_v1.json)

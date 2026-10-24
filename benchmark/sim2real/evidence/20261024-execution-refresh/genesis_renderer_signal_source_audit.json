@@ -1,0 +1,52 @@
+{
+  "schema": "genesis_122_renderer_signal_source_audit_v1",
+  "observed_utc": "2026-10-24T12:11:26Z",
+  "host": "g1.pkuml.org",
+  "environment": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM",
+  "software": {
+    "genesis_world_version": "1.2.2",
+    "torch_version": "2.5.1+cu121",
+    "import_warning": "torch<2.8.0 is not supported",
+    "warning_source": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/__init__.py"
+  },
+  "source_files": [
+    {
+      "path": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/engine/sensors/camera.py",
+      "sha256": "908f83fa6dd914c6df5be679024cd670a870da0a41107204ce6498b951844d97",
+      "evidence": ["_get_cache_dtype returns torch.uint8", "rendered rgb_arr is converted to torch.uint8"]
+    },
+    {
+      "path": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/vis/camera.py",
+      "sha256": "b804e4740e15a0d707b1f2ae9e55525df49228ea850fee1bc76538c109cbf06b",
+      "evidence": ["visualization camera render() is the active RGB/depth/segmentation/normal interface"]
+    },
+    {
+      "path": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/vis/rasterizer.py",
+      "sha256": "c72f56a4a2cd71578bed394c2c27daa36b918ea34fd19b9c1c64fbb4b8372b6f",
+      "evidence": ["default rasterizer calls the offscreen renderer for color/depth/segmentation"]
+    },
+    {
+      "path": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/ext/pyrender/renderer.py",
+      "sha256": "1dc7c47b17a82c8aad7c2801bbfad7632dcaeeab8ecc8a382ebe06dee21a0b84",
+      "evidence": ["offscreen color buffer is documented as uint8; depth buffer is float32"]
+    },
+    {
+      "path": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/lib/python3.11/site-packages/genesis/__init__.py",
+      "sha256": "474b663bd3f0012f156ebb1701a0032baa9d11304b75978d879a536a5bdb8f9a",
+      "evidence": ["runtime warning threshold is torch 2.8.0"]
+    }
+  ],
+  "conclusion": {
+    "current_default_rgb_output_contract": "8-bit uint8 RGB, not a native HDR/radiance tensor",
+    "native_radiance_api_globally_unavailable": false,
+    "scope": "Installed Genesis 1.2.2 default camera/rasterizer source path only; does not rule out another renderer/backend or a separately exposed internal signal.",
+    "runtime_render_executed": false,
+    "recommended_next_step": "Do not change the shared training environment. When render resources are safe, validate any candidate float-radiance path in an isolated Genesis-compatible environment; retain the current display-RGB path as explicitly labeled diagnostic data until then."
+  },
+  "actions_taken": {
+    "source_only_read": true,
+    "renderer_started": false,
+    "gpu_work_started": false,
+    "environment_modified": false
+  }
+}
