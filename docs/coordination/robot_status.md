@@ -979,3 +979,24 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
   ```
 
 - **Not measured:** rendering time, repeatability, shadow causal effect, multisample effect, event counts, or candidate end-to-end cost. These remain pending until an idle GPU is available; the old 0.2 s, 15% cost estimate, and prior CPU diagnostics are not substitutes.
+
+#### R1.5 matched shadow × multisample diagnostic prepared (2026-10-25)
+
+- **Code/config:** implementation commit `f6bef85dc053a6fcf9ad6b745f32158639e083c8`, pushed to GitHub branch `exp/robot-closed-loop-v1`. Factorial config [`r1_5_shadow_multisample_cached_states_20261025a.json`](../../benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025a.json) SHA256 `27128ba4b2b8583c5732ae729fb95d3b6f551ec6a5a1834f5ed5f8f2c10e88af`; runner [`diagnose_r1_5_shadow_multisample_cached_states.py`](../../benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_multisample_cached_states.py) SHA256 `b8e99b08ac62c837fa070a576170052b906628b58af29218eb31b0194b63237d`. Local `py_compile`, JSON parsing, and `git diff --check` passed. This is static preparation only.
+- **Experiment contract:** reuse cached episodes 004/005 and their actual 0.5805/0.5855/0.5905 s states; render `shadow on/off × GL_MULTISAMPLE on/off`, two captures per state after one warmup, with no physics advancement. The runner verifies the actual HDR draw FBO, GL enable state, sample-buffer count, allocated sample count and sample positions on every radiance pass. It records the radiance readback and multisample-to-single-sample `glBlitFramebuffer` pass, repeatability, rendered HDR/depth/segmentation, fixed-floor event counts, and an evaluator-only one-pixel band around cached categorical silhouette boundaries. The contour band is never used by DVS generation. Genesis' FBO allocation is not changed; this compares raster multisample enabled/disabled within the existing HDR FBO. The four conditions require 56 audited HDR passes across both episodes, plus segmentation/depth and repeatability captures.
+- **Renderer source check:** read-only inspection of the installed g1 Genesis overlay confirmed that HDR rendering binds `_main_fb_ms`, the overlay allocates `min(GL_MAX_SAMPLES, 4)` samples, and the radiance path resolves to `_main_fb` through a blit. This verifies the intended instrumentation target, not a rendered result.
+- **Compute and synchronization:** the latest resource snapshot in this run showed GPU utilization `66%, 71%, 94%, 94%, 94%, 91%`; all six GPU PIDs belonged to user `cmy`. No card was treated as idle, and no renderer was started. The existing isolated g1 robot worktree was at `1ea9ac668b7fcd2eed87f540bf9f9d08eeb82bd0`. A push to GitHub succeeded using the working local proxy on port 7897. The attempt to sync this new commit to g1 by its protected IP timed out; therefore the staged g1 worktree remains stale and must not run this runner yet. No g1 result exists for this code.
+- **Run after sync and a fresh idle-GPU/owner check:** from `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261025-d390d85`, use the preserved interpreter `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python` and run:
+
+  ```bash
+  ROBOT_PYTHON="$HOME/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
+  GPU_ID=${GPU_ID:?set to a confirmed free GPU ID}
+  PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES= EGL_DEVICE_ID="$GPU_ID" PYOPENGL_PLATFORM=egl \
+    "$ROBOT_PYTHON" benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_multisample_cached_states.py \
+    --cache-root benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+    --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025a.json \
+    --output benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025a_g1
+  ```
+
+- **Still unknown:** no image, contour, event, repeatability, or cost measurement has been made for the new four-way comparison. It is a direct-render causal diagnostic, not yet candidate-versus-reference reconstruction fidelity, a full 1 kHz trace, a frozen-core change, or a downstream learning result. Preserve the formal Direct-HDR reference and old outputs.
