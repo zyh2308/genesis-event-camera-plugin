@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-24（Asia/Tokyo）
-**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。研究侧缓存隔离显示固定静态地面上的 endpoint log-linear 输入会少生成 38.6%/52.1% 的事件，且中间事件出现在端点差低于阈值的像素；本地 CPU 空间统计进一步显示变化局部、非单调，不像全局曝光漂移，移动阴影是当前首要假设但尚未因果确认。HDR overlay 源码请求至多 4x MSAA，但不随帧记录真实 attachment samples/resolve；radiance 与 segmentation/depth 走不同 resolve 路径。g1 本轮 SSH 资源预检超时，研究侧最近快照六卡均繁忙，因此未启动 renderer，只做缓存与接口诊断。新的 CPU 分析、复跑命令和哈希见 [`r1_5_photometric_rootcause_cpu_20261024b`](../../benchmark/robot_closed_loop/results/r1_5_photometric_rootcause_cpu_20261024b/)，基线隔离结果见下方 `R1.5 photometric timing / sampling contract`。Frozen core 未改。
+**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。新增 episode 004/005 CPU 诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内（地面基线约 1.2%）。这是支持“方块阴影造成局部时变辐亮度”的强关联证据，尚无 shadow-off 因果对照。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。g1 串行 SSH 预检超时，远端命令未执行；本轮只完成 CPU 缓存分析。结果、复跑命令与哈希见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/)。HDR overlay 仍请求至多 4x MSAA，运行时样本/resolve 未核验。Frozen core 未改。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
@@ -18,10 +18,25 @@
 
 - **执行范围：** 复用 `r1_5_photometric_sampling_contract_20261024a` 已保存的 episode 004/005 HDR 帧和事件 NPZ；未初始化 Genesis、未重渲、未推进物理、未训练、未连接 g1。执行仓库分支 `exp/robot-closed-loop-v1`，基准 commit `7a19b4d824e7ed40d92c5cf8f58b3a3ef0c0e95c`，分析脚本 SHA256 `e41a1168e61a67e51cc6691378a666d2b252c69e02f7c0d1e5b677a113a692d2`。无新配置；精确输入和源码 commit/hash 记于结果 JSON。
 - **新统计：** 在静态固定地面区域，中心/+55 mm 的全局中位 log 亮度十个时刻范围均为 0；但端点模型误差超过 0.2 的地面像素有 71/96，亮度方向至少反转一次的像素有 161/208。真实 Direct-HDR→理想 DVS 事件分别为 308/451，分布在 73/108 个活动像素；所有事件均落在 endpoint residual `>0.05 log` 的像素上，其中 293/308 和 432/451 落在 `>0.20 log` 像素上。双极性像素为 28/48，前三大 8 邻接活动组覆盖活动像素的 57.5%/37.0%。统计脚本和逐集热图在结果目录，`SHA256SUMS` 可复核；原始缓存 SHA256 沿用前节 `0525…879d7 / 91c1…d434` 与 `b3af…c321 / f161…7236`。
-- **最可能的物理画面原因：** 移动物体/机械臂的投影阴影在静态地面上造成局部、非单调的 scene-linear 辐亮度变化。机器人场景只显式设置 `ambient_light`，Genesis 1.2.2 `VisOptions` 的默认 `shadow=True`、`plane_reflection=False`；画面中可见机器人阴影。此证据与阴影吻合，但没有 shadow-off 同状态干预，仍属优先假设，不是已确认唯一根因。静态地面中位数不变、活动事件局部聚集，削弱了全局曝光漂移解释。
+- **当时的物理画面假设（由下节进一步收窄）：** 移动物体/机械臂的投影阴影可能在静态地面上造成局部、非单调的 scene-linear 辐亮度变化。机器人场景只显式设置 `ambient_light`，Genesis 1.2.2 `VisOptions` 的默认 `shadow=True`、`plane_reflection=False`；当时只观察到画面中的机器人阴影，尚无 shadow-off 同状态干预。下节新分析显示这 10 ms 内机器人投影几乎不动，方块移动及其解析阴影边缘与事件更相关；具体因果仍待干预验证。静态地面中位数不变、活动事件局部聚集，削弱了全局曝光漂移解释。
 - **研究方法联系：** ESIM 的自适应步长由图像梯度和场景运动的亮度变化估计导出，并基于 Lambertian brightness-constancy 近似；若亮度因动态光照/阴影变化，几何运动界限不足，需可观测的光度采样或阴影可见性信号。[ESIM 论文](https://proceedings.mlr.press/v87/rebecq18a/rebecq18a.pdf)。V2E 对原始/插值灰度帧跑 DVS；插帧可利用输入图像证据，但无法保证重建源帧完全未观测到的瞬态变化。[V2E 官方实现](https://github.com/SensorsINI/v2e)。这解释的是两类生成路径能提供的证据不同，不构成方法排名。
 - **已排除/区分：** HDR shader 路径用 RGBA16F 输出 scene-linear radiance，不做 gamma 编码或 8-bit clip；本实验未提示全局亮度漂移。多采样颜色与单采样 segmentation/depth 分离仍可能影响几何轮廓和边缘对应，但固定地面事件测量绕开 warp，且离几何标签边缘至少 2 px，因此不应把地面时间变化归因于该轮廓采样问题。归档 Direct-HDR 的活动 renderer binary/source 与当前 overlay 是否完全一致仍未证实。
 - **下一步：** 资源允许时，用同一缓存实际状态做 `shadow on/off × multisample on/off` 小型 matched render；同时检查一个高反差轮廓控制。记录真实 renderbuffer sample count、driver、sampling/resolve、分区图像/事件与分项成本。若关阴影消除地面动态残差而轮廓差异不变，则把问题归到缺失动态照明项；若未消除，再查材质/阴影着色和 sample resolve。正式场景阴影不因消融结果而暗中改变。当前仍不切换 frozen core、不重训、不做排名。
+
+## R1.5 achromatic floor / target-shadow signature（2026-10-24；本地 CPU 缓存诊断）
+
+- **运行身份：** 分支 `exp/robot-closed-loop-v1`；分析输入基线 commit `8a99467b24b557d36748d36a4d79353fcccf2af5`。脚本 [`analyze_r1_5_cached_achromatic_shadow_signature.py`](../../benchmark/robot_closed_loop/diagnostics/analyze_r1_5_cached_achromatic_shadow_signature.py) SHA256 `eb4cf2666a19ac68f9916928bf988fb2c7c18ce8299c1d59c865cdf740b94b7f`；场景配置 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`。完整 JSON、绘图、两份 Direct-HDR/Ours 地面事件 NPZ、输入哈希及 `SHA256SUMS` 在结果目录；全部 6 项校验通过。
+- **已观察到：** 004/005 分别有 308/451 个 Direct-HDR 固定地面事件，分布在十个 1 ms DVS 调用；相同理想 DVS 重放 Ours 重建亮度得到 189/216 个事件，且各自 100% 集中在第一个调用，后九个为零。Direct replay 与归档参考事件完全匹配。选定的地面 RGB 变化中，跨通道色度残差仅占共同 log 变化的中位 0.646%/0.573%，三个通道变化方向一致；这符合乘性光照变化，不像纯几何亮度纹理移动。
+- **几何关联：** 同一 10 ms 内目标移动约 3.425 mm；最大机器人 link 平移仅 0.007/0.110 mm，机器人投影端点 XOR 只有 2/18 px。按目标方块、地平面、Genesis 1.2.2 默认平行光方向 `(-1,-1,-1)` 解析投影的阴影边缘，分别有 58.4%/44.1% 地面事件位于边缘 5 px 内，而固定地面基线只有 1.22%/1.25%。这使“移动方块的投影阴影贡献地面事件”成为当前首要、具体的物理假设；解析边界不是 renderer shadow buffer，仍需同状态 shadow-on/off 对照，不能称为根因已证实。
+- **结论边界：** 光度时间被压缩到首个子帧是已复现的 Ours 重建输入差异；它可能破坏网络使用的时序/空间线索，但当前仅在地面 ROI 上检查，不能单独解释方块定位失败。分割和 pose 只用于离线掩码、几何投影和分析，没有输入事件模型。没有新 render、物理 rollout、GPU、训练或 core 修改；不构成新的定位精度或闭环结论。归档缓存对应 renderer 二进制/源码身份仍未完全确认。
+- **复跑：** 从仓库根目录运行：
+
+  ```bash
+  python benchmark/robot_closed_loop/diagnostics/analyze_r1_5_cached_achromatic_shadow_signature.py \
+    --output benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1
+  ```
+
+- **下一项最有信息量的实验：** g1 可用且确认有空闲 GPU 后，对 004/005 缓存的 source/mid/end 三个真实状态做同状态重复渲染与 `shadow on/off` matched render；若 benchmark 层能够不改冻结 renderer 地关闭 MSAA，再加该因子，否则不为此先改 overlay。每个条件都对同一图像运行相同 DVS，比较固定地面辐亮度轨迹、事件时刻/位置和轮廓控制。若 shadow-off 去除地面变化但目标轮廓误差不变，则分离出动态阴影光度项；否则优先检查其他光照/材质与帧间响应。当前一次串行只读 SSH 预检在连接阶段超时、远端命令未执行；遵守保护规则，本轮停止远程访问。
 
 ## R1.5 OpenGL 表面栅格候选（2026-10-23；仅静态校验，g1 运行受网络阻塞）
 

@@ -1,0 +1,454 @@
+{
+  "purpose": "test whether cached fixed-floor transients resemble achromatic illumination changes and quantify association with projected geometry",
+  "scope": "CPU-only post hoc analysis of two existing development episodes; no render, physics, training, model inference, or core edit",
+  "execution_commit": "8a99467b24b557d36748d36a4d79353fcccf2af5",
+  "analysis_script_sha256": "eb4cf2666a19ac68f9916928bf988fb2c7c18ce8299c1d59c865cdf740b94b7f",
+  "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "scene_config": "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+  "projected_shadow_renderer_default_source": "Genesis 1.2.2 VisOptions default DirectionalLight(dir=(-1,-1,-1)); target-plane polygon is an analytic offline hypothesis, not a renderer shadow map",
+  "python": "3.14.6 | packaged by Anaconda, Inc. | (main, Jun 18 2026, 21:28:09) [GCC 14.3.0]",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "records": [
+    {
+      "episode": "004",
+      "source_interval_s": [
+        0.5805,
+        0.5905
+      ],
+      "dense_times_s": [
+        0.5815,
+        0.5825,
+        0.5835,
+        0.5845,
+        0.5855,
+        0.5865,
+        0.5875,
+        0.5885,
+        0.5895,
+        0.5905
+      ],
+      "fixed_floor_pixels": 61322,
+      "target_segmentation_id": 2,
+      "robot_segmentation_ids": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "floor_rgb_log_delta_selection": {
+        "selection_rule": "fixed floor and absolute mean RGB log change > 0.02 between adjacent dense frames",
+        "pixel_intervals": 1144,
+        "median_chromatic_residual_log": 0.0005255658179521561,
+        "median_chromatic_residual_over_common_change": 0.006460336968302727,
+        "q90_chromatic_residual_over_common_change": 0.01102345623075962,
+        "rgb_log_delta_correlation_with_red": {
+          "green": 0.9999947380447357,
+          "blue": 0.999987768345149
+        },
+        "fraction_with_same_sign_change_in_all_rgb_channels": 1.0,
+        "interpretation_limit": "Achromatic multiplicative changes support illumination/shadow as a class of causes; they do not identify the occluder or prove shadow causality."
+      },
+      "projected_geometry_motion": {
+        "max_target_translation_mm": 3.425293554622942,
+        "max_robot_link_translation_mm": 0.0072798913961025806,
+        "robot_silhouette_endpoint_xor_pixels": 2,
+        "robot_silhouette_endpoint_union_pixels": 11079,
+        "robot_silhouette_endpoint_xor_fraction": 0.00018052170773535519,
+        "target_silhouette_centroids_xy_start_mid_end_px": [
+          [
+            160.33913043478262,
+            100.46347826086956
+          ],
+          [
+            160.3760071620412,
+            99.96956132497762
+          ],
+          [
+            160.4203152364273,
+            99.50350262697023
+          ]
+        ],
+        "target_silhouette_centroid_displacement_start_to_end_px": 0.9634024027884273
+      },
+      "floor_event_distance_to_projected_geometry": {
+        "robot": {
+          "event_distance_px_quantiles": {
+            "q10": 5.700000000000003,
+            "q25": 13.0,
+            "q50": 15.0,
+            "q75": 33.580855633565804,
+            "q90": 62.0
+          },
+          "fixed_floor_reference_distance_px_quantiles": {
+            "q10": 20.518284528683193,
+            "q25": 42.95346318982906,
+            "q50": 74.09453421137081,
+            "q75": 110.14535850411491,
+            "q90": 135.9154148726332
+          },
+          "event_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.10064935064935066,
+            "8": 0.1266233766233766,
+            "16": 0.5909090909090909,
+            "32": 0.7337662337662337
+          },
+          "floor_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.016600893643390627,
+            "8": 0.03326701673135253,
+            "16": 0.07563354098039855,
+            "32": 0.17439092006131568
+          }
+        },
+        "target": {
+          "event_distance_px_quantiles": {
+            "q10": 7.700000000000003,
+            "q25": 12.0,
+            "q50": 23.0,
+            "q75": 78.75,
+            "q90": 127.20062892926276
+          },
+          "fixed_floor_reference_distance_px_quantiles": {
+            "q10": 39.96248240537617,
+            "q25": 70.40596565632774,
+            "q50": 101.0,
+            "q75": 125.92855117089213,
+            "q90": 142.94684325159253
+          },
+          "event_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.06168831168831169,
+            "8": 0.12337662337662338,
+            "16": 0.35714285714285715,
+            "32": 0.6298701298701299
+          },
+          "floor_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.004272528619418806,
+            "8": 0.010550862659404456,
+            "16": 0.024526271158801082,
+            "32": 0.07127947555526565
+          }
+        }
+      },
+      "floor_event_distance_to_projected_target_shadow": {
+        "assumption": "opaque target box, support plane z=0, Genesis 1.2.2 default directional-light rays (-1,-1,-1), no soft-shadow penumbra model",
+        "event_to_nearest_timestamp_target_shadow_edge_px_quantiles": {
+          "q10": 0.0,
+          "q25": 0.0,
+          "q50": 0.0,
+          "q75": 59.574786141901214,
+          "q90": 111.01801655587259
+        },
+        "event_fraction_within_px_of_nearest_timestamp_target_shadow_edge": {
+          "1": 0.5584415584415584,
+          "2": 0.5584415584415584,
+          "5": 0.5844155844155844,
+          "8": 0.5844155844155844
+        },
+        "event_distance_to_union_of_all_target_shadow_edges_px_quantiles": {
+          "q10": 0.0,
+          "q25": 0.0,
+          "q50": 0.0,
+          "q75": 59.39696961966999,
+          "q90": 110.14535850411491
+        },
+        "fixed_floor_reference_distance_to_union_shadow_edge_px_quantiles": {
+          "q10": 32.64965543462902,
+          "q25": 62.6418390534633,
+          "q50": 95.0,
+          "q75": 119.33147112141039,
+          "q90": 138.95682782792647
+        },
+        "event_fraction_within_px_of_union_shadow_edge": {
+          "1": 0.5584415584415584,
+          "2": 0.5616883116883117,
+          "5": 0.5844155844155844,
+          "8": 0.5844155844155844
+        },
+        "floor_fraction_within_px_of_union_shadow_edge": {
+          "1": 0.0029516323668503965,
+          "2": 0.004924823065131601,
+          "5": 0.012214213495972083,
+          "8": 0.01896546100909951
+        }
+      },
+      "floor_event_count": 308,
+      "floor_event_unique_pixels": 73,
+      "same_ideal_dvs_model_on_direct_vs_ours_reconstructed_floor_luminance": {
+        "configuration": "threshold +/-0.2 log, no mismatch/noise/refractory/bandwidth limit, physical_log radiance input, fixed-floor evaluation mask only",
+        "direct_replay_matches_saved_direct_events_exactly": true,
+        "direct_event_count_per_dense_frame": [
+          31,
+          38,
+          22,
+          33,
+          43,
+          31,
+          22,
+          37,
+          23,
+          28
+        ],
+        "ours_reconstruction_event_count_per_dense_frame": [
+          189,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "direct_total_events": 308,
+        "ours_reconstruction_total_events": 189,
+        "ours_reconstruction_fraction_in_first_dense_frame": 1.0,
+        "unique_xy_polarity_pixels_direct": 101,
+        "unique_xy_polarity_pixels_ours_reconstruction": 46,
+        "unique_xy_polarity_overlap_fraction_of_direct": 0.45544554455445546,
+        "event_archive": "episode_004_floor_direct_vs_ours_dvs_events.npz"
+      },
+      "input_sha256": {
+        "source_cache": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+        "direct_frame_cache": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321",
+        "trace_window": "3f07e4e7a0846827be7a3d5decf7c6197d77ca0237bacff55f2c45a70a04349c",
+        "floor_event_archive": "211ebf6b409c9d1b3e0a2c09f90733dc5c39171d655bf2280fcdaadc7e4aa30d"
+      },
+      "diagnostic_png": "episode_004_achromatic_shadow_signature.png"
+    },
+    {
+      "episode": "005",
+      "source_interval_s": [
+        0.5805,
+        0.5905
+      ],
+      "dense_times_s": [
+        0.5815,
+        0.5825,
+        0.5835,
+        0.5845,
+        0.5855,
+        0.5865,
+        0.5875,
+        0.5885,
+        0.5895,
+        0.5905
+      ],
+      "fixed_floor_pixels": 61039,
+      "target_segmentation_id": 2,
+      "robot_segmentation_ids": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "floor_rgb_log_delta_selection": {
+        "selection_rule": "fixed floor and absolute mean RGB log change > 0.02 between adjacent dense frames",
+        "pixel_intervals": 1423,
+        "median_chromatic_residual_log": 0.0005268926615826786,
+        "median_chromatic_residual_over_common_change": 0.005732865072786808,
+        "q90_chromatic_residual_over_common_change": 0.010204206220805645,
+        "rgb_log_delta_correlation_with_red": {
+          "green": 0.999995784562125,
+          "blue": 0.9999899932953102
+        },
+        "fraction_with_same_sign_change_in_all_rgb_channels": 1.0,
+        "interpretation_limit": "Achromatic multiplicative changes support illumination/shadow as a class of causes; they do not identify the occluder or prove shadow causality."
+      },
+      "projected_geometry_motion": {
+        "max_target_translation_mm": 3.4256440715769108,
+        "max_robot_link_translation_mm": 0.11016891048432087,
+        "robot_silhouette_endpoint_xor_pixels": 18,
+        "robot_silhouette_endpoint_union_pixels": 11322,
+        "robot_silhouette_endpoint_xor_fraction": 0.001589825119236884,
+        "target_silhouette_centroids_xy_start_mid_end_px": [
+          [
+            204.6787181594084,
+            100.46096959737058
+          ],
+          [
+            204.58993399339934,
+            99.51980198019803
+          ],
+          [
+            204.51077943615257,
+            99.48009950248756
+          ]
+        ],
+        "target_silhouette_centroid_displacement_start_to_end_px": 0.9951429835981416
+      },
+      "floor_event_distance_to_projected_geometry": {
+        "robot": {
+          "event_distance_px_quantiles": {
+            "q10": 6.0,
+            "q25": 12.206555615733702,
+            "q50": 16.1245154965971,
+            "q75": 39.0,
+            "q90": 99.9599919967984
+          },
+          "fixed_floor_reference_distance_px_quantiles": {
+            "q10": 20.223748416156685,
+            "q25": 43.56604182158393,
+            "q50": 83.19855767980596,
+            "q75": 118.15244390193544,
+            "q90": 142.63590010933433
+          },
+          "event_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.06430155210643015,
+            "8": 0.12416851441241686,
+            "16": 0.49002217294900224,
+            "32": 0.7006651884700665
+          },
+          "floor_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.016858074345909992,
+            "8": 0.03369976572355379,
+            "16": 0.07642654696177853,
+            "32": 0.17588754730582087
+          }
+        },
+        "target": {
+          "event_distance_px_quantiles": {
+            "q10": 10.198039027185569,
+            "q25": 19.0,
+            "q50": 61.66036003787198,
+            "q75": 100.43903623591775,
+            "q90": 165.77394246382633
+          },
+          "fixed_floor_reference_distance_px_quantiles": {
+            "q10": 39.11521443121589,
+            "q25": 69.9857113690718,
+            "q50": 101.17806086301516,
+            "q75": 137.5027255147541,
+            "q90": 171.95638982020995
+          },
+          "event_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.037694013303769404,
+            "8": 0.07538802660753881,
+            "16": 0.188470066518847,
+            "32": 0.4434589800443459
+          },
+          "floor_fraction_within_px": {
+            "2": 0.0,
+            "5": 0.004947656416389522,
+            "8": 0.01081275905568571,
+            "16": 0.025311685971264274,
+            "32": 0.07287144284801521
+          }
+        }
+      },
+      "floor_event_distance_to_projected_target_shadow": {
+        "assumption": "opaque target box, support plane z=0, Genesis 1.2.2 default directional-light rays (-1,-1,-1), no soft-shadow penumbra model",
+        "event_to_nearest_timestamp_target_shadow_edge_px_quantiles": {
+          "q10": 0.0,
+          "q25": 0.0,
+          "q50": 41.86884283091664,
+          "q75": 82.69216852458682,
+          "q90": 141.7391971192161
+        },
+        "event_fraction_within_px_of_nearest_timestamp_target_shadow_edge": {
+          "1": 0.4035476718403548,
+          "2": 0.4279379157427938,
+          "5": 0.44124168514412415,
+          "8": 0.44124168514412415
+        },
+        "event_distance_to_union_of_all_target_shadow_edges_px_quantiles": {
+          "q10": 0.0,
+          "q25": 0.0,
+          "q50": 41.86884283091664,
+          "q75": 82.61961026293939,
+          "q90": 141.7391971192161
+        },
+        "fixed_floor_reference_distance_to_union_shadow_edge_px_quantiles": {
+          "q10": 32.0,
+          "q25": 61.493895551802666,
+          "q50": 94.04786015641186,
+          "q75": 122.79454370083073,
+          "q90": 149.04026301640775
+        },
+        "event_fraction_within_px_of_union_shadow_edge": {
+          "1": 0.41019955654101997,
+          "2": 0.43458980044345896,
+          "5": 0.44124168514412415,
+          "8": 0.44124168514412415
+        },
+        "floor_fraction_within_px_of_union_shadow_edge": {
+          "1": 0.0031291469388423795,
+          "2": 0.005209783908648569,
+          "5": 0.012516587755369518,
+          "8": 0.01947934926850047
+        }
+      },
+      "floor_event_count": 451,
+      "floor_event_unique_pixels": 108,
+      "same_ideal_dvs_model_on_direct_vs_ours_reconstructed_floor_luminance": {
+        "configuration": "threshold +/-0.2 log, no mismatch/noise/refractory/bandwidth limit, physical_log radiance input, fixed-floor evaluation mask only",
+        "direct_replay_matches_saved_direct_events_exactly": true,
+        "direct_event_count_per_dense_frame": [
+          42,
+          57,
+          40,
+          43,
+          59,
+          35,
+          36,
+          56,
+          39,
+          44
+        ],
+        "ours_reconstruction_event_count_per_dense_frame": [
+          216,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "direct_total_events": 451,
+        "ours_reconstruction_total_events": 216,
+        "ours_reconstruction_fraction_in_first_dense_frame": 1.0,
+        "unique_xy_polarity_pixels_direct": 156,
+        "unique_xy_polarity_pixels_ours_reconstruction": 62,
+        "unique_xy_polarity_overlap_fraction_of_direct": 0.3974358974358974,
+        "event_archive": "episode_005_floor_direct_vs_ours_dvs_events.npz"
+      },
+      "input_sha256": {
+        "source_cache": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+        "direct_frame_cache": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236",
+        "trace_window": "f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d",
+        "floor_event_archive": "9d31d2066bf9f8f3e50920f0eaddf6a1b4e9f29cd0961fc87a07aba54b05c63d"
+      },
+      "diagnostic_png": "episode_005_achromatic_shadow_signature.png"
+    }
+  ],
+  "global_interpretation": "The data strengthen a local illumination/shadow hypothesis. In both episodes, events are strongly enriched near the analytically projected target-shadow boundary under Genesis 1.2.2's default directional light. The robot projection is almost stationary while the target moves. This is a specific spatial association, not a causal shadow-on/off intervention; same-state rerender controls remain required.",
+  "limitations": [
+    "Archival RGB and event streams are from an earlier renderer execution; active binary/source identity was not recovered.",
+    "Segmentation and pose are used only for offline analysis, not as event-model inputs.",
+    "Distance to projected robot/target silhouettes is an association statistic, not a shadow mask or causal test.",
+    "The ideal DVS event archive is a simulator reference, not physical sensor truth."
+  ]
+}
