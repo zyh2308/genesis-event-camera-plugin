@@ -1,8 +1,10 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-24（Asia/Tokyo）
+**更新时间：** 2026-10-25（Asia/Tokyo）
 **阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。episode 004/005 CPU 缓存诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内。穷举平移同一轮廓后，真实位置在空间 null 的高端（上尾比例 2.17%/2.53%），但其他位置也能达到相同分数，因此这是有限的空间特异性证据，不是阴影因果证明。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。benchmark 层现已接入 `VisOptions.shadow` 消融入口，并准备同缓存状态开/关对照；未在 g1 实测。最新一次串行 SSH 只读预检连接超时，远端命令未执行；结果、哈希和复跑入口见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/)、[`r1_5_shadow_edge_spatial_null_cpu_20261024g`](../../benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g/) 和下方 `R1.5 matched shadow intervention readiness`。HDR overlay 运行时样本/resolve 仍未核验。Frozen core 未改。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
+
+**最新运行状态（2026-10-25）：** 10/24 的 SSH 阻塞已解除。候选 branch commit `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已放入 g1 专用 worktree，两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最近 GPU 预检中六张卡均有其他任务，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
 
 ## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
 
@@ -955,3 +957,25 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **Correct g1 robot worktree:** `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot`, branch `exp/robot-closed-loop-v1`, HEAD `d3bc9e3732b8e898c2412d34f7ea00bd07f4acd9`. It has no tracked modifications; its historical untracked result/log directories were left untouched. The local `15b8e98` source contains 202 commits after this g1 HEAD. The g1 remote-tracking ref was still `e13b0b307c464e3f753cd3bacaeb092ee5e22586` at the last check.
 - **Synchronization result:** `g1` hostname SSH works. A read-only `git fetch` from the g1 repository to its configured origin did not return for about 90 seconds, so only the SSH process started for that command was interrupted. After the required backoff, the worktree still pointed to `d3bc9e3` and its remote-tracking ref to `e13b0b3`; no fast-forward occurred. Do not run the prepared candidate from this stale worktree. The separate `repositories/genesis-event-camera-plugin` worktree is `main` at `15479d9` and contains four untracked `.codex_*.bundle` files; neither it nor those files were changed.
 - **Compute gate:** the read-only g1 preflight showed GPU utilization `100%, 83%, 92%, 92%, 94%, 93%`. No renderer, training, or experiment was launched. When resources are available, first deliver/verify the exact `15b8e98` robot branch in the robot worktree (or a fresh isolated worktree), preserve all untracked results, then recheck GPU/process ownership and run only the bounded matched shadow/multisample candidate described above.
+
+#### R1.5 g1 staging and cache readiness (2026-10-25)
+
+- **Code:** local branch `exp/robot-closed-loop-v1` at source commit `d390d851b56fe5d6bc496f488b8822bb101b51f6`. Because g1-to-origin fetch stalled, that commit was pushed over the working SSH route to the g1 shared repository as `refs/heads/codex-sync/robot-r1_5-d390d85`, then attached to the existing branch in a fresh worktree `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261025-d390d85`. The old `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot` worktree remains detached at `d3bc9e3`; all its untracked R0 outputs and `.venv-robot` were preserved. No process using that old worktree was found under `zhaoyuhan` before switching.
+- **Code identity:** the new g1 worktree branch is `exp/robot-closed-loop-v1`, HEAD `d390d851b56fe5d6bc496f488b8822bb101b51f6`. Candidate config SHA256 `4d02789497618e04f9fec75ce813a730968fa0d668725331abbd408b80f4f837`; runner SHA256 `80c5e81bb283250b648f21729205e414163a25bd8c050fdc3f9c59f4765e864e`; `robot_env.py` SHA256 `8a941724f9041a5281a3e989f9374e94308c2551e21ff54a247c8fd453722cb4`.
+- **Inputs:** the versioned JSON/NPZ/trace files for episodes 004/005 already present in the new worktree match the local copies (trace SHA256 `3f07e4e7a0846827be7a3d5decf7c6197d77ca0237bacff55f2c45a70a04349c / f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d`; diagnostic JSON SHA256 `2f44ce5ad757bbd7f4da2d1773d1fcc28f02cb477bbcb2f210e072b3b713de53 / 1c1de825594f38dc68fc9e92b9c4f75184894e72a8df2ae5352e185bedd5cf23`). Four absent HDR files were copied without overwriting: episode 004 source cache/render evidence SHA256 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7 / b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321`; episode 005 SHA256 `91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434 / f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236`. The six input hashes needed by the runner are now verifiable in the target worktree.
+- **Current compute state:** live preflight after synchronization showed GPU utilization `84%, 82%, 94%, 25%, 94%, 91%`; `nvidia-smi` listed a process on every GPU. None is available to this experiment. No Genesis scene was initialized and no render was launched. This is the latest measured snapshot, not a claim that the GPUs will remain busy.
+- **Run command after an idle GPU is confirmed:** from the new worktree, use the preserved environment in the detached old worktree and set `GPU_ID` only after checking ownership:
+
+  ```bash
+  cd /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261025-d390d85
+  ROBOT_PYTHON="$HOME/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
+  GPU_ID=${GPU_ID:?set to a confirmed free GPU ID}
+  PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES= EGL_DEVICE_ID="$GPU_ID" PYOPENGL_PLATFORM=egl \
+    "$ROBOT_PYTHON" benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_on_off_cached_states.py \
+    --cache-root benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+    --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_on_off_cached_states_20261024h.json \
+    --output benchmark/robot_closed_loop/results/r1_5_shadow_on_off_cached_states_20261025_g1
+  ```
+
+- **Not measured:** rendering time, repeatability, shadow causal effect, multisample effect, event counts, or candidate end-to-end cost. These remain pending until an idle GPU is available; the old 0.2 s, 15% cost estimate, and prior CPU diagnostics are not substitutes.
