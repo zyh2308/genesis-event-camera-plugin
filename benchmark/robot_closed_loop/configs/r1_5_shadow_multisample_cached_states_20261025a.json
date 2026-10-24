@@ -1,0 +1,31 @@
+{
+  "schema": "r1_5_shadow_multisample_cached_states_v1",
+  "episode_ids": ["004", "005"],
+  "states": [
+    {"label": "start", "clock": "source", "time_s": 0.5805},
+    {"label": "middle", "clock": "dense", "time_s": 0.5855},
+    {"label": "end", "clock": "source", "time_s": 0.5905}
+  ],
+  "shadow_conditions": [true, false],
+  "multisample_conditions": [true, false],
+  "warmup_passes_at_first_state": 1,
+  "capture_repeats_per_state": 2,
+  "event_response": {
+    "mode": "physical_log",
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "noise": false,
+    "refractory": false,
+    "bandwidth_limit": false,
+    "evaluation_floor_mask_applied_after_event_generation": true
+  },
+  "physics_steps": 0,
+  "render_channels": ["scene_linear_hdr", "depth", "segmentation"],
+  "contour_control": "evaluator-only one-pixel band around the union of cached categorical silhouette boundaries",
+  "multisample_contract": {
+    "scope": "toggle GL_MULTISAMPLE only for the existing Genesis HDR multisample framebuffer",
+    "allocation": "leave Genesis framebuffer sample allocation unchanged",
+    "expected_hdr_draw_buffer": "camera target _main_fb_ms",
+    "record_actual_sample_positions": true
+  }
+}
