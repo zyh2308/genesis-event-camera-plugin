@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-24（Asia/Tokyo）
-**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。新增 episode 004/005 CPU 诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内（地面基线约 1.2%）。这是支持“方块阴影造成局部时变辐亮度”的强关联证据，尚无 shadow-off 因果对照。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。g1 串行 SSH 预检超时，远端命令未执行；本轮只完成 CPU 缓存分析。结果、复跑命令与哈希见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/)。HDR overlay 仍请求至多 4x MSAA，运行时样本/resolve 未核验。Frozen core 未改。
+**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。episode 004/005 CPU 缓存诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内。穷举平移同一轮廓后，真实位置在空间 null 的高端（上尾比例 2.17%/2.53%），但其他位置也能达到相同分数，因此这是有限的空间特异性证据，不是阴影因果证明。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。g1 串行 SSH 预检超时，远端命令未执行；本轮只完成 CPU 缓存分析。结果、复跑命令与哈希见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/) 和 [`r1_5_shadow_edge_spatial_null_cpu_20261024g`](../../benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g/)。HDR overlay 仍请求至多 4x MSAA，运行时样本/resolve 未核验。Frozen core 未改。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
@@ -37,6 +37,13 @@
   ```
 
 - **下一项最有信息量的实验：** g1 可用且确认有空闲 GPU 后，对 004/005 缓存的 source/mid/end 三个真实状态做同状态重复渲染与 `shadow on/off` matched render；若 benchmark 层能够不改冻结 renderer 地关闭 MSAA，再加该因子，否则不为此先改 overlay。每个条件都对同一图像运行相同 DVS，比较固定地面辐亮度轨迹、事件时刻/位置和轮廓控制。若 shadow-off 去除地面变化但目标轮廓误差不变，则分离出动态阴影光度项；否则优先检查其他光照/材质与帧间响应。当前一次串行只读 SSH 预检在连接阶段超时、远端命令未执行；遵守保护规则，本轮停止远程访问。
+
+## R1.5 target-shadow spatial translation null（2026-10-24；本地 CPU）
+
+- **运行身份：** 实际代码基线 commit `2e02a69baef95e7d37f22313a09152e2d5694bc4`；新增诊断脚本 [`check_r1_5_shadow_edge_spatial_null.py`](../../benchmark/robot_closed_loop/diagnostics/check_r1_5_shadow_edge_spatial_null.py) SHA256 `28b20706e3760a010d69d1d41e146f6fcc7ef493fc42b7b64025013dd1f502b1`；场景配置沿用 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`。JSON 含两个源缓存、Direct-HDR 图像缓存、事件 NPZ 与配置哈希；结果目录 `SHA256SUMS` 覆盖 JSON/README，校验通过。
+- **方法：** 对同一时间并集解析阴影轮廓做穷举整数平移，范围由图像尺寸限定，并要求轮廓及 5 px 邻域不越出画面；只保留轮廓落入固定地面掩码的像素数处在真实位置 0.8–1.2 倍的位移。用二维相关一次计算全部位移的 `<=5 px` 事件比例，不抽样、不训练。初版要求整条轮廓 95% 落在地面，50,000 次提议仍没有可用位置；原因是解析轮廓有大部分不在可见地面掩码里。最终条件改为匹配实际可见轮廓长度，保留这一修订记录。
+- **结果及限度：** episode004 真实位置分数 `0.5844`，1,858 个可接受平移的中位数 `0`、95 分位 `0.4198`、最高值 `0.5844`、达到/超过真实分数的比例 `2.53%`；episode005 分数 `0.4412`，1,844 个平移的中位数 `0`、95 分位 `0.3493`、最高值 `0.4412`、上尾比例 `2.17%`。因此真实对齐处于这套简单空间 null 的高端，但最高分有其他位移并列；不能把上尾比例当正式假设检验 p 值，episode 也不是独立抽样。该结果比“对照均匀地面像素”更苛刻，仍只支持方块阴影是一个可能贡献源，不证明因果，也不识别历史 renderer 二进制。
+- **复跑：** `python benchmark/robot_closed_loop/diagnostics/check_r1_5_shadow_edge_spatial_null.py --output benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g`。完整数值与哈希见结果 JSON。这个 CPU null 不替代 g1 的同状态重复渲染、shadow-on/off 对照；远端连接恢复前不启动 GPU 实验。
 
 ## R1.5 OpenGL 表面栅格候选（2026-10-23；仅静态校验，g1 运行受网络阻塞）
 
