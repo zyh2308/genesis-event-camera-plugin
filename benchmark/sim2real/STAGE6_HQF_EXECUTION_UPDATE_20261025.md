@@ -57,5 +57,5 @@ CUDA_VISIBLE_DEVICES=0 PYTHONUNBUFFERED=1 \
 
 ## WSL 网络与 Git 状态
 
-WSL 代理配置于 2026-10-25 18:42 JST 纠正：用户确认使用端口 `7897`。仓库 `http.proxy` 已恢复为 `http://127.0.0.1:7897`；显式将大小写环境变量全部设为 7897 后，GitHub `curl` 与 `git ls-remote origin refs/heads/exp/public-sim2real-v1` 均成功。当前启动 shell 的小写变量仍残留 7890，后续 Git 命令须统一覆盖为 7897，或由用户在 shell 初始化中统一。此时远端分支仍为 `30503672019d87a7a85f7fbbbe9e557376d0c9db`，本地领先 9 个提交；后续同步结果另行记录。
+WSL 代理配置于 2026-10-25 18:42 JST 纠正：用户确认使用端口 `7897`。仓库 `http.proxy` 已恢复为 `http://127.0.0.1:7897`；显式将大小写环境变量全部设为 7897 后，GitHub `curl` 与 `git ls-remote origin refs/heads/exp/public-sim2real-v1` 均成功。当前启动 shell 的小写变量仍残留 7890，后续 Git 命令须统一覆盖为 7897，或由用户在 shell 初始化中统一。推送前远端为 `30503672019d87a7a85f7fbbbe9e557376d0c9db`，本地领先 9 个提交；18:42 JST 已成功推送到 `861a9d112d8aab6fda460b7cc6db922fe9461333`，本次代理记录更新也随后的提交一并同步。
 
