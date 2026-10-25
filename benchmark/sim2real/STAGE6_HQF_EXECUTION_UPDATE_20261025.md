@@ -57,5 +57,5 @@ CUDA_VISIBLE_DEVICES=0 PYTHONUNBUFFERED=1 \
 
 ## WSL 网络与 Git 状态
 
-WSL 检查时（2026-10-25 17:28 JST），大小写代理变量仍分别指向 `127.0.0.1:7897` 与 `127.0.0.1:7890`；1897、7890、7897 均无 WSL 本地监听，直连 `127.0.0.1:1897` 的 curl 返回 connection refused。已按用户提供的新端口将该 Git 仓库的 `http.proxy` 更新为 `http://127.0.0.1:1897`；但进程环境变量仍是旧端口且本地无监听，因此尚未推送。服务器上执行包通过 SSH 部署，GitHub 尚未同步。需启动/开放可从 WSL 访问的 1897 代理，并统一当前 shell 的大小写代理变量后，再先 `curl`、`git ls-remote` 验证；当前不重试 push。
+WSL 代理配置于 2026-10-25 18:42 JST 纠正：用户确认使用端口 `7897`。仓库 `http.proxy` 已恢复为 `http://127.0.0.1:7897`；显式将大小写环境变量全部设为 7897 后，GitHub `curl` 与 `git ls-remote origin refs/heads/exp/public-sim2real-v1` 均成功。当前启动 shell 的小写变量仍残留 7890，后续 Git 命令须统一覆盖为 7897，或由用户在 shell 初始化中统一。此时远端分支仍为 `30503672019d87a7a85f7fbbbe9e557376d0c9db`，本地领先 9 个提交；后续同步结果另行记录。
 
