@@ -1,6 +1,6 @@
 # Stage 6 执行更新：HQF 全量重建评测
 
-记录时间：2026-10-25 08:29 UTC / 17:29 JST。状态来自 g1 实时观测，不是历史快照。
+记录时间：2026-10-25 08:33 UTC / 17:33 JST。状态来自 g1 实时观测，不是历史快照。
 
 ## 当前状态
 
@@ -8,11 +8,11 @@
 |---|---|---|
 | HQF 冻结协议预检 | **通过，exit 0** | 全 14 序列数据清单、协议 SHA、两个 synthetic-best checkpoint 和锁定的下游源码通过核验。机器日志在 g1：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-preflight-r4/`。 |
 | HQF 第一次执行 | **失败，已保留** | `eventgenesis/bike_bay_hdr` 完成；下一序列因 Python 在锁定 EVREAL checkout 写入未跟踪 `__pycache__`，源码洁净性门禁拒绝继续。未产生真实评分。完整现场在 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-actual/`。 |
-| HQF 重跑 | **运行中** | 清理的仅是本次创建于隔离源码 checkout 内的 5 个 `__pycache__` 目录；r5 冻结预检再次通过。重跑设置 `PYTHONDONTWRITEBYTECODE=1`，避免复发。GPU 0，launcher PID 2154000、评测进程 PID 2154028。输出目录 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-actual-r2/`，托管日志 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-launch-r2/`。截至 17:29 JST 尚未完成推理或评分。 |
-| 环境克隆 | **后台复制中，有持续 I/O** | 目标为 `/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28`，外层 PID 2139928、conda 子进程 PID 2141886；原环境未修改，PyTorch 升级尚未执行。17:29 JST `/proc/2141886/io` 累计写入约 2.17 GB（此前约 1.37 GB），属于慢速共享盘复制；还没有完成标记。日志目录：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-envclone-torch28/`。 |
+| HQF 重跑 | **运行中** | 清理的仅是本次创建于隔离源码 checkout 内的 5 个 `__pycache__` 目录；r5 冻结预检再次通过。重跑设置 `PYTHONDONTWRITEBYTECODE=1`，避免复发。GPU 0，launcher PID 2154000、评测进程 PID 2154028。17:33 JST EventGenesis 已完成 `bike_bay_hdr`、`boxes` 两序列，正在处理 `desk`；V2E 与评分尚未开始。输出目录 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-actual-r2/`，托管日志 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-launch-r2/`。 |
+| 环境克隆 | **后台复制中，有持续 I/O** | 目标为 `/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28`，外层 PID 2139928、conda 子进程 PID 2141886；原环境未修改，PyTorch 升级尚未执行。17:33 JST `/proc/2141886/io` 累计写入约 3.08 GB（17:29 时约 2.17 GB），属于慢速共享盘复制；还没有完成标记。日志目录：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-envclone-torch28/`。 |
 | 新训练 | **未启动** | 当前空闲 GPU 不代表训练数据门禁已通过：光流仍缺 ReplicaCAD 丰富场景及合格运动信号；位姿仍需解决监督标签语义。未用旧小场景绕过门禁。 |
 
-最近刷新时 GPU 0 约 7% 利用率、692 MiB，由 HQF 重跑使用；GPU 1–5 无计算进程（GPU 1 报告 2 MiB，其余约 1–4 MiB）。未启动新的训练：光流仍缺 ReplicaCAD 丰富场景及合格运动信号；位姿仍需解决监督标签语义；重建的 200 epoch 训练已完成。没有接触其他用户进程。
+最近刷新时 GPU 0 约 4% 利用率、692 MiB，由 HQF 重跑使用。GPU 1–5 当前均有其他任务的显存/进程使用（GPU 1 和 5 约 2.7 GB，GPU 2–4 约 14.6–15.2 GB；可见进程属于其他用户），按繁忙处理。没有空闲 GPU 可供新训练。未接触其他用户进程；并且光流仍缺 ReplicaCAD 丰富场景及合格运动信号，位姿仍需解决监督标签语义，重建 200 epoch 训练已完成。
 
 ## 冻结协议与运行绑定
 
