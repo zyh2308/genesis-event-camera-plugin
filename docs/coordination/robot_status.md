@@ -1023,6 +1023,14 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
     --output benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025b_g1
   ```
 
+#### R1.5 resource preflight refresh (2026-10-26)
+
+- **Task scope:** continue the event-simulator structural diagnosis and the bounded `20261025b` shadow/MSAA control. No migration to the separate A/B/C scene framework.
+- **Code and data identity:** branch tip `86f8a24` (GitHub-synced status); candidate renderer code from commit `124a4c0`. Runner SHA256 `87867ca994f3c100b4971d3717022b23939f0479aff57a4b5ac5a10a597dd7dc`; config SHA256 `ced55b5d57953107b7c0ba91d36b06e5a8e23736b15d666ab177dae3ebcb32af`; cached source episode 004/005 SHA256 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7` / `91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434`.
+- **Fresh g1 resource snapshot:** load average `9.74/9.37/9.75`, memory available `463 GiB`, home filesystem available `11 TiB`. Every GPU had a compute process: GPU 0–3 and 5 were owned by `cmy` jobs (utilization `87/82/90/88/88%`); GPU 4 had a `chekw` process, utilization `0%`, and `935 MiB` allocated. No renderer GPU was available. No process was interrupted or changed.
+- **Reservation and output:** a targeted repository search found no implemented atomic GPU reservation utility. No resource allocation was made and no experiment was launched; output path `r1_5_shadow_multisample_cached_states_20261025b_g1` remains absent. The old g1 candidate worktree was not updated or overwritten.
+- **Next step:** when a coordinator assigns a free GPU (or a shared reservation tool is available), recheck process ownership after assignment, stage the exact candidate in a new isolated worktree using the shared robot environment and read-only caches, then run to a unique output directory. Until then there are no new rendering, event, or cost results.
+
 #### R1.5 parallel-session resource and source preflight (2026-10-25)
 
 - The user authorized parallel SSH sessions for independent work. One read-only g1 inventory was completed without changing or stopping any process.
