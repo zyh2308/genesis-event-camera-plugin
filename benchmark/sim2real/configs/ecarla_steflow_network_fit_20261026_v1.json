@@ -1,0 +1,35 @@
+{
+  "schema": "ecarla_steflow_network_fit_v1",
+  "purpose": "small synthetic public-data positive control for STE-FlowNet input, label, and optimizer path",
+  "source_config": "ecarla_flow_diagnostic_20261026_v2.json",
+  "train_flow_indices": [100, 104, 108, 112],
+  "validation_flow_indices": [600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615],
+  "crop": {
+    "height": 128,
+    "width": 128,
+    "top": 66,
+    "left": 109,
+    "selection_basis": "fixed center crop before any model fit or prediction inspection; local RTX 2050 memory-limited diagnostic"
+  },
+  "event_representation": "2 polarity channels x 5 equal-duration bins, raw counts, no per-sample normalization",
+  "flow_target": "official inverse_optical_flow.avg_method forward displacement in pixels per 40ms interval",
+  "validity": "upstream inverse disocclusion mask == 0, finite converted flow, and forward endpoint in bounds",
+  "budget": {
+    "updates": 20,
+    "batch_size": 1,
+    "optimizer": "Adam",
+    "learning_rate": 0.0004,
+    "betas": [0.9, 0.999],
+    "weight_decay_weights": 0.0004,
+    "weight_decay_biases": 0.0,
+    "seed": 0,
+    "augmentation": false,
+    "sample_order": "cycle fixed indices [100,104,108,112]"
+  },
+  "evaluation": {
+    "fixed_mask": "valid pixels AND normal-input event-active pixels, computed before perturbations",
+    "variants": ["normal", "zero_events", "reverse_temporal_bins"],
+    "metrics": ["four-scale supervised objective", "full-valid EPE", "fixed-active EPE", "zero-flow EPE", "prediction magnitude", "prediction-vs-GT direction cosine"]
+  },
+  "protocol_boundary": "diagnostic-only; not Genesis/V2E paired comparison, not formal training, no real data or checkpoint selection"
+}

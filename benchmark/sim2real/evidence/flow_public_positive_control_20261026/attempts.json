@@ -1,0 +1,24 @@
+{
+  "schema": "flow_public_positive_control_attempts_v1",
+  "attempts": [
+    {
+      "id": "audit-v1",
+      "status": "invalid_superseded",
+      "artifact": "invalid_v1_audit.json",
+      "external_npz": "/home/科研/Eventbased_WAM/.cache/sim2real/ecarla-26-cars-20261026/audit-v1/ecarla_fixed_windows.npz",
+      "artifact_sha256": "7f392d7c57b6568e3ff4a24aa503909cfb0389f784a7a825a1f39d8e7fa33375",
+      "npz_sha256": "c3528dcd1edc135bb2f8d1a42feff0e16aadc419a141ce7360923fa11af34934",
+      "cause": "used side=right event boundary insertion indices, while eWiz WriterFlow uses side=left and [start,end); all 32 fixed-window event counts disagreed with the official event-index deltas. Raw flow direction had not yet been independently validated.",
+      "use_for_training": false
+    },
+    {
+      "id": "network-fit-v1",
+      "status": "failed_before_model_execution",
+      "output_directory": "/home/科研/Eventbased_WAM/.cache/sim2real/ecarla-26-cars-20261026/network-fit-v1/",
+      "error": "IndexError: index -500 is out of bounds for axis 0 with size 16",
+      "cause": "initial runner treated absolute flow indices as NPZ-relative row indices; corrected runner now maps train indices 100..115 to rows 0..15 and validation indices 600..615 to rows 0..15.",
+      "use_for_training": false
+    }
+  ],
+  "preservation": "Both failed attempts remain on disk; no prior output was overwritten or deleted."
+}

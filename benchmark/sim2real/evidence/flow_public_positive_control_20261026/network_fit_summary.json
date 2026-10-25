@@ -1,0 +1,1689 @@
+{
+  "checkpoint": {
+    "model_sha256": "4f1b96bde7c116c35a9bf0587b33cf01843f7fae092e675256510e21170b13a8",
+    "ordinary_eval_outputs_equal": true,
+    "path": "/home/\u79d1\u7814/Eventbased_WAM/.cache/sim2real/ecarla-26-cars-20261026/network-fit-v2/checkpoint.pt",
+    "restore_state_equal": true,
+    "sha256": "01bfed84b7dce6afd6a4f0ae53a426d4fd99a6d68dc53c451acca022fe08262b",
+    "size_bytes": 580021495
+  },
+  "config": {
+    "budget": {
+      "augmentation": false,
+      "batch_size": 1,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "learning_rate": 0.0004,
+      "optimizer": "Adam",
+      "sample_order": "cycle fixed indices [100,104,108,112]",
+      "seed": 0,
+      "updates": 20,
+      "weight_decay_biases": 0.0,
+      "weight_decay_weights": 0.0004
+    },
+    "crop": {
+      "height": 128,
+      "left": 109,
+      "selection_basis": "fixed center crop before any model fit or prediction inspection; local RTX 2050 memory-limited diagnostic",
+      "top": 66,
+      "width": 128
+    },
+    "evaluation": {
+      "fixed_mask": "valid pixels AND normal-input event-active pixels, computed before perturbations",
+      "metrics": [
+        "four-scale supervised objective",
+        "full-valid EPE",
+        "fixed-active EPE",
+        "zero-flow EPE",
+        "prediction magnitude",
+        "prediction-vs-GT direction cosine"
+      ],
+      "variants": [
+        "normal",
+        "zero_events",
+        "reverse_temporal_bins"
+      ]
+    },
+    "event_representation": "2 polarity channels x 5 equal-duration bins, raw counts, no per-sample normalization",
+    "flow_target": "official inverse_optical_flow.avg_method forward displacement in pixels per 40ms interval",
+    "protocol_boundary": "diagnostic-only; not Genesis/V2E paired comparison, not formal training, no real data or checkpoint selection",
+    "purpose": "small synthetic public-data positive control for STE-FlowNet input, label, and optimizer path",
+    "schema": "ecarla_steflow_network_fit_v1",
+    "source_config": "ecarla_flow_diagnostic_20261026_v2.json",
+    "train_flow_indices": [
+      100,
+      104,
+      108,
+      112
+    ],
+    "validation_flow_indices": [
+      600,
+      601,
+      602,
+      603,
+      604,
+      605,
+      606,
+      607,
+      608,
+      609,
+      610,
+      611,
+      612,
+      613,
+      614,
+      615
+    ],
+    "validity": "upstream inverse disocclusion mask == 0, finite converted flow, and forward endpoint in bounds"
+  },
+  "config_sha256": "98434e6137617698d5129d1dd29ecf632b833b5fedd6567e88f15fde581d9555",
+  "cuda_version": "13.0",
+  "data_path": "/home/\u79d1\u7814/Eventbased_WAM/.cache/sim2real/ecarla-26-cars-20261026/audit-v2/ecarla_fixed_windows.npz",
+  "data_sha256": "2b698ffa8fec3bdb8be189533750b3c406ffa22dca30b62e6a487a683d67ed0b",
+  "data_size_bytes": 1442074,
+  "elapsed_seconds": 158.01781941199442,
+  "final_validation": [
+    {
+      "flow_index": 600,
+      "sample_id": "flow_0600",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.529690650753436,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.035242562548547,
+          "fixed_normal_event_active_coverage_of_valid": 0.0027227554284936354,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 17.937926666680536,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.960927682877657,
+          "mean_gt_magnitude_on_active_gt_motion": 2.0352425575256348,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8107956647872925,
+          "prediction_mean_magnitude_fixed_active": 2.0761492252349854,
+          "prediction_mean_magnitude_full_valid": 6.37977409362793,
+          "prediction_sha256": "003511f71f803678d89c83e9eae92a169e71d28d0627e2a5f47abba808caa4ac",
+          "valid_pixels": 14691
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.4341063990514011,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.035242562548547,
+          "fixed_normal_event_active_coverage_of_valid": 0.0027227554284936354,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 17.72110541137243,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.960927682877657,
+          "mean_gt_magnitude_on_active_gt_motion": 2.0352425575256348,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7669005990028381,
+          "prediction_mean_magnitude_fixed_active": 1.9257720708847046,
+          "prediction_mean_magnitude_full_valid": 6.919381141662598,
+          "prediction_sha256": "98c3f65b65975239fecca7a2df4baadfd8b7350a50cfcf3ee24b03104d235e35",
+          "valid_pixels": 14691
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.342976615134119,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.035242562548547,
+          "fixed_normal_event_active_coverage_of_valid": 0.0027227554284936354,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 19.81915059484201,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.960927682877657,
+          "mean_gt_magnitude_on_active_gt_motion": 2.0352425575256348,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.17528758943080902,
+          "prediction_mean_magnitude_fixed_active": 1.6263492107391357,
+          "prediction_mean_magnitude_full_valid": 3.8885908126831055,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14691
+        }
+      }
+    },
+    {
+      "flow_index": 601,
+      "sample_id": "flow_0601",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.4305458944747746,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.422321026812062,
+          "fixed_normal_event_active_coverage_of_valid": 0.0015180789401048854,
+          "fixed_normal_event_active_pixels": 22,
+          "full_valid_epe_px_per_40ms": 18.646435562714647,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.178838280193904,
+          "mean_gt_magnitude_on_active_gt_motion": 1.422321081161499,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7869665622711182,
+          "prediction_mean_magnitude_fixed_active": 1.7062313556671143,
+          "prediction_mean_magnitude_full_valid": 5.642767429351807,
+          "prediction_sha256": "4fa4f27a463e7f9b164d3209ff0f42eb98f26ba1482ef3000d99a171aa71dd77",
+          "valid_pixels": 14492
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.3841909465073423,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.422321026812062,
+          "fixed_normal_event_active_coverage_of_valid": 0.0015180789401048854,
+          "fixed_normal_event_active_pixels": 22,
+          "full_valid_epe_px_per_40ms": 18.62420008641292,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.178838280193904,
+          "mean_gt_magnitude_on_active_gt_motion": 1.422321081161499,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7007297873497009,
+          "prediction_mean_magnitude_fixed_active": 1.4840996265411377,
+          "prediction_mean_magnitude_full_valid": 5.672577857971191,
+          "prediction_sha256": "875483eddbee2b261cb38250fb903e69d8e4b8bdc7b17c86f94ef68c1f409bf8",
+          "valid_pixels": 14492
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.9490639221024735,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.422321026812062,
+          "fixed_normal_event_active_coverage_of_valid": 0.0015180789401048854,
+          "fixed_normal_event_active_pixels": 22,
+          "full_valid_epe_px_per_40ms": 20.032769032274615,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.178838280193904,
+          "mean_gt_magnitude_on_active_gt_motion": 1.422321081161499,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.1732265055179596,
+          "prediction_mean_magnitude_fixed_active": 1.4260262250900269,
+          "prediction_mean_magnitude_full_valid": 3.915688991546631,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14492
+        }
+      }
+    },
+    {
+      "flow_index": 602,
+      "sample_id": "flow_0602",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.5771572396564593,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.697518718588325,
+          "fixed_normal_event_active_coverage_of_valid": 0.002711534450392825,
+          "fixed_normal_event_active_pixels": 39,
+          "full_valid_epe_px_per_40ms": 17.764940292051207,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.26883822478733,
+          "mean_gt_magnitude_on_active_gt_motion": 2.697518825531006,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7461237907409668,
+          "prediction_mean_magnitude_fixed_active": 2.248917579650879,
+          "prediction_mean_magnitude_full_valid": 7.6235833168029785,
+          "prediction_sha256": "4770ea735fe48de93465484ceaca28e6fb077a506408a6d489e0e10c22d79c9d",
+          "valid_pixels": 14383
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.4398079933817622,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.697518718588325,
+          "fixed_normal_event_active_coverage_of_valid": 0.002711534450392825,
+          "fixed_normal_event_active_pixels": 39,
+          "full_valid_epe_px_per_40ms": 17.728971837611713,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.26883822478733,
+          "mean_gt_magnitude_on_active_gt_motion": 2.697518825531006,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7733355760574341,
+          "prediction_mean_magnitude_fixed_active": 2.192172050476074,
+          "prediction_mean_magnitude_full_valid": 7.649541854858398,
+          "prediction_sha256": "a47a8d334b6eb1406df51676950141807903318c6c2198fc2245cf6bf154a1b7",
+          "valid_pixels": 14383
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 3.2926616432606264,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.697518718588325,
+          "fixed_normal_event_active_coverage_of_valid": 0.002711534450392825,
+          "fixed_normal_event_active_pixels": 39,
+          "full_valid_epe_px_per_40ms": 20.117686933414017,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.26883822478733,
+          "mean_gt_magnitude_on_active_gt_motion": 2.697518825531006,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.11284427344799042,
+          "prediction_mean_magnitude_fixed_active": 1.6514911651611328,
+          "prediction_mean_magnitude_full_valid": 3.9245500564575195,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14383
+        }
+      }
+    },
+    {
+      "flow_index": 603,
+      "sample_id": "flow_0603",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.6170338606603387,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_normal_event_active_coverage_of_valid": 0.004095004095004095,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 17.597685102165798,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.962237327045454,
+          "mean_gt_magnitude_on_active_gt_motion": 1.9009884595870972,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7959355115890503,
+          "prediction_mean_magnitude_fixed_active": 2.560778856277466,
+          "prediction_mean_magnitude_full_valid": 7.397327423095703,
+          "prediction_sha256": "2ef347b6eb907e55a746e733d504a4a7e3014ff26e4420e8d02de909e92bc190",
+          "valid_pixels": 14652
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.5199293713555249,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_normal_event_active_coverage_of_valid": 0.004095004095004095,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 17.531456278653998,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.962237327045454,
+          "mean_gt_magnitude_on_active_gt_motion": 1.9009884595870972,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7816933989524841,
+          "prediction_mean_magnitude_fixed_active": 2.4708900451660156,
+          "prediction_mean_magnitude_full_valid": 7.4287214279174805,
+          "prediction_sha256": "27fab005299a3b19974567ea523040b2b3137f3b47a24e869f87894d15a7e01f",
+          "valid_pixels": 14652
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.2440670047980897,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_normal_event_active_coverage_of_valid": 0.004095004095004095,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 19.83337502171666,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.962237327045454,
+          "mean_gt_magnitude_on_active_gt_motion": 1.9009884595870972,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.15165457129478455,
+          "prediction_mean_magnitude_fixed_active": 1.6206406354904175,
+          "prediction_mean_magnitude_full_valid": 3.883655309677124,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14652
+        }
+      }
+    },
+    {
+      "flow_index": 604,
+      "sample_id": "flow_0604",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.7647335144385214,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.151082808327132,
+          "fixed_normal_event_active_coverage_of_valid": 0.004850389397458669,
+          "fixed_normal_event_active_pixels": 71,
+          "full_valid_epe_px_per_40ms": 17.82657340394506,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.065190855553638,
+          "mean_gt_magnitude_on_active_gt_motion": 2.151082754135132,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7908819317817688,
+          "prediction_mean_magnitude_fixed_active": 2.9494786262512207,
+          "prediction_mean_magnitude_full_valid": 7.491753101348877,
+          "prediction_sha256": "4a311f9008c842c6f1b636b836850622b486efc88f5617b01a2c4ccaff34f989",
+          "valid_pixels": 14638
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.7208990313820467,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.151082808327132,
+          "fixed_normal_event_active_coverage_of_valid": 0.004850389397458669,
+          "fixed_normal_event_active_pixels": 71,
+          "full_valid_epe_px_per_40ms": 17.687600591316176,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.065190855553638,
+          "mean_gt_magnitude_on_active_gt_motion": 2.151082754135132,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7986138463020325,
+          "prediction_mean_magnitude_fixed_active": 2.866368293762207,
+          "prediction_mean_magnitude_full_valid": 7.900249004364014,
+          "prediction_sha256": "ebb9051feccf29ae1bbdd96d70c3ec724dc8ed2016c953672c099ee6e76d76f8",
+          "valid_pixels": 14638
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.5012347117549045,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.151082808327132,
+          "fixed_normal_event_active_coverage_of_valid": 0.004850389397458669,
+          "fixed_normal_event_active_pixels": 71,
+          "full_valid_epe_px_per_40ms": 19.912736742739426,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.065190855553638,
+          "mean_gt_magnitude_on_active_gt_motion": 2.151082754135132,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.09394059330224991,
+          "prediction_mean_magnitude_fixed_active": 1.5050266981124878,
+          "prediction_mean_magnitude_full_valid": 3.883819341659546,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14638
+        }
+      }
+    },
+    {
+      "flow_index": 605,
+      "sample_id": "flow_0605",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.595592975244914,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_normal_event_active_coverage_of_valid": 0.005360087960417812,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 17.555521145668056,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.090806079370445,
+          "mean_gt_magnitude_on_active_gt_motion": 1.638696312904358,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8588759303092957,
+          "prediction_mean_magnitude_fixed_active": 3.6718928813934326,
+          "prediction_mean_magnitude_full_valid": 8.95176887512207,
+          "prediction_sha256": "c70dc829c7c80cb0f1a0f4799299a4f55192a725df8b2ee3cb340ecd03a39884",
+          "valid_pixels": 14552
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.385662935134647,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_normal_event_active_coverage_of_valid": 0.005360087960417812,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 17.69650450746531,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.090806079370445,
+          "mean_gt_magnitude_on_active_gt_motion": 1.638696312904358,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.857166588306427,
+          "prediction_mean_magnitude_fixed_active": 3.3797266483306885,
+          "prediction_mean_magnitude_full_valid": 8.754761695861816,
+          "prediction_sha256": "514ca8df47048878d706a79fa1dd44504d0d713d1a1b560f079923cf7ab5bce7",
+          "valid_pixels": 14552
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.078838367643236,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_normal_event_active_coverage_of_valid": 0.005360087960417812,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 19.9724766829848,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.090806079370445,
+          "mean_gt_magnitude_on_active_gt_motion": 1.638696312904358,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.03782108798623085,
+          "prediction_mean_magnitude_fixed_active": 1.2569539546966553,
+          "prediction_mean_magnitude_full_valid": 3.893895149230957,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14552
+        }
+      }
+    },
+    {
+      "flow_index": 606,
+      "sample_id": "flow_0606",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.31857365057812,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_normal_event_active_coverage_of_valid": 0.0058933647646120775,
+          "fixed_normal_event_active_pixels": 85,
+          "full_valid_epe_px_per_40ms": 17.99849588788442,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.219479546559224,
+          "mean_gt_magnitude_on_active_gt_motion": 2.2545039653778076,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8195485472679138,
+          "prediction_mean_magnitude_fixed_active": 3.4686036109924316,
+          "prediction_mean_magnitude_full_valid": 8.340662956237793,
+          "prediction_sha256": "b1927812f5b123a745ef18e18238c8a4613d6fc05be9c500607c201ef28ddce3",
+          "valid_pixels": 14423
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.229520308580899,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_normal_event_active_coverage_of_valid": 0.0058933647646120775,
+          "fixed_normal_event_active_pixels": 85,
+          "full_valid_epe_px_per_40ms": 17.992777419806174,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.219479546559224,
+          "mean_gt_magnitude_on_active_gt_motion": 2.2545039653778076,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8274837732315063,
+          "prediction_mean_magnitude_fixed_active": 3.3746650218963623,
+          "prediction_mean_magnitude_full_valid": 7.999040126800537,
+          "prediction_sha256": "f47e9b53b574976d9c15c05238a3e11d5c642ed4c451b4f88eb19184e6a4047e",
+          "valid_pixels": 14423
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.631080030683537,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_normal_event_active_coverage_of_valid": 0.0058933647646120775,
+          "fixed_normal_event_active_pixels": 85,
+          "full_valid_epe_px_per_40ms": 20.13007832050793,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.219479546559224,
+          "mean_gt_magnitude_on_active_gt_motion": 2.2545039653778076,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.01448175497353077,
+          "prediction_mean_magnitude_fixed_active": 1.201788306236267,
+          "prediction_mean_magnitude_full_valid": 3.9148471355438232,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14423
+        }
+      }
+    },
+    {
+      "flow_index": 607,
+      "sample_id": "flow_0607",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.6222943025701118,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_normal_event_active_coverage_of_valid": 0.0054806070826306915,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 18.207411860129827,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.55362871408048,
+          "mean_gt_magnitude_on_active_gt_motion": 1.7266550064086914,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7388879060745239,
+          "prediction_mean_magnitude_fixed_active": 2.001613140106201,
+          "prediction_mean_magnitude_full_valid": 7.880256652832031,
+          "prediction_sha256": "3b1269d77a09cbd8aca44816dd9df54980e0a086150e3b259e01408f50baca62",
+          "valid_pixels": 14232
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.2610208611470624,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_normal_event_active_coverage_of_valid": 0.0054806070826306915,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 18.26743338601716,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.55362871408048,
+          "mean_gt_magnitude_on_active_gt_motion": 1.7266550064086914,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7929913997650146,
+          "prediction_mean_magnitude_fixed_active": 3.0231428146362305,
+          "prediction_mean_magnitude_full_valid": 7.645186901092529,
+          "prediction_sha256": "34c4b69b68ad218705df6a319f85071a90c46d68a8af81a28f46660abe7fa5c5",
+          "valid_pixels": 14232
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.1064411650502346,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_normal_event_active_coverage_of_valid": 0.0054806070826306915,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 20.40862104979737,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.55362871408048,
+          "mean_gt_magnitude_on_active_gt_motion": 1.7266550064086914,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.036030661314725876,
+          "prediction_mean_magnitude_fixed_active": 0.9812861680984497,
+          "prediction_mean_magnitude_full_valid": 3.940236806869507,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14232
+        }
+      }
+    },
+    {
+      "flow_index": 608,
+      "sample_id": "flow_0608",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.618272311012155,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_normal_event_active_coverage_of_valid": 0.0026847534265931894,
+          "fixed_normal_event_active_pixels": 38,
+          "full_valid_epe_px_per_40ms": 18.72621249552135,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.69700383687459,
+          "mean_gt_magnitude_on_active_gt_motion": 1.8551530838012695,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.641773521900177,
+          "prediction_mean_magnitude_fixed_active": 1.163991093635559,
+          "prediction_mean_magnitude_full_valid": 6.077883243560791,
+          "prediction_sha256": "a150dcde0213710d1e7ba92882c5287bd0d7ad29bdeb11a7113d92697cfa998d",
+          "valid_pixels": 14154
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.7105744288602251,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_normal_event_active_coverage_of_valid": 0.0026847534265931894,
+          "fixed_normal_event_active_pixels": 38,
+          "full_valid_epe_px_per_40ms": 18.723151358631004,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.69700383687459,
+          "mean_gt_magnitude_on_active_gt_motion": 1.8551530838012695,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.593186616897583,
+          "prediction_mean_magnitude_fixed_active": 1.1972826719284058,
+          "prediction_mean_magnitude_full_valid": 6.1656928062438965,
+          "prediction_sha256": "972357e1f6e5c14a529734bc2d5bff26c589c1b235a40e5ff256f8b559935775",
+          "valid_pixels": 14154
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.283432867130937,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_normal_event_active_coverage_of_valid": 0.0026847534265931894,
+          "fixed_normal_event_active_pixels": 38,
+          "full_valid_epe_px_per_40ms": 20.534002642150266,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.69700383687459,
+          "mean_gt_magnitude_on_active_gt_motion": 1.8551530838012695,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.13848480582237244,
+          "prediction_mean_magnitude_fixed_active": 1.3527013063430786,
+          "prediction_mean_magnitude_full_valid": 3.9445302486419678,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14154
+        }
+      }
+    },
+    {
+      "flow_index": 609,
+      "sample_id": "flow_0609",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.0333365165311388,
+          "fixed_active_zero_flow_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023414218816517666,
+          "fixed_normal_event_active_pixels": 33,
+          "full_valid_epe_px_per_40ms": 18.730034439872057,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.761446205171463,
+          "mean_gt_magnitude_on_active_gt_motion": 0.9840410351753235,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7676240801811218,
+          "prediction_mean_magnitude_fixed_active": 1.482170581817627,
+          "prediction_mean_magnitude_full_valid": 6.6391754150390625,
+          "prediction_sha256": "2b05e780029b9c02901e69f336a0740af04de23fd2788528562e9acb64ed571d",
+          "valid_pixels": 14094
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.143691672141572,
+          "fixed_active_zero_flow_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023414218816517666,
+          "fixed_normal_event_active_pixels": 33,
+          "full_valid_epe_px_per_40ms": 18.848148411051973,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.761446205171463,
+          "mean_gt_magnitude_on_active_gt_motion": 0.9840410351753235,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8098447322845459,
+          "prediction_mean_magnitude_fixed_active": 1.6346019506454468,
+          "prediction_mean_magnitude_full_valid": 6.4653520584106445,
+          "prediction_sha256": "31924d993927913486e79ffcd8cd96dc17d70f6662cbfa45894c747143cbf023",
+          "valid_pixels": 14094
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.563205867999546,
+          "fixed_active_zero_flow_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023414218816517666,
+          "fixed_normal_event_active_pixels": 33,
+          "full_valid_epe_px_per_40ms": 20.601709791345264,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.761446205171463,
+          "mean_gt_magnitude_on_active_gt_motion": 0.9840410351753235,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.06614137440919876,
+          "prediction_mean_magnitude_fixed_active": 1.0844933986663818,
+          "prediction_mean_magnitude_full_valid": 3.9449942111968994,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14094
+        }
+      }
+    },
+    {
+      "flow_index": 610,
+      "sample_id": "flow_0610",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.130180661842447,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_normal_event_active_coverage_of_valid": 0.0022171253822629968,
+          "fixed_normal_event_active_pixels": 29,
+          "full_valid_epe_px_per_40ms": 19.890912042946496,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.43621857626331,
+          "mean_gt_magnitude_on_active_gt_motion": 1.0482072830200195,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.6612714529037476,
+          "prediction_mean_magnitude_fixed_active": 1.4353363513946533,
+          "prediction_mean_magnitude_full_valid": 7.46805477142334,
+          "prediction_sha256": "a326d35df46b5ef24020a1268c8cafe2647f4f8ade2492e2810a5606be713fc4",
+          "valid_pixels": 13080
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.1347141841730686,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_normal_event_active_coverage_of_valid": 0.0022171253822629968,
+          "fixed_normal_event_active_pixels": 29,
+          "full_valid_epe_px_per_40ms": 19.749539781743042,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.43621857626331,
+          "mean_gt_magnitude_on_active_gt_motion": 1.0482072830200195,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.626515805721283,
+          "prediction_mean_magnitude_fixed_active": 1.4483535289764404,
+          "prediction_mean_magnitude_full_valid": 7.895962238311768,
+          "prediction_sha256": "e0a069e91ee66b7d110639b5f1c2f08ac8db3edf17b72918047414a8a889a81b",
+          "valid_pixels": 13080
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.4884377451229072,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_normal_event_active_coverage_of_valid": 0.0022171253822629968,
+          "fixed_normal_event_active_pixels": 29,
+          "full_valid_epe_px_per_40ms": 22.071224480812756,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.43621857626331,
+          "mean_gt_magnitude_on_active_gt_motion": 1.0482072830200195,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.09819424897432327,
+          "prediction_mean_magnitude_fixed_active": 1.0421600341796875,
+          "prediction_mean_magnitude_full_valid": 4.129889488220215,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 13080
+        }
+      }
+    },
+    {
+      "flow_index": 611,
+      "sample_id": "flow_0611",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.2624973064038096,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023411893241766816,
+          "fixed_normal_event_active_pixels": 30,
+          "full_valid_epe_px_per_40ms": 20.40785463262402,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.83537128824085,
+          "mean_gt_magnitude_on_active_gt_motion": 1.1707619428634644,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.4982312321662903,
+          "prediction_mean_magnitude_fixed_active": 1.2530028820037842,
+          "prediction_mean_magnitude_full_valid": 6.766161918640137,
+          "prediction_sha256": "6af02b63c37747efbaf272b275b34bf19a7e5df6da6b2ad86dc341ce7bb15e53",
+          "valid_pixels": 12814
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.454815765849016,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023411893241766816,
+          "fixed_normal_event_active_pixels": 30,
+          "full_valid_epe_px_per_40ms": 20.520648682969917,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.83537128824085,
+          "mean_gt_magnitude_on_active_gt_motion": 1.1707619428634644,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.6466444730758667,
+          "prediction_mean_magnitude_fixed_active": 1.7766450643539429,
+          "prediction_mean_magnitude_full_valid": 6.569354057312012,
+          "prediction_sha256": "fca6cbdbffbb995f7bdc81982389ea7b4543ffb7b3365ab129ae279427eefa39",
+          "valid_pixels": 12814
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.8640096273123803,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023411893241766816,
+          "fixed_normal_event_active_pixels": 30,
+          "full_valid_epe_px_per_40ms": 22.422823608817822,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.83537128824085,
+          "mean_gt_magnitude_on_active_gt_motion": 1.1707619428634644,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.030202964320778847,
+          "prediction_mean_magnitude_fixed_active": 1.355197787284851,
+          "prediction_mean_magnitude_full_valid": 4.174313545227051,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 12814
+        }
+      }
+    },
+    {
+      "flow_index": 612,
+      "sample_id": "flow_0612",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.2194095742759221,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_normal_event_active_coverage_of_valid": 0.002802690582959641,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 18.20189979888118,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.63626125101598,
+          "mean_gt_magnitude_on_active_gt_motion": 1.242318868637085,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7206444144248962,
+          "prediction_mean_magnitude_fixed_active": 1.5198869705200195,
+          "prediction_mean_magnitude_full_valid": 7.3789143562316895,
+          "prediction_sha256": "c77ac6cb515a9c729b9e0e48fa99fe8eae95b41c98afd745ac7c1db6f3eb7777",
+          "valid_pixels": 14272
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.0908438486505454,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_normal_event_active_coverage_of_valid": 0.002802690582959641,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 18.132632564967615,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.63626125101598,
+          "mean_gt_magnitude_on_active_gt_motion": 1.242318868637085,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7287489771842957,
+          "prediction_mean_magnitude_fixed_active": 1.438241720199585,
+          "prediction_mean_magnitude_full_valid": 7.655714511871338,
+          "prediction_sha256": "39513a4ad4d81692bf981c157b5519a508d492c7de5757b950aa68b96df4d01f",
+          "valid_pixels": 14272
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.9779723364464785,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_normal_event_active_coverage_of_valid": 0.002802690582959641,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 20.507588671308522,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.63626125101598,
+          "mean_gt_magnitude_on_active_gt_motion": 1.242318868637085,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0182215366512537,
+          "prediction_mean_magnitude_fixed_active": 1.4842582941055298,
+          "prediction_mean_magnitude_full_valid": 3.9085004329681396,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14272
+        }
+      }
+    },
+    {
+      "flow_index": 613,
+      "sample_id": "flow_0613",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.484218371764231,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_normal_event_active_coverage_of_valid": 0.003712105588781192,
+          "fixed_normal_event_active_pixels": 54,
+          "full_valid_epe_px_per_40ms": 17.859089763556845,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.422131331777607,
+          "mean_gt_magnitude_on_active_gt_motion": 2.3355274200439453,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8153986930847168,
+          "prediction_mean_magnitude_fixed_active": 1.9440373182296753,
+          "prediction_mean_magnitude_full_valid": 8.059466361999512,
+          "prediction_sha256": "f8fabc1fc3d45ddb929762f206c3204f4d37e25071cc5222170602cd542eb8dc",
+          "valid_pixels": 14547
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.4717779425770696,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_normal_event_active_coverage_of_valid": 0.003712105588781192,
+          "fixed_normal_event_active_pixels": 54,
+          "full_valid_epe_px_per_40ms": 17.937802692960904,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.422131331777607,
+          "mean_gt_magnitude_on_active_gt_motion": 2.3355274200439453,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8590089082717896,
+          "prediction_mean_magnitude_fixed_active": 2.1163370609283447,
+          "prediction_mean_magnitude_full_valid": 7.961572647094727,
+          "prediction_sha256": "a7a15711c8761914c388220a9959d44a9b3b39c7d7751e8b3efb80d723f39652",
+          "valid_pixels": 14547
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.6024742618812287,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_normal_event_active_coverage_of_valid": 0.003712105588781192,
+          "fixed_normal_event_active_pixels": 54,
+          "full_valid_epe_px_per_40ms": 20.259498229829518,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.422131331777607,
+          "mean_gt_magnitude_on_active_gt_motion": 2.3355274200439453,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.113773874938488,
+          "prediction_mean_magnitude_fixed_active": 1.3337790966033936,
+          "prediction_mean_magnitude_full_valid": 3.856797218322754,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14547
+        }
+      }
+    },
+    {
+      "flow_index": 614,
+      "sample_id": "flow_0614",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.5128419487765346,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_normal_event_active_coverage_of_valid": 0.003978324987996433,
+          "fixed_normal_event_active_pixels": 58,
+          "full_valid_epe_px_per_40ms": 18.0436000057497,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.5826313941166,
+          "mean_gt_magnitude_on_active_gt_motion": 2.840123176574707,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.8121494650840759,
+          "prediction_mean_magnitude_fixed_active": 1.9937599897384644,
+          "prediction_mean_magnitude_full_valid": 8.02853012084961,
+          "prediction_sha256": "a1f32fc1ceab33463faf9f5c1e5001647932c65850a9034acff3b6a1aec00c3c",
+          "valid_pixels": 14579
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.8563447769716914,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_normal_event_active_coverage_of_valid": 0.003978324987996433,
+          "fixed_normal_event_active_pixels": 58,
+          "full_valid_epe_px_per_40ms": 17.928528726646753,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.5826313941166,
+          "mean_gt_magnitude_on_active_gt_motion": 2.840123176574707,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7498315572738647,
+          "prediction_mean_magnitude_fixed_active": 1.7182831764221191,
+          "prediction_mean_magnitude_full_valid": 8.547981262207031,
+          "prediction_sha256": "85a1b2e169e2057a46a3986ab65d13a271221afc69883178e6ea338e5cf43a2a",
+          "valid_pixels": 14579
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 3.0856271580205545,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_normal_event_active_coverage_of_valid": 0.003978324987996433,
+          "fixed_normal_event_active_pixels": 58,
+          "full_valid_epe_px_per_40ms": 20.4070494451056,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.5826313941166,
+          "mean_gt_magnitude_on_active_gt_motion": 2.840123176574707,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.08098508417606354,
+          "prediction_mean_magnitude_fixed_active": 1.3756409883499146,
+          "prediction_mean_magnitude_full_valid": 3.849365711212158,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14579
+        }
+      }
+    },
+    {
+      "flow_index": 615,
+      "sample_id": "flow_0615",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.6943717819284043,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.900278332716931,
+          "fixed_normal_event_active_coverage_of_valid": 0.004142216085605799,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 18.046618672336933,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.736396115304526,
+          "mean_gt_magnitude_on_active_gt_motion": 2.900278329849243,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7825927734375,
+          "prediction_mean_magnitude_fixed_active": 1.7804558277130127,
+          "prediction_mean_magnitude_full_valid": 8.33037281036377,
+          "prediction_sha256": "93fe96cf2db6263b80fa5df0cd86783d2e112772a759c9f690c719339d21fcf4",
+          "valid_pixels": 14485
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.8236438017738874,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.900278332716931,
+          "fixed_normal_event_active_coverage_of_valid": 0.004142216085605799,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 18.025855581009484,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.736396115304526,
+          "mean_gt_magnitude_on_active_gt_motion": 2.900278329849243,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.7390044927597046,
+          "prediction_mean_magnitude_fixed_active": 1.7658177614212036,
+          "prediction_mean_magnitude_full_valid": 8.473999977111816,
+          "prediction_sha256": "c16640c58da0cd24c39ab94457ecd6d67346a4862deca57916b55cb6fb03b4b4",
+          "valid_pixels": 14485
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 3.2383317561428138,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.900278332716931,
+          "fixed_normal_event_active_coverage_of_valid": 0.004142216085605799,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 20.56515246476432,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.736396115304526,
+          "mean_gt_magnitude_on_active_gt_motion": 2.900278329849243,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.04172045364975929,
+          "prediction_mean_magnitude_fixed_active": 1.4462233781814575,
+          "prediction_mean_magnitude_full_valid": 3.8548574447631836,
+          "prediction_sha256": "1dd84aca7cef1405bb1553fc62d157bf6bada345a344cd4eb96dd4b81ca384d1",
+          "valid_pixels": 14485
+        }
+      }
+    }
+  ],
+  "finished_utc": "2026-10-25T16:40:09.767554+00:00",
+  "formal_checkpoint_selection": false,
+  "gpu_name": "NVIDIA GeForce RTX 2050",
+  "gpu_peak_allocated_bytes": 1646676992,
+  "gpu_total_memory_bytes": 4294508544,
+  "initial_model_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+  "initial_validation": [
+    {
+      "flow_index": 600,
+      "sample_id": "flow_0600",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.0194574092867144,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.035242562548547,
+          "fixed_normal_event_active_coverage_of_valid": 0.0027227554284936354,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 21.963528081219803,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.960927682877657,
+          "mean_gt_magnitude_on_active_gt_motion": 2.0352425575256348,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.05111108347773552,
+          "prediction_mean_magnitude_fixed_active": 0.3406507074832916,
+          "prediction_mean_magnitude_full_valid": 0.04300233721733093,
+          "prediction_sha256": "64348ad64bd690ac19ea5434cb10ad01f5d536b4749bdda9204b4df9672aa4cb",
+          "valid_pixels": 14691
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.033230065638681,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.035242562548547,
+          "fixed_normal_event_active_coverage_of_valid": 0.0027227554284936354,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 21.964518014202444,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.960927682877657,
+          "mean_gt_magnitude_on_active_gt_motion": 2.0352425575256348,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.03003443218767643,
+          "prediction_mean_magnitude_fixed_active": 0.3165348172187805,
+          "prediction_mean_magnitude_full_valid": 0.04317136108875275,
+          "prediction_sha256": "0d35f9370db87c711fbaed258f46a6dee4209bd32faf5196d4afb8d5c6404fde",
+          "valid_pixels": 14691
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.035242562548547,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.035242562548547,
+          "fixed_normal_event_active_coverage_of_valid": 0.0027227554284936354,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 21.960927682877657,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.960927682877657,
+          "mean_gt_magnitude_on_active_gt_motion": 2.0352425575256348,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14691
+        }
+      }
+    },
+    {
+      "flow_index": 601,
+      "sample_id": "flow_0601",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.4444560930867711,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.422321026812062,
+          "fixed_normal_event_active_coverage_of_valid": 0.0015180789401048854,
+          "fixed_normal_event_active_pixels": 22,
+          "full_valid_epe_px_per_40ms": 22.18150165877663,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.178838280193904,
+          "mean_gt_magnitude_on_active_gt_motion": 1.422321081161499,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.11358454823493958,
+          "prediction_mean_magnitude_fixed_active": 0.3108657896518707,
+          "prediction_mean_magnitude_full_valid": 0.024942588061094284,
+          "prediction_sha256": "7f17256d6d6dcde65afb96b0300d593f0877ab396c593ce49c51db4373731a5d",
+          "valid_pixels": 14492
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.3748887343187182,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.422321026812062,
+          "fixed_normal_event_active_coverage_of_valid": 0.0015180789401048854,
+          "fixed_normal_event_active_pixels": 22,
+          "full_valid_epe_px_per_40ms": 22.181194294886357,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.178838280193904,
+          "mean_gt_magnitude_on_active_gt_motion": 1.422321081161499,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.00690474035218358,
+          "prediction_mean_magnitude_fixed_active": 0.3763312101364136,
+          "prediction_mean_magnitude_full_valid": 0.024749089032411575,
+          "prediction_sha256": "71028ed19a2e70ad18ab17c2a675862f75f3b783a67c9a48b4bdc74b3068cfbb",
+          "valid_pixels": 14492
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.422321026812062,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.422321026812062,
+          "fixed_normal_event_active_coverage_of_valid": 0.0015180789401048854,
+          "fixed_normal_event_active_pixels": 22,
+          "full_valid_epe_px_per_40ms": 22.178838280193904,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.178838280193904,
+          "mean_gt_magnitude_on_active_gt_motion": 1.422321081161499,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14492
+        }
+      }
+    },
+    {
+      "flow_index": 602,
+      "sample_id": "flow_0602",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.7729595026176788,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.697518718588325,
+          "fixed_normal_event_active_coverage_of_valid": 0.002711534450392825,
+          "fixed_normal_event_active_pixels": 39,
+          "full_valid_epe_px_per_40ms": 22.272472744889427,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.26883822478733,
+          "mean_gt_magnitude_on_active_gt_motion": 2.697518825531006,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.00016997869533952326,
+          "prediction_mean_magnitude_fixed_active": 0.45476606488227844,
+          "prediction_mean_magnitude_full_valid": 0.04343797639012337,
+          "prediction_sha256": "0422b9e65d7c9d0f857c24efd2fa966f774df2c448e40ae3106435448cc34336",
+          "valid_pixels": 14383
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.780285195320087,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.697518718588325,
+          "fixed_normal_event_active_coverage_of_valid": 0.002711534450392825,
+          "fixed_normal_event_active_pixels": 39,
+          "full_valid_epe_px_per_40ms": 22.272246757690837,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.26883822478733,
+          "mean_gt_magnitude_on_active_gt_motion": 2.697518825531006,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.029050687327980995,
+          "prediction_mean_magnitude_fixed_active": 0.4551656246185303,
+          "prediction_mean_magnitude_full_valid": 0.044970132410526276,
+          "prediction_sha256": "7bb0601a6f059548bf9d906d90e12973319c510c0752b396a30e2ba6644b21d9",
+          "valid_pixels": 14383
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.697518718588325,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.697518718588325,
+          "fixed_normal_event_active_coverage_of_valid": 0.002711534450392825,
+          "fixed_normal_event_active_pixels": 39,
+          "full_valid_epe_px_per_40ms": 22.26883822478733,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.26883822478733,
+          "mean_gt_magnitude_on_active_gt_motion": 2.697518825531006,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14383
+        }
+      }
+    },
+    {
+      "flow_index": 603,
+      "sample_id": "flow_0603",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.9294780940560112,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_normal_event_active_coverage_of_valid": 0.004095004095004095,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 21.966975164347705,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.962237327045454,
+          "mean_gt_magnitude_on_active_gt_motion": 1.9009884595870972,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.07375276833772659,
+          "prediction_mean_magnitude_fixed_active": 0.5001156330108643,
+          "prediction_mean_magnitude_full_valid": 0.054394274950027466,
+          "prediction_sha256": "73e04dce4f21e0587433e9efb9f5433d4a535d8d7546174603b9bf94572820ad",
+          "valid_pixels": 14652
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.057208324456419,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_normal_event_active_coverage_of_valid": 0.004095004095004095,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 21.966152136026537,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.962237327045454,
+          "mean_gt_magnitude_on_active_gt_motion": 1.9009884595870972,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.03276462107896805,
+          "prediction_mean_magnitude_fixed_active": 0.44776639342308044,
+          "prediction_mean_magnitude_full_valid": 0.04982173815369606,
+          "prediction_sha256": "5dd9f3d6363ee0259725833f191c45189380cccd26b72fc9be370407bf97e5e2",
+          "valid_pixels": 14652
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.9009886335307333,
+          "fixed_normal_event_active_coverage_of_valid": 0.004095004095004095,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 21.962237327045454,
+          "full_valid_zero_flow_epe_px_per_40ms": 21.962237327045454,
+          "mean_gt_magnitude_on_active_gt_motion": 1.9009884595870972,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14652
+        }
+      }
+    },
+    {
+      "flow_index": 604,
+      "sample_id": "flow_0604",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.2642626757754534,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.151082808327132,
+          "fixed_normal_event_active_coverage_of_valid": 0.004850389397458669,
+          "fixed_normal_event_active_pixels": 71,
+          "full_valid_epe_px_per_40ms": 22.070767945632163,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.065190855553638,
+          "mean_gt_magnitude_on_active_gt_motion": 2.151082754135132,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.051405906677246094,
+          "prediction_mean_magnitude_fixed_active": 0.6053524017333984,
+          "prediction_mean_magnitude_full_valid": 0.05527879670262337,
+          "prediction_sha256": "a06e16095e3aa6b72e5b762e8030f54a7e839081d2b9334e432ef5184aa2282e",
+          "valid_pixels": 14638
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.3206341350247595,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.151082808327132,
+          "fixed_normal_event_active_coverage_of_valid": 0.004850389397458669,
+          "fixed_normal_event_active_pixels": 71,
+          "full_valid_epe_px_per_40ms": 22.0713917660867,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.065190855553638,
+          "mean_gt_magnitude_on_active_gt_motion": 2.151082754135132,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.11522518843412399,
+          "prediction_mean_magnitude_fixed_active": 0.5712577104568481,
+          "prediction_mean_magnitude_full_valid": 0.0545702762901783,
+          "prediction_sha256": "a3f7fbd37d1fd85be9deeb229d5e9e1083ae568fd82d891ff0c17238bdbf7bd2",
+          "valid_pixels": 14638
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.151082808327132,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.151082808327132,
+          "fixed_normal_event_active_coverage_of_valid": 0.004850389397458669,
+          "fixed_normal_event_active_pixels": 71,
+          "full_valid_epe_px_per_40ms": 22.065190855553638,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.065190855553638,
+          "mean_gt_magnitude_on_active_gt_motion": 2.151082754135132,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14638
+        }
+      }
+    },
+    {
+      "flow_index": 605,
+      "sample_id": "flow_0605",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.7562077953775155,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_normal_event_active_coverage_of_valid": 0.005360087960417812,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 22.096917044489793,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.090806079370445,
+          "mean_gt_magnitude_on_active_gt_motion": 1.638696312904358,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.021649561822414398,
+          "prediction_mean_magnitude_fixed_active": 0.7381212711334229,
+          "prediction_mean_magnitude_full_valid": 0.05625680461525917,
+          "prediction_sha256": "574394b9b496b4cb3bfc27cca2ab79cba61611dddce423ecb78e9118328e1918",
+          "valid_pixels": 14552
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.8712960016778208,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_normal_event_active_coverage_of_valid": 0.005360087960417812,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 22.096935748141398,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.090806079370445,
+          "mean_gt_magnitude_on_active_gt_motion": 1.638696312904358,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.1408930867910385,
+          "prediction_mean_magnitude_fixed_active": 0.7101312279701233,
+          "prediction_mean_magnitude_full_valid": 0.05564970150589943,
+          "prediction_sha256": "3829050805b43ae546318969c03b76fd44feeeeeb784d7388100d88c917773ca",
+          "valid_pixels": 14552
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.6386963068688183,
+          "fixed_normal_event_active_coverage_of_valid": 0.005360087960417812,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 22.090806079370445,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.090806079370445,
+          "mean_gt_magnitude_on_active_gt_motion": 1.638696312904358,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14552
+        }
+      }
+    },
+    {
+      "flow_index": 606,
+      "sample_id": "flow_0606",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.417542654412061,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_normal_event_active_coverage_of_valid": 0.0058933647646120775,
+          "fixed_normal_event_active_pixels": 85,
+          "full_valid_epe_px_per_40ms": 22.2248145130969,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.219479546559224,
+          "mean_gt_magnitude_on_active_gt_motion": 2.2545039653778076,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.00858176127076149,
+          "prediction_mean_magnitude_fixed_active": 0.7609428763389587,
+          "prediction_mean_magnitude_full_valid": 0.05529173091053963,
+          "prediction_sha256": "32a2087e8fe516d4a974ba98032f9a35a4622fb40cdaf4a1657a7452ea10775b",
+          "valid_pixels": 14423
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.432444394577965,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_normal_event_active_coverage_of_valid": 0.0058933647646120775,
+          "fixed_normal_event_active_pixels": 85,
+          "full_valid_epe_px_per_40ms": 22.224708787881653,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.219479546559224,
+          "mean_gt_magnitude_on_active_gt_motion": 2.2545039653778076,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.14574645459651947,
+          "prediction_mean_magnitude_fixed_active": 0.6670580506324768,
+          "prediction_mean_magnitude_full_valid": 0.05687159299850464,
+          "prediction_sha256": "3d34eaa1f23e1df94475f8af3078e5e6181d17f87bbe84942af5b632350c6c83",
+          "valid_pixels": 14423
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.2545040202708804,
+          "fixed_normal_event_active_coverage_of_valid": 0.0058933647646120775,
+          "fixed_normal_event_active_pixels": 85,
+          "full_valid_epe_px_per_40ms": 22.219479546559224,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.219479546559224,
+          "mean_gt_magnitude_on_active_gt_motion": 2.2545039653778076,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14423
+        }
+      }
+    },
+    {
+      "flow_index": 607,
+      "sample_id": "flow_0607",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.774504914198332,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_normal_event_active_coverage_of_valid": 0.0054806070826306915,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 22.556904797067922,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.55362871408048,
+          "mean_gt_magnitude_on_active_gt_motion": 1.7266550064086914,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.018657464534044266,
+          "prediction_mean_magnitude_fixed_active": 0.39373910427093506,
+          "prediction_mean_magnitude_full_valid": 0.04167609661817551,
+          "prediction_sha256": "60b087d25a58381ac84ab37bfac0d221b31e79a693d04fdce402bb5977550f09",
+          "valid_pixels": 14232
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.8262965500734991,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_normal_event_active_coverage_of_valid": 0.0054806070826306915,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 22.556945715443042,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.55362871408048,
+          "mean_gt_magnitude_on_active_gt_motion": 1.7266550064086914,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.04781198874115944,
+          "prediction_mean_magnitude_fixed_active": 0.5474120378494263,
+          "prediction_mean_magnitude_full_valid": 0.04418669268488884,
+          "prediction_sha256": "601f44c160ea103fabd865a2668a29033ebeceae8e49d4c6cf8774367842c09d",
+          "valid_pixels": 14232
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.7266549466841383,
+          "fixed_normal_event_active_coverage_of_valid": 0.0054806070826306915,
+          "fixed_normal_event_active_pixels": 78,
+          "full_valid_epe_px_per_40ms": 22.55362871408048,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.55362871408048,
+          "mean_gt_magnitude_on_active_gt_motion": 1.7266550064086914,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14232
+        }
+      }
+    },
+    {
+      "flow_index": 608,
+      "sample_id": "flow_0608",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.894678007312827,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_normal_event_active_coverage_of_valid": 0.0026847534265931894,
+          "fixed_normal_event_active_pixels": 38,
+          "full_valid_epe_px_per_40ms": 22.69890211718758,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.69700383687459,
+          "mean_gt_magnitude_on_active_gt_motion": 1.8551530838012695,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.05561704561114311,
+          "prediction_mean_magnitude_fixed_active": 0.2248114049434662,
+          "prediction_mean_magnitude_full_valid": 0.035792846232652664,
+          "prediction_sha256": "4a3e1c7009063f5e1d8f8605bcf6aea4455898d9c5bf25d964fc457124155a58",
+          "valid_pixels": 14154
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.9098014902862428,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_normal_event_active_coverage_of_valid": 0.0026847534265931894,
+          "fixed_normal_event_active_pixels": 38,
+          "full_valid_epe_px_per_40ms": 22.69939885594504,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.69700383687459,
+          "mean_gt_magnitude_on_active_gt_motion": 1.8551530838012695,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.263272225856781,
+          "prediction_mean_magnitude_fixed_active": 0.2326289415359497,
+          "prediction_mean_magnitude_full_valid": 0.0375576987862587,
+          "prediction_sha256": "86cfaa6c305a3912e2e78ffb8bce1aa98a7a3cdeb73f2d2f93d2b9aabf418b1c",
+          "valid_pixels": 14154
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.8551530395225229,
+          "fixed_normal_event_active_coverage_of_valid": 0.0026847534265931894,
+          "fixed_normal_event_active_pixels": 38,
+          "full_valid_epe_px_per_40ms": 22.69700383687459,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.69700383687459,
+          "mean_gt_magnitude_on_active_gt_motion": 1.8551530838012695,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14154
+        }
+      }
+    },
+    {
+      "flow_index": 609,
+      "sample_id": "flow_0609",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.0019304194191194,
+          "fixed_active_zero_flow_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023414218816517666,
+          "fixed_normal_event_active_pixels": 33,
+          "full_valid_epe_px_per_40ms": 22.763170969760438,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.761446205171463,
+          "mean_gt_magnitude_on_active_gt_motion": 0.9840410351753235,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.018342815339565277,
+          "prediction_mean_magnitude_fixed_active": 0.25588661432266235,
+          "prediction_mean_magnitude_full_valid": 0.029487866908311844,
+          "prediction_sha256": "504c3aaabac2d567abbc3315efb9b713c7b253cf0a513354020088b7608e5234",
+          "valid_pixels": 14094
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.065951443993589,
+          "fixed_active_zero_flow_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023414218816517666,
+          "fixed_normal_event_active_pixels": 33,
+          "full_valid_epe_px_per_40ms": 22.763835650507808,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.761446205171463,
+          "mean_gt_magnitude_on_active_gt_motion": 0.9840410351753235,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.11520065367221832,
+          "prediction_mean_magnitude_fixed_active": 0.3179721534252167,
+          "prediction_mean_magnitude_full_valid": 0.03141801804304123,
+          "prediction_sha256": "3b349dcc2cafad0f26d0f528cef112216600b9ddb0a2107d30a0dca1a3266187",
+          "valid_pixels": 14094
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_active_zero_flow_epe_px_per_40ms": 0.9840410725944116,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023414218816517666,
+          "fixed_normal_event_active_pixels": 33,
+          "full_valid_epe_px_per_40ms": 22.761446205171463,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.761446205171463,
+          "mean_gt_magnitude_on_active_gt_motion": 0.9840410351753235,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14094
+        }
+      }
+    },
+    {
+      "flow_index": 610,
+      "sample_id": "flow_0610",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.061584598392201,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_normal_event_active_coverage_of_valid": 0.0022171253822629968,
+          "fixed_normal_event_active_pixels": 29,
+          "full_valid_epe_px_per_40ms": 24.437220660197216,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.43621857626331,
+          "mean_gt_magnitude_on_active_gt_motion": 1.0482072830200195,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.11360859870910645,
+          "prediction_mean_magnitude_fixed_active": 0.23840239644050598,
+          "prediction_mean_magnitude_full_valid": 0.030128518119454384,
+          "prediction_sha256": "1f9b1c4ea8de57e6e23f02661494ef52a94f6bb98595400bdfe7a20a4a92b999",
+          "valid_pixels": 13080
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.1245202054981542,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_normal_event_active_coverage_of_valid": 0.0022171253822629968,
+          "fixed_normal_event_active_pixels": 29,
+          "full_valid_epe_px_per_40ms": 24.436825954245876,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.43621857626331,
+          "mean_gt_magnitude_on_active_gt_motion": 1.0482072830200195,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.2037411332130432,
+          "prediction_mean_magnitude_fixed_active": 0.2790670096874237,
+          "prediction_mean_magnitude_full_valid": 0.030693955719470978,
+          "prediction_sha256": "157029de40eb4440c0051e8da8e90f45df1170d1a0c1bfd24194dbc93adf1ad3",
+          "valid_pixels": 13080
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.0482073237557978,
+          "fixed_normal_event_active_coverage_of_valid": 0.0022171253822629968,
+          "fixed_normal_event_active_pixels": 29,
+          "full_valid_epe_px_per_40ms": 24.43621857626331,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.43621857626331,
+          "mean_gt_magnitude_on_active_gt_motion": 1.0482072830200195,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 13080
+        }
+      }
+    },
+    {
+      "flow_index": 611,
+      "sample_id": "flow_0611",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.2125427303330985,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023411893241766816,
+          "fixed_normal_event_active_pixels": 30,
+          "full_valid_epe_px_per_40ms": 24.836060207030624,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.83537128824085,
+          "mean_gt_magnitude_on_active_gt_motion": 1.1707619428634644,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.04918291047215462,
+          "prediction_mean_magnitude_fixed_active": 0.2302079200744629,
+          "prediction_mean_magnitude_full_valid": 0.030064353719353676,
+          "prediction_sha256": "211a83391faacf24515eaa409545a75cbef6e8e05b833c6c59badde08b456d6e",
+          "valid_pixels": 12814
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.2680977735764294,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023411893241766816,
+          "fixed_normal_event_active_pixels": 30,
+          "full_valid_epe_px_per_40ms": 24.836464679401118,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.83537128824085,
+          "mean_gt_magnitude_on_active_gt_motion": 1.1707619428634644,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.03614989295601845,
+          "prediction_mean_magnitude_fixed_active": 0.3650950789451599,
+          "prediction_mean_magnitude_full_valid": 0.033538881689310074,
+          "prediction_sha256": "458160adcee579fb844eebf4c3f9ece42ae1e0c0b6abc35dd6a3e5461c341141",
+          "valid_pixels": 12814
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.1707619976303718,
+          "fixed_normal_event_active_coverage_of_valid": 0.0023411893241766816,
+          "fixed_normal_event_active_pixels": 30,
+          "full_valid_epe_px_per_40ms": 24.83537128824085,
+          "full_valid_zero_flow_epe_px_per_40ms": 24.83537128824085,
+          "mean_gt_magnitude_on_active_gt_motion": 1.1707619428634644,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 12814
+        }
+      }
+    },
+    {
+      "flow_index": 612,
+      "sample_id": "flow_0612",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 1.2908374715101927,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_normal_event_active_coverage_of_valid": 0.002802690582959641,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 22.64077112298459,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.63626125101598,
+          "mean_gt_magnitude_on_active_gt_motion": 1.242318868637085,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.03720846027135849,
+          "prediction_mean_magnitude_fixed_active": 0.28390082716941833,
+          "prediction_mean_magnitude_full_valid": 0.04253237321972847,
+          "prediction_sha256": "2e014a0389ca633c86e3f8114ed5ac144f7c8c7f33fe5d76ac8793f4be2f57ca",
+          "valid_pixels": 14272
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 1.2631036545231678,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_normal_event_active_coverage_of_valid": 0.002802690582959641,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 22.639991837905093,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.63626125101598,
+          "mean_gt_magnitude_on_active_gt_motion": 1.242318868637085,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.07204960286617279,
+          "prediction_mean_magnitude_fixed_active": 0.3341403305530548,
+          "prediction_mean_magnitude_full_valid": 0.04166707769036293,
+          "prediction_sha256": "334385f3bbbc813d030f50c7b7a994c4504f53ffca20578cad8e106c643ea10d",
+          "valid_pixels": 14272
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_active_zero_flow_epe_px_per_40ms": 1.2423188821828213,
+          "fixed_normal_event_active_coverage_of_valid": 0.002802690582959641,
+          "fixed_normal_event_active_pixels": 40,
+          "full_valid_epe_px_per_40ms": 22.63626125101598,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.63626125101598,
+          "mean_gt_magnitude_on_active_gt_motion": 1.242318868637085,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14272
+        }
+      }
+    },
+    {
+      "flow_index": 613,
+      "sample_id": "flow_0613",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.3004656263482,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_normal_event_active_coverage_of_valid": 0.003712105588781192,
+          "fixed_normal_event_active_pixels": 54,
+          "full_valid_epe_px_per_40ms": 22.42675027855258,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.422131331777607,
+          "mean_gt_magnitude_on_active_gt_motion": 2.3355274200439453,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0399593822658062,
+          "prediction_mean_magnitude_fixed_active": 0.42974168062210083,
+          "prediction_mean_magnitude_full_valid": 0.047313619405031204,
+          "prediction_sha256": "d2491d90ac4acfe2d1d2c8e857907ec70a97144b9d62283f2010d2a1d9d0b1c6",
+          "valid_pixels": 14547
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.3866272883698834,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_normal_event_active_coverage_of_valid": 0.003712105588781192,
+          "fixed_normal_event_active_pixels": 54,
+          "full_valid_epe_px_per_40ms": 22.427167633066617,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.422131331777607,
+          "mean_gt_magnitude_on_active_gt_motion": 2.3355274200439453,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": -0.01337574515491724,
+          "prediction_mean_magnitude_fixed_active": 0.4858245253562927,
+          "prediction_mean_magnitude_full_valid": 0.0498635359108448,
+          "prediction_sha256": "220707261d5d05f513aacee7cad328793453cabb35c3f8c571d311b11e9159e2",
+          "valid_pixels": 14547
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.3355274179880716,
+          "fixed_normal_event_active_coverage_of_valid": 0.003712105588781192,
+          "fixed_normal_event_active_pixels": 54,
+          "full_valid_epe_px_per_40ms": 22.422131331777607,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.422131331777607,
+          "mean_gt_magnitude_on_active_gt_motion": 2.3355274200439453,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14547
+        }
+      }
+    },
+    {
+      "flow_index": 614,
+      "sample_id": "flow_0614",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.8277302795229557,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_normal_event_active_coverage_of_valid": 0.003978324987996433,
+          "fixed_normal_event_active_pixels": 58,
+          "full_valid_epe_px_per_40ms": 22.588639128671748,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.5826313941166,
+          "mean_gt_magnitude_on_active_gt_motion": 2.840123176574707,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.04017379507422447,
+          "prediction_mean_magnitude_fixed_active": 0.4494805932044983,
+          "prediction_mean_magnitude_full_valid": 0.05398781597614288,
+          "prediction_sha256": "c600785157e93cc703f4b5cbb6fd6260b0954c124e626bd9880dc7368bd06e7c",
+          "valid_pixels": 14579
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.7928124299413573,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_normal_event_active_coverage_of_valid": 0.003978324987996433,
+          "fixed_normal_event_active_pixels": 58,
+          "full_valid_epe_px_per_40ms": 22.58829617052614,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.5826313941166,
+          "mean_gt_magnitude_on_active_gt_motion": 2.840123176574707,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.11956923454999924,
+          "prediction_mean_magnitude_fixed_active": 0.35136377811431885,
+          "prediction_mean_magnitude_full_valid": 0.04977047070860863,
+          "prediction_sha256": "3356ea5b9f212b5ecf72afa14259cb3a25c22e8b7bb56811fa4ac9802aae5129",
+          "valid_pixels": 14579
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.8401233018936023,
+          "fixed_normal_event_active_coverage_of_valid": 0.003978324987996433,
+          "fixed_normal_event_active_pixels": 58,
+          "full_valid_epe_px_per_40ms": 22.5826313941166,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.5826313941166,
+          "mean_gt_magnitude_on_active_gt_motion": 2.840123176574707,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14579
+        }
+      }
+    },
+    {
+      "flow_index": 615,
+      "sample_id": "flow_0615",
+      "variants": {
+        "normal": {
+          "fixed_active_epe_px_per_40ms": 2.9237267069305894,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.900278332716931,
+          "fixed_normal_event_active_coverage_of_valid": 0.004142216085605799,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 22.741833573636207,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.736396115304526,
+          "mean_gt_magnitude_on_active_gt_motion": 2.900278329849243,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.03096109628677368,
+          "prediction_mean_magnitude_fixed_active": 0.4160991311073303,
+          "prediction_mean_magnitude_full_valid": 0.05206996202468872,
+          "prediction_sha256": "3b5efffb01618faf7d3316f3aaead48ec21a45f8723955ea5ecfed2a0358fd0d",
+          "valid_pixels": 14485
+        },
+        "reverse_temporal_bins": {
+          "fixed_active_epe_px_per_40ms": 2.8386892570352202,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.900278332716931,
+          "fixed_normal_event_active_coverage_of_valid": 0.004142216085605799,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 22.741873415856944,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.736396115304526,
+          "mean_gt_magnitude_on_active_gt_motion": 2.900278329849243,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.10659769922494888,
+          "prediction_mean_magnitude_fixed_active": 0.4207671284675598,
+          "prediction_mean_magnitude_full_valid": 0.05284317955374718,
+          "prediction_sha256": "f8fcf128457c3af3c4f8a60ba4adb729895a04368a1eb164617093a054148594",
+          "valid_pixels": 14485
+        },
+        "zero_events": {
+          "fixed_active_epe_px_per_40ms": 2.900278332716931,
+          "fixed_active_zero_flow_epe_px_per_40ms": 2.900278332716931,
+          "fixed_normal_event_active_coverage_of_valid": 0.004142216085605799,
+          "fixed_normal_event_active_pixels": 60,
+          "full_valid_epe_px_per_40ms": 22.736396115304526,
+          "full_valid_zero_flow_epe_px_per_40ms": 22.736396115304526,
+          "mean_gt_magnitude_on_active_gt_motion": 2.900278329849243,
+          "mean_prediction_gt_direction_cosine_on_active_gt_motion": 0.0,
+          "prediction_mean_magnitude_fixed_active": 0.0,
+          "prediction_mean_magnitude_full_valid": 0.0,
+          "prediction_sha256": "fa43239bcee7b97ca62f007cc68487560a39e19f74f3dde7486db3f98df8e471",
+          "valid_pixels": 14485
+        }
+      }
+    }
+  ],
+  "model_root": "/home/\u79d1\u7814/Eventbased_WAM/external_sources/STE-FlowNet",
+  "pinned_model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "schema": "ecarla_steflow_network_fit_v1",
+  "source_patch": {
+    "augmentation": "unchanged: pixel-center normalized grid with align_corners=False",
+    "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+    "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+    "upstream_hashes": {
+      "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785",
+      "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0"
+    }
+  },
+  "started_utc": "2026-10-25T16:37:39.896413+00:00",
+  "status": "complete",
+  "summary": {
+    "normal": {
+      "mean_fixed_active_epe": 1.6506719100569573,
+      "mean_full_epe": 18.34007573579551
+    },
+    "reverse_temporal_bins": {
+      "mean_fixed_active_epe": 1.6913465167211101,
+      "mean_full_epe": 18.319772332414786
+    },
+    "zero_events": {
+      "mean_fixed_active_epe": 2.3281159425302542,
+      "mean_full_epe": 20.474746482025683
+    }
+  },
+  "torch_version": "2.13.0+cu130",
+  "train_windows": [
+    "flow_0100",
+    "flow_0104",
+    "flow_0108",
+    "flow_0112"
+  ],
+  "validation_windows": [
+    "flow_0600",
+    "flow_0601",
+    "flow_0602",
+    "flow_0603",
+    "flow_0604",
+    "flow_0605",
+    "flow_0606",
+    "flow_0607",
+    "flow_0608",
+    "flow_0609",
+    "flow_0610",
+    "flow_0611",
+    "flow_0612",
+    "flow_0613",
+    "flow_0614",
+    "flow_0615"
+  ],
+  "validation_zero_flow_mean_epe": 1.887713774494698
+}

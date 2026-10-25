@@ -1,0 +1,49 @@
+{
+  "schema": "ecarla_flow_diagnostic_v1",
+  "purpose": "synthetic public-data positive control for STE-FlowNet data/optimization diagnosis only",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "formal_checkpoint_selection": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "source": {
+    "dataset": "eCARLA-scenes",
+    "record": "https://zenodo.org/records/14412251",
+    "version": "1.0",
+    "archive": "ecarla-scenes_dynamic.zip",
+    "archive_size_bytes": 7534813423,
+    "published_archive_md5": "154c4562d14fd69a7b9c75883a7e9d79",
+    "scene": "26_cars_town4_forward_cloudy-noon",
+    "scene_selection_basis": "fixed before model results; published dynamic cars/forward sequence; no event-count or model-score filtering",
+    "sensor_resolution_wh": [346, 260]
+  },
+  "synchronization": {
+    "timestamp_unit": "microseconds",
+    "flow_image_time_alignment": "same-index flow and grayscale timestamps; event and flow time offsets applied before comparisons",
+    "input_window": "events in (flow_time[i], flow_time[i+1]]; label is published flow[i]",
+    "basis": "eWiz ReaderFlow/FlowSync semantics use the flow sample at the interval start; each flow is displacement over its frame interval",
+    "flow_direction": "forward source-to-destination displacement; eCARLA paper documents inversion of CARLA sensor direction during dataset construction",
+    "flow_unit": "pixels per consecutive flow interval, nominally 40 ms"
+  },
+  "event_representation": {
+    "type": "signed event counts",
+    "temporal_bins": 5,
+    "binning": "five equal-duration bins over the 40 ms event window; bins are right-closed; start timestamp is excluded and endpoint included",
+    "polarity_mapping": "bool true -> positive channel 0; bool false -> negative channel 1",
+    "model_layout": "[B,2,H,W,5]"
+  },
+  "fixed_windows": {
+    "train_flow_indices": [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115],
+    "validation_flow_indices": [600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615],
+    "photometric_warp_indices": [100, 104, 108, 112, 600, 604, 608, 612],
+    "split_note": "disjoint temporal segments within one public sequence; diagnostic validation only, not independent-scene generalization",
+    "crop_policy": "full native frame for data audit; any constrained-device model fit crop is fixed centrally before metric inspection and reported separately"
+  },
+  "validity": {
+    "provided_flow_valid_mask": false,
+    "diagnostic_geometry_mask": "finite GT and forward endpoint remains within source image bounds",
+    "motion_region_threshold_px": 0.5,
+    "texture_region": "Sobel gradient magnitude >= 5 intensity units on the start grayscale frame; diagnostic only",
+    "photometric_warp_support": "intersection of forward and reverse in-bounds endpoints, then report full and fixed texture+motion supports"
+  },
+  "protocol_boundary": "This is a diagnostic-only synthetic external dataset. It does not replace the Genesis shared-trajectory EventGenesis/V2E comparison, formal self-supervised protocol, or MVSEC test."
+}
