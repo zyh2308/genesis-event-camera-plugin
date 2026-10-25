@@ -1009,15 +1009,15 @@ This section supersedes the preceding â€œNext candidate (`20261021e`, underway)â
 - **Rendering contract note:** the Khronos OpenGL 3.0 specification says disabling `MULTISAMPLE` makes rasterization equivalent to fragment-center single-sample coverage while retaining full fragment coverage. Thus this factor changes rasterization behavior while leaving Genesis' multisample FBO allocation intact; it is not a comparison against a separately allocated single-sample FBO ([Khronos OpenGL 3.0 specification](https://registry.khronos.org/OpenGL/specs/gl/glspec30.pdf)).
 - **Checks and limits:** Python AST parsing, JSON parsing, and `git diff --check` passed. No Genesis renderer, GPU query, or experiment was run in this turn. A separate long-lived SSH session was already active in the shared execution environment; it was left untouched and no concurrent SSH was opened. The candidate and status through local commit `e3066d5a5f22ac6e6494588d360004a6d62ffdf8` are pushed to the GitHub branch using the verified `127.0.0.1:7897` HTTPS proxy. The latest recorded g1 candidate worktree is still at `f8563d2fee7ec62881971c14489a219cb101795a`; therefore commit `124a4c0` is not yet synced to g1 and must be verified there before execution. No new output or empirical claim exists yet.
 - **Local input preflight:** on code commit `234e2c035248593ff5b17c65fc9dec7b0ca2daed`, read-only `state_rows` verification found exact source/dense/source rows at `0.5805/0.5855/0.5905 s` in both episodes, with 9-element Panda qpos vectors. Source-cache hashes match the previously staged values: episode 004 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7`, episode 005 `91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434`. The fresh output path `r1_5_shadow_multisample_cached_states_20261025b_g1` does not yet exist.
-- **Run only after source sync is verified and a suitable renderer GPU is confirmed available:**
+- **Run only after a coordinator assigns a suitable renderer GPU, a fresh ownership check passes, and the exact staged source is verified:**
 
   ```bash
-  cd /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261025-d390d85
+  cd /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261026-e81852e
   ROBOT_PYTHON="$HOME/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
   GPU_ID=${GPU_ID:?set to a confirmed free GPU ID}
   PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES= EGL_DEVICE_ID="$GPU_ID" PYOPENGL_PLATFORM=egl \
     "$ROBOT_PYTHON" benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_multisample_cached_states.py \
-    --cache-root benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+    --cache-root /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261025-d390d85/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
     --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
     --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025b.json \
     --output benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025b_g1
