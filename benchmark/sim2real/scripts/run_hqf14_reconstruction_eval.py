@@ -81,11 +81,8 @@ def preflight(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any],
         if not record:
             raise RuntimeError(f"source bundle does not pin {repo_name}")
         verification = verify_pinned_source(source_root, repo_name, record["commit"], manifest_path)
-        if verification.get("verification") not in {
-            "clean_git_checkout",
-            "manifest_file_sha256_and_tree_sha256",
-        }:
-            raise RuntimeError(f"{repo_name} source failed pinned verification: {verification}")
+        if verification.get("verification") != "clean_git_checkout":
+            raise RuntimeError(f"{repo_name} source checkout is not clean and pinned: {verification}")
     return protocol, {"manifest": data_manifest, "rows": data_rows}, protocol_sha, checkpoints
 
 
