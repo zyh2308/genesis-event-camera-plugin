@@ -45,8 +45,8 @@ from genesis_event_plugin.radiometry import linear_luminance  # noqa: E402
 
 DEFAULT_CACHE = ROOT / "benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059"
 DEFAULT_CONFIG = ROOT / "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json"
-DEFAULT_EXPERIMENT_CONFIG = ROOT / "benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025a.json"
-DEFAULT_OUTPUT = ROOT / "benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025a"
+DEFAULT_EXPERIMENT_CONFIG = ROOT / "benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025b.json"
+DEFAULT_OUTPUT = ROOT / "benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025b"
 
 
 def segmentation_contour_band(segmentation: np.ndarray) -> np.ndarray:
@@ -158,6 +158,8 @@ class MultisamplePassAudit:
                 "read_framebuffer_before_blit": int(GL.glGetIntegerv(GL.GL_READ_FRAMEBUFFER_BINDING)),
                 "draw_framebuffer_before_blit": int(GL.glGetIntegerv(GL.GL_DRAW_FRAMEBUFFER_BINDING)),
                 "arguments": [int(value) for value in args],
+                "mask": int(args[-2]) if len(args) >= 2 else None,
+                "filter": int(args[-1]) if len(args) >= 1 else None,
             }
             result = self._original_blit(*args, **kwargs)
             self.blit_records.append(record)
@@ -184,9 +186,18 @@ class MultisamplePassAudit:
                 sample_buffers = int(GL.glGetIntegerv(GL.GL_SAMPLE_BUFFERS))
                 sample_count = int(GL.glGetIntegerv(GL.GL_SAMPLES))
                 max_samples = int(GL.glGetIntegerv(GL.GL_MAX_SAMPLES))
+                def gl_string(name: int) -> str | None:
+                    value = GL.glGetString(name)
+                    if value is None:
+                        return None
+                    return value.decode("utf-8", errors="replace") if isinstance(value, bytes) else str(value)
+
                 self.records.append({
                     "requested_multisample_enabled": enabled,
                     "actual_gl_multisample_enabled": bool(GL.glIsEnabled(GL.GL_MULTISAMPLE)),
+                    "gl_vendor": gl_string(GL.GL_VENDOR),
+                    "gl_renderer": gl_string(GL.GL_RENDERER),
+                    "gl_version": gl_string(GL.GL_VERSION),
                     "render_flags_int": int(flags),
                     "draw_framebuffer": draw_fbo,
                     "multisample_framebuffer": int(target._main_fb_ms),
@@ -302,6 +313,124 @@ def render_condition(
     }
 
 
+def render_simple_contour_condition(
+    gs: Any,
+    scene_config: dict[str, Any],
+    contour_config: dict[str, Any],
+    *,
+    shadow: bool,
+    multisample: bool,
+    capture_repeats: int,
+    warmup_passes: int,
+) -> dict[str, Any]:
+    """Render a tiny moving-box control without stepping the physics engine."""
+    started = time.perf_counter()
+    build_started = time.perf_counter()
+    scene = gs.Scene(
+        sim_options=gs.options.SimOptions(
+            dt=float(scene_config["physics"]["dt_s"]), gravity=(0.0, 0.0, 0.0),
+        ),
+        vis_options=gs.options.VisOptions(
+            ambient_light=tuple(float(x) for x in contour_config["ambient_light"]),
+            shadow=bool(shadow),
+        ),
+        show_viewer=False,
+    )
+    scene.add_entity(
+        gs.morphs.Plane(),
+        surface=gs.surfaces.Default(color=tuple(contour_config["floor_rgba"])),
+    )
+    box = scene.add_entity(
+        gs.morphs.Box(
+            size=tuple(float(x) for x in contour_config["box_size_m"]),
+            pos=tuple(float(x) for x in contour_config["states"][0]["box_position_m"]),
+        ),
+        surface=gs.surfaces.Default(color=tuple(contour_config["box_rgba"])),
+    )
+    camera_config = scene_config["camera"]
+    camera = scene.add_camera(
+        res=tuple(int(x) for x in camera_config["resolution_wh"]),
+        pos=tuple(float(x) for x in camera_config["position_m"]),
+        lookat=tuple(float(x) for x in camera_config["lookat_m"]),
+        up=tuple(float(x) for x in camera_config["up_m"]),
+        fov=float(camera_config["vertical_fov_deg"]),
+        GUI=False,
+    )
+    scene.build()
+    build_s = time.perf_counter() - build_started
+
+    hdr_frames: list[np.ndarray] = []
+    depth_frames: list[np.ndarray] = []
+    seg_frames: list[np.ndarray] = []
+    repeat_metrics: list[dict[str, Any]] = []
+    warmup_wall = 0.0
+    render_wall = 0.0
+    audit = MultisamplePassAudit(gs, camera, enabled=multisample)
+    try:
+        with audit:
+            warmup_started = time.perf_counter()
+            for _ in range(warmup_passes):
+                camera.render(rgb=True, depth=True, segmentation=True, radiance=True, force_render=True)
+            warmup_wall = time.perf_counter() - warmup_started
+            for state in contour_config["states"]:
+                box.set_pos(np.asarray(state["box_position_m"], dtype=np.float32))
+                render_started = time.perf_counter()
+                captures = [
+                    camera.render(rgb=True, depth=True, segmentation=True, radiance=True, force_render=True)
+                    for _ in range(capture_repeats)
+                ]
+                render_wall += time.perf_counter() - render_started
+                hdr_captures = [np.asarray(item[0], dtype=np.float32).copy() for item in captures]
+                depth_captures = [np.asarray(item[1], dtype=np.float32).copy() for item in captures]
+                seg_captures = [np.asarray(item[2], dtype=np.int32).copy() for item in captures]
+                if any(not np.isfinite(frame).all() or np.any(frame < 0) for frame in hdr_captures):
+                    raise RuntimeError("simple contour renderer returned invalid HDR radiance")
+                hdr_frames.append(hdr_captures[-1])
+                depth_frames.append(depth_captures[-1])
+                seg_frames.append(seg_captures[-1])
+                delta = np.abs(hdr_captures[0] - hdr_captures[-1])
+                repeat_metrics.append({
+                    "label": str(state["label"]),
+                    "time_s": float(state["time_s"]),
+                    "hdr_rgb_repeat_mae": float(delta.mean()),
+                    "hdr_rgb_repeat_p99_abs": float(np.percentile(delta, 99)),
+                    "hdr_rgb_repeat_max_abs": float(delta.max()),
+                })
+    finally:
+        gs.destroy()
+
+    expected_passes = len(contour_config["states"]) * capture_repeats + warmup_passes
+    if len(audit.records) != expected_passes or len(audit.readback_records) != expected_passes:
+        raise RuntimeError(
+            f"simple contour audit counts {len(audit.records)}/{len(audit.readback_records)}, "
+            f"expected {expected_passes}"
+        )
+    if any(len(item["blit_calls_during_readback"]) != 1 for item in audit.readback_records):
+        raise RuntimeError("simple contour expected one resolve blit per radiance readback")
+    if any(item["actual_gl_multisample_enabled"] != bool(multisample) for item in audit.records):
+        raise RuntimeError("simple contour GL multisample state did not match the requested condition")
+    if any(not item["draw_is_genesis_multisample_framebuffer"] for item in audit.records):
+        raise RuntimeError("simple contour HDR pass did not use Genesis' multisample framebuffer")
+    if any(item["sample_buffers"] != 1 or item["samples"] < 1 for item in audit.records):
+        raise RuntimeError("simple contour HDR pass did not retain the expected multisample attachment")
+
+    return {
+        "shadow": bool(shadow),
+        "requested_multisample_enabled": bool(multisample),
+        "scene_build_wall_s": build_s,
+        "warmup_render_wall_s": warmup_wall,
+        "captured_render_wall_s": render_wall,
+        "condition_wall_s_including_build_warmup_and_destroy": time.perf_counter() - started,
+        "hdr_pass_gl_audit": audit.records,
+        "radiance_readback_audit": audit.readback_records,
+        "framebuffer_blit_audit": audit.blit_records,
+        "same_state_repeat": repeat_metrics,
+        "hdr_rgb": np.stack(hdr_frames),
+        "depth": np.stack(depth_frames),
+        "segmentation": np.stack(seg_frames),
+    }
+
+
 def condition_key(shadow: bool, multisample: bool) -> str:
     return f"shadow_{'on' if shadow else 'off'}_multisample_{'on' if multisample else 'off'}"
 
@@ -340,6 +469,15 @@ def main() -> int:
     if not episode_ids or any(item not in {"004", "005"} for item in episode_ids):
         raise ValueError("the diagnostic is restricted to cached development episodes 004 and 005")
     state_specs = experiment["states"]
+    contour_config = experiment.get("simple_contour_control")
+    if not isinstance(contour_config, dict) or contour_config.get("enabled") is not True:
+        raise ValueError("the matched factorial requires an enabled simple contour control")
+    if len(contour_config.get("states", [])) != len(state_specs):
+        raise ValueError("simple contour control must have one render-only state per cached timestamp")
+    if [float(item["time_s"]) for item in contour_config["states"]] != [
+        float(item["time_s"]) for item in state_specs
+    ]:
+        raise ValueError("simple contour timestamps must match the cached start/middle/end timestamps")
     shadow_conditions = [bool(value) for value in experiment["shadow_conditions"]]
     multisample_conditions = [bool(value) for value in experiment["multisample_conditions"]]
     capture_repeats = int(experiment["capture_repeats_per_state"])
@@ -439,6 +577,9 @@ def main() -> int:
                     "shadow": conditions[key]["shadow"],
                     "requested_multisample_enabled": conditions[key]["requested_multisample_enabled"],
                     "actual_gl_multisample_state_per_hdr_pass": [x["actual_gl_multisample_enabled"] for x in conditions[key]["hdr_pass_gl_audit"]],
+                    "gl_vendor_per_hdr_pass": [x["gl_vendor"] for x in conditions[key]["hdr_pass_gl_audit"]],
+                    "gl_renderer_per_hdr_pass": [x["gl_renderer"] for x in conditions[key]["hdr_pass_gl_audit"]],
+                    "gl_version_per_hdr_pass": [x["gl_version"] for x in conditions[key]["hdr_pass_gl_audit"]],
                     "sample_buffers_per_hdr_pass": [x["sample_buffers"] for x in conditions[key]["hdr_pass_gl_audit"]],
                     "samples_per_hdr_pass": [x["samples"] for x in conditions[key]["hdr_pass_gl_audit"]],
                     "max_samples_supported_per_hdr_pass": [x["max_samples_supported"] for x in conditions[key]["hdr_pass_gl_audit"]],
@@ -456,6 +597,8 @@ def main() -> int:
                     "condition_wall_s_including_scene_build_warmup_and_destroy": conditions[key]["condition_wall_s_including_scene_build_warmup_and_destroy"],
                     "render_calls_included_in_wall": conditions[key]["render_calls_included_in_wall"],
                     "same_state_repeat": conditions[key]["same_state_repeat"],
+                    "radiance_readback_audit": conditions[key]["radiance_readback_audit"],
+                    "framebuffer_blit_audit": conditions[key]["framebuffer_blit_audit"],
                     "floor_log_luma_by_state": [stats(v[floor]) for v in log_luma_by_condition[idx]],
                 }
             for state_idx, label in enumerate(labels):
@@ -491,6 +634,107 @@ def main() -> int:
                 "conditions": condition_metrics,
             }
 
+        contour_conditions: dict[str, dict[str, Any]] = {}
+        contour_states = contour_config["states"]
+        contour_times = np.asarray([float(item["time_s"]) for item in contour_states], dtype=np.float64)
+        contour_labels = [str(item["label"]) for item in contour_states]
+        for shadow in shadow_conditions:
+            for multisample in multisample_conditions:
+                gs.init(backend=gs.cpu, logging_level="warning")
+                key = condition_key(shadow, multisample)
+                contour_conditions[key] = render_simple_contour_condition(
+                    gs, config, contour_config, shadow=shadow, multisample=multisample,
+                    capture_repeats=capture_repeats, warmup_passes=warmup_passes,
+                )
+        contour_keys = [condition_key(s, m) for s in shadow_conditions for m in multisample_conditions]
+        contour_hdr = np.stack([contour_conditions[key]["hdr_rgb"] for key in contour_keys])
+        contour_depth = np.stack([contour_conditions[key]["depth"] for key in contour_keys])
+        contour_seg = np.stack([contour_conditions[key]["segmentation"] for key in contour_keys])
+        if any(not np.array_equal(contour_seg[0], contour_seg[index]) for index in range(1, len(contour_keys))):
+            raise RuntimeError("simple contour segmentation changed across shadow/MSAA conditions")
+        contour_finite_depth = np.all(np.isfinite(contour_depth), axis=0)
+        contour_depth_delta = {
+            key: float(np.abs(contour_depth[idx][contour_finite_depth] - contour_depth[0][contour_finite_depth]).max())
+            for idx, key in enumerate(contour_keys)
+        }
+        contour_band = segmentation_contour_band(contour_seg[0])
+        contour_luma = np.stack([log_luma(contour_hdr[idx]) for idx in range(len(contour_keys))])
+        contour_linear_luma = np.stack([
+            np.stack([linear_luminance(frame) for frame in contour_hdr[idx]])
+            for idx in range(len(contour_keys))
+        ]).astype(np.float64)
+        contour_event_outputs: dict[str, dict[str, Any]] = {}
+        for idx, key in enumerate(contour_keys):
+            events, counts = run_ideal_dvs(
+                contour_linear_luma[idx], contour_times, np.ones(contour_band.shape, dtype=bool),
+                contour_linear_luma[idx, 0], float(contour_times[0]),
+            )
+            contour_event_outputs[key] = {
+                "events": events,
+                "counts": counts,
+                "contour_event_summary": event_region_summary(events, contour_band),
+            }
+        contour_npz: dict[str, Any] = {
+            "times_s": contour_times,
+            "state_labels": np.asarray(contour_labels),
+            "condition_keys": np.asarray(contour_keys),
+            "hdr_rgb": contour_hdr,
+            "depth": contour_depth,
+            "segmentation": contour_seg,
+            "contour_band": contour_band,
+        }
+        for key in contour_keys:
+            contour_npz[f"{key}_events_full_frame"] = contour_event_outputs[key]["events"]
+            contour_npz[f"{key}_event_counts"] = np.asarray(contour_event_outputs[key]["counts"], dtype=np.int32)
+        np.savez_compressed(args.output / "simple_contour_control_frames_and_events.npz", **contour_npz)
+
+        contour_condition_metrics: dict[str, Any] = {}
+        for idx, key in enumerate(contour_keys):
+            contour_condition_metrics[key] = {
+                "shadow": contour_conditions[key]["shadow"],
+                "requested_multisample_enabled": contour_conditions[key]["requested_multisample_enabled"],
+                "actual_gl_multisample_state_per_hdr_pass": [x["actual_gl_multisample_enabled"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "gl_vendor_per_hdr_pass": [x["gl_vendor"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "gl_renderer_per_hdr_pass": [x["gl_renderer"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "gl_version_per_hdr_pass": [x["gl_version"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "sample_buffers_per_hdr_pass": [x["sample_buffers"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "samples_per_hdr_pass": [x["samples"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "sample_positions_per_hdr_pass": [x["sample_positions"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "draw_fbo_is_genesis_multisample_fbo_per_hdr_pass": [x["draw_is_genesis_multisample_framebuffer"] for x in contour_conditions[key]["hdr_pass_gl_audit"]],
+                "depth_abs_max_vs_first_condition": contour_depth_delta[key],
+                "full_frame_events": int(len(contour_event_outputs[key]["events"])),
+                "events_per_actual_interval": [int(x) for x in contour_event_outputs[key]["counts"]],
+                "silhouette_contour_band_pixels": int(contour_band.sum()),
+                "silhouette_contour_events": contour_event_outputs[key]["contour_event_summary"],
+                "scene_build_wall_s": contour_conditions[key]["scene_build_wall_s"],
+                "warmup_render_wall_s": contour_conditions[key]["warmup_render_wall_s"],
+                "captured_render_wall_s": contour_conditions[key]["captured_render_wall_s"],
+                "condition_wall_s_including_build_warmup_and_destroy": contour_conditions[key]["condition_wall_s_including_build_warmup_and_destroy"],
+                "same_state_repeat": contour_conditions[key]["same_state_repeat"],
+                "radiance_readback_audit": contour_conditions[key]["radiance_readback_audit"],
+                "framebuffer_blit_audit": contour_conditions[key]["framebuffer_blit_audit"],
+                "full_frame_log_luma_by_state": [stats(v) for v in contour_luma[idx]],
+            }
+            for state_idx, label in enumerate(contour_labels):
+                factorial_preview(
+                    args.output / f"simple_contour_{label}_shadow_multisample_factorial.png",
+                    [contour_hdr[j, state_idx] for j in range(len(contour_keys))],
+                    np.ones(contour_band.shape, dtype=bool), contour_keys, label,
+                )
+        contour_factorial = {"shadow_effect_at_fixed_multisample": {}, "multisample_effect_at_fixed_shadow": {}}
+        for ms in (True, False):
+            on_key, off_key = condition_key(True, ms), condition_key(False, ms)
+            contour_factorial["shadow_effect_at_fixed_multisample"]["on" if ms else "off"] = {
+                label: stats((contour_luma[contour_keys.index(on_key), i] - contour_luma[contour_keys.index(off_key), i])[contour_band])
+                for i, label in enumerate(contour_labels)
+            }
+        for shadow in (True, False):
+            on_key, off_key = condition_key(shadow, True), condition_key(shadow, False)
+            contour_factorial["multisample_effect_at_fixed_shadow"]["on" if shadow else "off"] = {
+                label: stats((contour_luma[contour_keys.index(on_key), i] - contour_luma[contour_keys.index(off_key), i])[contour_band])
+                for i, label in enumerate(contour_labels)
+            }
+
         report = {
             "purpose": "matched direct-HDR shadow x GL multisample factorial on immutable cached robot/target states",
             "scope": "same cached states, camera, geometry, material, DVS replay; factors are VisOptions.shadow and actual GL_MULTISAMPLE state on the existing Genesis HDR multisample FBO",
@@ -520,11 +764,22 @@ def main() -> int:
                 "Only the two cached development episodes are used; no independent test or downstream learning result is implied.",
             ],
             "episodes": per_episode,
+            "simple_contour_control": {
+                "purpose": "synthetic render-only high-contrast box contour shifted by approximately one image pixel per 5 ms interval; no physics is advanced",
+                "state_positions_m": [list(item["box_position_m"]) for item in contour_states],
+                "state_times_s": contour_times.tolist(),
+                "physics_advanced": False,
+                "event_generation_mask": "all pixels; silhouette band is used only after event generation for evaluation",
+                "segmentation_identical_across_factorial": True,
+                "factorial_metrics": contour_factorial,
+                "conditions": contour_condition_metrics,
+                "input_npz": "simple_contour_control_frames_and_events.npz",
+            },
         }
         (args.output / "shadow_multisample_summary.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         readme = """# R1.5 matched shadow x multisample cached-state render
 
-This diagnostic restores exact logged Panda and target states from cached development episodes 004 and 005. Physics is not stepped. It renders actual start, middle, and end timestamps under the four `shadow on/off x GL_MULTISAMPLE on/off` conditions. The same ideal physical-log DVS response is applied to each condition.
+This diagnostic restores exact logged Panda and target states from cached development episodes 004 and 005. Physics is not stepped. It renders actual start, middle, and end timestamps under the four `shadow on/off x GL_MULTISAMPLE on/off` conditions. The same ideal physical-log DVS response is applied to each condition. A separate simple-control scene renders only a plane and high-contrast box; the box is moved by render-only pose updates of about one image pixel per 5 ms. That control is explicitly synthetic and is not a new robot rollout.
 
 Genesis allocates an HDR multisample framebuffer using `min(GL_MAX_SAMPLES, 4)`. The experiment changes only the actual `GL_MULTISAMPLE` capability during the HDR draw. It does not change framebuffer allocation or the radiance resolve/readback pass. Every HDR pass records actual GL enable state, draw FBO identity, sample-buffer count, sample count, and implementation sample positions. The segmentation/depth checks and fixed floor mask are evaluator-only; the DVS consumes the full rendered image.
 
@@ -539,8 +794,8 @@ PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES= EGL_DEVICE_ID="$GPU_ID" PYOPENGL_PLATFOR
   "$ROBOT_PYTHON" benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_multisample_cached_states.py \\
   --cache-root benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \\
   --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \\
-  --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025a.json \\
-  --output benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025a
+  --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025b.json \\
+  --output benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025b
 ```
 """
         (args.output / "README.md").write_text(readme, encoding="utf-8")
