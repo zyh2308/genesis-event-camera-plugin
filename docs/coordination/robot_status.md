@@ -1000,3 +1000,24 @@ This section supersedes the preceding â€œNext candidate (`20261021e`, underway)â
   ```
 
 - **Still unknown:** no image, contour, event, repeatability, or cost measurement has been made for the new four-way comparison. It is a direct-render causal diagnostic, not yet candidate-versus-reference reconstruction fidelity, a full 1 kHz trace, a frozen-core change, or a downstream learning result. Preserve the formal Direct-HDR reference and old outputs.
+
+#### R1.5 simple contour control and readback audit added (2026-10-25)
+
+- **Code/config:** commit `124a4c0edf1602c5f113fac03dc9b858cdb14204` adds a separate, render-only high-contrast box contour control and expands pass provenance. The earlier `20261025a` config remains unchanged; use config [`r1_5_shadow_multisample_cached_states_20261025b.json`](../../benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025b.json), SHA256 `ced55b5d57953107b7c0ba91d36b06e5a8e23736b15d666ab177dae3ebcb32af`, and runner [`diagnose_r1_5_shadow_multisample_cached_states.py`](../../benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_multisample_cached_states.py), SHA256 `87867ca994f3c100b4971d3717022b23939f0479aff57a4b5ac5a10a597dd7dc`.
+- **Control definition:** retain the same fixed camera and 0.5805/0.5855/0.5905 s timestamps. In an isolated plane-and-box render scene, the box receives render-only lateral pose updates of -1.5/0/+1.5 mm (about 1.1 image pixels per 5 ms); no physics is stepped and this is not a robot episode. The DVS sees every pixel; its silhouette band is used only after event generation. The two cached robot episodes remain unchanged.
+- **Audit output:** every radiance draw records actual GL vendor/renderer/version, `GL_MULTISAMPLE` state, draw FBO, sample-buffer/sample counts and sample positions. Each radiance readback and resolve blit records its bound FBOs, arguments, mask, and filter. The experiment now expects 84 audited HDR passes total: 56 across cached episodes 004/005 and 28 for the simple control. Existing output `20261025a` was never created or overwritten.
+- **Rendering contract note:** the Khronos OpenGL 3.0 specification says disabling `MULTISAMPLE` makes rasterization equivalent to fragment-center single-sample coverage while retaining full fragment coverage. Thus this factor changes rasterization behavior while leaving Genesis' multisample FBO allocation intact; it is not a comparison against a separately allocated single-sample FBO ([Khronos OpenGL 3.0 specification](https://registry.khronos.org/OpenGL/specs/gl/glspec30.pdf)).
+- **Checks and limits:** Python AST parsing, JSON parsing, and `git diff --check` passed. No Genesis renderer, GPU query, or experiment was run in this turn. A separate long-lived SSH session was already active in the shared execution environment; it was left untouched and no concurrent SSH was opened. The latest recorded g1 candidate worktree is still at `f8563d2fee7ec62881971c14489a219cb101795a`, so the new `124a4c0` candidate must be delivered and verified before execution. No new output or empirical claim exists yet.
+- **Run after the current SSH session ends, source sync is verified, and a fresh idle GPU/owner check passes:**
+
+  ```bash
+  cd /home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r1_5-20261025-d390d85
+  ROBOT_PYTHON="$HOME/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python"
+  GPU_ID=${GPU_ID:?set to a confirmed free GPU ID}
+  PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES= EGL_DEVICE_ID="$GPU_ID" PYOPENGL_PLATFORM=egl \
+    "$ROBOT_PYTHON" benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_shadow_multisample_cached_states.py \
+    --cache-root benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059 \
+    --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+    --experiment-config benchmark/robot_closed_loop/configs/r1_5_shadow_multisample_cached_states_20261025b.json \
+    --output benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261025b_g1
+  ```
