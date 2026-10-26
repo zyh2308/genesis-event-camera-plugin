@@ -1,0 +1,33 @@
+{
+  "schema": "stage5_genesis_gt_fit_window_selection_v2",
+  "purpose": "Select one fit-diagnostic window using shared physical flow and shared rendered texture only",
+  "real_data_used": false,
+  "generator_events_read_for_selection": false,
+  "model_outputs_read_for_selection": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "shared_bank": {
+    "path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "schema": "stage5_flow_scene_coverage_shared_bank_v3",
+    "sha256": "2f0db064a1fdf90417f31e345e99813bcdb036759cf2dbbdce344e9a7700352c"
+  },
+  "training_rollout": {
+    "rollout_id": "s5q_02_train",
+    "split": "train",
+    "stratum": "independent_rigid_motion_static_camera",
+    "candidate_windows": "all 66 registered 30ms windows"
+  },
+  "selection_rule": {
+    "eligible_pixels": "shared flow_valid AND magnitude(flow_forward_30ms_px) >= 0.5 source px per 30ms AND Sobel magnitude of linearized-display-proxy Rec.709 luma > 1/255",
+    "score": "number of eligible pixels",
+    "winner": "highest score; earliest window index breaks ties",
+    "generator_event_count_filter": false,
+    "generator_specific_filter": false
+  },
+  "independent_validation": {
+    "rollout_id": "s5q_02_val",
+    "split": "validation",
+    "all_windows": true
+  },
+  "fit_budget_reference": "configs/stage5_flow_fixed_sample_fit_v1.json (200 updates per arm, same seed 0 initialization, no augmentation)",
+  "protocol_scope": "bounded synthetic GT-supervised mechanism diagnostic only; does not change formal self-supervised objective, checkpoint selection, or real-test policy"
+}

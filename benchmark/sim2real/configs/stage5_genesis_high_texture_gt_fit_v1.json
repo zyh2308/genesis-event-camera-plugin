@@ -1,0 +1,42 @@
+{
+  "schema": "stage5_genesis_high_texture_gt_fit_v1",
+  "purpose": "CPU pre-fit audit and preregistered sample for short STE-FlowNet GT-supervised fit",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "shared_bank": {
+    "path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "schema": "stage5_flow_scene_coverage_shared_bank_v3",
+    "sha256": "2f0db064a1fdf90417f31e345e99813bcdb036759cf2dbbdce344e9a7700352c"
+  },
+  "training_sample": {
+    "rollout_id": "s5q_02_train",
+    "split": "train",
+    "stratum": "independent_rigid_motion_static_camera",
+    "texture_pattern": "checker",
+    "texture_contrast": "high",
+    "window_index": 33,
+    "endpoint_indices": [99, 102],
+    "window_seconds": [0.99, 1.02],
+    "selection_basis": "fixed midpoint 30ms window selected from registered rollout design before reading this window's labels, event counts, or model outputs"
+  },
+  "independent_validation": {
+    "rollout_id": "s5q_02_val",
+    "split": "validation",
+    "stratum": "independent_rigid_motion_static_camera",
+    "all_windows": true,
+    "window_count": 66,
+    "selection_basis": "entire registered independent validation rollout; no window filtering"
+  },
+  "audit_contract": {
+    "flow_unit": "forward source-pixel displacement per 30ms endpoint interval",
+    "event_window": "(t_i,t_i+3] on shared 100Hz endpoints",
+    "event_active_support": "pixels with any event in the official five-bin Gaussian-count representation",
+    "gt_motion_threshold_px_per_30ms": 0.5,
+    "texture_threshold": "Sobel gradient magnitude of Rec.709 linearized-display-proxy luma > 1/255",
+    "warp_direction": "sample next endpoint at (x+u,y+v) to compare with previous endpoint at (x,y)",
+    "generator_scope": "EventGenesis audit only until V2E outputs are manifest-bound to this exact eight-rollout bank; do not mix the older single-rollout smoke V2E artifact",
+    "model_training_started": false,
+    "checkpoint_selection": false
+  }
+}

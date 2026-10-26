@@ -1,0 +1,165 @@
+{
+  "schema": "stage5_genesis_high_texture_gt_fit_status_v1",
+  "observed_local": "2026-10-26T13:48:00+09:00",
+  "observed_utc": "2026-10-26T04:48:00Z",
+  "branch": "exp/public-sim2real-v1",
+  "source_commit_at_start": "ee9ad232d1f1b7f9a3e06f7ab6d1fbe1ce0de294",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "model_loaded": false,
+  "optimizer_updates": 0,
+  "training_started": false,
+  "shared_bank": {
+    "path_g1": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "schema": "stage5_flow_scene_coverage_shared_bank_v3",
+    "sha256": "2f0db064a1fdf90417f31e345e99813bcdb036759cf2dbbdce344e9a7700352c",
+    "bytes": 426695857,
+    "registered_rollouts": 8,
+    "scene_source": "project-built checker/stripe floor and moving objects; not a public real-world scene asset",
+    "public_room_scene_coverage_claimed": false,
+    "v2e_outputs_for_this_manifest_available": false,
+    "old_smoke_v2e_reused": false
+  },
+  "environment": {
+    "host": "g1",
+    "python": "3.11",
+    "numpy": "2.4.6",
+    "h5py": "3.14.0",
+    "opencv": "5.0.0",
+    "audit_device": "CPU"
+  },
+  "gpu_snapshot": {
+    "observed_utc": "2026-10-26T04:47:55Z",
+    "utilization_percent_gpu0_to_gpu5": [81, 65, 93, 94, 94, 93],
+    "memory_used_mib_gpu0_to_gpu5": [2903, 2903, 3091, 3063, 3063, 2906],
+    "process_owner_enumerated": false,
+    "training_launch_performed": false
+  },
+  "initial_fixed_window": {
+    "config": "benchmark/sim2real/configs/stage5_genesis_high_texture_gt_fit_v1.json",
+    "config_sha256": "93bfda7510c782dbb9588a739e9385851339567582ed738795b211e7dfe760b8",
+    "window_id": "s5q_02_train/dt1_990",
+    "window_index": 33,
+    "time_seconds": [0.99, 1.02],
+    "event_count": 46,
+    "valid_pixels": 89872,
+    "event_active_valid_pixels": 36,
+    "event_active_valid_coverage": 0.0004005696991276482,
+    "gt_motion_ge_0_5_pixels": 629,
+    "moving_texture_valid_pixels": 16,
+    "event_active_moving_texture_pixels": 1,
+    "gt_magnitude_p50_p90_p99_px_per_30ms": [0.0, 0.0, 0.01603315094485851],
+    "warp_mae_proxy_luma": {
+      "moving_texture_valid": {
+        "zero": 0.003175456076860428,
+        "gt_forward": 0.0021000495180487633,
+        "reverse": 0.003278830088675022
+      },
+      "event_active_moving_texture_valid": {
+        "pixels": 1,
+        "zero": 0.0,
+        "gt_forward": 0.0,
+        "reverse": 0.0
+      }
+    },
+    "lk_direction_crosscheck": {
+      "tracked_features": 9,
+      "median_epe_gt_forward_px": 0.009770059026777744,
+      "median_epe_reversed_gt_px": 0.02060380019247532
+    },
+    "remote_run": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-prefit-audit-v1",
+      "started_utc": "2026-10-26T04:42:58Z",
+      "finished_utc": "2026-10-26T04:43:15Z",
+      "exit_code": 0,
+      "audit_json_sha256": "0355a0d88788507617ca731ef7059e3725355cc3f1e0d0729b4783b6467434f6"
+    }
+  },
+  "selected_fixed_window": {
+    "selection_config": "benchmark/sim2real/configs/stage5_genesis_gt_fit_window_selection_v2.json",
+    "selection_config_sha256": "1b1baaac39108201b674e7dfab11c3fd11835d2a0e6580c0b18c5b9375363c8a",
+    "selection_script": "benchmark/sim2real/scripts/select_stage5_genesis_gt_fit_window.py",
+    "selection_script_sha256": "b3eeb39781055694a99a7bcfed2076e8b0379a1c407450814f68cd311ebb4a01",
+    "selection_used_generator_events": false,
+    "selection_used_model_outputs": false,
+    "selection_rule": "maximize shared-valid pixels with GT magnitude >=0.5 px/30ms and Sobel luma gradient >1/255 across all 66 s5q_02_train windows; earliest index breaks ties",
+    "window_id": "s5q_02_train/dt1_000",
+    "window_index": 0,
+    "time_seconds": [0.0, 0.03],
+    "gt_moving_texture_score_pixels": 32,
+    "selection_output_sha256": "7aae5137ff01d0302a660bb8de2830a65fa20ee7082c904a27a619c528c1ac4f",
+    "remote_run": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-fit-window-selection-v2-attempt02",
+      "started_utc": "2026-10-26T04:46:12Z",
+      "finished_utc": "2026-10-26T04:46:17Z",
+      "exit_code": 0
+    },
+    "failed_attempt_preserved": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-fit-window-selection-v2",
+      "exit_code": 1,
+      "cause": "remote helper named select.py shadowed the Python standard-library select module"
+    }
+  },
+  "selected_window_audit": {
+    "config": "benchmark/sim2real/configs/stage5_genesis_high_texture_gt_fit_v2.json",
+    "config_sha256": "11e24529694e44e7a22bb4bf9e225d0a77061245690bbf9ed82330bc381e5bf4",
+    "audit_script": "benchmark/sim2real/scripts/audit_stage5_genesis_high_texture_gt_fit.py",
+    "audit_script_sha256": "7229173ebbc06c692d926228b7a0f5b0680d5eafb112bc7b99d5a607255967af",
+    "window_id": "s5q_02_train/dt1_000",
+    "event_count": 9972,
+    "valid_pixels": 89570,
+    "event_active_valid_pixels": 3453,
+    "event_active_valid_coverage": 0.03855085408060735,
+    "gt_motion_ge_0_5_pixels": 910,
+    "texture_pixels_gradient_gt_1_over_255": 8356,
+    "moving_texture_valid_pixels": 32,
+    "event_active_moving_texture_pixels": 7,
+    "gt_magnitude_p50_p90_p99_px_per_30ms": [0.0, 0.006181146949529648, 0.9645089858770352],
+    "warp_mae_proxy_luma": {
+      "moving_texture_valid": {
+        "pixels": 32,
+        "zero": 0.0020358706824481487,
+        "gt_forward": 0.002436687471723914,
+        "reverse": 0.0030821217224001884
+      },
+      "event_active_moving_texture_valid": {
+        "pixels": 7,
+        "zero": 0.004358109552413225,
+        "gt_forward": 0.004655389580875635,
+        "reverse": 0.004472500178962946
+      }
+    },
+    "lk_direction_crosscheck": {
+      "target_features": 0,
+      "tracked_features": 0,
+      "status": "no usable tracks at this preregistered window"
+    },
+    "remote_run": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-prefit-audit-v2",
+      "started_utc": "2026-10-26T04:47:09Z",
+      "finished_utc": "2026-10-26T04:47:19Z",
+      "exit_code": 0,
+      "audit_json_sha256": "e2a1bb670321de0028a87d7248e30e01b19b5303e37f0d4cbf1a3ee624d67a87"
+    }
+  },
+  "independent_validation_rollout_eventgenesis_only": {
+    "rollout_id": "s5q_02_val",
+    "split": "validation",
+    "windows_audited": 66,
+    "mean_event_active_valid_coverage": 0.009759782182752771,
+    "median_event_active_valid_coverage": 0.006766851931566735,
+    "moving_texture_valid_pixels_mean": 210.33333333333334,
+    "event_active_moving_texture_pixels_mean": 102.36363636363636,
+    "windows_with_nonempty_event_active_moving_texture": 66,
+    "event_count_total": 124210,
+    "interpretation": "input/GT observability only; no STE-FlowNet inference has been run"
+  },
+  "outstanding": [
+    "No V2E raw events bound to the complete eight-rollout bank; old one-rollout smoke was not reused",
+    "No STE-FlowNet GT-supervised fit on this Genesis bank",
+    "No model inference on the independent validation rollout",
+    "No full independent direction audit across all generated scene labels",
+    "No GPU met the resource condition for a new training task at the recorded snapshot"
+  ]
+}

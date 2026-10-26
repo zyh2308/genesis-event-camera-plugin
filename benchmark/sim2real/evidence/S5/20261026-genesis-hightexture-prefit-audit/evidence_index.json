@@ -1,0 +1,94 @@
+{
+  "schema": "sim2real_evidence_index_v1",
+  "created_utc": "2026-10-26T04:50:00Z",
+  "run_id": "20261026-genesis-hightexture-prefit-audit",
+  "local_files": [
+    {
+      "path": "benchmark/sim2real/configs/stage5_genesis_high_texture_gt_fit_v1.json",
+      "sha256": "93bfda7510c782dbb9588a739e9385851339567582ed738795b211e7dfe760b8",
+      "role": "initial fixed-midpoint audit config; retained after support was found weak"
+    },
+    {
+      "path": "benchmark/sim2real/configs/stage5_genesis_gt_fit_window_selection_v2.json",
+      "sha256": "1b1baaac39108201b674e7dfab11c3fd11835d2a0e6580c0b18c5b9375363c8a",
+      "role": "label/texture-only sample selection rule"
+    },
+    {
+      "path": "benchmark/sim2real/configs/stage5_genesis_high_texture_gt_fit_v2.json",
+      "sha256": "11e24529694e44e7a22bb4bf9e225d0a77061245690bbf9ed82330bc381e5bf4",
+      "role": "fixed sample plus full independent rollout audit config"
+    },
+    {
+      "path": "benchmark/sim2real/scripts/audit_stage5_genesis_high_texture_gt_fit.py",
+      "sha256": "7229173ebbc06c692d926228b7a0f5b0680d5eafb112bc7b99d5a607255967af",
+      "role": "CPU-only label/warp/EventGenesis support audit"
+    },
+    {
+      "path": "benchmark/sim2real/scripts/select_stage5_genesis_gt_fit_window.py",
+      "sha256": "b3eeb39781055694a99a7bcfed2076e8b0379a1c407450814f68cd311ebb4a01",
+      "role": "physical GT/texture window selection; does not open generator events"
+    },
+    {
+      "path": "benchmark/sim2real/diagnostics/GENESIS_HIGH_TEXTURE_GT_FIT_STATUS_20261026.md",
+      "sha256": "4f409e125ec41a67c8a1545b3927d3d38c76adc739e5071e97411a742071629b",
+      "role": "human-readable progress and limits"
+    },
+    {
+      "path": "benchmark/sim2real/evidence/S5/20261026-genesis-hightexture-prefit-audit/summary.json",
+      "sha256": "39c27328242a87f879c62b94758a35be58ae8c574c2f09f74328385b4fc80cda",
+      "role": "machine-readable measured results and blockers"
+    }
+  ],
+  "g1_runs": [
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-prefit-audit-v1",
+      "started_utc": "2026-10-26T04:42:58Z",
+      "finished_utc": "2026-10-26T04:43:15Z",
+      "exit_code": 0,
+      "audit_json_sha256": "0355a0d88788507617ca731ef7059e3725355cc3f1e0d0729b4783b6467434f6",
+      "audit_script_sha256": "7229173ebbc06c692d926228b7a0f5b0680d5eafb112bc7b99d5a607255967af",
+      "config_sha256": "93bfda7510c782dbb9588a739e9385851339567582ed738795b211e7dfe760b8"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-fit-window-selection-v2-attempt02",
+      "started_utc": "2026-10-26T04:46:12Z",
+      "finished_utc": "2026-10-26T04:46:17Z",
+      "exit_code": 0,
+      "selection_json_sha256": "7aae5137ff01d0302a660bb8de2830a65fa20ee7082c904a27a619c528c1ac4f",
+      "selector_script_sha256": "b3eeb39781055694a99a7bcfed2076e8b0379a1c407450814f68cd311ebb4a01",
+      "config_sha256": "1b1baaac39108201b674e7dfab11c3fd11835d2a0e6580c0b18c5b9375363c8a"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-prefit-audit-v2",
+      "started_utc": "2026-10-26T04:47:09Z",
+      "finished_utc": "2026-10-26T04:47:19Z",
+      "exit_code": 0,
+      "audit_json_sha256": "e2a1bb670321de0028a87d7248e30e01b19b5303e37f0d4cbf1a3ee624d67a87",
+      "audit_script_sha256": "7229173ebbc06c692d926228b7a0f5b0680d5eafb112bc7b99d5a607255967af",
+      "config_sha256": "11e24529694e44e7a22bb4bf9e225d0a77061245690bbf9ed82330bc381e5bf4"
+    },
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-fit-window-selection-v2",
+      "started_utc": "2026-10-26T04:45:49Z",
+      "finished_utc": "2026-10-26T04:45:51Z",
+      "exit_code": 1,
+      "failure": "script file named select.py shadowed the standard-library select module; preserved and corrected in attempt02",
+      "stderr_sha256": "d913c999f451a6dbe5f8adb3337bcb7e224dc04a87233f28da83822e258ee6fd"
+    }
+  ],
+  "external_assets": [
+    {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts/shared_trajectory.h5",
+      "sha256": "2f0db064a1fdf90417f31e345e99813bcdb036759cf2dbbdce344e9a7700352c",
+      "bytes": 426695857,
+      "description": "registered shared Genesis physical bank; EventGenesis events embedded; V2E output for this manifest is not available"
+    }
+  ],
+  "resource_snapshot": {
+    "observed_utc": "2026-10-26T04:47:55Z",
+    "gpu_utilization_percent": [81, 65, 93, 94, 94, 93],
+    "gpu_memory_used_mib": [2903, 2903, 3091, 3063, 3063, 2906],
+    "process_owner_enumerated": false,
+    "launch_performed": false
+  }
+}
