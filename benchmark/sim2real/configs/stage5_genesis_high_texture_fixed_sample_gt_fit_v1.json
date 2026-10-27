@@ -1,0 +1,98 @@
+{
+  "schema": "stage5_genesis_high_texture_fixed_sample_gt_fit_v1",
+  "purpose": "Paired 200-update STE-FlowNet GT-supervised memorization diagnostic on the preselected Genesis high-texture motion window; followed by a full independent validation rollout.",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "source_training_config": "configs/stage4_corrected_v2_flowdt1_seed0.json",
+  "data_manifest": "runs/sim2real/20261028-stage5-genesis-gtfit-v1/paired_adapter/training_bank_manifest.json",
+  "sample": {
+    "rollout_id": "s5q_02_train",
+    "split": "train",
+    "stratum": "independent_rigid_motion_static_camera",
+    "texture_pattern": "checker",
+    "texture_contrast": "high",
+    "window_index": 0,
+    "sample_id": "s5q_02_train/dt1_000",
+    "endpoint_indices": [
+      0,
+      3
+    ],
+    "window_seconds": [
+      0.0,
+      0.03
+    ],
+    "selection_basis": "maximum shared-valid pixels with GT magnitude >=0.5 px/30ms and shared image Sobel luma gradient >1/255 over all 66 registered training windows; earliest index breaks ties; no generator event count or model output used",
+    "expected_flow_unit": "pixels per 30ms endpoint interval",
+    "event_bins": 5
+  },
+  "pairing": {
+    "arms": [
+      "eventgenesis",
+      "v2e"
+    ],
+    "same_initialization_seed": 0,
+    "same_physical_rollout_and_label": true,
+    "same_optimizer_and_budget": true,
+    "random_augmentation": false,
+    "sample_rotation": false,
+    "sample_replacement": false,
+    "optimizer": "Adam",
+    "learning_rate": 0.0004,
+    "weight_decay_weights": 0.0004,
+    "weight_decay_biases": 0.0,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "batch_size": 1
+  },
+  "diagnostic_budget": {
+    "updates_per_arm": 200,
+    "evaluate_updates": [
+      0,
+      20,
+      40,
+      60,
+      80,
+      100,
+      120,
+      140,
+      160,
+      180,
+      200
+    ],
+    "no_parameter_or_gradient_progress_stop": "fail if all parameter deltas remain zero by update 20, or if any required gradient/loss becomes non-finite",
+    "memorization_pass": {
+      "four_scale_robust_objective_ratio_final_to_initial_max": 0.5,
+      "full_valid_epe_ratio_final_to_initial_max": 0.5,
+      "common_event_active_epe_ratio_final_to_initial_max": 0.7,
+      "all_arms_must_pass": true
+    }
+  },
+  "mask": {
+    "full": "shared physical flow validity",
+    "common_event_active": "shared physical flow validity AND union of nonzero pixels in the normal paired EventGenesis and V2E five-bin event tensors",
+    "same_mask_for_both_models": true
+  },
+  "checkpoint_selection": false,
+  "official_protocol_changed": false,
+  "shared_bank": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-eight-rollouts",
+    "schema": "stage5_flow_scene_coverage_shared_bank_v3",
+    "sha256": "2f0db064a1fdf90417f31e345e99813bcdb036759cf2dbbdce344e9a7700352c"
+  },
+  "selection_evidence": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261026-genesis-hightexture-fit-window-selection-v2-attempt02/selection.json",
+    "sha256": "7aae5137ff01d0302a660bb8de2830a65fa20ee7082c904a27a619c528c1ac4f",
+    "generator_events_used": false,
+    "model_outputs_used": false
+  },
+  "independent_validation": {
+    "rollout_id": "s5q_02_val",
+    "split": "validation",
+    "stratum": "independent_rigid_motion_static_camera",
+    "window_indices": "all 66 registered 30ms windows",
+    "selection_or_checkpoint_use": false
+  }
+}
