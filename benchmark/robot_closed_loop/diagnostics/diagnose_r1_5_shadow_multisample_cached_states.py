@@ -451,7 +451,12 @@ def condition_key(shadow: bool, multisample: bool) -> str:
 
 def factorial_preview(path: Path, frames: list[np.ndarray], floor: np.ndarray,
                       keys: list[str], label: str) -> None:
-    logs = [log_luma(frame) for frame in frames]
+    # ``log_luma`` accepts a time stack; these are already individual images.
+    # Calling it here added a spurious leading dimension and produced H×W×3
+    # arrays that PIL could not save.
+    logs = [np.log(np.maximum(linear_luminance(frame), 1e-6)) for frame in frames]
+    if any(image.ndim != 2 for image in logs):
+        raise ValueError("factorial preview expects one HxW luminance image per condition")
     values = np.concatenate([image[floor] for image in logs])
     lo, hi = float(np.percentile(values, 2)), float(np.percentile(values, 98))
     h, w = floor.shape
