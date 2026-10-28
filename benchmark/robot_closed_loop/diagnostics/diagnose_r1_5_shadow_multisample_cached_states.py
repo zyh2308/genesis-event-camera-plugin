@@ -169,11 +169,15 @@ class MultisamplePassAudit:
             first_blit = len(self.blit_records)
             result = original_readback(scene, flags)
             if flags & RenderFlags.RADIANCE:
+                expected_resolve_masks = [int(GL.GL_COLOR_BUFFER_BIT)]
+                if flags & RenderFlags.RET_DEPTH:
+                    expected_resolve_masks.append(int(GL.GL_DEPTH_BUFFER_BIT))
                 self.readback_records.append({
                     "render_flags_int": int(flags),
                     "radiance_readback": True,
                     "expected_msaa_source_fbo": int(target._main_fb_ms),
                     "expected_resolve_destination_fbo": int(target._main_fb),
+                    "expected_resolve_blit_masks": expected_resolve_masks,
                     "blit_calls_during_readback": self.blit_records[first_blit:],
                     "returned_attachment_shapes": [list(np.asarray(value).shape) for value in result],
                 })
@@ -224,6 +228,23 @@ class MultisamplePassAudit:
             self._renderer.glEnable = self._original_enable
             self._renderer.glDisable = self._original_disable
             self._renderer.glBlitFramebuffer = self._original_blit
+
+
+def validate_resolve_audit(readback_records: list[dict[str, Any]], label: str) -> None:
+    """Check color and optional depth resolves against the HDR MSAA target."""
+    for index, item in enumerate(readback_records):
+        calls = item["blit_calls_during_readback"]
+        actual_masks = [call["mask"] for call in calls]
+        expected_masks = item["expected_resolve_blit_masks"]
+        if actual_masks != expected_masks:
+            raise RuntimeError(
+                f"{label} readback {index}: resolve masks {actual_masks} != {expected_masks}"
+            )
+        for call in calls:
+            if call["read_framebuffer_before_blit"] != item["expected_msaa_source_fbo"]:
+                raise RuntimeError(f"{label} readback {index}: resolve source was not the MSAA framebuffer")
+            if call["draw_framebuffer_before_blit"] != item["expected_resolve_destination_fbo"]:
+                raise RuntimeError(f"{label} readback {index}: resolve destination was not the single-sample framebuffer")
 
 
 def render_condition(
@@ -287,8 +308,7 @@ def render_condition(
         raise RuntimeError(f"captured {len(audit.records)} HDR pass audits, expected {expected_passes}")
     if len(audit.readback_records) != expected_passes:
         raise RuntimeError(f"captured {len(audit.readback_records)} radiance readbacks, expected {expected_passes}")
-    if any(len(item["blit_calls_during_readback"]) != 1 for item in audit.readback_records):
-        raise RuntimeError("expected one multisample-to-single-sample resolve blit per radiance readback")
+    validate_resolve_audit(audit.readback_records, "robot")
     if any(item["actual_gl_multisample_enabled"] != bool(multisample) for item in audit.records):
         raise RuntimeError("requested multisample mode did not match the actual GL state")
     if any(not item["draw_is_genesis_multisample_framebuffer"] for item in audit.records):
@@ -405,8 +425,7 @@ def render_simple_contour_condition(
             f"simple contour audit counts {len(audit.records)}/{len(audit.readback_records)}, "
             f"expected {expected_passes}"
         )
-    if any(len(item["blit_calls_during_readback"]) != 1 for item in audit.readback_records):
-        raise RuntimeError("simple contour expected one resolve blit per radiance readback")
+    validate_resolve_audit(audit.readback_records, "simple contour")
     if any(item["actual_gl_multisample_enabled"] != bool(multisample) for item in audit.records):
         raise RuntimeError("simple contour GL multisample state did not match the requested condition")
     if any(not item["draw_is_genesis_multisample_framebuffer"] for item in audit.records):
@@ -781,7 +800,7 @@ def main() -> int:
 
 This diagnostic restores exact logged Panda and target states from cached development episodes 004 and 005. Physics is not stepped. It renders actual start, middle, and end timestamps under the four `shadow on/off x GL_MULTISAMPLE on/off` conditions. The same ideal physical-log DVS response is applied to each condition. A separate simple-control scene renders only a plane and high-contrast box; the box is moved by render-only pose updates of about one image pixel per 5 ms. That control is explicitly synthetic and is not a new robot rollout.
 
-Genesis allocates an HDR multisample framebuffer using `min(GL_MAX_SAMPLES, 4)`. The experiment changes only the actual `GL_MULTISAMPLE` capability during the HDR draw. It does not change framebuffer allocation or the radiance resolve/readback pass. Every HDR pass records actual GL enable state, draw FBO identity, sample-buffer count, sample count, and implementation sample positions. The segmentation/depth checks and fixed floor mask are evaluator-only; the DVS consumes the full rendered image.
+Genesis allocates an HDR multisample framebuffer using `min(GL_MAX_SAMPLES, 4)`. The experiment changes only the actual `GL_MULTISAMPLE` capability during the HDR draw. It does not change framebuffer allocation or the radiance resolve/readback pass. Every HDR pass records actual GL enable state, draw FBO identity, sample-buffer count, sample count, and implementation sample positions. Each radiance readback also records the color and, when depth is requested, depth resolve blits and checks their framebuffer identities. Genesis runs segmentation as a separate camera pass. The fixed floor mask is evaluator-only; the DVS consumes the full rendered image.
 
 This is a direct-render factorial to identify shadow and raster-multisample contributions. It is not yet candidate-versus-reference reconstruction fidelity, not a full 1 kHz trace, and not a change to the official Direct-HDR reference. Any later candidate/reference comparison must use matching shadow and multisample settings within each pair.
 
