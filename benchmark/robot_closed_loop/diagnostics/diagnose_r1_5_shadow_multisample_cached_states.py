@@ -555,8 +555,10 @@ def main() -> int:
             all_pixels = np.ones(floor.shape, dtype=bool)
             event_outputs: dict[str, dict[str, Any]] = {}
             for idx, key in enumerate(keys):
+                # Frame 0 is the emulator's initialized reference, not a new
+                # sample; passing it again at times[0] violates strict time order.
                 events, counts = run_ideal_dvs(
-                    luma_by_condition[idx], times, all_pixels,
+                    luma_by_condition[idx, 1:], times[1:], all_pixels,
                     luma_by_condition[idx, 0], float(times[0]),
                 )
                 x = events[:, 1].astype(np.int64) if len(events) else np.empty(0, dtype=np.int64)
@@ -679,8 +681,9 @@ def main() -> int:
         ]).astype(np.float64)
         contour_event_outputs: dict[str, dict[str, Any]] = {}
         for idx, key in enumerate(contour_keys):
+            # Match the state-replay path: emit only between later timestamps.
             events, counts = run_ideal_dvs(
-                contour_linear_luma[idx], contour_times, np.ones(contour_band.shape, dtype=bool),
+                contour_linear_luma[idx, 1:], contour_times[1:], np.ones(contour_band.shape, dtype=bool),
                 contour_linear_luma[idx, 0], float(contour_times[0]),
             )
             contour_event_outputs[key] = {
