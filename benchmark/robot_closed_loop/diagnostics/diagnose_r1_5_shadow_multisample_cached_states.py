@@ -114,7 +114,7 @@ class MultisamplePassAudit:
         self._target = None
         self._original_enable = None
         self._original_disable = None
-        self._original_forward = None
+        self._original_readback = None
 
     def __enter__(self) -> "MultisamplePassAudit":
         from genesis.ext.pyrender import renderer as pyrender_renderer
@@ -132,7 +132,6 @@ class MultisamplePassAudit:
         self._original_enable = pyrender_renderer.glEnable
         self._original_disable = pyrender_renderer.glDisable
         self._original_blit = pyrender_renderer.glBlitFramebuffer
-        self._original_forward = target._forward_pass
         self._original_readback = target._read_main_framebuffer
         enabled = self.enabled
 
@@ -150,7 +149,6 @@ class MultisamplePassAudit:
                 return self._original_disable(cap, *args, **kwargs)
             return self._original_disable(cap, *args, **kwargs)
 
-        original_forward = self._original_forward
         original_readback = self._original_readback
 
         def audited_blit(*args: Any, **kwargs: Any) -> Any:
@@ -167,29 +165,14 @@ class MultisamplePassAudit:
 
         def audited_readback(scene: Any, flags: Any):
             first_blit = len(self.blit_records)
-            result = original_readback(scene, flags)
             if flags & RenderFlags.RADIANCE:
-                expected_resolve_masks = [int(GL.GL_COLOR_BUFFER_BIT)]
-                if flags & RenderFlags.RET_DEPTH:
-                    expected_resolve_masks.append(int(GL.GL_DEPTH_BUFFER_BIT))
-                self.readback_records.append({
-                    "render_flags_int": int(flags),
-                    "radiance_readback": True,
-                    "expected_msaa_source_fbo": int(target._main_fb_ms),
-                    "expected_resolve_destination_fbo": int(target._main_fb),
-                    "expected_resolve_blit_masks": expected_resolve_masks,
-                    "blit_calls_during_readback": self.blit_records[first_blit:],
-                    "returned_attachment_shapes": [list(np.asarray(value).shape) for value in result],
-                })
-            return result
-
-        def audited_forward(scene: Any, flags: Any, seg_node_map: Any = None, env_idx: int = -1):
-            result = original_forward(scene, flags, seg_node_map=seg_node_map, env_idx=env_idx)
-            if flags & RenderFlags.RADIANCE:
+                # Capture draw/sample state before the original readback
+                # switches bindings to resolve the MSAA attachments.
                 draw_fbo = int(GL.glGetIntegerv(GL.GL_DRAW_FRAMEBUFFER_BINDING))
                 sample_buffers = int(GL.glGetIntegerv(GL.GL_SAMPLE_BUFFERS))
                 sample_count = int(GL.glGetIntegerv(GL.GL_SAMPLES))
                 max_samples = int(GL.glGetIntegerv(GL.GL_MAX_SAMPLES))
+
                 def gl_string(name: int) -> str | None:
                     value = GL.glGetString(name)
                     if value is None:
@@ -211,18 +194,30 @@ class MultisamplePassAudit:
                     "max_samples_supported": max_samples,
                     "sample_positions": _sample_positions(GL, sample_count),
                 })
+            result = original_readback(scene, flags)
+            if flags & RenderFlags.RADIANCE:
+                expected_resolve_masks = [int(GL.GL_COLOR_BUFFER_BIT)]
+                if flags & RenderFlags.RET_DEPTH:
+                    expected_resolve_masks.append(int(GL.GL_DEPTH_BUFFER_BIT))
+                self.readback_records.append({
+                    "render_flags_int": int(flags),
+                    "radiance_readback": True,
+                    "expected_msaa_source_fbo": int(target._main_fb_ms),
+                    "expected_resolve_destination_fbo": int(target._main_fb),
+                    "expected_resolve_blit_masks": expected_resolve_masks,
+                    "blit_calls_during_readback": self.blit_records[first_blit:],
+                    "returned_attachment_shapes": [list(np.asarray(value).shape) for value in result],
+                })
             return result
 
         pyrender_renderer.glEnable = set_multisample
         pyrender_renderer.glDisable = clear_multisample
         pyrender_renderer.glBlitFramebuffer = audited_blit
-        target._forward_pass = audited_forward
         target._read_main_framebuffer = audited_readback
         return self
 
     def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
-        if self._target is not None and self._original_forward is not None:
-            self._target._forward_pass = self._original_forward
+        if self._target is not None and self._original_readback is not None:
             self._target._read_main_framebuffer = self._original_readback
         if self._renderer is not None:
             self._renderer.glEnable = self._original_enable
