@@ -226,7 +226,7 @@ def save_csv(path: Path, rows: list[dict]):
         path.write_text("\n", encoding="utf-8")
         return
     with path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
