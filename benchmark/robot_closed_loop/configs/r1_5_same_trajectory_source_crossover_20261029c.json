@@ -1,0 +1,85 @@
+{
+  "experiment_id": "r1_5_same_trajectory_source_crossover_20261029c",
+  "purpose": "frozen-checkpoint offline crossover of the native-HDR plugin source and exact-state high-frequency Direct-HDR source on two same-speed saved trajectories",
+  "episodes": {
+    "center_control": {
+      "episode_id": 4,
+      "seed": 2026103424,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "expected_source_sha256": {
+        "trace_window.jsonl": "3f07e4e7a0846827be7a3d5decf7c6197d77ca0237bacff55f2c45a70a04349c",
+        "same_state_source_cache.h5": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+        "declared_full_state_trace.jsonl": "caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947",
+        "declared_episode.csv": "fe5dbc822e073929234ce2953ce3b34775f3f0b451b1497dd3f22b9da16d308a"
+      }
+    },
+    "plus55_failure": {
+      "episode_id": 5,
+      "seed": 2026103425,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.055,
+      "expected_source_sha256": {
+        "trace_window.jsonl": "f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d",
+        "same_state_source_cache.h5": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+        "declared_full_state_trace.jsonl": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+        "declared_episode.csv": "91ed585502ada54d1d918a6425da56134da393684b330a3baa40d467a7c1cf50"
+      }
+    }
+  },
+  "trace_time_s": [
+    0.5505,
+    0.6005
+  ],
+  "query_time_s": [
+    0.5755,
+    0.6005
+  ],
+  "query_selection": "all exact saved state-trace rows in the inclusive query interval; no synthetic query states",
+  "causal_input": {
+    "representation": "existing five causal 5 ms bins, two polarities, 64x64, log1p counts",
+    "window_s": 0.025,
+    "target_gt_available_to_model": false
+  },
+  "sources": {
+    "ours_native_hdr": "frozen Genesis event plugin on the exact cached native scene-linear HDR endpoint frames at 100 Hz; one episode-level DVS initialization at the shared first frame",
+    "direct_hdr": "Genesis HDR direct renders at every actual saved state row in the trace interval (approximately 1 kHz, nonuniform 0.5-1 ms); same physical_log response and one initialization at the shared first frame"
+  },
+  "response": {
+    "mode": "physical_log",
+    "luminance": "linear RGB to linear luminance with shared radiometry helper",
+    "gain": 1.0,
+    "offset": 0.0,
+    "floor": 1e-6,
+    "threshold_on_off": 0.2,
+    "threshold_noise_bandwidth_refractory": "disabled",
+    "calibration_status": "uncalibrated renderer-linear ideal development response"
+  },
+  "models": {
+    "ours_native_hdr": "frozen r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt",
+    "v2e": "frozen r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt",
+    "decoder": "existing global soft-argmax and existing fixed-plane backprojection"
+  },
+  "post_inference_diagnostics": {
+    "allowed": [
+      "GT image projection and planar error",
+      "full robot and target segmentation overlays",
+      "visual inspection of scene shadows in the direct display frame",
+      "heatmap peak and target-region probability mass"
+    ],
+    "model_input_excludes": [
+      "target GT",
+      "segmentation",
+      "depth",
+      "future state"
+    ]
+  },
+  "boundaries": {
+    "physics": "restore exact saved states and render offline; no physics advancement or new rollout",
+    "history": "each source initializes once at the identical shared first-frame time and processes continuously through the diagnostic segment; no per-query reset",
+    "scope": "the captured diagnostic segment starts at 0.5505 s; it is not a reconstruction of DVS state before that saved start",
+    "rank": "development diagnosis only; not generator ranking or independent test",
+    "training": "no training, checkpoint selection, control, or controller changes",
+    "frozen_simulator_core_modified": false
+  }
+}

@@ -670,7 +670,7 @@ def main() -> int:
                   f"events native/direct={len(native_events)}/{len(direct_events)}", flush=True)
     finally:
         if env is not None:
-            env.close()
+            env.gs.destroy()
 
     total_render_s = time.perf_counter() - render_started_all
     query_csv = output / "all_four_group_queries.csv"
