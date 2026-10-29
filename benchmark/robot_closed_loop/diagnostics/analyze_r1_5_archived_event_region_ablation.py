@@ -195,6 +195,39 @@ def main() -> int:
                     "xy_error_mm": err,
                     "voxel_sha256": hashlib.sha256(np.ascontiguousarray(voxel).tobytes()).hexdigest(),
                 })
+            # Full 2^3 source factorial across target / robot / support-plane
+            # regions. This isolates which region's source-domain change is
+            # sufficient to recover the prediction, without fitting an offset.
+            for target_source in ("archived", "fresh_shadow_on"):
+                for robot_source in ("archived", "fresh_shadow_on"):
+                    for floor_source in ("archived", "fresh_shadow_on"):
+                        choices = {0: target_source, 1: robot_source, 2: floor_source}
+                        chunks = []
+                        for region_id, source in choices.items():
+                            ev, reg = source_data[source]
+                            chunks.append(ev[reg == region_id])
+                        # Unknown labels were absent in the main comparison;
+                        # preserve them from the archived stream if present.
+                        archived, archived_regions = source_data["archived"]
+                        chunks.append(archived[archived_regions == 3])
+                        candidate = np.concatenate(chunks, axis=0)
+                        variant = (
+                            f"target={target_source};robot={robot_source};floor={floor_source}"
+                        )
+                        est, voxel = infer_event_state(candidate, model, query, width, height,
+                                                       camera_pose, intr, center_height)
+                        pred = est.get("position_xyz_m")
+                        err = None if pred is None else float(np.linalg.norm(np.asarray(pred)[:2] - gt) * 1000)
+                        result_rows.append({
+                            "episode_id": ep, "query_s": query, "source": "region_source_factorial",
+                            "region_ablation": variant,
+                            "event_count_25ms": int(est["event_count_25ms"]),
+                            "nonempty_5ms_bins": int(est["nonempty_5ms_bins"]),
+                            "state_available": bool(est["state_available"]),
+                            "state_status": est.get("state_status"),
+                            "xy_error_mm": err,
+                            "voxel_sha256": hashlib.sha256(np.ascontiguousarray(voxel).tobytes()).hexdigest(),
+                        })
     csv_path = out / "per_query_region_ablation.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(result_rows[0]))
