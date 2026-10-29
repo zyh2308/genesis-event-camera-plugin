@@ -144,7 +144,9 @@ def main() -> int:
             raise RuntimeError(f"input hash mismatch: {path}; expected={expected}; actual={sha256(path)}")
 
     full_trace = read_trace(args.archive_trace)
-    e_trace = read_trace(args.e_trace_window)
+    e_trace_all = read_trace(args.e_trace_window)
+    e_trace = [row for row in e_trace_all
+               if WINDOW_START_S - 1e-10 <= float(row["time_s"]) <= WINDOW_END_S + 1e-10]
     with np.load(args.dense_state_cache, allow_pickle=False) as cache:
         cached_times = np.asarray(cache["times_s"], dtype=np.float64)
         cached_robot_qpos = np.asarray(cache["robot_qpos"])
@@ -292,6 +294,8 @@ def main() -> int:
             "window_interval_s": stats(np.diff(np.asarray(dense_times)).tolist()),
             "physics_advanced": False,
             "E_sparse_rows": len(sparse_rows),
+            "E_trace_file_rows_before_window_crop": len(e_trace_all),
+            "E_trace_rows_selected_for_common_window": len(e_trace),
             "E_sparse_interval_s": stats(np.diff(np.asarray(e_times)).tolist()),
             "E_sparse_rows_subset_of_dense_state_rows": True,
             "logged_state_alignment": state_alignment,

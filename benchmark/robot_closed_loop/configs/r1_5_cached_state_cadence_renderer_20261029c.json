@@ -1,0 +1,44 @@
+{
+  "schema": "r1_5_cached_state_cadence_renderer_v2",
+  "experiment_id": "r1_5_cached_state_cadence_renderer_20261029c",
+  "question": "On the exact seed-matched physical states, does E's 47-row cadence reproduce E's shadow-on stream, does dense 2 kHz replay reproduce the archived online stream, and does MSAA change either result?",
+  "source_replay": {
+    "run_id": "r1_5_cadence_factorial_20261029b",
+    "original_runner_commit": "2100645b0473c294760789bc4475b644f261d9cf",
+    "instrument_driver_source_commit": "0d5872160ce3c689a3398dd55b0bcfde5efe1fcd",
+    "state_trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+    "raw_events_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+    "dense_state_cache_sha256": "b87efd4d7b5bfda94b0987f0d682671a4230246c5f9886eb086600542bc075bb"
+  },
+  "physical_window": {
+    "start_s": 0.5505,
+    "end_s": 0.5905,
+    "dense_rows": 81,
+    "dense_step_s": 0.0005,
+    "physics_advanced_during_render_replay": false
+  },
+  "cached_trace_selection": {
+    "e_trace_file_rows": 82,
+    "selected_rows_in_common_window": 47,
+    "selected_times_s": [0.5505, 0.5904999999999999],
+    "renderer_checkout_commit": "855b4b0bc7de96170b4bfee8d7002b370782f346",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "e_trace_sha256": "f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d",
+    "e_shadow_on_events_sha256": "c46f7bc28504ed9f43e76c334533534291d0de64b0c0f9bd429fa1a49eab58d8"
+  },
+  "conditions": [
+    {"name": "msaa_on_sparse47", "rows": 47, "msaa": true},
+    {"name": "msaa_on_dense2khz", "rows": 81, "msaa": true},
+    {"name": "msaa_off_dense2khz", "rows": 81, "msaa": false}
+  ],
+  "renderer": {
+    "shadow": true,
+    "capture_repeats_per_state": 2,
+    "warmup_passes": 1,
+    "dvs_threshold": 0.2,
+    "dvs_noise_refractory_bandwidth": false
+  },
+  "input_boundary": "DVS receives only rendered HDR frames and timestamps. GT pose is used only to restore the cached render state and audit depth/segmentation; it is not a perception-model input.",
+  "frozen_core_modified": false,
+  "formal_ranking": false
+}
