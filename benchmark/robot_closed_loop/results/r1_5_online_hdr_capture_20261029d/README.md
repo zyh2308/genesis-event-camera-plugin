@@ -96,4 +96,4 @@ python3 benchmark/robot_closed_loop/diagnostics/inspect_r1_5_heatmap_evidence.py
   --output benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/<new-run-id>
 ```
 
-代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与 `heatmap_spatial_signature_20261029b/summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `9cbba1e4df2520280393a69bcbd90f4c2ac8e29d1c7c939bb1a67a9753bf989b`；本次运行记录 HEAD `38973b7` 前的工作树代码，脚本与事件/查询摘要均在输出 JSON 中，耗时 `0.095 s`。下一项最有信息量的工作是把“全局 soft-argmax / 最高峰 / 局部峰”作为**同一模型输出的离线解码消融**，在现有共同 Direct-HDR 开发集和 native HDR 留出事件上共同跑完，再决定是否进入闭环；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。
+代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与 `heatmap_spatial_signature_20261029b/summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `67da54d9fa5e8f825532705f35c6ec5389cb61162299cb77116eaa2229ca0a53`；本次运行记录 HEAD `ff01443` 与该工作树脚本哈希，脚本与事件/查询摘要均在输出 JSON 中，耗时 `0.17 s`。下一项最有信息量的工作是把“全局 soft-argmax / 最高峰 / 局部峰”作为**同一模型输出的离线解码消融**，在现有共同 Direct-HDR 开发集和 native HDR 留出事件上共同跑完，再决定是否进入闭环；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。

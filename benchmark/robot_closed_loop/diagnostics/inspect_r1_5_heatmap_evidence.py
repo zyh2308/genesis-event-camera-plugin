@@ -126,6 +126,8 @@ def main() -> int:
     parser.add_argument("--query-x-field")
     parser.add_argument("--query-y-field")
     parser.add_argument("--query-z-field")
+    parser.add_argument("--event-key", default="auto",
+                        help="event array key in NPZ; auto accepts events or events_2000hz")
     parser.add_argument("--checkpoint", action="append", required=True,
                         help="NAME=PATH; repeat for paired checkpoint comparison")
     parser.add_argument("--roi-padding-px", type=float, default=6.0)
@@ -145,9 +147,12 @@ def main() -> int:
     target_size = np.asarray(scene["target"]["size_m"], dtype=np.float64)
     fixed_height = float(target_size[2] / 2.0)
     with np.load(args.events, allow_pickle=False) as archive:
-        if "events" not in archive:
-            raise KeyError(f"expected events key in {args.events}; found {archive.files}")
-        events = np.asarray(archive["events"], dtype=np.float64).reshape(-1, 4)
+        event_key = args.event_key
+        if event_key == "auto":
+            event_key = next((key for key in ("events", "events_2000hz") if key in archive), "")
+        if not event_key or event_key not in archive:
+            raise KeyError(f"event key {event_key!r} missing in {args.events}; found {archive.files}")
+        events = np.asarray(archive[event_key], dtype=np.float64).reshape(-1, 4)
     with args.queries.open(newline="", encoding="utf-8") as stream:
         all_queries = list(csv.DictReader(stream))
     queries = [row for row in all_queries
@@ -285,6 +290,7 @@ def main() -> int:
         "heatmap_temperature": args.temperature,
         "inputs": {
             "events_sha256": sha256(args.events),
+            "event_key": event_key,
             "queries_sha256": sha256(args.queries),
             "scene_config_sha256": sha256(args.scene_config),
             "event_count_in_archive": int(len(events)),
