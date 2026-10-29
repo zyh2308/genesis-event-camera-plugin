@@ -1,0 +1,393 @@
+{
+  "status": "completed",
+  "purpose": "offline failure localization; not a ranking, deployed decoder, or closed-loop result",
+  "gt_boundary": "GT and robot trace used only after inference for scoring/projection diagnostics; no GT enters events or model inputs",
+  "direct_reference": {
+    "queries": 581,
+    "event_archive_episodes": 9,
+    "checkpoint": "ours_native_hdr",
+    "current_decoder": "global_softargmax",
+    "large_error_threshold_mm": 100.0,
+    "global_error_over_100mm_count": 126,
+    "global_error_over_100mm_fraction": 0.21686746987951808,
+    "decoder_metrics_all_models": {
+      "ours_native_hdr": {
+        "global_softargmax": {
+          "n": 581,
+          "mean": 83.80021407732333,
+          "p50": 14.401365921046569,
+          "p95": 444.880257850236,
+          "max": 818.3782619854079
+        },
+        "heatmap_argmax": {
+          "n": 581,
+          "mean": 85.6950663385889,
+          "p50": 11.585632332269196,
+          "p95": 573.1133794568493,
+          "max": 1164.6701160310859
+        },
+        "local_softargmax_r2": {
+          "n": 581,
+          "mean": 84.4098210228771,
+          "p50": 11.070643000118125,
+          "p95": 573.7572589070026,
+          "max": 1090.437399072274
+        }
+      },
+      "v2e": {
+        "global_softargmax": {
+          "n": 581,
+          "mean": 4.837282907056272,
+          "p50": 4.089356490672739,
+          "p95": 11.258437967780578,
+          "max": 31.2277764968528
+        },
+        "heatmap_argmax": {
+          "n": 581,
+          "mean": 6.022292835828887,
+          "p50": 5.206066684920995,
+          "p95": 13.308615701260491,
+          "max": 28.91741273376791
+        },
+        "local_softargmax_r2": {
+          "n": 581,
+          "mean": 4.669598538797366,
+          "p50": 3.9772048875906814,
+          "p95": 10.594880222756666,
+          "max": 30.111875631554845
+        }
+      }
+    },
+    "peak_failure_decomposition": {
+      "threshold_px": 20.0,
+      "queries_with_peak_far_from_target": 95,
+      "fraction_queries_with_peak_far_from_target": 0.16351118760757316,
+      "global_softargmax_errors_over_100mm": 126,
+      "large_errors_with_peak_far_from_target": 89,
+      "large_errors_with_peak_near_target": 37,
+      "among_peak_near_queries": {
+        "n": 486,
+        "global_errors_over_100mm": 37,
+        "argmax_errors_over_100mm": 0,
+        "local_softargmax_errors_over_100mm": 0
+      },
+      "among_peak_far_queries": {
+        "n": 95,
+        "global_errors_over_100mm": 89,
+        "argmax_errors_over_100mm": 88,
+        "local_softargmax_errors_over_100mm": 87
+      },
+      "target_heatmap_roi_mass_median_peak_near": 0.9977656198868753,
+      "target_heatmap_roi_mass_median_peak_far": 0.07687034813781679
+    },
+    "confidence_auc_for_global_error_over_100mm": {
+      "normalized_entropy_high_is_failure": 0.9589569160997733,
+      "peak_probability_low_is_failure": 0.9513692656549799,
+      "global_softargmax_to_peak_gap_high_is_failure": 0.9268445839874412
+    }
+  },
+  "confidence_gate_counterfactual": {
+    "calibration": {
+      "source": "three native-HDR validation episodes (194 correlated windows; checkpoint-selection validation set)",
+      "entropy_p95_threshold": 0.3259206992382306,
+      "peak_probability_p05_threshold": 0.1567443273961544
+    },
+    "entropy_threshold": {
+      "threshold": 0.3259206992382306,
+      "rejected_count": 289,
+      "rejected_fraction": 0.4974182444061962,
+      "large_errors_over_100mm": 126,
+      "large_errors_caught": 126,
+      "large_error_recall": 1.0,
+      "accepted_count": 292,
+      "accepted_large_errors": 0,
+      "accepted_large_error_fraction": 0.0,
+      "accepted_error_mean_mm": 11.038787180932667,
+      "accepted_error_p95_mm": 21.45370099862139
+    },
+    "peak_probability_threshold": {
+      "threshold": 0.1567443273961544,
+      "rejected_count": 219,
+      "rejected_fraction": 0.3769363166953528,
+      "large_errors_over_100mm": 126,
+      "large_errors_caught": 119,
+      "large_error_recall": 0.9444444444444444,
+      "accepted_count": 362,
+      "accepted_large_errors": 7,
+      "accepted_large_error_fraction": 0.019337016574585635,
+      "accepted_error_mean_mm": 21.523737647142738,
+      "accepted_error_p95_mm": 30.357258236180996
+    },
+    "boundary": "thresholds calibrated on selected native validation windows then evaluated on already-seen shared Direct-HDR development data; correlated, not independent, not closed loop"
+  },
+  "matched_task_configuration_domain_contrast": [
+    {
+      "native_episode_id": 4,
+      "direct_episode_id": 2,
+      "speed_m_s": 0.3,
+      "launch_y_m": 0.055,
+      "native_seed": 2026104134,
+      "direct_seed": 2026103422,
+      "comparison_boundary": "same speed and launch y; different seed and physical trajectory",
+      "native": {
+        "position_xy_error_mm": {
+          "n": 91,
+          "mean": 4.926944991552418,
+          "p50": 3.8686224216300467,
+          "p95": 12.512571844675572,
+          "max": 16.294238630283978
+        },
+        "heatmap_entropy_normalized": {
+          "n": 91,
+          "mean": 0.29149464899147814,
+          "p50": 0.2923674724327012,
+          "p95": 0.3247265837787403,
+          "max": 0.3601289508930772
+        },
+        "heatmap_peak_probability": {
+          "n": 91,
+          "mean": 0.21978422786508287,
+          "p50": 0.20873083174228668,
+          "p95": 0.30069249868392944,
+          "max": 0.4278024435043335
+        },
+        "heatmap_probability_in_target_roi": {
+          "n": 91,
+          "mean": 0.9996266518584126,
+          "p50": 0.9999498159326199,
+          "p95": 0.99999894337839,
+          "max": 0.9999995230894805
+        },
+        "event_count_25ms": {
+          "n": 91,
+          "mean": 18220.879120879123,
+          "p50": 15766.0,
+          "p95": 32894.5,
+          "max": 37401.0
+        }
+      },
+      "direct_hdr": {
+        "position_xy_error_mm": {
+          "n": 87,
+          "mean": 161.30944049635886,
+          "p50": 37.8441249218821,
+          "p95": 545.1877355861213,
+          "max": 818.3782619854079
+        },
+        "heatmap_entropy_normalized": {
+          "n": 87,
+          "mean": 0.41788264335993236,
+          "p50": 0.3883671749944915,
+          "p95": 0.6059044415141921,
+          "max": 0.6648183870387117
+        },
+        "heatmap_peak_probability": {
+          "n": 87,
+          "mean": 0.1440529509008616,
+          "p50": 0.13854241371154785,
+          "p95": 0.292524802684784,
+          "max": 0.3283083140850067
+        },
+        "heatmap_probability_in_target_roi": {
+          "n": 87,
+          "mean": 0.6159782364414017,
+          "p50": 0.9023575389614606,
+          "p95": 0.9999615533387133,
+          "max": 0.9999965627701224
+        },
+        "event_count_25ms": {
+          "n": 87,
+          "mean": 10230.908045977012,
+          "p50": 6921.0,
+          "p95": 29480.100000000002,
+          "max": 32073.0
+        }
+      }
+    },
+    {
+      "native_episode_id": 5,
+      "direct_episode_id": 4,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "native_seed": 2026104135,
+      "direct_seed": 2026103424,
+      "comparison_boundary": "same speed and launch y; different seed and physical trajectory",
+      "native": {
+        "position_xy_error_mm": {
+          "n": 58,
+          "mean": 2.099400238792005,
+          "p50": 1.8330036779567274,
+          "p95": 4.2864700060075815,
+          "max": 6.818120941586451
+        },
+        "heatmap_entropy_normalized": {
+          "n": 58,
+          "mean": 0.27948917230963216,
+          "p50": 0.27600321323155463,
+          "p95": 0.3198969161332934,
+          "max": 0.3445966309357764
+        },
+        "heatmap_peak_probability": {
+          "n": 58,
+          "mean": 0.24018948242582125,
+          "p50": 0.23879225552082062,
+          "p95": 0.29266942739486695,
+          "max": 0.3134456276893616
+        },
+        "heatmap_probability_in_target_roi": {
+          "n": 58,
+          "mean": 0.9999638410049215,
+          "p50": 0.9999973332105632,
+          "p95": 0.9999999170735175,
+          "max": 1.000000004348318
+        },
+        "event_count_25ms": {
+          "n": 58,
+          "mean": 17438.396551724138,
+          "p50": 17287.5,
+          "p95": 20129.1,
+          "max": 21270.0
+        }
+      },
+      "direct_hdr": {
+        "position_xy_error_mm": {
+          "n": 58,
+          "mean": 23.274199020718015,
+          "p50": 10.814660856294296,
+          "p95": 89.38210962070325,
+          "max": 210.66910871545588
+        },
+        "heatmap_entropy_normalized": {
+          "n": 58,
+          "mean": 0.3123544294642663,
+          "p50": 0.28544611988267254,
+          "p95": 0.479663036541336,
+          "max": 0.5400902270089637
+        },
+        "heatmap_peak_probability": {
+          "n": 58,
+          "mean": 0.2237477252452538,
+          "p50": 0.22758277505636215,
+          "p95": 0.33799265921115873,
+          "max": 0.38999032974243164
+        },
+        "heatmap_probability_in_target_roi": {
+          "n": 58,
+          "mean": 0.947177200390474,
+          "p50": 0.9986581153197416,
+          "p95": 0.9999994681459314,
+          "max": 0.9999997924702289
+        },
+        "event_count_25ms": {
+          "n": 58,
+          "mean": 5146.862068965517,
+          "p50": 4697.5,
+          "p95": 7537.75,
+          "max": 7916.0
+        }
+      }
+    },
+    {
+      "native_episode_id": 6,
+      "direct_episode_id": 6,
+      "speed_m_s": 0.5,
+      "launch_y_m": -0.055,
+      "native_seed": 2026104136,
+      "direct_seed": 2026103426,
+      "comparison_boundary": "same speed and launch y; different seed and physical trajectory",
+      "native": {
+        "position_xy_error_mm": {
+          "n": 45,
+          "mean": 3.8222247682977386,
+          "p50": 3.8553816488249755,
+          "p95": 7.239985616560937,
+          "max": 7.8168216005278515
+        },
+        "heatmap_entropy_normalized": {
+          "n": 45,
+          "mean": 0.29054793817207447,
+          "p50": 0.287823176309355,
+          "p95": 0.3286709605022729,
+          "max": 0.3323401048861695
+        },
+        "heatmap_peak_probability": {
+          "n": 45,
+          "mean": 0.2261889202727212,
+          "p50": 0.2246464192867279,
+          "p95": 0.30564048886299133,
+          "max": 0.31565576791763306
+        },
+        "heatmap_probability_in_target_roi": {
+          "n": 45,
+          "mean": 0.9998898071114211,
+          "p50": 0.9999890865535852,
+          "p95": 0.999999882558394,
+          "max": 0.9999999456005216
+        },
+        "event_count_25ms": {
+          "n": 45,
+          "mean": 21579.733333333334,
+          "p50": 19333.0,
+          "p95": 30153.8,
+          "max": 32976.0
+        }
+      },
+      "direct_hdr": {
+        "position_xy_error_mm": {
+          "n": 42,
+          "mean": 53.58036150458946,
+          "p50": 15.798290399867566,
+          "p95": 241.0637884956535,
+          "max": 337.232658112057
+        },
+        "heatmap_entropy_normalized": {
+          "n": 42,
+          "mean": 0.3846766720188136,
+          "p50": 0.37685582324904293,
+          "p95": 0.5655187633731303,
+          "max": 0.6447080746318944
+        },
+        "heatmap_peak_probability": {
+          "n": 42,
+          "mean": 0.1699992639589168,
+          "p50": 0.17228242754936218,
+          "p95": 0.295282644033432,
+          "max": 0.34752264618873596
+        },
+        "heatmap_probability_in_target_roi": {
+          "n": 42,
+          "mean": 0.8098433355631669,
+          "p50": 0.9625584771928725,
+          "p95": 0.9999999815867106,
+          "max": 1.0000001538616352
+        },
+        "event_count_25ms": {
+          "n": 42,
+          "mean": 17033.666666666668,
+          "p50": 14708.0,
+          "p95": 31316.499999999993,
+          "max": 32060.0
+        }
+      }
+    }
+  ],
+  "tcp_scene_association": {
+    "queries": 581,
+    "top_peak_far_from_target": 95,
+    "far_target_peak_also_near_tcp": 6,
+    "far_target_peak_also_near_hand_link": 7,
+    "fractions_among_far_target_peaks": {
+      "near_tcp": 0.06315789473684211,
+      "near_hand_link": 0.07368421052631578
+    }
+  },
+  "inputs": {
+    "direct_csv_sha256": "7067d3f7efa2d775fe3c63debc374b254b04ffa5f2c7b6a4d1f669ddabf0518f",
+    "native_validation_csv_sha256_by_episode": {
+      "4": "ebb54b26ccc3736e54da086fea332067a8746b3bf6a74d91ff30419d11ab4452",
+      "5": "74f6a5dae8ea3af5650d6df5969fc3d4438fdd3231ad2ba9334eccd33f6fe569",
+      "6": "55c26b16302678dfd0d201b554fe92bb6ff608b2af3058acd9f966e802dc601c"
+    },
+    "scene_association_summary_sha256": "264ed8ea60f9f80e00d4a385ed3005f458311250130d8256e3c038ce03c792a9"
+  }
+}

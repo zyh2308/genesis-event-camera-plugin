@@ -1,0 +1,37 @@
+{
+  "status": "completed",
+  "purpose": "post-inference spatial diagnostic; test whether wrong heatmap top modes overlap projected end-effector points",
+  "boundary": "saved state trace, object labels, and projected tool landmarks are post-inference diagnostics only; no GT enters event/model input",
+  "checkpoint": "ours_native_hdr",
+  "decoder": "global_softargmax",
+  "thresholds": {
+    "wrong_peak_px": 20.0,
+    "near_tcp_or_hand_px": 25.0
+  },
+  "counts": {
+    "queries": 581,
+    "top_peak_far_from_target": 95,
+    "far_target_peak_also_near_tcp": 6,
+    "far_target_peak_also_near_hand_link": 7,
+    "fractions_among_far_target_peaks": {
+      "near_tcp": 0.06315789473684211,
+      "near_hand_link": 0.07368421052631578
+    }
+  },
+  "inputs": {
+    "decoder_csv_sha256": "7067d3f7efa2d775fe3c63debc374b254b04ffa5f2c7b6a4d1f669ddabf0518f",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "trace_sha256_by_episode": {
+      "0": "b96dfa22b12c65b6856c423704fc9a3d84e3b2f200e81b4aba53b9753fc511cc",
+      "1": "3e5b3a0093e3b7f8be2927c09f5f424efe2a7bc10c8aa34c757a81a9fe104a29",
+      "2": "c202c5e3847d18b8b0dbb37588cf225fd43bbbf6069ea5955999585ffe575b2c",
+      "3": "03da262624b76728a2bc932df7e6fb44291d1eadab9be4b3aad9e38a245daa12",
+      "4": "caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947",
+      "5": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+      "6": "e1c0b037510acd09e7edf7e4672c96ab2f60d09cb88e0d987f7d31e0c297ae51",
+      "7": "fdb72cff1365dafe541a97b8ca33e85b23da2ded4fd36bc7f2fc0d2058ddef43",
+      "8": "6fcec82d04b77e18a97f4a2720cf5f9692af70841253356a518289f122a40107"
+    }
+  },
+  "output_csv": "peak_scene_association.csv"
+}

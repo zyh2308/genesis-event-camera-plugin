@@ -1,0 +1,919 @@
+{
+  "status": "completed",
+  "purpose": "paired decoder-only development diagnosis on the same nine shared Direct-HDR episodes; not a ranking or closed-loop result",
+  "run_code_commit": "4c5f5f29d4c46dd50401c0aa9079874f97afcbc6",
+  "diagnostic_script_sha256": "18fcb28bdab6ef7b3bc034aa98828d5d66209edef3aa0b71d29710ef39360b29",
+  "heatmap_helper_sha256": "105e0a3f404bc3650766a8741fd8392690133aaabcec12f92ae3f76188c3d378",
+  "runtime_s": 11.114289654011372,
+  "device": "cpu",
+  "torch_threads": 1,
+  "query_contract": {
+    "source_poll_rows": "Ours poll schedule, verified identical to V2E poll cutoffs episode by episode",
+    "phase": "cutoff_s < episode first_contact_s",
+    "cutoff": "existing common-reference poll cutoff (poll_s minus 10 ms latency)",
+    "event_window": "causal [cutoff_s - 25 ms, cutoff_s), five 5 ms bins",
+    "gt_label": "saved state trace linearly interpolated at cutoff after event-only inference, matching the common-reference evaluator",
+    "fixed_height_m": 0.02,
+    "gt_boundary": "GT and projected cube ROI are scoring/diagnostic only; neither enters the event tensor or decoder",
+    "decoders": [
+      "global_softargmax",
+      "heatmap_argmax",
+      "local_softargmax_r2"
+    ],
+    "local_decoder": "soft-argmax restricted to 5x5 cells around global peak"
+  },
+  "inputs": {
+    "reference_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016",
+    "reference_summary_sha256": "ae6db79403eb134ba79460225579a75ecd822e57b54f1be2b455ee8ed38aee4c",
+    "polls_csv_sha256": "8189910cd1eb7ddb17240eb0ab58e3a35f1b5ca2bc6c7f99a50fc62b0e7fa4c2",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "scene_config_path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+    "episode_inputs": [
+      {
+        "episode_id": 0,
+        "events_sha256": "1427e38cea39dde2baa581dd8b2809abe7b5c6e99422ad38ab48c0ce2074ca54",
+        "trace_sha256": "b96dfa22b12c65b6856c423704fc9a3d84e3b2f200e81b4aba53b9753fc511cc",
+        "event_count": 620664,
+        "first_contact_s": 0.9644999999999999,
+        "query_count_from_paired_polls": 93
+      },
+      {
+        "episode_id": 1,
+        "events_sha256": "003247f9a170435b49a7ad6d772b7d9ff075dc7d60cd5c8e61a493f602fc2465",
+        "trace_sha256": "3e5b3a0093e3b7f8be2927c09f5f424efe2a7bc10c8aa34c757a81a9fe104a29",
+        "event_count": 507039,
+        "first_contact_s": 0.9855,
+        "query_count_from_paired_polls": 95
+      },
+      {
+        "episode_id": 2,
+        "events_sha256": "3a048d3b304891dc5fc69d03b86e2135b7cdacf7e5784a98d408388521590edb",
+        "trace_sha256": "c202c5e3847d18b8b0dbb37588cf225fd43bbbf6069ea5955999585ffe575b2c",
+        "event_count": 675759,
+        "first_contact_s": 0.906,
+        "query_count_from_paired_polls": 87
+      },
+      {
+        "episode_id": 3,
+        "events_sha256": "eecdbb4c9e60eb7915c034b758d2fb8a4a83e145799dbca9cd96b1cb82e332f6",
+        "trace_sha256": "03da262624b76728a2bc932df7e6fb44291d1eadab9be4b3aad9e38a245daa12",
+        "event_count": 635451,
+        "first_contact_s": 0.6134999999999999,
+        "query_count_from_paired_polls": 58
+      },
+      {
+        "episode_id": 4,
+        "events_sha256": "354b13c1b13c1ca9e085ae2768a53fecb606ad410d9cc5d9b529393ab93132a6",
+        "trace_sha256": "caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947",
+        "event_count": 435788,
+        "first_contact_s": 0.616,
+        "query_count_from_paired_polls": 58
+      },
+      {
+        "episode_id": 5,
+        "events_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+        "trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+        "event_count": 644396,
+        "first_contact_s": 0.614,
+        "query_count_from_paired_polls": 58
+      },
+      {
+        "episode_id": 6,
+        "events_sha256": "84070bac0f11d24aaa882edaac6d19e13716e97b069c1223f1829c022fbdefe9",
+        "trace_sha256": "e1c0b037510acd09e7edf7e4672c96ab2f60d09cb88e0d987f7d31e0c297ae51",
+        "event_count": 610741,
+        "first_contact_s": 0.458,
+        "query_count_from_paired_polls": 42
+      },
+      {
+        "episode_id": 7,
+        "events_sha256": "2200d24e45b6cfb4fa9abf77622f89b3764d4b46bc75ff26f734708edd5d4c57",
+        "trace_sha256": "fdb72cff1365dafe541a97b8ca33e85b23da2ded4fd36bc7f2fc0d2058ddef43",
+        "event_count": 421512,
+        "first_contact_s": 0.47600000000000003,
+        "query_count_from_paired_polls": 44
+      },
+      {
+        "episode_id": 8,
+        "events_sha256": "e5207aa6d7d678bea2ad55d28c840956e4e40987bb6ef86287c96d53ffb02dca",
+        "trace_sha256": "6fcec82d04b77e18a97f4a2720cf5f9692af70841253356a518289f122a40107",
+        "event_count": 600512,
+        "first_contact_s": 0.4905,
+        "query_count_from_paired_polls": 46
+      }
+    ],
+    "checkpoints": [
+      {
+        "name": "ours_native_hdr",
+        "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt",
+        "sha256": "6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2",
+        "architecture": "event-heatmap64-aux-z-velocity-v2"
+      },
+      {
+        "name": "v2e",
+        "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt",
+        "sha256": "a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0",
+        "architecture": "event-heatmap64-aux-z-velocity-v2"
+      }
+    ]
+  },
+  "row_count": 3486,
+  "query_count": 581,
+  "summary": {
+    "overall": [
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "n": 581,
+        "mean_mm": 83.80021407732333,
+        "p50_mm": 14.401365921046569,
+        "p95_mm": 444.880257850236,
+        "max_mm": 818.3782619854079
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "n": 581,
+        "mean_mm": 85.6950663385889,
+        "p50_mm": 11.585632332269196,
+        "p95_mm": 573.1133794568493,
+        "max_mm": 1164.6701160310859
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "n": 581,
+        "mean_mm": 84.4098210228771,
+        "p50_mm": 11.070643000118125,
+        "p95_mm": 573.7572589070026,
+        "max_mm": 1090.437399072274
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "n": 581,
+        "mean_mm": 4.837282907056272,
+        "p50_mm": 4.089356490672739,
+        "p95_mm": 11.258437967780578,
+        "max_mm": 31.2277764968528
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "n": 581,
+        "mean_mm": 6.022292835828887,
+        "p50_mm": 5.206066684920995,
+        "p95_mm": 13.308615701260491,
+        "max_mm": 28.91741273376791
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "n": 581,
+        "mean_mm": 4.669598538797366,
+        "p50_mm": 3.9772048875906814,
+        "p95_mm": 10.594880222756666,
+        "max_mm": 30.111875631554845
+      }
+    ],
+    "by_speed": [
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "speed_m_s": 0.3,
+        "n": 275,
+        "mean_mm": 83.64081973812381,
+        "p50_mm": 14.25279879335204,
+        "p95_mm": 428.33931956262677,
+        "max_mm": 818.3782619854079
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "speed_m_s": 0.4,
+        "n": 174,
+        "mean_mm": 90.00289497755765,
+        "p50_mm": 15.188647414283917,
+        "p95_mm": 408.9464609237786,
+        "max_mm": 670.8856615113028
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "speed_m_s": 0.5,
+        "n": 132,
+        "mean_mm": 75.9560244306498,
+        "p50_mm": 14.36059328032701,
+        "p95_mm": 460.6918840811734,
+        "max_mm": 693.7594368554287
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "speed_m_s": 0.3,
+        "n": 275,
+        "mean_mm": 92.3444298105068,
+        "p50_mm": 11.959806439092278,
+        "p95_mm": 586.7635970688151,
+        "max_mm": 1164.6701160310859
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "speed_m_s": 0.4,
+        "n": 174,
+        "mean_mm": 84.81522536636778,
+        "p50_mm": 12.02757292082483,
+        "p95_mm": 579.6795810955364,
+        "max_mm": 761.2910536080191
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "speed_m_s": 0.5,
+        "n": 132,
+        "mean_mm": 73.00201614456667,
+        "p50_mm": 11.00365976084397,
+        "p95_mm": 534.8846069862047,
+        "max_mm": 1103.9951535802845
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "speed_m_s": 0.3,
+        "n": 275,
+        "mean_mm": 90.88183127335506,
+        "p50_mm": 11.070643000118125,
+        "p95_mm": 582.0642954808657,
+        "max_mm": 1090.437399072274
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "speed_m_s": 0.4,
+        "n": 174,
+        "mean_mm": 83.95152810060496,
+        "p50_mm": 11.842382570074307,
+        "p95_mm": 583.6156804148966,
+        "max_mm": 771.2540690011676
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "speed_m_s": 0.5,
+        "n": 132,
+        "mean_mm": 71.53057973192195,
+        "p50_mm": 10.465222022537356,
+        "p95_mm": 532.311031090445,
+        "max_mm": 1027.2525766854023
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "speed_m_s": 0.3,
+        "n": 275,
+        "mean_mm": 5.585170308342865,
+        "p50_mm": 4.679283919023299,
+        "p95_mm": 12.452037387872267,
+        "max_mm": 31.2277764968528
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "speed_m_s": 0.4,
+        "n": 174,
+        "mean_mm": 4.280215448247873,
+        "p50_mm": 3.6024183195895816,
+        "p95_mm": 11.214444219654668,
+        "max_mm": 19.47600045311459
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "speed_m_s": 0.5,
+        "n": 132,
+        "mean_mm": 4.013500350077854,
+        "p50_mm": 3.515600371351833,
+        "p95_mm": 8.416472085843042,
+        "max_mm": 13.780274445735039
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "speed_m_s": 0.3,
+        "n": 275,
+        "mean_mm": 6.4788258434537385,
+        "p50_mm": 5.665945811491703,
+        "p95_mm": 14.734648590773286,
+        "max_mm": 28.91741273376791
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "speed_m_s": 0.4,
+        "n": 174,
+        "mean_mm": 5.5853369405078945,
+        "p50_mm": 4.917136979512267,
+        "p95_mm": 11.329734044772893,
+        "max_mm": 18.18540560694522
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "speed_m_s": 0.5,
+        "n": 132,
+        "mean_mm": 5.647169719836606,
+        "p50_mm": 5.169682363043927,
+        "p95_mm": 11.886921338424425,
+        "max_mm": 15.283667827364994
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "speed_m_s": 0.3,
+        "n": 275,
+        "mean_mm": 5.34812581551204,
+        "p50_mm": 4.633780086569033,
+        "p95_mm": 11.462573607553205,
+        "max_mm": 30.111875631554845
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "speed_m_s": 0.4,
+        "n": 174,
+        "mean_mm": 4.064455907587119,
+        "p50_mm": 3.2437466717922714,
+        "p95_mm": 9.621652308740492,
+        "max_mm": 19.420927269140353
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "speed_m_s": 0.5,
+        "n": 132,
+        "mean_mm": 4.053688059509848,
+        "p50_mm": 3.55916277783803,
+        "p95_mm": 8.558032034271461,
+        "max_mm": 13.339950963352866
+      }
+    ],
+    "by_episode": [
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 0,
+        "n": 93,
+        "mean_mm": 43.05053468971431,
+        "p50_mm": 15.457700236140202,
+        "p95_mm": 298.2204531940296,
+        "max_mm": 319.1773615469241
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 1,
+        "n": 95,
+        "mean_mm": 52.248467143762085,
+        "p50_mm": 10.402308030020707,
+        "p95_mm": 330.76055891153925,
+        "max_mm": 549.8905392996745
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 2,
+        "n": 87,
+        "mean_mm": 161.30944049635886,
+        "p50_mm": 37.8441249218821,
+        "p95_mm": 545.1877355861213,
+        "max_mm": 818.3782619854079
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 3,
+        "n": 58,
+        "mean_mm": 97.1278670539803,
+        "p50_mm": 15.565482157336337,
+        "p95_mm": 496.8977405383821,
+        "max_mm": 576.6105893503066
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 4,
+        "n": 58,
+        "mean_mm": 23.274199020718015,
+        "p50_mm": 10.814660856294296,
+        "p95_mm": 89.38210962070325,
+        "max_mm": 210.66910871545588
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 5,
+        "n": 58,
+        "mean_mm": 149.60661885797464,
+        "p50_mm": 49.84174339219342,
+        "p95_mm": 537.433794619164,
+        "max_mm": 670.8856615113028
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 6,
+        "n": 42,
+        "mean_mm": 53.58036150458946,
+        "p50_mm": 15.798290399867566,
+        "p95_mm": 241.0637884956535,
+        "max_mm": 337.232658112057
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 7,
+        "n": 44,
+        "mean_mm": 11.36707270728207,
+        "p50_mm": 9.647098443906453,
+        "p95_mm": 21.234591888770193,
+        "max_mm": 22.82020060060719
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "global_softargmax",
+        "episode_id": 8,
+        "n": 46,
+        "mean_mm": 158.16671396810017,
+        "p50_mm": 41.27173130229011,
+        "p95_mm": 494.04547708825885,
+        "max_mm": 693.7594368554287
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 0,
+        "n": 93,
+        "mean_mm": 39.794125272895876,
+        "p50_mm": 12.858095359879012,
+        "p95_mm": 323.9476805225979,
+        "max_mm": 788.3567582158468
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 1,
+        "n": 95,
+        "mean_mm": 58.23419019780575,
+        "p50_mm": 11.436139737469116,
+        "p95_mm": 583.5821766476629,
+        "max_mm": 725.1348777392124
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 2,
+        "n": 87,
+        "mean_mm": 185.76570665193682,
+        "p50_mm": 13.087094689238004,
+        "p95_mm": 750.475597758772,
+        "max_mm": 1164.6701160310859
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 3,
+        "n": 58,
+        "mean_mm": 116.93434655874198,
+        "p50_mm": 12.929255985258333,
+        "p95_mm": 608.7685035467563,
+        "max_mm": 761.2910536080191
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 4,
+        "n": 58,
+        "mean_mm": 17.34912578080278,
+        "p50_mm": 10.496813307516021,
+        "p95_mm": 33.37956405907241,
+        "max_mm": 197.3865358333327
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 5,
+        "n": 58,
+        "mean_mm": 120.16220375955858,
+        "p50_mm": 13.531417500567617,
+        "p95_mm": 597.1603776257302,
+        "max_mm": 697.1621369013312
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 6,
+        "n": 42,
+        "mean_mm": 59.1271485673948,
+        "p50_mm": 10.907506199041054,
+        "p95_mm": 340.35806598899774,
+        "max_mm": 719.0772986133679
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 7,
+        "n": 44,
+        "mean_mm": 12.645380073668411,
+        "p50_mm": 10.301555612419403,
+        "p95_mm": 24.456467972292334,
+        "max_mm": 30.17993864895817
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "heatmap_argmax",
+        "episode_id": 8,
+        "n": 46,
+        "mean_mm": 143.40280800023498,
+        "p50_mm": 12.203287605210626,
+        "p95_mm": 625.696626057292,
+        "max_mm": 1103.9951535802845
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 0,
+        "n": 93,
+        "mean_mm": 38.692886159105434,
+        "p50_mm": 12.551131455869525,
+        "p95_mm": 315.3551697479231,
+        "max_mm": 773.6816860345544
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 1,
+        "n": 95,
+        "mean_mm": 57.50220020827064,
+        "p50_mm": 10.360141104636469,
+        "p95_mm": 589.6977649663304,
+        "max_mm": 672.6941751529286
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 2,
+        "n": 87,
+        "mean_mm": 183.1190364090819,
+        "p50_mm": 13.674185623953976,
+        "p95_mm": 744.4855246463694,
+        "max_mm": 1090.437399072274
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 3,
+        "n": 58,
+        "mean_mm": 116.04431186234723,
+        "p50_mm": 13.931874556438375,
+        "p95_mm": 617.027597790776,
+        "max_mm": 771.2540690011676
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 4,
+        "n": 58,
+        "mean_mm": 16.78234001777304,
+        "p50_mm": 10.86895168323306,
+        "p95_mm": 26.257595789288942,
+        "max_mm": 203.11577660817662
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 5,
+        "n": 58,
+        "mean_mm": 119.02793242169456,
+        "p50_mm": 11.821720619920615,
+        "p95_mm": 588.6595784885053,
+        "max_mm": 701.9342934184721
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 6,
+        "n": 42,
+        "mean_mm": 58.298043675223944,
+        "p50_mm": 10.333523284911589,
+        "p95_mm": 333.6684939533526,
+        "max_mm": 724.0782910216388
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 7,
+        "n": 44,
+        "mean_mm": 11.46909262016637,
+        "p50_mm": 10.064198170878367,
+        "p95_mm": 21.217457289838237,
+        "max_mm": 22.309876628711354
+      },
+      {
+        "checkpoint": "ours_native_hdr",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 8,
+        "n": 46,
+        "mean_mm": 141.06257858623852,
+        "p50_mm": 11.309192918724346,
+        "p95_mm": 618.63834721903,
+        "max_mm": 1027.2525766854023
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 0,
+        "n": 93,
+        "mean_mm": 5.57317834404352,
+        "p50_mm": 4.849881894513561,
+        "p95_mm": 12.537129533525555,
+        "max_mm": 16.30588347658129
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 1,
+        "n": 95,
+        "mean_mm": 5.86044154390375,
+        "p50_mm": 4.733485715857073,
+        "p95_mm": 11.326757145374687,
+        "max_mm": 31.2277764968528
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 2,
+        "n": 87,
+        "mean_mm": 5.29740577157913,
+        "p50_mm": 4.542515388753156,
+        "p95_mm": 12.266689875254693,
+        "max_mm": 22.55172590992805
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 3,
+        "n": 58,
+        "mean_mm": 4.9349941868923075,
+        "p50_mm": 3.9841914940731122,
+        "p95_mm": 12.455185718353103,
+        "max_mm": 19.47600045311459
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 4,
+        "n": 58,
+        "mean_mm": 3.7706540122868533,
+        "p50_mm": 3.4772687974439833,
+        "p95_mm": 7.467301558411112,
+        "max_mm": 11.911779961888366
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 5,
+        "n": 58,
+        "mean_mm": 4.134998145564458,
+        "p50_mm": 3.2365474548595534,
+        "p95_mm": 10.08538097541118,
+        "max_mm": 16.079298336394753
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 6,
+        "n": 42,
+        "mean_mm": 4.370338282203122,
+        "p50_mm": 4.107461651205489,
+        "p95_mm": 8.669566311610284,
+        "max_mm": 13.780274445735039
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 7,
+        "n": 44,
+        "mean_mm": 4.294183076343962,
+        "p50_mm": 3.8716682610222515,
+        "p95_mm": 9.41793399370595,
+        "max_mm": 10.41012416390614
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "global_softargmax",
+        "episode_id": 8,
+        "n": 46,
+        "mean_mm": 3.419212673882856,
+        "p50_mm": 3.120362034548942,
+        "p95_mm": 6.46329855896679,
+        "max_mm": 7.719866071899431
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 0,
+        "n": 93,
+        "mean_mm": 6.368478667836267,
+        "p50_mm": 5.366468829976104,
+        "p95_mm": 15.061645705970971,
+        "max_mm": 18.209213692685545
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 1,
+        "n": 95,
+        "mean_mm": 6.656230306691569,
+        "p50_mm": 6.0155328657051,
+        "p95_mm": 13.792499736547216,
+        "max_mm": 28.91741273376791
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 2,
+        "n": 87,
+        "mean_mm": 6.40306565178513,
+        "p50_mm": 5.258822377755449,
+        "p95_mm": 15.52371134194759,
+        "max_mm": 21.37081740079825
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 3,
+        "n": 58,
+        "mean_mm": 5.928730547813381,
+        "p50_mm": 5.623440579664736,
+        "p95_mm": 12.011810475938535,
+        "max_mm": 18.18540560694522
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 4,
+        "n": 58,
+        "mean_mm": 5.635533452645979,
+        "p50_mm": 4.7729360242687635,
+        "p95_mm": 11.185880205003096,
+        "max_mm": 12.816222922418143
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 5,
+        "n": 58,
+        "mean_mm": 5.191746821064324,
+        "p50_mm": 4.82127146552403,
+        "p95_mm": 9.36838245915894,
+        "max_mm": 14.926335149557703
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 6,
+        "n": 42,
+        "mean_mm": 5.567281102387627,
+        "p50_mm": 5.230398916914394,
+        "p95_mm": 12.134127389380453,
+        "max_mm": 13.308615701260491
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 7,
+        "n": 44,
+        "mean_mm": 6.214607171660213,
+        "p50_mm": 5.298667667519361,
+        "p95_mm": 13.543818667161826,
+        "max_mm": 15.283667827364994
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "heatmap_argmax",
+        "episode_id": 8,
+        "n": 46,
+        "mean_mm": 5.177345242719616,
+        "p50_mm": 4.913671768498428,
+        "p95_mm": 8.93705693618204,
+        "max_mm": 13.32768510928947
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 0,
+        "n": 93,
+        "mean_mm": 5.3348179855147935,
+        "p50_mm": 4.651269589436684,
+        "p95_mm": 11.91767962235757,
+        "max_mm": 16.980713054689293
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 1,
+        "n": 95,
+        "mean_mm": 5.66782688330273,
+        "p50_mm": 5.003737230038947,
+        "p95_mm": 10.916570027455045,
+        "max_mm": 30.111875631554845
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 2,
+        "n": 87,
+        "mean_mm": 5.013252559760639,
+        "p50_mm": 4.544972878824659,
+        "p95_mm": 9.908157237246789,
+        "max_mm": 21.51031671778757
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 3,
+        "n": 58,
+        "mean_mm": 4.568568510190508,
+        "p50_mm": 3.4074834316770892,
+        "p95_mm": 11.627531109839236,
+        "max_mm": 19.420927269140353
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 4,
+        "n": 58,
+        "mean_mm": 3.792735840516893,
+        "p50_mm": 3.3816784675001332,
+        "p95_mm": 7.5842454424910715,
+        "max_mm": 12.06152996531688
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 5,
+        "n": 58,
+        "mean_mm": 3.832063372053957,
+        "p50_mm": 3.1712193540138762,
+        "p95_mm": 8.746154980897312,
+        "max_mm": 15.638719074479837
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 6,
+        "n": 42,
+        "mean_mm": 4.376812589893713,
+        "p50_mm": 4.1355248208769595,
+        "p95_mm": 9.044510691914985,
+        "max_mm": 13.339950963352866
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 7,
+        "n": 44,
+        "mean_mm": 4.332863440620939,
+        "p50_mm": 3.8811182131690654,
+        "p95_mm": 9.437902442438297,
+        "max_mm": 10.594880222756666
+      },
+      {
+        "checkpoint": "v2e",
+        "decoder": "local_softargmax_r2",
+        "episode_id": 8,
+        "n": 46,
+        "mean_mm": 3.4916239933139708,
+        "p50_mm": 3.098385182101006,
+        "p95_mm": 6.520986795092496,
+        "max_mm": 7.8653316448152495
+      }
+    ],
+    "paired_local_vs_global": {
+      "ours_native_hdr": {
+        "n": 581,
+        "local_lower_error_fraction": 0.49225473321858865,
+        "median_local_minus_global_error_mm": 0.001763807329763445,
+        "mean_local_minus_global_error_mm": 0.609606945553778
+      },
+      "v2e": {
+        "n": 581,
+        "local_lower_error_fraction": 0.47332185886402756,
+        "median_local_minus_global_error_mm": 0.0055112872563714,
+        "mean_local_minus_global_error_mm": -0.16768436825890684
+      }
+    }
+  },
+  "output_csv": "shared_direct_hdr_decoder_queries.csv"
+}
