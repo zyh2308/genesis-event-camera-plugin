@@ -75,12 +75,17 @@ def camera_to_world_cv_from_config(config: dict[str, Any]) -> np.ndarray:
 
 
 def exact_causal_rows(trace: list[dict[str, Any]], query_start: float,
-                      query_end: float, window_s: float) -> tuple[list[dict[str, Any]], list[float], list[float]]:
+                      query_end: float, window_s: float,
+                      dvs_initialization_time_s: float | None = None
+                      ) -> tuple[list[dict[str, Any]], list[float], list[float]]:
     times = np.asarray([float(row["time_s"]) for row in trace], dtype=np.float64)
     queries = times[(times >= query_start - 1e-9) & (times <= query_end + 1e-9)]
     if not len(queries):
         raise RuntimeError("trace contains no exact logged query times in the requested interval")
-    first_render_time = float(queries[0] - window_s)
+    first_causal_time = float(queries[0] - window_s)
+    first_render_time = first_causal_time
+    if dvs_initialization_time_s is not None:
+        first_render_time = min(first_render_time, float(dvs_initialization_time_s))
     start_idx = int(np.argmin(np.abs(times - first_render_time)))
     if abs(float(times[start_idx]) - first_render_time) > 1e-8:
         raise RuntimeError(
@@ -171,6 +176,7 @@ def main() -> int:
         trace = read_trace(trace_path)
         rows, row_times, cutoffs = exact_causal_rows(
             trace, query_start_s, query_end_s, window_s,
+            dvs_initialization_time_s=experiment_config.get("dvs_initialization_time_s"),
         )
         camera_pose = camera_to_world_cv_from_config(scene_config)
 
@@ -290,6 +296,8 @@ def main() -> int:
         record = {
             "episode_id": int(ep),
             "query_cutoffs_actual_trace_rows_s": cutoffs,
+            "first_causal_input_time_s": float(cutoffs[0] - window_s),
+            "dvs_initialization_time_s": float(row_times[0]),
             "exact_render_state_times_s": row_times,
             "actual_render_intervals_s": np.diff(np.asarray(row_times, dtype=np.float64)).tolist(),
             "state_trace_interval_summary_s": {
