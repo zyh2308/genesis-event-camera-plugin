@@ -111,6 +111,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive-trace", type=Path, required=True)
     parser.add_argument("--e-trace-window", type=Path, required=True)
+    parser.add_argument("--dense-state-cache", type=Path, required=True,
+                        help="actual per-physics-step states captured during exact-seed replay")
+    parser.add_argument("--capture-rerun-trace", type=Path, required=True)
+    parser.add_argument("--capture-rerun-events", type=Path, required=True)
     parser.add_argument("--archive-events", type=Path, required=True)
     parser.add_argument("--e-shadow-on-events", type=Path, required=True)
     parser.add_argument("--scene-config", type=Path, required=True)
@@ -120,13 +124,16 @@ def main() -> int:
     if out.exists():
         raise FileExistsError(f"refusing to overwrite {out}")
     out.mkdir(parents=True)
-    for path in (args.archive_trace, args.e_trace_window, args.archive_events,
-                 args.e_shadow_on_events, args.scene_config):
+    for path in (args.archive_trace, args.e_trace_window, args.dense_state_cache,
+                 args.capture_rerun_trace, args.capture_rerun_events,
+                 args.archive_events, args.e_shadow_on_events, args.scene_config):
         if not path.is_file():
             raise FileNotFoundError(path)
     expected_hashes = {
         args.archive_trace: ARCHIVE_TRACE_SHA256,
         args.e_trace_window: E_TRACE_SHA256,
+        args.capture_rerun_trace: ARCHIVE_TRACE_SHA256,
+        args.capture_rerun_events: ARCHIVE_EVENTS_SHA256,
         args.archive_events: ARCHIVE_EVENTS_SHA256,
         args.e_shadow_on_events: E_EVENTS_SHA256,
         args.scene_config: SCENE_SHA256,
@@ -138,19 +145,66 @@ def main() -> int:
 
     full_trace = read_trace(args.archive_trace)
     e_trace = read_trace(args.e_trace_window)
-    dense_rows = [row for row in full_trace
+    with np.load(args.dense_state_cache, allow_pickle=False) as cache:
+        cached_times = np.asarray(cache["times_s"], dtype=np.float64)
+        cached_robot_qpos = np.asarray(cache["robot_qpos"])
+        cached_target_qpos = np.asarray(cache["target_qpos"])
+    if cached_robot_qpos.shape[0] != len(cached_times) or cached_target_qpos.shape != (len(cached_times), 7):
+        raise RuntimeError("dense state cache arrays have inconsistent shapes")
+    dense_rows = [{
+        "time_s": float(t),
+        "robot_qpos": cached_robot_qpos[i].tolist(),
+        "object": {
+            "position_m": cached_target_qpos[i, :3].tolist(),
+            "orientation_wxyz": cached_target_qpos[i, 3:].tolist(),
+        },
+    } for i, t in enumerate(cached_times)]
+    dense_rows = [row for row in dense_rows
                   if WINDOW_START_S - 1e-10 <= float(row["time_s"]) <= WINDOW_END_S + 1e-10]
     dense_rows.sort(key=lambda row: float(row["time_s"]))
     dense_times = [round(float(row["time_s"]), 9) for row in dense_rows]
     e_times = [round(float(row["time_s"]), 9) for row in e_trace]
     if len(dense_rows) != 81 or any(abs((b - a) - 0.0005) > 1e-9 for a, b in zip(dense_times, dense_times[1:])):
-        raise RuntimeError(f"expected 81 exact 0.5ms saved states; got {len(dense_rows)}")
+        raise RuntimeError(f"expected 81 captured 0.5ms physical states; got {len(dense_rows)}")
     row_map = {round(float(row["time_s"]), 9): row for row in dense_rows}
     if not e_times or e_times[0] != round(WINDOW_START_S, 9) or e_times[-1] != round(WINDOW_END_S, 9):
         raise RuntimeError("E trace does not span the same exact frame window")
     if any(t not in row_map for t in e_times):
         raise RuntimeError("an E cached-state time is absent from the exact 2kHz physical trace")
     sparse_rows = [row_map[t] for t in e_times]
+
+    dense_state_map = {round(float(row["time_s"]), 9): row for row in dense_rows}
+    archived_window_rows = [row for row in full_trace
+                            if WINDOW_START_S - 1e-10 <= float(row["time_s"]) <= WINDOW_END_S + 1e-10]
+    state_alignment = []
+    for label, reference_rows in (("archive_logged_rows", archived_window_rows),
+                                  ("E_sparse_rows", e_trace)):
+        max_robot_delta = 0.0
+        max_target_delta = 0.0
+        for reference in reference_rows:
+            t = round(float(reference["time_s"]), 9)
+            if t not in dense_state_map:
+                raise RuntimeError(f"{label} timestamp {t} is absent from captured dense states")
+            dense = dense_state_map[t]
+            if "robot_qpos" in reference:
+                max_robot_delta = max(max_robot_delta, float(np.max(np.abs(
+                    np.asarray(reference["robot_qpos"], dtype=np.float64) -
+                    np.asarray(dense["robot_qpos"], dtype=np.float64)))))
+            if "object" in reference:
+                ref_obj = reference["object"]
+                ref_target = np.asarray(list(ref_obj["position_m"]) +
+                                         list(ref_obj["orientation_wxyz"]), dtype=np.float64)
+                dense_obj = dense["object"]
+                dense_target = np.asarray(list(dense_obj["position_m"]) +
+                                          list(dense_obj["orientation_wxyz"]), dtype=np.float64)
+                max_target_delta = max(max_target_delta, float(np.max(np.abs(ref_target - dense_target))))
+        if max_robot_delta > 1e-7 or max_target_delta > 1e-7:
+            raise RuntimeError(f"{label} does not match captured state rows: robot={max_robot_delta}, target={max_target_delta}")
+        state_alignment.append({"source": label, "matched_rows": len(reference_rows),
+                                "max_robot_qpos_abs_delta": max_robot_delta,
+                                "max_target_qpos_abs_delta": max_target_delta})
+
+    actual_hashes[str(args.dense_state_cache.resolve())] = sha256(args.dense_state_cache)
 
     archive_events = crop_events(load_events(args.archive_events, "events_2000hz"))
     e_events = crop_events(load_events(args.e_shadow_on_events, "events"))
@@ -230,6 +284,9 @@ def main() -> int:
         "question": "Does cached-state rendering reproduce online 2kHz events, and is the archived-to-E mismatch caused by cadence or GL multisampling?",
         "physical_trace": {
             "source_full_trace_sha256": actual_hashes[str(args.archive_trace.resolve())],
+            "captured_rerun_trace_sha256": actual_hashes[str(args.capture_rerun_trace.resolve())],
+            "captured_rerun_raw_events_sha256": actual_hashes[str(args.capture_rerun_events.resolve())],
+            "dense_state_cache_sha256": actual_hashes[str(args.dense_state_cache.resolve())],
             "full_exact_rows": len(full_trace), "window_exact_rows_2khz": len(dense_rows),
             "window_times_s": [dense_times[0], dense_times[-1]],
             "window_interval_s": stats(np.diff(np.asarray(dense_times)).tolist()),
@@ -237,6 +294,7 @@ def main() -> int:
             "E_sparse_rows": len(sparse_rows),
             "E_sparse_interval_s": stats(np.diff(np.asarray(e_times)).tolist()),
             "E_sparse_rows_subset_of_dense_state_rows": True,
+            "logged_state_alignment": state_alignment,
         },
         "renderer": {
             "scene_config_sha256": actual_hashes[str(args.scene_config.resolve())],

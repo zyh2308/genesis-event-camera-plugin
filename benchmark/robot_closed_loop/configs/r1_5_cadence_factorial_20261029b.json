@@ -1,0 +1,44 @@
+{
+  "schema": "r1_5_cadence_factorial_v1",
+  "experiment_id": "r1_5_cadence_factorial_20261029b",
+  "purpose": "Capture true per-physics-step states during an exact-seed reproduction, then cross E's exact sparse render cadence against dense 2 kHz rendering and GL MSAA on/off.",
+  "source_reproduction": {
+    "source_repository_commit": "2100645b0473c294760789bc4475b644f261d9cf",
+    "seed": 2026103425,
+    "episode": 5,
+    "speed_m_s": 0.4,
+    "launch_y_m": 0.055,
+    "physics_dt_s": 0.0005,
+    "event_rate_hz": 2000,
+    "expected_raw_event_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+    "expected_logged_trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+    "dense_capture_window_s": [0.5505, 0.5905],
+    "dense_capture_interval_s": 0.0005,
+    "expected_dense_physical_rows": 81,
+    "tap_semantics": "Read robot qpos and target pose immediately after each existing physics step; no additional steps, controls, or renderer calls."
+  },
+  "cached_renderer_replay": {
+    "renderer_checkout_commit": "855b4b0bc7de96170b4bfee8d7002b370782f346",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "sparse_trace_sha256": "f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d",
+    "sparse_event_sha256": "c46f7bc28504ed9f43e76c334533534291d0de64b0c0f9bd429fa1a49eab58d8",
+    "conditions": [
+      {"name": "msaa_on_sparse47", "render_rows": 47, "msaa": true},
+      {"name": "msaa_on_dense2khz", "render_rows": 81, "msaa": true},
+      {"name": "msaa_off_dense2khz", "render_rows": 81, "msaa": false}
+    ],
+    "shadow": true,
+    "capture_repeats_per_state": 2,
+    "warmup_passes": 1,
+    "physics_steps": 0
+  },
+  "dvs": {
+    "implementation": "same ideal Direct-HDR DVS as the cached-state E replay",
+    "threshold": 0.2,
+    "noise": false,
+    "refractory": false,
+    "bandwidth_limit": false
+  },
+  "frozen_core_modified": false,
+  "formal_ranking": false
+}
