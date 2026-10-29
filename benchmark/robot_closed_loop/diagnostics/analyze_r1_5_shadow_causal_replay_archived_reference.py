@@ -36,7 +36,7 @@ from benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke import (
     _sha256,
     _write_hash_manifest,
 )
-from benchmark.robot_closed_loop.event_state_model import five_bin_tensor  # noqa: E402
+from benchmark.robot_closed_loop.event_state_model import decode_heatmap_state, five_bin_tensor  # noqa: E402
 
 
 def cosine(a: np.ndarray, b: np.ndarray) -> float | None:
@@ -54,6 +54,25 @@ def summarize(values: list[float]) -> dict[str, float]:
         "p95_linear": float(np.percentile(values, 95)),
         "max": float(max(values)),
     }
+
+
+def predict_voxel(voxel: np.ndarray, model_record, camera_pose: np.ndarray,
+                  intrinsics: np.ndarray, resolution_wh: tuple[int, int],
+                  fixed_height_m: float) -> np.ndarray:
+    """Run the same checkpoint on a count-domain counterfactual voxel."""
+    import torch
+
+    model, label_mean, label_scale, _checkpoint = model_record
+    tensor = torch.as_tensor(np.log1p(np.maximum(voxel, 0.0)).reshape(1, 10, 64, 64), dtype=torch.float32)
+    with torch.no_grad():
+        output = model(tensor)
+        state = decode_heatmap_state(
+            output, label_mean, label_scale,
+            torch.as_tensor(camera_pose, dtype=torch.float32),
+            torch.as_tensor(intrinsics, dtype=torch.float32), resolution_wh,
+            fixed_height_m=fixed_height_m,
+        )[0]
+    return state.cpu().numpy().astype(np.float64)
 
 
 def main() -> int:
@@ -122,6 +141,40 @@ def main() -> int:
             ref_flat = reference_voxel.astype(np.float64).ravel()
             ref_bin_counts = reference_voxel.sum(axis=(1, 2, 3)).astype(np.int64)
             bin_comparison: dict[str, Any] = {}
+            shadow_on_voxel = shadow_voxels["shadow_on"][query_index].astype(np.float64)
+            archive_counts = reference_voxel.astype(np.float64)
+            on_bin_counts = shadow_on_voxel.sum(axis=(1, 2, 3))
+            archive_bin_counts = archive_counts.sum(axis=(1, 2, 3))
+            archive_bin_polarity_counts = archive_counts.sum(axis=(2, 3))
+            on_bin_polarity_counts = shadow_on_voxel.sum(axis=(2, 3))
+            global_scale = float(shadow_on_voxel.sum() / max(float(archive_counts.sum()), 1.0))
+            bin_scales = np.divide(on_bin_counts, archive_bin_counts,
+                                   out=np.ones_like(on_bin_counts), where=archive_bin_counts > 0)
+            bin_polarity_scales = np.divide(
+                on_bin_polarity_counts, archive_bin_polarity_counts,
+                out=np.ones_like(on_bin_polarity_counts), where=archive_bin_polarity_counts > 0,
+            )
+            counterfactual_voxels = {
+                "archived_global_count_matched_to_shadow_on": archive_counts * global_scale,
+                "archived_5ms_bin_counts_matched_to_shadow_on": archive_counts * bin_scales[:, None, None, None],
+                "archived_bin_and_polarity_counts_matched_to_shadow_on": archive_counts * bin_polarity_scales[:, :, None, None],
+            }
+            count_scale_counterfactuals: dict[str, Any] = {}
+            for name, counterfactual_voxel in counterfactual_voxels.items():
+                pred_state = predict_voxel(
+                    counterfactual_voxel, model_records["ours_old_checkpoint"], camera_pose,
+                    intrinsics, (width, height), fixed_height,
+                )
+                count_scale_counterfactuals[name] = {
+                    "event_count_scale_or_factors": (
+                        global_scale if name == "archived_global_count_matched_to_shadow_on"
+                        else bin_scales.tolist() if name == "archived_5ms_bin_counts_matched_to_shadow_on"
+                        else bin_polarity_scales.tolist()
+                    ),
+                    "predicted_position_xy_m": pred_state[:2].tolist(),
+                    "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
+                    "counterfactual_only": True,
+                }
             for condition in ("shadow_on", "shadow_off"):
                 estimate = replay_summary["per_query_model_metrics"][query_index][condition]
                 condition_voxel = shadow_voxels[condition][query_index].astype(np.float64)
@@ -154,6 +207,7 @@ def main() -> int:
                 "shadow_on": conditions["shadow_on"],
                 "shadow_off": conditions["shadow_off"],
                 "five_ms_bin_comparison_vs_archived": bin_comparison,
+                "archived_rate_scale_counterfactuals": count_scale_counterfactuals,
             }
             query_rows.append(record)
             for condition, estimate in conditions.items():
@@ -207,7 +261,7 @@ def main() -> int:
     fields = list(csv_rows[0])
     csv_path = args.output / "archived_reference_same_query_comparison.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(csv_rows)
     result = {
