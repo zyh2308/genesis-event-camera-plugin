@@ -15,6 +15,7 @@ import argparse
 import csv
 import hashlib
 import json
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -396,12 +397,24 @@ def main() -> int:
             "query_rows": query_rows, "query_times": query_times, "cache_frames": cache_by_time,
             "pose_ids": pose_ids, "cached_camera": cached_camera, "cache_attrs": cache_attrs,
             "episode_row": episode_row, "full_trace_row_index": full_trace_row_index,
-            "trace_provenance": trace_provenance,
+            "trace_provenance": trace_provenance, "source_ep": source_ep,
         }
 
     output.mkdir(parents=True, exist_ok=False)
     (output / "visualizations").mkdir()
     (output / "episodes").mkdir()
+    archived_inputs = output / "source_inputs" / "native_hdr_cutoff059"
+    archived_inputs.mkdir(parents=True)
+    archived_input_hashes: list[str] = []
+    for pre in prepared.values():
+        episode_inputs = archived_inputs / f"episode_{int(pre['episode_id']):03d}"
+        episode_inputs.mkdir()
+        for name in ("same_state_source_cache.h5", "trace_window.jsonl", "episode_diagnostic.json"):
+            copied = episode_inputs / name
+            shutil.copy2(pre["source_ep"] / name, copied)
+            archived_input_hashes.append(f"{_sha256(copied)}  {copied.relative_to(output).as_posix()}")
+    (output / "source_inputs" / "SOURCE_INPUT_SHA256SUMS").write_text(
+        "\n".join(archived_input_hashes) + "\n", encoding="utf-8")
     config_copy = output / "effective_config.json"
     config_copy.write_text(args.config.read_text(encoding="utf-8"), encoding="utf-8")
 
