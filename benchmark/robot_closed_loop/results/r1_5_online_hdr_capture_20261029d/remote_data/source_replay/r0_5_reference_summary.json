@@ -1,0 +1,45 @@
+{
+  "mode": "r0_5_direct_hdr_gt_shadow_sensor_reference",
+  "code_scope": "robot benchmark; frozen simulator core unchanged",
+  "physics_dt_s": 0.0005,
+  "paired_event_rates_hz": [
+    1000,
+    2000
+  ],
+  "controller_state_source": "delayed current-GT controller; event streams are shadow sensor reference only",
+  "reference_controller_source": "gt_current",
+  "episodes": [
+    {
+      "episode_id": 0,
+      "seed": 2026103425,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.055,
+      "strict_success": true,
+      "success_legacy_r0": true,
+      "first_contact_s": 0.614,
+      "lift_start_s": 0.6855,
+      "sim_duration_s": 1.3585,
+      "task_rollout_wall_s": 208.01520195399644,
+      "event_count_1khz": 609830,
+      "event_count_2khz": 644396,
+      "state_control_trace": "episodes/episode_000/state_control_trace.jsonl",
+      "raw_events": "episodes/episode_000/direct_hdr_events_1khz_2khz.npz",
+      "dynamic_visibility_min": 0.9904534606205251,
+      "state_accuracy_1khz_p95_m": 0.2195690693465252,
+      "state_accuracy_2khz_p95_m": 0.22019042682582143
+    }
+  ],
+  "strict_success_by_speed": {
+    "0.4": {
+      "n": 1,
+      "successes": 1
+    }
+  },
+  "episode_loop_artifact_wall_s": 216.55214623900247,
+  "mean_task_rollout_wall_s": 208.01520195399644,
+  "cost_boundary": "episode_loop_artifact_wall_s includes complete rollouts and per-episode trace/video/event/CSV/JSON artifact generation, but excludes environment initialization and final run_manifest/SHA256SUMS finalization. The launch wrapper must record the full Python process wall time as the end-to-end cost.",
+  "no_rollout_scale_extrapolation": true,
+  "pixel_response_model_boundary": "Direct linear-HDR input and DvsEmulator are shared with the plugin; Ours temporal reconstruction and V2E frame interpolation are bypassed. This ideal synthetic threshold model is uncalibrated to EVK4.",
+  "visibility_evaluation_boundary": "uses evaluator-only segmentation and matched-pose target-only render; those data do not enter the event state source or controller",
+  "small_smoke_only": true
+}

@@ -1,0 +1,116 @@
+{
+  "status": "PASS",
+  "experiment": "same HDR frames with cold versus reconstructed live DVS comparator state; online-log versus physical-log routes",
+  "window_s": [
+    0.5505,
+    0.5904999999999999
+  ],
+  "frame_count": 81,
+  "frames_bitwise_equal_at_shared_timestamps": true,
+  "max_shared_timestamp_delta_s": 1.1102230246251565e-16,
+  "source_events_in_window_excluding_start": 6179,
+  "history_events_used_through_window_start": 324885,
+  "history_events_on": 165267,
+  "history_events_off": 159618,
+  "history_state_reconstruction": "0.5ms per-source-step ON update then OFF update",
+  "state_seed_residual_from_live_frame": {
+    "abs_stats": {
+      "mean": 0.025606185879990546,
+      "median": 0.0,
+      "p95": 0.17527975164935916,
+      "p99": 0.19999999999999996,
+      "max": 0.19999999999999996
+    },
+    "max_above_positive_threshold": -5.551115123125783e-17,
+    "max_below_negative_threshold": -5.551115123125783e-17
+  },
+  "input_log_transform_abs_delta": {
+    "stats": {
+      "mean": 8.119717724491665e-06,
+      "median": 6.692846798994623e-06,
+      "p95": 2.757702492184322e-05,
+      "p99": 2.757702492184322e-05,
+      "max": 7.801600429147015e-05
+    },
+    "fraction_nonzero": 1.0,
+    "fraction_above_1e_7": 1.0
+  },
+  "event_comparisons": {
+    "cold_physical_transform": {
+      "online_events": 6179,
+      "replay_events": 5899,
+      "matched": 4627,
+      "online_match_fraction": 0.7488266709823596,
+      "replay_match_fraction": 0.784370232242753,
+      "match_tolerance_ms": 0.5,
+      "matched_abs_time_ms": {
+        "mean": 0.08485983291404685,
+        "median": 0.05346510363546386,
+        "p95": 0.2926153998557002,
+        "p99": 0.41540273662472105,
+        "max": 0.4994073665438581
+      }
+    },
+    "cold_online_log_transform": {
+      "online_events": 6179,
+      "replay_events": 5918,
+      "matched": 4632,
+      "online_match_fraction": 0.7496358634083184,
+      "replay_match_fraction": 0.7826968570462994,
+      "match_tolerance_ms": 0.5,
+      "matched_abs_time_ms": {
+        "mean": 0.08500824547062319,
+        "median": 0.05347557150575666,
+        "p95": 0.29282415528673056,
+        "p99": 0.41530928373025666,
+        "max": 0.49856029122608003
+      }
+    },
+    "history_seeded_online_log_transform": {
+      "online_events": 6179,
+      "replay_events": 6179,
+      "matched": 6179,
+      "online_match_fraction": 1.0,
+      "replay_match_fraction": 1.0,
+      "match_tolerance_ms": 0.5,
+      "matched_abs_time_ms": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      }
+    },
+    "cold_physical_vs_saved_cached_stream": {
+      "online_events": 5899,
+      "replay_events": 5899,
+      "matched": 5899,
+      "online_match_fraction": 1.0,
+      "replay_match_fraction": 1.0,
+      "match_tolerance_ms": 0.5,
+      "matched_abs_time_ms": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      }
+    }
+  },
+  "dvs_implementation": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/genesis_event_plugin/dvs_emulator.py",
+    "sha256": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638"
+  },
+  "input_hashes": {
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/online_hdr_capture/episode_000/online_hdr_frames_2khz.npz": "986cbf19c6297b4d55db2d1e5ad7634f23c0c19634faa4c4e02bf2689a0e8c1c",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/source_replay/episodes/episode_000/direct_hdr_events_1khz_2khz.npz": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/source_replay/episodes/episode_000/direct_hdr_key_snapshots.npz": "d28c52a260eb82746b560e4c9435ae39b67842cc61f02377a7c6c59901e5f97b",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r1_5_cached_state_cadence_renderer_20261029c/artifacts/frames_msaa_on_dense2khz.npz": "5ad675c7bf11b5404c8f05f1ef83bffd6f695ca084f7e6b138f75ce16df750f1",
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r1_5_cached_state_cadence_renderer_20261029c/artifacts/events_msaa_on_dense2khz.npz": "39824192d1d9135714d4320b43807e068203ca7676c02b1f4bd44b4d07677049"
+  },
+  "event_output": "history_seeded_online_events.npz",
+  "event_output_sha256": "93d17785b5c408aad543c542f9e1f37367c055f4d7ac9aa1a805e54c086761eb",
+  "per_sample_csv": "per_sample_event_counts.csv",
+  "no_physics_or_renderer": true,
+  "GT_segmentation_depth_or_future_state_used": false
+}
