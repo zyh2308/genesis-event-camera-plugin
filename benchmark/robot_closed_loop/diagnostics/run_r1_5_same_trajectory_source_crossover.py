@@ -226,7 +226,8 @@ def main() -> int:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--scene-config", type=Path, required=True)
     parser.add_argument("--control-config", type=Path, required=True)
-    parser.add_argument("--reference-root", type=Path, required=True)
+    parser.add_argument("--reference-root", type=Path,
+                        help="optional full-episode reference root; otherwise use the exact saved trace_window rows")
     parser.add_argument("--source-cache-root", type=Path, required=True)
     parser.add_argument("--ours-checkpoint", type=Path, required=True)
     parser.add_argument("--v2e-checkpoint", type=Path, required=True)
@@ -238,7 +239,7 @@ def main() -> int:
     config = _json(args.config)
     scene_cfg = _json(args.scene_config)
     scene_cfg["shared_control"] = _json(args.control_config)
-    reference_root = args.reference_root.resolve()
+    reference_root = args.reference_root.resolve() if args.reference_root else None
     cache_root = args.source_cache_root.resolve()
     output = args.output.resolve()
     code_root = args.code_root.resolve()
@@ -267,24 +268,57 @@ def main() -> int:
     }
     for label, ep_spec in config["episodes"].items():
         ep_id = int(ep_spec["episode_id"])
-        ref_ep = reference_root / "episodes" / f"episode_{ep_id:03d}"
-        trace_path = ref_ep / "state_control_trace.jsonl"
-        episode_path = ref_ep / "episode.csv"
-        trace_hashes = verify_source_hashes(reference_root, [trace_path, episode_path])
-        full_trace = read_trace(trace_path)
         source_ep = cache_root / f"episode_{ep_id:03d}"
         cache_path = source_ep / "same_state_source_cache.h5"
         trace_window_path = source_ep / "trace_window.jsonl"
-        source_hashes = verify_source_hashes(cache_root, [cache_path, trace_window_path])
+        diagnostic_path = source_ep / "episode_diagnostic.json"
+        source_hashes = verify_source_hashes(cache_root, [cache_path, trace_window_path, diagnostic_path])
         source_trace = read_trace(trace_window_path)
         source_index = _trace_index(source_trace)
+        diagnostic = _json(diagnostic_path)
+        expected_hashes = ep_spec["expected_source_sha256"]
+        actual_window_hash = source_hashes[f"episode_{ep_id:03d}/trace_window.jsonl"]
+        actual_cache_hash = source_hashes[f"episode_{ep_id:03d}/same_state_source_cache.h5"]
+        declared_trace_hash = diagnostic["reference_inputs_sha256"][
+            f"episodes/episode_{ep_id:03d}/state_control_trace.jsonl"]
+        declared_episode_hash = diagnostic["reference_inputs_sha256"][
+            f"episodes/episode_{ep_id:03d}/episode.csv"]
+        if actual_window_hash != expected_hashes["trace_window.jsonl"]:
+            raise RuntimeError(f"episode_{ep_id:03d}: saved state-window hash differs from the locked config")
+        if actual_cache_hash != expected_hashes["same_state_source_cache.h5"]:
+            raise RuntimeError(f"episode_{ep_id:03d}: native-HDR cache hash differs from the locked config")
+        if declared_trace_hash != expected_hashes["declared_full_state_trace.jsonl"]:
+            raise RuntimeError(f"episode_{ep_id:03d}: diagnostic metadata declares an unexpected full-trace hash")
+        if declared_episode_hash != expected_hashes["declared_episode.csv"]:
+            raise RuntimeError(f"episode_{ep_id:03d}: diagnostic metadata declares unexpected episode metadata")
+
+        ref_ep = reference_root / "episodes" / f"episode_{ep_id:03d}" if reference_root else None
+        trace_path = ref_ep / "state_control_trace.jsonl" if ref_ep else None
+        episode_path = ref_ep / "episode.csv" if ref_ep else None
+        has_full_trace = bool(trace_path and trace_path.is_file())
+        has_episode_csv = bool(episode_path and episode_path.is_file())
+        if has_full_trace:
+            full_trace = read_trace(trace_path)
+            actual_full_trace_hash = _sha256(trace_path)
+            if actual_full_trace_hash != declared_trace_hash:
+                raise RuntimeError(f"episode_{ep_id:03d}: full trace hash differs from diagnostic metadata")
+            trace_provenance = "full state_control_trace.jsonl; selected rows cross-checked against trace_window.jsonl"
+        else:
+            # This exact 70 ms state excerpt contains all real rows needed by this diagnostic.
+            # Row indices stay explicitly local to the excerpt; the full episode is not implied.
+            full_trace = source_trace
+            actual_full_trace_hash = None
+            trace_provenance = (
+                "exact saved trace_window.jsonl rows only; full episode trace not staged; "
+                "declared full-trace hash retained from episode_diagnostic.json"
+            )
         full_index = _trace_index(full_trace)
         selected = [row for row in full_trace if start_s - 1e-9 <= float(row["time_s"]) <= end_s + 1e-9]
         selected_times = [round(float(row["time_s"]), 9) for row in selected]
         if not selected or selected_times[0] != round(start_s, 9) or selected_times[-1] != round(end_s, 9):
-            raise RuntimeError(f"episode_{ep_id:03d}: full trace does not contain exact interval endpoints")
-        if any(t not in source_index or not _same_state_rows(row, source_index[t]) for t, row in
-               ((round(float(r["time_s"]), 9), r) for r in selected)):
+            raise RuntimeError(f"episode_{ep_id:03d}: saved trace rows do not contain exact interval endpoints")
+        if has_full_trace and any(t not in source_index or not _same_state_rows(row, source_index[t]) for t, row in
+                                  ((round(float(r["time_s"]), 9), r) for r in selected)):
             raise RuntimeError(f"episode_{ep_id:03d}: cropped rows do not exactly match saved diagnostic trace")
         query_rows = [r for r in selected if query_start_s - 1e-9 <= float(r["time_s"]) <= query_end_s + 1e-9]
         query_times = [round(float(r["time_s"]), 9) for r in query_rows]
@@ -293,8 +327,20 @@ def main() -> int:
             raise RuntimeError(f"episode_{ep_id:03d}: exact query interval endpoints are absent")
         if any(round(t - 0.025, 9) < round(start_s, 9) - 1e-9 for t in query_times):
             raise RuntimeError("a causal query window extends before the shared source initialization")
-        with episode_path.open(newline="", encoding="utf-8") as stream:
-            episode_row = next(csv.DictReader(stream))
+        if has_episode_csv:
+            actual_episode_hash = _sha256(episode_path)
+            if actual_episode_hash != declared_episode_hash:
+                raise RuntimeError(f"episode_{ep_id:03d}: episode.csv hash differs from diagnostic metadata")
+            with episode_path.open(newline="", encoding="utf-8") as stream:
+                episode_row = next(csv.DictReader(stream))
+        else:
+            actual_episode_hash = None
+            episode_row = {
+                "seed": diagnostic["seed"],
+                "launch_speed_m_s": diagnostic["speed_m_s"],
+                "start_y_m": diagnostic["launch_y_m"],
+                "first_contact_s": diagnostic["first_contact_s"],
+            }
         if int(episode_row["seed"]) != int(ep_spec["seed"]):
             raise RuntimeError(f"episode_{ep_id:03d}: seed does not match selected trajectory")
         if not np.isclose(float(episode_row["launch_speed_m_s"]), float(ep_spec["speed_m_s"]), atol=1e-8):
@@ -332,18 +378,25 @@ def main() -> int:
             "seed": int(ep_spec["seed"]),
             "speed_m_s": float(ep_spec["speed_m_s"]),
             "launch_y_m": float(ep_spec["launch_y_m"]),
-            "full_trace_sha256": trace_hashes[f"episodes/episode_{ep_id:03d}/state_control_trace.jsonl"],
-            "trace_window_sha256": source_hashes[f"episode_{ep_id:03d}/trace_window.jsonl"],
-            "native_hdr_source_cache_sha256": source_hashes[f"episode_{ep_id:03d}/same_state_source_cache.h5"],
+            "declared_full_trace_sha256": declared_trace_hash,
+            "full_trace_sha256_actual_file_present": actual_full_trace_hash,
+            "declared_episode_csv_sha256": declared_episode_hash,
+            "episode_csv_sha256_actual_file_present": actual_episode_hash,
+            "trace_provenance": trace_provenance,
+            "trace_window_sha256": actual_window_hash,
+            "native_hdr_source_cache_sha256": actual_cache_hash,
+            "episode_diagnostic_sha256": source_hashes[f"episode_{ep_id:03d}/episode_diagnostic.json"],
             "query_times_s": query_times,
+            "trace_window_row_count": len(source_trace),
             "trace_rows_in_render_interval": len(selected),
-            "full_trace_rows_verified_equal": len(selected),
+            "trace_rows_verified_equal_to_full_trace": len(selected) if has_full_trace else None,
         }
         prepared[label] = {
             "episode_id": ep_id, "full_trace": full_trace, "trace_rows": selected,
             "query_rows": query_rows, "query_times": query_times, "cache_frames": cache_by_time,
             "pose_ids": pose_ids, "cached_camera": cached_camera, "cache_attrs": cache_attrs,
             "episode_row": episode_row, "full_trace_row_index": full_trace_row_index,
+            "trace_provenance": trace_provenance,
         }
 
     output.mkdir(parents=True, exist_ok=False)
@@ -481,7 +534,7 @@ def main() -> int:
                         )
                         row_out = {
                             "episode": label, "episode_id": ep_id, "query_state_index": query_idx,
-                            "full_trace_row_index": int(pre["full_trace_row_index"][query_time]),
+                            "trace_window_row_index": int(pre["full_trace_row_index"][query_time]),
                             "query_s": query_time, "query_state_exact": True,
                             "source": source_name, "checkpoint": model_name,
                             "state_available": True,
@@ -586,6 +639,7 @@ def main() -> int:
                                                   "max": float(np.diff(direct_times).max())},
                 "query_times_s": pre["query_times"],
                 "query_count_per_group": len(pre["query_times"]),
+                "trace_provenance": pre["trace_provenance"],
                 "native_source_event_count": int(len(native_events)),
                 "direct_source_event_count": int(len(direct_events)),
                 "native_source_event_time_range_s": [float(native_events[:, 0].min()), float(native_events[:, 0].max())] if len(native_events) else None,
@@ -646,6 +700,7 @@ def main() -> int:
         "episode_count": len(episode_summary), "four_group_query_rows": len(all_query_rows),
         "episodes": episode_summary,
         "limits": [
+            "only exact cached state rows in the 70 ms trace_window are used; the full-episode raw trace is not staged, although its declared SHA256 is retained from episode_diagnostic.json",
             "source sequence begins at the shared saved time 0.5505 s; comparator history before this segment is not reconstructed",
             "Direct-HDR is an offline renderer reference, not physical sensor ground truth",
             "query rows are temporally correlated and are not independent episodes",
