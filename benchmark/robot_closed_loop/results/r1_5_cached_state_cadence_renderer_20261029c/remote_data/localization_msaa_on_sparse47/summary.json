@@ -1,0 +1,613 @@
+{
+  "status": "PASS",
+  "experiment": "exact seed replay versus cached-state event stream; old checkpoint diagnostic only",
+  "fresh_source_label": "msaa_on_sparse47",
+  "inputs": {
+    "compact_evidence_sha256": "579df42dccdf60a8ae183decd68103ffc4560aecde44338d454f7f40be53bfc3",
+    "fresh_shadow_events_sha256": "cfc4cf7f89ac64cd196424cabb06aa4d06feef00bd51b8110a911292c09d3a5a",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "checkpoint_sha256": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9"
+  },
+  "source_reproduction": {
+    "state_trace_comparison": {
+      "archive_rows": 1459,
+      "rerun_rows": 1459,
+      "exact_common_timestamps": 1459,
+      "archive_time_range_s": [
+        0.0005,
+        1.3585
+      ],
+      "rerun_time_range_s": [
+        0.0005,
+        1.3585
+      ],
+      "target_position_error_m": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "target_velocity_error_m_s": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "robot_qpos_l2_error": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "robot_qvel_l2_error": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "tcp_pad_center_error_m": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "contact_record_mismatch_rows": 0
+    },
+    "event_source_match_5505_5905ms": {
+      "archive_event_count": 6182,
+      "rerun_event_count": 6182,
+      "matched_count": 6182,
+      "archive_matched_fraction": 1.0,
+      "rerun_matched_fraction": 1.0,
+      "same_pixel_polarity_time_tolerance_s": 0.0005,
+      "matched_abs_time_error_ms": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "causal_window_events_elementwise_identical": true,
+    "causal_window_event_count": 4579
+  },
+  "query_summary": {
+    "archive_and_exact_rerun": {
+      "position_xy_error_mm": {
+        "mean": 58.69207221818591,
+        "median": 59.171506658412774,
+        "p95": 108.33154993840205,
+        "max": 111.11096417929248
+      },
+      "velocity_xy_error_mm_s": {
+        "mean": 16.545562351321195,
+        "median": 12.44483083425972,
+        "p95": 33.47944854372748,
+        "max": 36.627651011447206
+      },
+      "valid_fraction": 1.0
+    },
+    "msaa_on_sparse47": {
+      "position_xy_error_mm": {
+        "mean": 10.641016495073513,
+        "median": 9.47811506438117,
+        "p95": 17.18505594547296,
+        "max": 19.26734791509147
+      },
+      "velocity_xy_error_mm_s": {
+        "mean": 37.365468365790676,
+        "median": 34.56827693131911,
+        "p95": 60.37072705099252,
+        "max": 61.90259724981735
+      },
+      "valid_fraction": 1.0
+    }
+  },
+  "queries": [
+    {
+      "query_s": 0.5855,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3862,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5768842101097107,
+        0.06039182096719742
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34243860840797424,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "7f11c5fe703842b983ef41cc169c53f59e708db6e244eec17455724fdac22c22",
+      "five_bin_counts": [
+        803,
+        798,
+        754,
+        819,
+        688
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5643218755722046,
+        0.061741672456264496,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.3372114300727844,
+        0.014436384662985802
+      ],
+      "position_xy_error_mm": 12.63464871196486,
+      "velocity_xy_error_mm_s": 7.393014947460822
+    },
+    {
+      "query_s": 0.5855,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2859,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5768842101097107,
+        0.06039182096719742
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34243860840797424,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "81e4d845f5f7848ba767768afaf81d6665bf30c75b5d11cff8740618ce71237d",
+      "five_bin_counts": [
+        560,
+        576,
+        586,
+        593,
+        544
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5676788687705994,
+        0.06264933198690414,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.3240669071674347,
+        0.016607332974672318
+      ],
+      "position_xy_error_mm": 9.47811506438117,
+      "velocity_xy_error_mm_s": 19.80569796887817
+    },
+    {
+      "query_s": 0.586,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3828,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.576712965965271,
+        0.06039642542600632
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34243860840797424,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "d5d572782a600e278d1fcc3848d3b4ea5a5e4e1f25df0d7284fa559c77fee053",
+      "five_bin_counts": [
+        789,
+        786,
+        796,
+        795,
+        662
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5648153424263,
+        0.06211505085229874,
+        0.02000001072883606
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.3249506950378418,
+        0.014697973616421223
+      ],
+      "position_xy_error_mm": 12.021111397494591,
+      "velocity_xy_error_mm_s": 18.329322362369794
+    },
+    {
+      "query_s": 0.586,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2877,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.576712965965271,
+        0.06039642542600632
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34243860840797424,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "03fffa89e7754862d02bb6daaadde8bc08f9027df2cd0ce1cf9bc1c82bff4654",
+      "five_bin_counts": [
+        592,
+        544,
+        634,
+        550,
+        557
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5701006650924683,
+        0.06125436723232269,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.3070718050003052,
+        0.016829432919621468
+      ],
+      "position_xy_error_mm": 6.667727272129028,
+      "velocity_xy_error_mm_s": 36.178626897186454
+    },
+    {
+      "query_s": 0.5865,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3841,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5765417814254761,
+        0.060401029884815216
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34238266944885254,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "5e61ced65b63d2a8a793e5aa484d284cbe340785d0583787a804bafad4279aba",
+      "five_bin_counts": [
+        793,
+        794,
+        818,
+        761,
+        675
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5173701047897339,
+        0.05554746091365814,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.30609700083732605,
+        0.014201764017343521
+      ],
+      "position_xy_error_mm": 59.37040043357141,
+      "velocity_xy_error_mm_s": 36.627651011447206
+    },
+    {
+      "query_s": 0.5865,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2886,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5765417814254761,
+        0.060401029884815216
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34238266944885254,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "af1df3817511d7dd4c5b47659db1f34c866459b92d1f7f6b397d0459bdee4d0d",
+      "five_bin_counts": [
+        584,
+        557,
+        643,
+        522,
+        580
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5666919350624084,
+        0.06160038709640503,
+        0.02000001072883606
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.28602397441864014,
+        0.016245616599917412
+      ],
+      "position_xy_error_mm": 9.92259699358132,
+      "velocity_xy_error_mm_s": 56.79636325373461
+    },
+    {
+      "query_s": 0.5875,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3840,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.576199471950531,
+        0.060410238802433014
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34227272868156433,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "ffeefa85a61704be5f93a039f72e4e7d26bf197918380ba268849db5ed7f350c",
+      "five_bin_counts": [
+        809,
+        776,
+        825,
+        753,
+        677
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.4756584167480469,
+        0.044157397001981735,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.316719651222229,
+        0.01468617282807827
+      ],
+      "position_xy_error_mm": 101.84625004299107,
+      "velocity_xy_error_mm_s": 26.133642785714812
+    },
+    {
+      "query_s": 0.5875,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2897,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.576199471950531,
+        0.060410238802433014
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34227272868156433,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "60ddd19a9c4d9e7980230ba77ae036dac965ce0603d8b0c611d06f676846f4fb",
+      "five_bin_counts": [
+        593,
+        540,
+        655,
+        531,
+        578
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5691851377487183,
+        0.06414732336997986,
+        0.02000001072883606
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.308630108833313,
+        0.017154322937130928
+      ],
+      "position_xy_error_mm": 7.9477471877077726,
+      "velocity_xy_error_mm_s": 34.56827693131911
+    },
+    {
+      "query_s": 0.5885,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3780,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5758572816848755,
+        0.06041944772005081
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.3421650528907776,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "7b09448caa3e24e04dac4a7f806f6af791a609a987fd1a623128c2ea3abe549a",
+      "five_bin_counts": [
+        778,
+        798,
+        802,
+        728,
+        674
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5167990326881409,
+        0.05676015466451645,
+        0.02000001072883606
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.33643046021461487,
+        0.015015586279332638
+      ],
+      "position_xy_error_mm": 59.171506658412774,
+      "velocity_xy_error_mm_s": 8.161530472314416
+    },
+    {
+      "query_s": 0.5885,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2868,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5758572816848755,
+        0.06041944772005081
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.3421650528907776,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "caf25185b60bc441543a2a198257edafb36deaaeb417ffd62a15c223be9e3a23",
+      "five_bin_counts": [
+        587,
+        580,
+        590,
+        536,
+        575
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5641051530838013,
+        0.06413791328668594,
+        0.019999980926513672
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.3113011121749878,
+        0.017165685072541237
+      ],
+      "position_xy_error_mm": 12.326374683029792,
+      "velocity_xy_error_mm_s": 31.873240089688636
+    },
+    {
+      "query_s": 0.5895,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3742,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5755152106285095,
+        0.06042865663766861
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34205925464630127,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "f13e4c7a8e2e4471e329907240a875278381e1b4207cc91087a030667583d4be",
+      "five_bin_counts": [
+        787,
+        753,
+        839,
+        670,
+        693
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.46440672874450684,
+        0.059685949236154556,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.34025344252586365,
+        0.01569036953151226
+      ],
+      "position_xy_error_mm": 111.11096417929248,
+      "velocity_xy_error_mm_s": 6.728944045681598
+    },
+    {
+      "query_s": 0.5895,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2853,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5755152106285095,
+        0.06042865663766861
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.34205925464630127,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "bd015b6e69d7fcf8763276f07b84ccd36ef1d2b0eb11ea2d7afedcdc78af3e4a",
+      "five_bin_counts": [
+        570,
+        567,
+        611,
+        510,
+        595
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5694068074226379,
+        0.06687010079622269,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.3234853744506836,
+        0.017725180834531784
+      ],
+      "position_xy_error_mm": 8.877206349594037,
+      "velocity_xy_error_mm_s": 20.43347616991038
+    },
+    {
+      "query_s": 0.5904999999999999,
+      "source": "archive_and_exact_rerun",
+      "event_count_25ms": 3776,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5751731991767883,
+        0.06043786555528641
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.3419550657272339,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "19f57925942dccf168d83c391c6e4a6ecf7a51e6a5bdb58225ba34cd071a5bf5",
+      "five_bin_counts": [
+        799,
+        754,
+        819,
+        688,
+        716
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5206084251403809,
+        0.05674457177519798,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.35216769576072693,
+        0.016319941729307175
+      ],
+      "position_xy_error_mm": 54.689624103574225,
+      "velocity_xy_error_mm_s": 12.44483083425972
+    },
+    {
+      "query_s": 0.5904999999999999,
+      "source": "msaa_on_sparse47",
+      "event_count_25ms": 2888,
+      "nonempty_5ms_bins": 5,
+      "state_available": true,
+      "label_method": "exact logged physical state row",
+      "gt_position_xy_m": [
+        0.5751731991767883,
+        0.06043786555528641
+      ],
+      "gt_velocity_xy_m_s": [
+        -0.3419550657272339,
+        0.009208261035382748
+      ],
+      "input_voxel_sha256": "2b0135074b41ea071bfeb55977160cb96a799891cb53c73154188116d8383cc9",
+      "five_bin_counts": [
+        576,
+        586,
+        593,
+        544,
+        589
+      ],
+      "state_status": "fresh",
+      "pred_position_xyz_m": [
+        0.5589536428451538,
+        0.07083770632743835,
+        0.019999995827674866
+      ],
+      "pred_velocity_xy_m_s": [
+        -0.28045654296875,
+        0.016269652172923088
+      ],
+      "position_xy_error_mm": 19.26734791509147,
+      "velocity_xy_error_mm_s": 61.90259724981735
+    }
+  ],
+  "gt_boundary": "GT labels are for scoring only; archived/rerun event payload contains no GT mask/depth input",
+  "query_csv": "query_localization.csv"
+}

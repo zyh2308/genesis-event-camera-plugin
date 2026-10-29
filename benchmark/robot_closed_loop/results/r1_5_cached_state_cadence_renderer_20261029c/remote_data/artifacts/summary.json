@@ -1,0 +1,533 @@
+{
+  "status": "PASS",
+  "experiment_id": "artifacts",
+  "question": "Does cached-state rendering reproduce online 2kHz events, and is the archived-to-E mismatch caused by cadence or GL multisampling?",
+  "physical_trace": {
+    "source_full_trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+    "captured_rerun_trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+    "captured_rerun_raw_events_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+    "dense_state_cache_sha256": "b87efd4d7b5bfda94b0987f0d682671a4230246c5f9886eb086600542bc075bb",
+    "full_exact_rows": 1459,
+    "window_exact_rows_2khz": 81,
+    "window_times_s": [
+      0.5505,
+      0.5905
+    ],
+    "window_interval_s": {
+      "mean": 0.0005000000000000004,
+      "median": 0.0005000000000000004,
+      "p95": 0.000500000000000056,
+      "p99": 0.000500000000000056,
+      "max": 0.000500000000000056
+    },
+    "physics_advanced": false,
+    "E_sparse_rows": 47,
+    "E_trace_file_rows_before_window_crop": 82,
+    "E_trace_rows_selected_for_common_window": 47,
+    "E_sparse_interval_s": {
+      "mean": 0.0008695652173913051,
+      "median": 0.0010000000000000009,
+      "p95": 0.0010000000000000009,
+      "p99": 0.0010000000000000009,
+      "max": 0.0010000000000000009
+    },
+    "E_sparse_rows_subset_of_dense_state_rows": true,
+    "logged_state_alignment": [
+      {
+        "source": "archive_logged_rows",
+        "matched_rows": 47,
+        "max_robot_qpos_abs_delta": 0.0,
+        "max_target_qpos_abs_delta": 0.0
+      },
+      {
+        "source": "E_sparse_rows",
+        "matched_rows": 47,
+        "max_robot_qpos_abs_delta": 0.0,
+        "max_target_qpos_abs_delta": 0.0
+      }
+    ]
+  },
+  "renderer": {
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "shadow": true,
+    "capture_repeats_per_state": 2,
+    "warmup_passes": 1,
+    "conditions": {
+      "msaa_on_sparse47": {
+        "pass_count": 95,
+        "radiance_readback_count": 95,
+        "actual_gl_multisample_enabled_values": [
+          true
+        ],
+        "sample_buffers_values": [
+          1
+        ],
+        "sample_count_values": [
+          4
+        ],
+        "draw_is_genesis_multisample_framebuffer_values": [
+          true
+        ],
+        "first_pass_record": {
+          "requested_multisample_enabled": true,
+          "actual_gl_multisample_enabled": true,
+          "gl_vendor": "NVIDIA Corporation",
+          "gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+          "gl_version": "4.1.0 NVIDIA 560.35.05",
+          "render_flags_int": 1327202,
+          "draw_framebuffer": 3,
+          "multisample_framebuffer": 3,
+          "draw_is_genesis_multisample_framebuffer": true,
+          "sample_buffers": 1,
+          "samples": 4,
+          "max_samples_supported": 32,
+          "sample_positions": [
+            [
+              0.375,
+              0.125
+            ],
+            [
+              0.875,
+              0.375
+            ],
+            [
+              0.125,
+              0.625
+            ],
+            [
+              0.625,
+              0.875
+            ]
+          ]
+        }
+      },
+      "msaa_on_dense2khz": {
+        "pass_count": 163,
+        "radiance_readback_count": 163,
+        "actual_gl_multisample_enabled_values": [
+          true
+        ],
+        "sample_buffers_values": [
+          1
+        ],
+        "sample_count_values": [
+          4
+        ],
+        "draw_is_genesis_multisample_framebuffer_values": [
+          true
+        ],
+        "first_pass_record": {
+          "requested_multisample_enabled": true,
+          "actual_gl_multisample_enabled": true,
+          "gl_vendor": "NVIDIA Corporation",
+          "gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+          "gl_version": "4.1.0 NVIDIA 560.35.05",
+          "render_flags_int": 1327202,
+          "draw_framebuffer": 3,
+          "multisample_framebuffer": 3,
+          "draw_is_genesis_multisample_framebuffer": true,
+          "sample_buffers": 1,
+          "samples": 4,
+          "max_samples_supported": 32,
+          "sample_positions": [
+            [
+              0.375,
+              0.125
+            ],
+            [
+              0.875,
+              0.375
+            ],
+            [
+              0.125,
+              0.625
+            ],
+            [
+              0.625,
+              0.875
+            ]
+          ]
+        }
+      },
+      "msaa_off_dense2khz": {
+        "pass_count": 163,
+        "radiance_readback_count": 163,
+        "actual_gl_multisample_enabled_values": [
+          false
+        ],
+        "sample_buffers_values": [
+          1
+        ],
+        "sample_count_values": [
+          4
+        ],
+        "draw_is_genesis_multisample_framebuffer_values": [
+          true
+        ],
+        "first_pass_record": {
+          "requested_multisample_enabled": false,
+          "actual_gl_multisample_enabled": false,
+          "gl_vendor": "NVIDIA Corporation",
+          "gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+          "gl_version": "4.1.0 NVIDIA 560.35.05",
+          "render_flags_int": 1327202,
+          "draw_framebuffer": 3,
+          "multisample_framebuffer": 3,
+          "draw_is_genesis_multisample_framebuffer": true,
+          "sample_buffers": 1,
+          "samples": 4,
+          "max_samples_supported": 32,
+          "sample_positions": [
+            [
+              0.375,
+              0.125
+            ],
+            [
+              0.875,
+              0.375
+            ],
+            [
+              0.125,
+              0.625
+            ],
+            [
+              0.625,
+              0.875
+            ]
+          ]
+        }
+      }
+    },
+    "segmentation_identical": true,
+    "depth_abs_delta": {
+      "mean": 0.0005670387266393475,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.00017452239990234375,
+      "max": 1.155273973941803
+    },
+    "log_luma_abs_delta": {
+      "mean": 0.006577168742457512,
+      "median": 0.0,
+      "p95": 0.003348217413659954,
+      "p99": 0.1601351381424987,
+      "max": 3.674336344057522
+    },
+    "log_luma_fraction_over_0_2": 0.007737429269547325
+  },
+  "event_sources": {
+    "archive_online_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+    "E_cached_shadow_on_sha256": "c46f7bc28504ed9f43e76c334533534291d0de64b0c0f9bd429fa1a49eab58d8",
+    "generated_artifact_hashes": {
+      "events_msaa_off_dense2khz.npz": {
+        "sha256": "bec74f826227c8573f6f36bec6fcf2771f8dfb325d3e508883724336f5168aa9",
+        "bytes": 68465
+      },
+      "events_msaa_on_dense2khz.npz": {
+        "sha256": "39824192d1d9135714d4320b43807e068203ca7676c02b1f4bd44b4d07677049",
+        "bytes": 58548
+      },
+      "events_msaa_on_sparse47.npz": {
+        "sha256": "cfc4cf7f89ac64cd196424cabb06aa4d06feef00bd51b8110a911292c09d3a5a",
+        "bytes": 46212
+      },
+      "frames_msaa_off_dense2khz.npz": {
+        "sha256": "1bb0113985ff32065a70420ca460e9b5957aeb96ed4478865ea70a48a78e5a2a",
+        "bytes": 2417794
+      },
+      "frames_msaa_on_dense2khz.npz": {
+        "sha256": "5ad675c7bf11b5404c8f05f1ef83bffd6f695ca084f7e6b138f75ce16df750f1",
+        "bytes": 2894658
+      },
+      "frames_msaa_on_sparse47.npz": {
+        "sha256": "47a12c862984705203a4ff2974ac5fec5d714fb984d767ec871d3e3a4e0ea3c7",
+        "bytes": 1679693
+      }
+    },
+    "comparisons_same_pixel_polarity_500us": {
+      "msaa_on_sparse47": {
+        "archive_online_2khz": {
+          "events_a": 6182,
+          "events_b": 4618,
+          "matched": 3463,
+          "fraction_a_matched": 0.5601747007440958,
+          "fraction_b_matched": 0.7498917280207882,
+          "pixel_polarity_match_tolerance_s": 0.0005,
+          "matched_abs_time_error_ms": {
+            "mean": 0.17043474215695853,
+            "median": 0.1418032718197848,
+            "p95": 0.4381254473645567,
+            "p99": 0.4838689671242391,
+            "max": 0.499987785136935
+          }
+        },
+        "E_cached_sparse": {
+          "events_a": 4618,
+          "events_b": 4618,
+          "matched": 4618,
+          "fraction_a_matched": 1.0,
+          "fraction_b_matched": 1.0,
+          "pixel_polarity_match_tolerance_s": 0.0005,
+          "matched_abs_time_error_ms": {
+            "mean": 5.433313199767981e-15,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 1.1102230246251565e-13,
+            "max": 1.1102230246251565e-13
+          }
+        }
+      },
+      "msaa_on_dense2khz": {
+        "archive_online_2khz": {
+          "events_a": 6182,
+          "events_b": 5899,
+          "matched": 4627,
+          "fraction_a_matched": 0.7484632804917503,
+          "fraction_b_matched": 0.784370232242753,
+          "pixel_polarity_match_tolerance_s": 0.0005,
+          "matched_abs_time_error_ms": {
+            "mean": 0.08485983291404685,
+            "median": 0.05346510363546386,
+            "p95": 0.2926153998557002,
+            "p99": 0.41540273662472105,
+            "max": 0.4994073665438581
+          }
+        },
+        "E_cached_sparse": {
+          "events_a": 4618,
+          "events_b": 5899,
+          "matched": 4378,
+          "fraction_a_matched": 0.9480294499783456,
+          "fraction_b_matched": 0.7421596880827259,
+          "pixel_polarity_match_tolerance_s": 0.0005,
+          "matched_abs_time_error_ms": {
+            "mean": 0.1481004608065655,
+            "median": 0.09323532840604942,
+            "p95": 0.4487282050447128,
+            "p99": 0.4847829775657416,
+            "max": 0.49999999999994493
+          }
+        }
+      },
+      "msaa_off_dense2khz": {
+        "archive_online_2khz": {
+          "events_a": 6182,
+          "events_b": 7123,
+          "matched": 3338,
+          "fraction_a_matched": 0.5399547072144937,
+          "fraction_b_matched": 0.46862277130422575,
+          "pixel_polarity_match_tolerance_s": 0.0005,
+          "matched_abs_time_error_ms": {
+            "mean": 0.08772002548998355,
+            "median": 0.05368165963293148,
+            "p95": 0.32236528763084354,
+            "p99": 0.4392337612556452,
+            "max": 0.4994073665438581
+          }
+        },
+        "E_cached_sparse": {
+          "events_a": 4618,
+          "events_b": 7123,
+          "matched": 2668,
+          "fraction_a_matched": 0.577739281074058,
+          "fraction_b_matched": 0.3745612803593991,
+          "pixel_polarity_match_tolerance_s": 0.0005,
+          "matched_abs_time_error_ms": {
+            "mean": 0.1182101862673149,
+            "median": 0.05816815500364614,
+            "p95": 0.41459080666378384,
+            "p99": 0.4811412071512455,
+            "max": 0.49999999999994493
+          }
+        }
+      }
+    }
+  },
+  "cost": {
+    "wall_s": 168.30888984401827,
+    "by_condition": {
+      "msaa_on_sparse47": {
+        "scene_build_wall_s": 52.742016773991054,
+        "render_wall_s": 0.9654442321043462,
+        "dvs_wall_s": 0.6684358580096159,
+        "dvs_reported_wall_s": 0.6678919489786495,
+        "frames": 47,
+        "frame_time_range_s": [
+          0.5505,
+          0.5905
+        ],
+        "gl_audit": {
+          "pass_count": 95,
+          "radiance_readback_count": 95,
+          "actual_gl_multisample_enabled_values": [
+            true
+          ],
+          "sample_buffers_values": [
+            1
+          ],
+          "sample_count_values": [
+            4
+          ],
+          "draw_is_genesis_multisample_framebuffer_values": [
+            true
+          ],
+          "first_pass_record": {
+            "requested_multisample_enabled": true,
+            "actual_gl_multisample_enabled": true,
+            "gl_vendor": "NVIDIA Corporation",
+            "gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+            "gl_version": "4.1.0 NVIDIA 560.35.05",
+            "render_flags_int": 1327202,
+            "draw_framebuffer": 3,
+            "multisample_framebuffer": 3,
+            "draw_is_genesis_multisample_framebuffer": true,
+            "sample_buffers": 1,
+            "samples": 4,
+            "max_samples_supported": 32,
+            "sample_positions": [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          }
+        }
+      },
+      "msaa_on_dense2khz": {
+        "scene_build_wall_s": 48.35026090100291,
+        "render_wall_s": 1.554528889944777,
+        "dvs_wall_s": 1.0337406110193115,
+        "dvs_reported_wall_s": 1.0323446050169878,
+        "frames": 81,
+        "frame_time_range_s": [
+          0.5505,
+          0.5905
+        ],
+        "gl_audit": {
+          "pass_count": 163,
+          "radiance_readback_count": 163,
+          "actual_gl_multisample_enabled_values": [
+            true
+          ],
+          "sample_buffers_values": [
+            1
+          ],
+          "sample_count_values": [
+            4
+          ],
+          "draw_is_genesis_multisample_framebuffer_values": [
+            true
+          ],
+          "first_pass_record": {
+            "requested_multisample_enabled": true,
+            "actual_gl_multisample_enabled": true,
+            "gl_vendor": "NVIDIA Corporation",
+            "gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+            "gl_version": "4.1.0 NVIDIA 560.35.05",
+            "render_flags_int": 1327202,
+            "draw_framebuffer": 3,
+            "multisample_framebuffer": 3,
+            "draw_is_genesis_multisample_framebuffer": true,
+            "sample_buffers": 1,
+            "samples": 4,
+            "max_samples_supported": 32,
+            "sample_positions": [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          }
+        }
+      },
+      "msaa_off_dense2khz": {
+        "scene_build_wall_s": 47.89773626701208,
+        "render_wall_s": 1.4602708040038124,
+        "dvs_wall_s": 1.656374276994029,
+        "dvs_reported_wall_s": 1.6554576650087256,
+        "frames": 81,
+        "frame_time_range_s": [
+          0.5505,
+          0.5905
+        ],
+        "gl_audit": {
+          "pass_count": 163,
+          "radiance_readback_count": 163,
+          "actual_gl_multisample_enabled_values": [
+            false
+          ],
+          "sample_buffers_values": [
+            1
+          ],
+          "sample_count_values": [
+            4
+          ],
+          "draw_is_genesis_multisample_framebuffer_values": [
+            true
+          ],
+          "first_pass_record": {
+            "requested_multisample_enabled": false,
+            "actual_gl_multisample_enabled": false,
+            "gl_vendor": "NVIDIA Corporation",
+            "gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+            "gl_version": "4.1.0 NVIDIA 560.35.05",
+            "render_flags_int": 1327202,
+            "draw_framebuffer": 3,
+            "multisample_framebuffer": 3,
+            "draw_is_genesis_multisample_framebuffer": true,
+            "sample_buffers": 1,
+            "samples": 4,
+            "max_samples_supported": 32,
+            "sample_positions": [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          }
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Saved-state replay holds renderer geometry to logged qpos; no new physics was stepped.",
+    "The two cadence streams share the same dense HDR captures within each MSAA condition.",
+    "Segmentation and depth are used only to audit renderer equivalence, never as model input."
+  ]
+}
