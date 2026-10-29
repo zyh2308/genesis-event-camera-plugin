@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import importlib
 import json
 import platform
 from pathlib import Path
@@ -56,6 +57,12 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: f.read(1 << 20), b""):
             h.update(block)
     return h.hexdigest()
+
+
+def runtime_module_record(module_name: str) -> dict:
+    module = importlib.import_module(module_name)
+    module_path = Path(module.__file__).resolve()
+    return {"imported_from": str(module_path), "sha256": sha256(module_path)}
 
 
 def jsonable(value):
@@ -678,6 +685,15 @@ def main():
         "repository_head_commit": subprocess.check_output(
             ["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip(),
         "diagnostic_script_sha256": sha256(Path(__file__).resolve()),
+        "runtime_modules": {
+            name.rsplit(".", 1)[-1]: runtime_module_record(name)
+            for name in (
+                "genesis_event_plugin.physics_plugin",
+                "genesis_event_plugin.physics_interpolator",
+                "genesis_event_plugin.physics_warp",
+                "genesis_event_plugin.dvs_emulator",
+            )
+        },
         "runtime_environment": {
             "python": sys.version.split()[0], "platform": platform.platform(),
             "numpy": np.__version__, "h5py": h5py.__version__, "device": "CPU",
