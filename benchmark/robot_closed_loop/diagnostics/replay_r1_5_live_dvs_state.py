@@ -182,13 +182,37 @@ def main() -> int:
     frame_log_start = online_log_gray(online_frames[0])
     positive = history[history[:, 3] > 0]
     negative = history[history[:, 3] < 0]
-    on_counts = np.zeros(frame_log_start.shape, dtype=np.float32)
-    off_counts = np.zeros(frame_log_start.shape, dtype=np.float32)
-    if len(positive):
-        np.add.at(on_counts, (positive[:, 2].astype(np.int64), positive[:, 1].astype(np.int64)), 1.0)
-    if len(negative):
-        np.add.at(off_counts, (negative[:, 2].astype(np.int64), negative[:, 1].astype(np.int64)), 1.0)
-    seeded_base = initial_log + on_counts.astype(np.float64) * 0.2 - off_counts.astype(np.float64) * 0.2
+    # Rebuild the live comparator in the original 0.5ms call order. The DVS
+    # updates all ON counts and then all OFF counts at each sample, so a single
+    # whole-history sum can differ by ulps near an event threshold.
+    step_count = int(round(start_s / 0.0005))
+    history_ticks = np.arange(1, step_count + 1, dtype=np.float64) * 0.0005
+    tick_index = np.searchsorted(history_ticks, history[:, 0], side="left")
+    for event_index, event_time in enumerate(history[:, 0]):
+        candidate = int(tick_index[event_index])
+        if candidate > 0 and abs(history_ticks[candidate - 1] - event_time) <= 1e-12:
+            tick_index[event_index] = candidate - 1
+        elif candidate < len(history_ticks) and abs(history_ticks[candidate] - event_time) <= 1e-12:
+            tick_index[event_index] = candidate
+    if np.any(tick_index >= len(history_ticks)):
+        raise RuntimeError("a history event lies beyond the requested DVS state cutoff")
+    order = np.argsort(tick_index, kind="stable")
+    sorted_history = history[order]
+    sorted_ticks = tick_index[order]
+    tick_counts = np.bincount(sorted_ticks, minlength=len(history_ticks))
+    tick_starts = np.concatenate(([0], np.cumsum(tick_counts)))
+    seeded_base_flat = initial_log.reshape(-1).copy()
+    width = frame_log_start.shape[1]
+    for tick in range(len(history_ticks)):
+        sample_events = sorted_history[tick_starts[tick]:tick_starts[tick + 1]]
+        for polarity, sign in ((1, 1.0), (-1, -1.0)):
+            selected = sample_events[sample_events[:, 3] == polarity]
+            if not len(selected):
+                continue
+            pixels = selected[:, 2].astype(np.int64) * width + selected[:, 1].astype(np.int64)
+            unique_pixels, counts = np.unique(pixels, return_counts=True)
+            seeded_base_flat[unique_pixels] += sign * counts.astype(np.float64) * 0.2
+    seeded_base = seeded_base_flat.reshape(frame_log_start.shape)
     residual = frame_log_start - seeded_base
 
     cold_physical = run_stream(cached_frames, cached_times, cached_config(), already_log=False)
@@ -239,6 +263,7 @@ def main() -> int:
         "history_events_used_through_window_start": int(len(history)),
         "history_events_on": int(len(positive)),
         "history_events_off": int(len(negative)),
+        "history_state_reconstruction": "0.5ms per-source-step ON update then OFF update",
         "state_seed_residual_from_live_frame": {
             "abs_stats": stats(np.abs(residual)),
             "max_above_positive_threshold": float(np.max(residual - 0.2)),
