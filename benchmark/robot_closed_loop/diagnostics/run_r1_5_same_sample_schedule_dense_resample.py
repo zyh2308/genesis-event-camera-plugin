@@ -203,7 +203,7 @@ def main() -> None:
                     "poses": {int(seg): np.asarray(h5["object_poses"][i, j], dtype=np.float64)
                               for j, seg in enumerate(pose_ids)},
                 })
-            camera_cache = np.asarray(h5.attrs["camera_to_world_cv"], dtype=np.float64)
+            camera_cache = np.asarray(h5["camera_to_world_cv"][:], dtype=np.float64)
             width_cache, height_cache = map(int, h5.attrs["camera_resolution_wh"])
             fov_cache = float(h5.attrs["vertical_fov_deg"])
         if not np.allclose(camera_cache, camera_pose, atol=1e-8, rtol=0):
