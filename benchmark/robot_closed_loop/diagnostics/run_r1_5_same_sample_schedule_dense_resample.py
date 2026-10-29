@@ -147,10 +147,10 @@ def summarize_events(events: np.ndarray) -> dict[str, Any]:
 
 
 def run_dvs_sequence(frames: np.ndarray, timestamps: np.ndarray,
-                     initial_luma: np.ndarray) -> tuple[np.ndarray, float]:
+                     initial_luma: np.ndarray, initial_time_s: float) -> tuple[np.ndarray, float]:
     h, w = frames.shape[1:]
     emulator = DvsEmulator(res=(h, w), config=response_config(), device="cpu")
-    emulator.initialize(initial_luma, t=float(timestamps[0]))
+    emulator.initialize(initial_luma, t=float(initial_time_s))
     start = time.perf_counter()
     chunks = [emulator.generate_events(frame, float(t)) for frame, t in zip(frames, timestamps)]
     elapsed = time.perf_counter() - start
@@ -336,7 +336,7 @@ def main() -> None:
         for variant in ("direct_resampled_all_pixels", "direct_resampled_robot_pixels_only",
                         "direct_resampled_nonrobot_pixels_only"):
             event_sources[variant], runtime_by_variant[variant] = run_dvs_sequence(
-                scheduled_frames[variant], sample_times, direct_luma[0])
+                scheduled_frames[variant], sample_times, direct_luma[0], float(direct_times[0]))
             np.savez_compressed(out / f"{episode}_{variant}_events.npz", events=event_sources[variant])
 
         episode_queries = [r for r in query_rows if r["episode"] == episode and r["source"] == "direct_hdr" and r["checkpoint"] == "v2e"]
