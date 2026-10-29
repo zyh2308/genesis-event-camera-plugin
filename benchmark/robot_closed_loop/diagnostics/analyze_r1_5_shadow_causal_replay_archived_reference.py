@@ -120,12 +120,31 @@ def main() -> int:
 
             conditions: dict[str, Any] = {"archived_direct_hdr_2khz": reference_estimate}
             ref_flat = reference_voxel.astype(np.float64).ravel()
+            ref_bin_counts = reference_voxel.sum(axis=(1, 2, 3)).astype(np.int64)
+            bin_comparison: dict[str, Any] = {}
             for condition in ("shadow_on", "shadow_off"):
                 estimate = replay_summary["per_query_model_metrics"][query_index][condition]
-                condition_flat = shadow_voxels[condition][query_index].astype(np.float64).ravel()
+                condition_voxel = shadow_voxels[condition][query_index].astype(np.float64)
+                condition_flat = condition_voxel.ravel()
                 estimate = dict(estimate)
                 estimate["five_bin_cosine_vs_archived_direct_hdr_2khz"] = cosine(condition_flat, ref_flat)
                 conditions[condition] = estimate
+                bin_cosines = [
+                    cosine(reference_voxel[bin_idx], condition_voxel[bin_idx])
+                    for bin_idx in range(5)
+                ]
+                bin_counts = condition_voxel.sum(axis=(1, 2, 3)).astype(np.int64)
+                bin_l1_relative = [
+                    float(np.abs(condition_voxel[bin_idx] - reference_voxel[bin_idx]).sum()
+                          / max(float(reference_voxel[bin_idx].sum()), 1.0))
+                    for bin_idx in range(5)
+                ]
+                bin_comparison[condition] = {
+                    "cosine_by_5ms_bin": bin_cosines,
+                    "relative_l1_by_5ms_bin": bin_l1_relative,
+                    "event_count_archived_by_5ms_bin": ref_bin_counts.tolist(),
+                    "event_count_condition_by_5ms_bin": bin_counts.tolist(),
+                }
             record = {
                 "episode_id": int(ep),
                 "query_cutoff_s": float(cutoff),
@@ -134,6 +153,7 @@ def main() -> int:
                 "archived_direct_hdr_2khz": conditions["archived_direct_hdr_2khz"],
                 "shadow_on": conditions["shadow_on"],
                 "shadow_off": conditions["shadow_off"],
+                "five_ms_bin_comparison_vs_archived": bin_comparison,
             }
             query_rows.append(record)
             for condition, estimate in conditions.items():
@@ -146,6 +166,16 @@ def main() -> int:
                     "position_error_xy_mm": estimate.get("position_error_xy_mm"),
                     "heatmap_uv_error_px": estimate.get("heatmap_uv_error_px"),
                     "five_bin_cosine_vs_archived_direct_hdr_2khz": estimate.get("five_bin_cosine_vs_archived_direct_hdr_2khz"),
+                    "per_5ms_bin_cosines_vs_archived": json.dumps(
+                        bin_comparison.get(condition, {}).get("cosine_by_5ms_bin")
+                    ),
+                    "relative_l1_by_5ms_bin_vs_archived": json.dumps(
+                        bin_comparison.get(condition, {}).get("relative_l1_by_5ms_bin")
+                    ),
+                    "event_counts_archived_by_5ms_bin": json.dumps(ref_bin_counts.tolist()),
+                    "event_counts_condition_by_5ms_bin": json.dumps(
+                        bin_comparison.get(condition, {}).get("event_count_condition_by_5ms_bin")
+                    ),
                     "input_tensor_sha256": estimate.get("input_tensor_sha256"),
                 })
 
