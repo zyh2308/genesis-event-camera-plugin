@@ -47,6 +47,7 @@ from benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke import (
     _write_hash_manifest,
 )
 from benchmark.robot_closed_loop.event_state_model import five_bin_tensor  # noqa: E402
+from genesis_event_plugin.radiometry import linear_luminance  # noqa: E402
 from benchmark.robot_closed_loop.diagnostics.diagnose_r1_5_shadow_on_off_cached_states import (  # noqa: E402
     log_luma,
 )
@@ -100,7 +101,7 @@ def preview(path: Path, hdr: np.ndarray, events: np.ndarray,
             gt_uv: np.ndarray, pred_uv: np.ndarray | None,
             label: str, query_time: float) -> None:
     h, w = hdr.shape[:2]
-    luma = np.asarray(log_luma(hdr), dtype=np.float64)
+    luma = np.log(np.maximum(np.asarray(linear_luminance(hdr), dtype=np.float64), 1e-6))
     lo, hi = np.percentile(luma, [2, 98])
     gray = np.uint8(np.clip((luma - lo) / max(float(hi - lo), 1e-8), 0, 1) * 255)
     rgb = np.repeat(gray[..., None], 3, axis=2)
