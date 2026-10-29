@@ -75,6 +75,18 @@ def predict_voxel(voxel: np.ndarray, model_record, camera_pose: np.ndarray,
     return state.cpu().numpy().astype(np.float64)
 
 
+def translate_voxel(voxel: np.ndarray, dx: int, dy: int) -> np.ndarray:
+    """Translate a five-bin tensor with zero fill; do not wrap border events."""
+    height, width = voxel.shape[-2:]
+    out = np.zeros_like(voxel)
+    src_x = slice(max(0, -dx), min(width, width - dx))
+    dst_x = slice(max(0, dx), min(width, width + dx))
+    src_y = slice(max(0, -dy), min(height, height - dy))
+    dst_y = slice(max(0, dy), min(height, height + dy))
+    out[:, :, dst_y, dst_x] = voxel[:, :, src_y, src_x]
+    return out
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--replay-root", type=Path, required=True)
@@ -215,6 +227,22 @@ def main() -> int:
                         "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
                         "counterfactual_only": True,
                     })
+            spatial_shift_counterfactuals: list[dict[str, Any]] = []
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    if dx == 0 and dy == 0:
+                        continue
+                    shifted_voxel = translate_voxel(archive_counts, dx, dy)
+                    pred_state = predict_voxel(
+                        shifted_voxel, model_records["ours_old_checkpoint"], camera_pose,
+                        intrinsics, (width, height), fixed_height,
+                    )
+                    spatial_shift_counterfactuals.append({
+                        "shift_x_64grid_cells": dx,
+                        "shift_y_64grid_cells": dy,
+                        "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
+                        "counterfactual_only": True,
+                    })
             for condition in ("shadow_on", "shadow_off"):
                 estimate = replay_summary["per_query_model_metrics"][query_index][condition]
                 condition_voxel = shadow_voxels[condition][query_index].astype(np.float64)
@@ -250,6 +278,7 @@ def main() -> int:
                 "five_ms_bin_comparison_vs_archived": bin_comparison,
                 "archived_rate_scale_counterfactuals": count_scale_counterfactuals,
                 "single_bin_replacement_counterfactuals": bin_replacement_counterfactuals,
+                "spatial_shift_counterfactuals": spatial_shift_counterfactuals,
             }
             query_rows.append(record)
             for condition, estimate in conditions.items():
