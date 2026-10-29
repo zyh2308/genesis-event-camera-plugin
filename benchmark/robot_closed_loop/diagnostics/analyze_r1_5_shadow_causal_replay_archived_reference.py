@@ -243,6 +243,31 @@ def main() -> int:
                         "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
                         "counterfactual_only": True,
                     })
+            event_pixel_shift_counterfactuals: list[dict[str, Any]] = []
+            for delta_px in (-4, -3, -2, -1, 1, 2, 3, 4):
+                for axis in ("x", "y"):
+                    shifted_events = archived_events.copy()
+                    col = 1 if axis == "x" else 2
+                    shifted_events[:, col] += delta_px
+                    inside = (
+                        (shifted_events[:, 1] >= 0) & (shifted_events[:, 1] < width)
+                        & (shifted_events[:, 2] >= 0) & (shifted_events[:, 2] < height)
+                    )
+                    shifted_estimate, _ = infer_event_state(
+                        shifted_events[inside], model_records["ours_old_checkpoint"], float(cutoff),
+                        width, height, camera_pose, intrinsics, fixed_height,
+                    )
+                    shifted_error = None
+                    if shifted_estimate.get("state_available"):
+                        shifted_xy = np.asarray(shifted_estimate["position_xyz_m"], dtype=np.float64)[:2]
+                        shifted_error = float(np.linalg.norm(shifted_xy - gt_position[:2]) * 1000.0)
+                    event_pixel_shift_counterfactuals.append({
+                        "event_pixel_shift_axis": axis,
+                        "event_pixel_shift_px": delta_px,
+                        "state_available": bool(shifted_estimate.get("state_available")),
+                        "position_error_xy_mm": shifted_error,
+                        "counterfactual_only": True,
+                    })
             for condition in ("shadow_on", "shadow_off"):
                 estimate = replay_summary["per_query_model_metrics"][query_index][condition]
                 condition_voxel = shadow_voxels[condition][query_index].astype(np.float64)
@@ -279,6 +304,7 @@ def main() -> int:
                 "archived_rate_scale_counterfactuals": count_scale_counterfactuals,
                 "single_bin_replacement_counterfactuals": bin_replacement_counterfactuals,
                 "spatial_shift_counterfactuals": spatial_shift_counterfactuals,
+                "event_pixel_shift_counterfactuals": event_pixel_shift_counterfactuals,
             }
             query_rows.append(record)
             for condition, estimate in conditions.items():
