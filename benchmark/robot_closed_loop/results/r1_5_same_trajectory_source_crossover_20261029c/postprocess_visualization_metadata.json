@@ -1,0 +1,935 @@
+{
+  "purpose": "post-inference overlays only; no rendering, inference, checkpoint changes, or model-input changes",
+  "region_analysis": "post-inference heatmap probability mass is area-weighted against the exact direct-frame segmentation; segmentation is not fed to either checkpoint",
+  "region_definitions": {
+    "target": "segmentation ID inferred from saved target pose displacement",
+    "robot": "saved segmentation pose IDs excluding the target",
+    "other_scene": "nonzero segmentation IDs outside target and robot lists",
+    "zero_seg_background": "segmentation ID zero; may contain floor/background pixels and is not a shadow mask",
+    "peak_region": "region with greatest area coverage in the heatmap argmax cell; mixed_boundary if no region covers at least half the cell",
+    "prediction_point_region": "post-inference segmentation class at the decoded predicted pixel"
+  },
+  "query_times_s": [
+    0.5755,
+    0.5825,
+    0.5855,
+    0.5905
+  ],
+  "episodes": {
+    "4": {
+      "label": "center_control",
+      "target_segmentation_id_inferred_post_inference_from_saved_pose_displacement": 2,
+      "target_pose_displacement_m": 0.023264893669438142,
+      "robot_segmentation_ids": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "visualization": "visualizations/episode_004_center_control_spatial_overlay.png",
+      "visualization_sha256": "90b1cd38f2519c793401713a22bc642200d97d6445fe0f8841543bb1190355a6",
+      "inputs": {
+        "direct_hdr_exact_state_frames.h5": "741df9c3c195df8b71db56cd9e827f255392209d72d5e7893a3bd96f1dacb491",
+        "four_group_inputs_heatmaps.npz": "af5490b7abe8f2c940ffa2ccf26c80fc89a4880583a274a9a4c1bbe51f792062",
+        "four_group_queries.csv": "bafd5589d46e654c17d36d6ead9e5c52a38ba9979d7ee914157416dcead7d1a4",
+        "same_state_source_cache.h5": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7"
+      }
+    },
+    "5": {
+      "label": "plus55_failure",
+      "target_segmentation_id_inferred_post_inference_from_saved_pose_displacement": 2,
+      "target_pose_displacement_m": 0.022741522562962684,
+      "robot_segmentation_ids": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "visualization": "visualizations/episode_005_plus55_failure_spatial_overlay.png",
+      "visualization_sha256": "0ee4725d652b60249845c166e0b8b48c5f7f9540dad0a59b213a0a85e38de072",
+      "inputs": {
+        "direct_hdr_exact_state_frames.h5": "388698ec73ee57aa37cb7a9980bbb8379950696c65c0102f641222214827e75d",
+        "four_group_inputs_heatmaps.npz": "7d697b68bcd1bc5ce50aba474a9830309aab0b2be7903a1c1ed0b64cabad5901",
+        "four_group_queries.csv": "c7474a0c93fa345ca3518280b99c46a5afa72b64c1bd136e3f7e76b39f71d9cf",
+        "same_state_source_cache.h5": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434"
+      }
+    }
+  },
+  "group_region_summary": {
+    "episode_004/ours_native_hdr/ours_native_hdr": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.9128728652993838,
+        "median": 0.9763500988483429,
+        "p95": 0.999979305267334
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.06266427827463114,
+        "median": 0.011971371714025736,
+        "p95": 0.17136614844202977
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.024462889547006247,
+        "median": 0.011368653737008572,
+        "p95": 0.12469931766390774
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 29,
+        "robot": 1
+      },
+      "prediction_point_region_counts": {
+        "target": 28,
+        "other_scene": 1,
+        "robot": 1
+      },
+      "planar_error_xy_mm": {
+        "mean": 29.640319497815597,
+        "p50": 12.293211841596477,
+        "p95": 78.11541019535427,
+        "max": 312.2836552325933
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 36.61182461223505,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.8987305164337158,
+          "heatmap_mass_robot": 0.06600463390350342,
+          "heatmap_mass_other_scene": 0.035265468060970306,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 152.89747619628906,
+          "pred_v_px": 92.84033966064453,
+          "peak_u_px": 157.5,
+          "peak_v_px": 99.375
+        },
+        "50": {
+          "query_s": 0.5825,
+          "planar_error_xy_mm": 66.77148426341252,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.8209921717643738,
+          "heatmap_mass_robot": 0.11681443452835083,
+          "heatmap_mass_other_scene": 0.06219344586133957,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 148.87335205078125,
+          "pred_v_px": 86.05705261230469,
+          "peak_u_px": 157.5,
+          "peak_v_px": 95.625
+        },
+        "100": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 312.2836552325933,
+          "prediction_point_region": "robot",
+          "peak_region": "robot",
+          "heatmap_mass_target": 0.245191290974617,
+          "heatmap_mass_robot": 0.7306278944015503,
+          "heatmap_mass_other_scene": 0.02418176457285881,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 111.33059692382812,
+          "pred_v_px": 50.33543014526367,
+          "peak_u_px": 92.5,
+          "peak_v_px": 35.625
+        }
+      }
+    },
+    "episode_004/ours_native_hdr/v2e": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.8890911906957626,
+        "median": 0.9603435397148132,
+        "p95": 0.999385604262352
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.08765552015865978,
+        "median": 0.021401406731456518,
+        "p95": 0.3687911272048941
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.02325425311428262,
+        "median": 0.014605115633457899,
+        "p95": 0.09888499788939953
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 29,
+        "robot": 1
+      },
+      "prediction_point_region_counts": {
+        "target": 28,
+        "robot": 2
+      },
+      "planar_error_xy_mm": {
+        "mean": 35.21101767139057,
+        "p50": 16.517434856260802,
+        "p95": 114.62761064687258,
+        "max": 225.7911485920778
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5825,
+          "planar_error_xy_mm": 72.56157015868581,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.7879497408866882,
+          "heatmap_mass_robot": 0.18936669826507568,
+          "heatmap_mass_other_scene": 0.02268507331609726,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 155.47540283203125,
+          "pred_v_px": 84.50636291503906,
+          "peak_u_px": 157.5,
+          "peak_v_px": 91.875
+        },
+        "50": {
+          "query_s": 0.5825,
+          "planar_error_xy_mm": 72.56157015868581,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.7879497408866882,
+          "heatmap_mass_robot": 0.18936669826507568,
+          "heatmap_mass_other_scene": 0.02268507331609726,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 155.47540283203125,
+          "pred_v_px": 84.50636291503906,
+          "peak_u_px": 157.5,
+          "peak_v_px": 91.875
+        },
+        "100": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 149.0452801372076,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.4288896322250366,
+          "heatmap_mass_robot": 0.5155929327011108,
+          "heatmap_mass_other_scene": 0.05551886558532715,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 146.4605712890625,
+          "pred_v_px": 70.83709716796875,
+          "peak_u_px": 157.5,
+          "peak_v_px": 99.375
+        }
+      }
+    },
+    "episode_004/direct_hdr/ours_native_hdr": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.7908318330844243,
+        "median": 0.9163614809513092,
+        "p95": 0.9934507548809052
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.059151102571437755,
+        "median": 0.030161052942276,
+        "p95": 0.17904960662126532
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.15001736509924132,
+        "median": 0.04660050943493843,
+        "p95": 0.6805614441633216
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 27,
+        "other_scene": 3
+      },
+      "prediction_point_region_counts": {
+        "target": 22,
+        "other_scene": 7,
+        "robot": 1
+      },
+      "planar_error_xy_mm": {
+        "mean": 76.8487235624286,
+        "p50": 46.453350310439745,
+        "p95": 318.2836924300324,
+        "max": 374.5263852322274
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5775,
+          "planar_error_xy_mm": 50.490127556766694,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.8766254186630249,
+          "heatmap_mass_robot": 0.0704587772488594,
+          "heatmap_mass_other_scene": 0.05291654169559479,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 161.158935546875,
+          "pred_v_px": 89.30028533935547,
+          "peak_u_px": 167.5,
+          "peak_v_px": 95.625
+        },
+        "50": {
+          "query_s": 0.5775,
+          "planar_error_xy_mm": 50.490127556766694,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.8766254186630249,
+          "heatmap_mass_robot": 0.0704587772488594,
+          "heatmap_mass_other_scene": 0.05291654169559479,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 161.158935546875,
+          "pred_v_px": 89.30028533935547,
+          "peak_u_px": 167.5,
+          "peak_v_px": 95.625
+        },
+        "100": {
+          "query_s": 0.579,
+          "planar_error_xy_mm": 121.02509758143185,
+          "prediction_point_region": "other_scene",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.5284709334373474,
+          "heatmap_mass_robot": 0.11464106291532516,
+          "heatmap_mass_other_scene": 0.35688796639442444,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 135.5964813232422,
+          "pred_v_px": 76.80563354492188,
+          "peak_u_px": 162.5,
+          "peak_v_px": 95.625
+        }
+      }
+    },
+    "episode_004/direct_hdr/v2e": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.9994905610879262,
+        "median": 0.9997007250785828,
+        "p95": 0.9998512864112854
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.00010714165997948537,
+        "median": 4.17918181483401e-05,
+        "p95": 0.0003856264156638643
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.0004024362329801079,
+        "median": 0.00023746307124383748,
+        "p95": 0.001084581628674641
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 30
+      },
+      "prediction_point_region_counts": {
+        "target": 30
+      },
+      "planar_error_xy_mm": {
+        "mean": 5.166452598474053,
+        "p50": 4.7672265525558775,
+        "p95": 8.811686379651954,
+        "max": 11.582108486043687
+      },
+      "first_error_threshold_crossings": {
+        "25": null,
+        "50": null,
+        "100": null
+      }
+    },
+    "episode_005/ours_native_hdr/ours_native_hdr": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.9291797502276798,
+        "median": 0.9983319640159607,
+        "p95": 0.9995663672685623
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.048152252526779196,
+        "median": 0.00036229581746738404,
+        "p95": 0.21214330233633433
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.02266836563309577,
+        "median": 0.001158046507043764,
+        "p95": 0.12433414049446569
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 29,
+        "robot": 1
+      },
+      "prediction_point_region_counts": {
+        "target": 28,
+        "other_scene": 1,
+        "robot": 1
+      },
+      "planar_error_xy_mm": {
+        "mean": 27.472002746792096,
+        "p50": 7.801289903957471,
+        "p95": 82.34187565271131,
+        "max": 424.05614327085505
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 99.37070215872684,
+          "prediction_point_region": "other_scene",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.44669851660728455,
+          "heatmap_mass_robot": 0.3490145206451416,
+          "heatmap_mass_other_scene": 0.2042873352766037,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 205.65782165527344,
+          "pred_v_px": 79.04524230957031,
+          "peak_u_px": 217.5,
+          "peak_v_px": 99.375
+        },
+        "50": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 99.37070215872684,
+          "prediction_point_region": "other_scene",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.44669851660728455,
+          "heatmap_mass_robot": 0.3490145206451416,
+          "heatmap_mass_other_scene": 0.2042873352766037,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 205.65782165527344,
+          "pred_v_px": 79.04524230957031,
+          "peak_u_px": 217.5,
+          "peak_v_px": 99.375
+        },
+        "100": {
+          "query_s": 0.586,
+          "planar_error_xy_mm": 424.05614327085505,
+          "prediction_point_region": "robot",
+          "peak_region": "robot",
+          "heatmap_mass_target": 0.011571983806788921,
+          "heatmap_mass_robot": 0.9629209041595459,
+          "heatmap_mass_other_scene": 0.02550722472369671,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 172.79501342773438,
+          "pred_v_px": 37.410125732421875,
+          "peak_u_px": 167.5,
+          "peak_v_px": 35.625
+        }
+      }
+    },
+    "episode_005/ours_native_hdr/v2e": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.875883907576402,
+        "median": 0.9786920845508575,
+        "p95": 0.9976976066827774
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.04920738671183547,
+        "median": 0.0027868591714650393,
+        "p95": 0.15644247159361835
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.07490935185536121,
+        "median": 0.016149410046637058,
+        "p95": 0.47353689074516286
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 27,
+        "robot": 1,
+        "other_scene": 2
+      },
+      "prediction_point_region_counts": {
+        "target": 26,
+        "robot": 3,
+        "other_scene": 1
+      },
+      "planar_error_xy_mm": {
+        "mean": 49.33280035281809,
+        "p50": 22.570046444489293,
+        "p95": 187.31712871230104,
+        "max": 417.1504284000362
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 169.13588107625685,
+          "prediction_point_region": "robot",
+          "peak_region": "robot",
+          "heatmap_mass_target": 0.37584763765335083,
+          "heatmap_mass_robot": 0.5924267768859863,
+          "heatmap_mass_other_scene": 0.03172532096505165,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 180.058349609375,
+          "pred_v_px": 67.5388412475586,
+          "peak_u_px": 167.5,
+          "peak_v_px": 43.125
+        },
+        "50": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 169.13588107625685,
+          "prediction_point_region": "robot",
+          "peak_region": "robot",
+          "heatmap_mass_target": 0.37584763765335083,
+          "heatmap_mass_robot": 0.5924267768859863,
+          "heatmap_mass_other_scene": 0.03172532096505165,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 180.058349609375,
+          "pred_v_px": 67.5388412475586,
+          "peak_u_px": 167.5,
+          "peak_v_px": 43.125
+        },
+        "100": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 169.13588107625685,
+          "prediction_point_region": "robot",
+          "peak_region": "robot",
+          "heatmap_mass_target": 0.37584763765335083,
+          "heatmap_mass_robot": 0.5924267768859863,
+          "heatmap_mass_other_scene": 0.03172532096505165,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 180.058349609375,
+          "pred_v_px": 67.5388412475586,
+          "peak_u_px": 167.5,
+          "peak_v_px": 43.125
+        }
+      }
+    },
+    "episode_005/direct_hdr/ours_native_hdr": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.7803257728616396,
+        "median": 0.9211364984512329,
+        "p95": 0.9970147490501404
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.04174624390822525,
+        "median": 0.031239371746778488,
+        "p95": 0.10548565424978731
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.17792857885554744,
+        "median": 0.03256089519709349,
+        "p95": 0.7271660357713698
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 27,
+        "other_scene": 3
+      },
+      "prediction_point_region_counts": {
+        "robot": 9,
+        "target": 20,
+        "other_scene": 1
+      },
+      "planar_error_xy_mm": {
+        "mean": 71.16138658495575,
+        "p50": 20.574178605297448,
+        "p95": 286.1576637980419,
+        "max": 327.75551741614026
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 118.91965136336934,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.36945468187332153,
+          "heatmap_mass_robot": 0.10939961671829224,
+          "heatmap_mass_other_scene": 0.521145761013031,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 231.41961669921875,
+          "pred_v_px": 78.1586685180664,
+          "peak_u_px": 197.5,
+          "peak_v_px": 103.125
+        },
+        "50": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 118.91965136336934,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.36945468187332153,
+          "heatmap_mass_robot": 0.10939961671829224,
+          "heatmap_mass_other_scene": 0.521145761013031,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 231.41961669921875,
+          "pred_v_px": 78.1586685180664,
+          "peak_u_px": 197.5,
+          "peak_v_px": 103.125
+        },
+        "100": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 118.91965136336934,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.36945468187332153,
+          "heatmap_mass_robot": 0.10939961671829224,
+          "heatmap_mass_other_scene": 0.521145761013031,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 231.41961669921875,
+          "pred_v_px": 78.1586685180664,
+          "peak_u_px": 197.5,
+          "peak_v_px": 103.125
+        }
+      }
+    },
+    "episode_005/direct_hdr/v2e": {
+      "query_count": 30,
+      "heatmap_mass_target": {
+        "mean": 0.9999706447124481,
+        "median": 0.9999796450138092,
+        "p95": 0.999995493888855
+      },
+      "heatmap_mass_robot": {
+        "mean": 1.0717247122708311e-05,
+        "median": 4.94600453748717e-06,
+        "p95": 3.975105537392658e-05
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 1.871067220236e-05,
+        "median": 1.420083390257787e-05,
+        "p95": 5.737293085985582e-05
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 30
+      },
+      "prediction_point_region_counts": {
+        "target": 30
+      },
+      "planar_error_xy_mm": {
+        "mean": 8.364053687986035,
+        "p50": 7.986913536501938,
+        "p95": 13.592613823166019,
+        "max": 15.427805104933748
+      },
+      "first_error_threshold_crossings": {
+        "25": null,
+        "50": null,
+        "100": null
+      }
+    },
+    "all_episodes/ours_native_hdr/ours_native_hdr": {
+      "query_count": 60,
+      "heatmap_mass_target": {
+        "mean": 0.9210263077635318,
+        "median": 0.9968482255935669,
+        "p95": 0.9999702990055084
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.05540826540070517,
+        "median": 0.0006012101366650313,
+        "p95": 0.20908476784825283
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.023565627590051007,
+        "median": 0.002232608385384083,
+        "p95": 0.14827438369393342
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 58,
+        "robot": 2
+      },
+      "prediction_point_region_counts": {
+        "target": 56,
+        "other_scene": 2,
+        "robot": 2
+      },
+      "planar_error_xy_mm": {
+        "mean": 28.556161122303855,
+        "p50": 9.450841234446342,
+        "p95": 87.99549904062316,
+        "max": 424.05614327085505
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 36.61182461223505,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.8987305164337158,
+          "heatmap_mass_robot": 0.06600463390350342,
+          "heatmap_mass_other_scene": 0.035265468060970306,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 152.89747619628906,
+          "pred_v_px": 92.84033966064453,
+          "peak_u_px": 157.5,
+          "peak_v_px": 99.375
+        },
+        "50": {
+          "query_s": 0.5825,
+          "planar_error_xy_mm": 66.77148426341252,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.8209921717643738,
+          "heatmap_mass_robot": 0.11681443452835083,
+          "heatmap_mass_other_scene": 0.06219344586133957,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 148.87335205078125,
+          "pred_v_px": 86.05705261230469,
+          "peak_u_px": 157.5,
+          "peak_v_px": 95.625
+        },
+        "100": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 312.2836552325933,
+          "prediction_point_region": "robot",
+          "peak_region": "robot",
+          "heatmap_mass_target": 0.245191290974617,
+          "heatmap_mass_robot": 0.7306278944015503,
+          "heatmap_mass_other_scene": 0.02418176457285881,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 111.33059692382812,
+          "pred_v_px": 50.33543014526367,
+          "peak_u_px": 92.5,
+          "peak_v_px": 35.625
+        }
+      }
+    },
+    "all_episodes/ours_native_hdr/v2e": {
+      "query_count": 60,
+      "heatmap_mass_target": {
+        "mean": 0.8824875491360823,
+        "median": 0.9714488983154297,
+        "p95": 0.998957097530365
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.06843145343524763,
+        "median": 0.0071632948238402605,
+        "p95": 0.20567800998687652
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.04908180248482192,
+        "median": 0.016149410046637058,
+        "p95": 0.11656206473708053
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 56,
+        "robot": 2,
+        "other_scene": 2
+      },
+      "prediction_point_region_counts": {
+        "target": 54,
+        "robot": 5,
+        "other_scene": 1
+      },
+      "planar_error_xy_mm": {
+        "mean": 42.271909012104324,
+        "p50": 19.1374349999845,
+        "p95": 174.71021177221064,
+        "max": 417.1504284000362
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5825,
+          "planar_error_xy_mm": 72.56157015868581,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.7879497408866882,
+          "heatmap_mass_robot": 0.18936669826507568,
+          "heatmap_mass_other_scene": 0.02268507331609726,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 155.47540283203125,
+          "pred_v_px": 84.50636291503906,
+          "peak_u_px": 157.5,
+          "peak_v_px": 91.875
+        },
+        "50": {
+          "query_s": 0.5825,
+          "planar_error_xy_mm": 72.56157015868581,
+          "prediction_point_region": "target",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.7879497408866882,
+          "heatmap_mass_robot": 0.18936669826507568,
+          "heatmap_mass_other_scene": 0.02268507331609726,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 155.47540283203125,
+          "pred_v_px": 84.50636291503906,
+          "peak_u_px": 157.5,
+          "peak_v_px": 91.875
+        },
+        "100": {
+          "query_s": 0.5855,
+          "planar_error_xy_mm": 149.0452801372076,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.4288896322250366,
+          "heatmap_mass_robot": 0.5155929327011108,
+          "heatmap_mass_other_scene": 0.05551886558532715,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 146.4605712890625,
+          "pred_v_px": 70.83709716796875,
+          "peak_u_px": 157.5,
+          "peak_v_px": 99.375
+        }
+      }
+    },
+    "all_episodes/direct_hdr/ours_native_hdr": {
+      "query_count": 60,
+      "heatmap_mass_target": {
+        "mean": 0.785578802973032,
+        "median": 0.9168860614299774,
+        "p95": 0.9957794338464737
+      },
+      "heatmap_mass_robot": {
+        "mean": 0.0504486732398315,
+        "median": 0.031189480796456337,
+        "p95": 0.15466032326221466
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.16397297197739438,
+        "median": 0.04595780745148659,
+        "p95": 0.7357006192207336
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 54,
+        "other_scene": 6
+      },
+      "prediction_point_region_counts": {
+        "target": 42,
+        "other_scene": 8,
+        "robot": 10
+      },
+      "planar_error_xy_mm": {
+        "mean": 74.00505507369218,
+        "p50": 32.11647456694002,
+        "p95": 309.9718694563572,
+        "max": 374.5263852322274
+      },
+      "first_error_threshold_crossings": {
+        "25": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 118.91965136336934,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.36945468187332153,
+          "heatmap_mass_robot": 0.10939961671829224,
+          "heatmap_mass_other_scene": 0.521145761013031,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 231.41961669921875,
+          "pred_v_px": 78.1586685180664,
+          "peak_u_px": 197.5,
+          "peak_v_px": 103.125
+        },
+        "50": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 118.91965136336934,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.36945468187332153,
+          "heatmap_mass_robot": 0.10939961671829224,
+          "heatmap_mass_other_scene": 0.521145761013031,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 231.41961669921875,
+          "pred_v_px": 78.1586685180664,
+          "peak_u_px": 197.5,
+          "peak_v_px": 103.125
+        },
+        "100": {
+          "query_s": 0.5755,
+          "planar_error_xy_mm": 118.91965136336934,
+          "prediction_point_region": "robot",
+          "peak_region": "target",
+          "heatmap_mass_target": 0.36945468187332153,
+          "heatmap_mass_robot": 0.10939961671829224,
+          "heatmap_mass_other_scene": 0.521145761013031,
+          "heatmap_mass_zero_seg_background": 0.0,
+          "pred_u_px": 231.41961669921875,
+          "pred_v_px": 78.1586685180664,
+          "peak_u_px": 197.5,
+          "peak_v_px": 103.125
+        }
+      }
+    },
+    "all_episodes/direct_hdr/v2e": {
+      "query_count": 60,
+      "heatmap_mass_target": {
+        "mean": 0.9997306029001872,
+        "median": 0.9998626410961151,
+        "p95": 0.9999951750040055
+      },
+      "heatmap_mass_robot": {
+        "mean": 5.892945355109684e-05,
+        "median": 2.0809597117477097e-05,
+        "p95": 0.0003436853512539528
+      },
+      "heatmap_mass_other_scene": {
+        "mean": 0.00021057345259123394,
+        "median": 8.859975059749559e-05,
+        "p95": 0.0008911950833862643
+      },
+      "heatmap_mass_zero_seg_background": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "peak_region_counts": {
+        "target": 60
+      },
+      "prediction_point_region_counts": {
+        "target": 60
+      },
+      "planar_error_xy_mm": {
+        "mean": 6.765253143230043,
+        "p50": 6.5686390325523565,
+        "p95": 11.735423739524952,
+        "max": 15.427805104933748
+      },
+      "first_error_threshold_crossings": {
+        "25": null,
+        "50": null,
+        "100": null
+      }
+    }
+  },
+  "code_commit": "15b36170b9f33dcbf80717c6d22c70c1a54eb9de",
+  "script_sha256": "33120259bba56e1be2291527d0d85fdf3a7d80352c7a059b6a03be4374ab4f9b"
+}

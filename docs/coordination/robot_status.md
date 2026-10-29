@@ -1,10 +1,10 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-25（Asia/Tokyo）
-**阶段：** R1.5 正在核实光度时间变化与 renderer sampling contract。episode 004/005 CPU 缓存诊断显示：固定地面亮度变化近似无色彩偏移；方块投影移动约 3.43 mm、机器人投影近乎不动；44.1%/58.4% 地面事件落在按 Genesis 默认光照解析投影的方块阴影边缘 5 px 内。穷举平移同一轮廓后，真实位置在空间 null 的高端（上尾比例 2.17%/2.53%），但其他位置也能达到相同分数，因此这是有限的空间特异性证据，不是阴影因果证明。相同理想 DVS 对 Direct-HDR 亮度在十个 1 ms 调用均产生事件，而 Ours 重建亮度把其全部挤在首个调用，定位出一个光度时间处理差异，但尚未证明它单独导致网络定位错误。benchmark 层现已接入 `VisOptions.shadow` 消融入口，并准备同缓存状态开/关对照；未在 g1 实测。最新一次串行 SSH 只读预检连接超时，远端命令未执行；结果、哈希和复跑入口见 [`r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1`](../../benchmark/robot_closed_loop/results/r1_5_achromatic_shadow_signature_cpu_20261024d_rerun1/)、[`r1_5_shadow_edge_spatial_null_cpu_20261024g`](../../benchmark/robot_closed_loop/results/r1_5_shadow_edge_spatial_null_cpu_20261024g/) 和下方 `R1.5 matched shadow intervention readiness`。HDR overlay 运行时样本/resolve 仍未核验。Frozen core 未改。
+**更新时间：** 2026-10-29（Asia/Tokyo）
+**阶段：** R1.5 同轨迹事件来源交叉对照已在 g1 完成（开发诊断，非正式排名）。固定 episode 004/005 的物理状态，四组使用两个事件来源和两个冻结 checkpoint。直接渲染事件使 Ours checkpoint 在两条片段都显著变差，而 V2E checkpoint 在直接渲染上保持较低误差；这证明已测片段存在明显来源×checkpoint 交互，但不能据此断言哪种来源更真实。此前 shadow×MSAA 消融和 shadow 因果回放分别证明阴影/MSAA会改变事件，也显示去阴影对旧 checkpoint 严重域外；它们尚未单独解释本次来源交互。Frozen core、模型、控制器均未改；未训练、未排名。最新结果、完整 g1 原始输入/输出地址、运行命令与校验清单见下方 [`同轨迹交叉对照报告`](../../benchmark/robot_closed_loop/results/r1_5_same_trajectory_source_crossover_20261029c/README.md)。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
-**最新运行状态（2026-10-25）：** 10/24 的 SSH 阻塞已解除。候选实现 `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已同步到 g1；当前实验分支与状态文档均在 `f8563d2fee7ec62881971c14489a219cb101795a`，较 d390 只有协调文档变化。两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最新 GPU 复查六张卡都有运行进程，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
+**历史运行状态（截至 2026-10-25；后续结果见文末）：** 10/24 的 SSH 阻塞已解除。候选实现 `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已同步到 g1；当前实验分支与状态文档均在 `f8563d2fee7ec62881971c14489a219cb101795a`，较 d390 只有协调文档变化。两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最新 GPU 复查六张卡都有运行进程，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
 
 ## R1.5 photometric timing / sampling contract（2026-10-24；缓存证据核验与接口草案）
 
@@ -1165,12 +1165,20 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **建议下一步：** 在一个中心正常片段和一个 +55 mm 失败片段上，复用相同物理状态、相机、时间轴与标签，生成同轨迹的 Ours 事件和 Direct-HDR 事件，维护各自完整因果 comparator 历史；冻结现有模型，逐时刻比五-bin 输入、热图、位置和置信度，并可视化完整机械臂/阴影。结果可区分“事件来源变化导致 checkpoint 失配”与“训练/模型本身不泛化”。需要渲染时先按共享资源规则取得明确 GPU 分配；再视证据决定是否做小规模条件匹配重训。正式独立测试继续封存。
 
 
-#### R1.5 同轨迹事件来源交叉对照（2026-10-29；准备/待运行）
+#### R1.5 同轨迹事件来源交叉对照（2026-10-29；已完成，开发诊断）
 
-- **轨迹已核实：**选用原始 episode 004（中心，0.4 m/s，seed `2026103424`）和 episode 005（+55 mm，0.4 m/s，seed `2026103425`）。两条不是同 seed，而是各自固定的物理轨迹；本对照内每条轨迹的两个事件来源共用完全相同的已记录状态。原始 state trace SHA256 为 `caa5b7b7d8147c032590b8391112ef833bea47d34b07e1f533b92b4351194947` 和 `310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c`。
-- **连续范围与数据：**保存的 exact-state trace window 覆盖 `0.5505–0.6205 s`；拟测故障连续片段为 `0.5505–0.6005 s`，包含 59 个实际状态行，采样间隔 0.5–1.0 ms（中位 1.0 ms）。全部实际查询点选为 `0.5755–0.6005 s` 内的 30 个 exact trace rows；每个查询有完整 25 ms causal window。该片段开始时每条来源各初始化一次并连续更新，不在查询窗口重置；**边界是 0.5505 s，未重建本片段之前的整集 comparator 历史**，这一限制会随结果明确报告。
-- **缓存充足/缺口：**同状态 source cache 保存原生 linear-HDR 100 Hz endpoint 的 radiance、depth、segmentation、camera pose、对象 pose；trace window 保存 Panda/target 精确状态。场景相机与灯光由锁定 scene config（SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`）固定。完整 59 张 direct HDR 图像/raw events 未保留，过去只留了对应五-bin 体素摘要；本轮最小补采是从相同 exact rows 离线直接渲染 59 帧，不推进物理、不重跑场景 rollout。
-- **冻结输入：**两个既有 checkpoint 保持原样：Ours `6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2`、V2E `a7140b63f3b5042b0dc0ed7cc3aa2974c4e9859db919f318826358883f7ce8a0`。输入处理仍是既有五个 5 ms bin、64×64、log1p counts；DVS 为 physical-log、增益 1、offset 0、floor 1e-6、ON/OFF threshold 0.2，noise/bandwidth/refractory 关闭且不做逐帧缩放。两来源各自完整维护连续事件状态；不删事件、不用 GT crop。Ours 生成内部可用几何缓存；GT/segmentation/depth 不进下游网络，GT 坐标及全机器人/目标/阴影关联仅用于推理后的评分与可视化。
-- **脚本/配置：**新增 [`run_r1_5_same_trajectory_source_crossover.py`](../../benchmark/robot_closed_loop/diagnostics/run_r1_5_same_trajectory_source_crossover.py) 和 [`r1_5_same_trajectory_source_crossover_20261029a.json`](../../benchmark/robot_closed_loop/configs/r1_5_same_trajectory_source_crossover_20261029a.json)。脚本复用已有 frozen plugin、exact-state renderer、DVS 与 `five_bin_tensor`/模型 inference helpers；它将输出两来源 raw events、59 张 Direct-HDR radiance/显示/分割帧、四组逐时刻 voxel/log1p input/raw heatmap、pixel 与平面毫米误差 CSV、时间×来源×checkpoint 热图上下文图和哈希清单。当前只完成本地静态语法检查和数据合同核对，远端渲染尚未启动。
-- **资源门：**g1 实时只读快照（2026-10-29）显示六张 GPU 当时均为 0% 利用率、显存 1–2 MiB、无 compute PID；CPU load `0.35/1.13/1.29`、可用 RAM `492 GiB`、NFS 可用 `8.8 TiB`。该主机未发现 Slurm/PBS/LSF 命令或项目 resource registry；不能把快照本身当预约。本次准备使用 GPU0 UUID `GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23` 做有界 direct-render 诊断，并在启动前在共享 notes 登记 run ID/UUID/owner/PID/start time，随后再复核 GPU0 没有新占用；若预约/负载发生冲突则不启动并记录。
-- **边界：**不训练、不排名、不改 decoder/controller/core，不启动物理 rollout。运行 commit、source/config/checkpoint/hash、输出目录、资源与退出状态在任务结束后补入本节；任何结果都只回答“固定这两条物理运动时，换事件来源会否触发或消除定位错误”。
+- **问题与设计：**在完全相同的两条已保存物理轨迹上，各跑“原生 HDR 事件 / 高频 Direct-HDR 事件 × Ours checkpoint / V2E checkpoint”四组。使用 episode 004 中央、episode 005 横向 +55 mm，速度均为 0.4 m/s。没有物理步进、重训、checkpoint 选择、控制器修改或正式排名。
+- **时间与状态：**从相同保存状态 `0.5505–0.6005 s` 离线渲染；59 个实际非均匀状态行，间隔 0.5–1.0 ms（中位 1 ms）；每条轨迹 30 个精确查询时刻，合计 240 条 group/query 记录。两来源独立初始化 DVS 历史并连续运行，不按窗口重置；原生事件历史在 0.5505 s 起步，未重建该时刻以前的整集历史。原生 HDR 缓存与直接渲染在六个 100 Hz 端点的辐亮度、深度有效域和分割完全相同。
+- **结果（平面 XY mm，均值 / P95 / 最大值，每格 30 个相邻查询，不是 30 个独立样本）：**
+
+  | 轨迹 | Native→Ours | Native→V2E | Direct-HDR→Ours | Direct-HDR→V2E |
+  |---|---:|---:|---:|---:|
+  | 中央 ep004 | 29.6 / 78.1 / 312.3 | 35.2 / 114.6 / 225.8 | 76.9 / 318.3 / 374.5 | 5.2 / 8.8 / 11.6 |
+  | +55 mm ep005 | 27.5 / 82.3 / 424.1 | 49.3 / 187.3 / 417.2 | 71.2 / 286.2 / 327.8 | 8.4 / 13.6 / 15.4 |
+
+  更换来源后 Ours checkpoint 在两条轨迹上都更差：逐时刻 Direct−Native 误差为正的比例分别 24/30、27/30，均值差 +47.2、+43.7 mm。V2E checkpoint 则在直接渲染上更好：误差更低分别 26/30、28/30，均值差 −30.0、−41.0 mm。因此这两条片段直接支持 checkpoint×事件来源交互；不表示哪种事件来源物理上更真实，也不构成方法排名。
+- **首错及空间归因：**Direct-HDR→Ours 在中央片段首次超过 50 mm 是 0.5775 s；+55 mm 首查询 0.5755 s 已为 118.9 mm。后处理热图质量分析显示，两条直接输入合计 60 个查询中，预测热图峰值在目标分割区 54 次，但 soft-argmax 解码点有 10 次落在机器人、8 次落在其它非零场景分割区。+55 首错时，峰值仍在目标区，热图质量约 36.9% 在目标、10.9% 在机器人、52.1% 在其它场景分割区，解码点落在机器人。`other_scene` 不是阴影标签，不能据此把误差归因于阴影。中央片段首错时解码点和峰仍可与目标分割重叠，但固定平面回投影 XY 已差 50.5 mm；图像分割重叠不等于 3D 平面坐标正确。像素误差另列 CSV，未与毫米误差混用。
+- **事件差异与成本：**原生插件事件数 ep004/005 为 29,714/28,948；Direct-HDR 为 3,539/5,739。共同 response 参数下的事件率和时间/空间模式差异是候选解释，但本轮没有逐链路替换，未定位具体生成环节。两集 render+inference 共 70.36 s；逐集原生生成 3.55/3.37 s、Direct-HDR DVS 0.56/0.70 s、四组推理 1.23/1.26 s。渲染使用 g1 GPU0（UUID `GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23`），推理 CPU；作业已退出、资源预约已释放。
+- **边界与缺口：**使用精确保存的 70 ms `trace_window.jsonl` 真实状态行。完整 state trace 文件未暂存，full-trace SHA 只从 episode metadata 读取，因而本轮不能将窗口行独立对照完整文件；物理轨迹通过窗口缓存和 episode 声明关联。两条诊断轨迹、单一速度，只能说明已测片段的来源交互。无 GT、分割、深度、未来状态进入模型；它们只用于生成端几何和推理后的评分/区域分析。frozen core 与控制器保持不变。
+- **复现与证据：**运行代码 commit `5e0b918fe4d5e9244c6d5530d5a0e867fd70397e`，runner SHA256 `6ba1771848c6d24f15fcb58ff89a1eb7ec5c20ea8723a5c66e1705004d295ea2`；区域后处理 commit `15b36170b9f33dcbf80717c6d22c70c1a54eb9de`，脚本 SHA256 `33120259bba56e1be2291527d0d85fdf3a7d80352c7a059b6a03be4374ab4f9b`。实验配置 SHA256 `2fa77e82bb6e8de8ecfb7e09bee3e9b2926b6e5fc9a7c173d4c9c067a9cf4267`；scene/control 配置及 checkpoint/input 哈希见结果 README。紧凑逐时刻表、区域归因 CSV、摘要、两张叠图和代码复跑命令在 [`r1_5_same_trajectory_source_crossover_20261029c`](../../benchmark/robot_closed_loop/results/r1_5_same_trajectory_source_crossover_20261029c/README.md)。原始事件、完整输入张量/热图与 HDF5 保存在 g1：`/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-source-crossover-20261029a/benchmark/robot_closed_loop/results/r1_5_same_trajectory_source_crossover_20261029c/`；完整远端 `SHA256SUMS` 文件 SHA256 `1711888ffdbb207de51f84d79c42ec2a79c26f4c510b43b9803c95f3a07f10a5`。状态文件已复制到 Windows Desktop 的 `robot_status.md`，另有一页实验摘要便于转发。
+- **建议下一步：**在这两条相同已渲染轨迹上，每次只替换生成链一个环节，比较事件时空分布及输入张量，先解释“native 比 Direct 多出约 5–8 倍事件”和 checkpoint 的相反来源敏感性。不要仅据两条轨迹重训，也不要启动正式排名；若定位出明确链路差异，再设计一个小而匹配的验证交给研究侧审查。
