@@ -19,7 +19,9 @@ The six query cutoffs per episode are exact rows from the saved trace: 0.5905, 0
 
 At these late cutoffs, shadow-on event tensors were similar to the archived reference (mean five-bin cosine 0.928 for episode 004 and 0.909 for episode 005); shadow-off cosine was 0.130 and 0.327. Therefore shadow removal strongly changes the event input and degrades this checkpoint on these clips. This does **not** show that shadows are the sole cause of the earlier +55 mm error spikes, nor that shadows generally help perception. The checkpoint is an old development probe, and the replay does not test a new closed-loop rollout.
 
-The early interval around 0.5855–0.5905 s is still unresolved. Experiment `20261029d` uses that exact trace interval as the next targeted shadow-on/off replay, then will compare against archived 2 kHz events at the same query times.
+The follow-up on the early interval found the same pattern: on episode 005, archived 2 kHz events give 58.7 mm mean error, current direct render with shadows on gives 16.2 mm, and shadows off gives 586.2 mm. E then matched the DVS start time to the archive; direct shadow-on error improved to 10.6 mm, but archived error stayed at 58.7 mm. Shadow removal is strongly harmful to this checkpoint, while shadow presence alone does not reproduce the archived error spikes. See the sibling D/E reports for query-level results and hashes.
+
+E's matched initialization test establishes that DVS warm-up history is a contributor to the fresh replay but not the sole source of the archive mismatch. The next analysis uses evaluator-only regional event counterfactuals to test whether the failure depends on interactions between target, robot, and floor event structure.
 
 ## Cost and provenance
 

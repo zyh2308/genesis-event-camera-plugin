@@ -1,0 +1,445 @@
+{
+  "status": "PASS",
+  "experiment_id": "r1_5_event_region_ablation_20261029b",
+  "scope": "offline evaluator-only region ablation of archived and fresh direct event streams; no physics or rendering",
+  "code_commit": "2e59dc378b569a9e922e2e9606f8e7cc5b8bafb4",
+  "checkpoint_sha256": {
+    "ours_old_checkpoint": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9"
+  },
+  "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "input_hashes": {
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019b_realrender_g1/episode_004/archived_direct_hdr_2khz_reference_events.npz": "8bfc92c30bf9cd43fc4ed5a8d4b9ec709faadd5303f5bb6f4efd935d706ac882",
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_5_shadow_perception_causal_replay_20261029e/episode_004_shadow_on_raw_events.npz": "cde78f7de1781d197f2a79dc963932b2f74b5aae2050493ee0e47a806f111487",
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_5_consistency_candidates_20261019b_realrender_g1/episode_005/archived_direct_hdr_2khz_reference_events.npz": "263b313ba2aafe2b55457d646323dc1d9ad3f42eaf082d501c0d4e950e74765a",
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_5_shadow_perception_causal_replay_20261029e/episode_005_shadow_on_raw_events.npz": "c46f7bc28504ed9f43e76c334533534291d0de64b0c0f9bd429fa1a49eab58d8"
+  },
+  "cache_hashes": {
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_004/same_state_source_cache.h5": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_004/trace_window.jsonl": "3f07e4e7a0846827be7a3d5decf7c6197d77ca0237bacff55f2c45a70a04349c",
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_005/same_state_source_cache.h5": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+    "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_005/trace_window.jsonl": "f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d"
+  },
+  "query_times_s": [
+    0.5855,
+    0.586,
+    0.5865,
+    0.5875,
+    0.5885,
+    0.5895,
+    0.5905
+  ],
+  "region_definition": {
+    "target": "unique moving segmentation pose ID, verified from cached pose displacement",
+    "robot": "other segmentation pose IDs",
+    "floor": "segmentation label 1",
+    "other_or_unknown": "remaining labels",
+    "mask_cadence": "nearest of cached 10 ms masks"
+  },
+  "boundary": "segmentation is used only to filter events in an offline diagnostic ablation; it is never supplied to the network or proposed as a perception input",
+  "event_region_totals": {
+    "004_archived": {
+      "events_in_query_union": 2670,
+      "events_by_region": {
+        "target": 177,
+        "robot": 608,
+        "floor": 1885,
+        "other_or_unknown": 0
+      },
+      "event_time_min_s": 0.5605,
+      "event_time_max_s": 0.5904999999999999,
+      "mask_assignment": "nearest saved 10 ms segmentation frame"
+    },
+    "004_fresh_shadow_on": {
+      "events_in_query_union": 2039,
+      "events_by_region": {
+        "target": 164,
+        "robot": 395,
+        "floor": 1480,
+        "other_or_unknown": 0
+      },
+      "event_time_min_s": 0.5605277398002029,
+      "event_time_max_s": 0.5904999999999999,
+      "mask_assignment": "nearest saved 10 ms segmentation frame"
+    },
+    "005_archived": {
+      "events_in_query_union": 4579,
+      "events_by_region": {
+        "target": 186,
+        "robot": 1661,
+        "floor": 2732,
+        "other_or_unknown": 0
+      },
+      "event_time_min_s": 0.5605,
+      "event_time_max_s": 0.5904999999999999,
+      "mask_assignment": "nearest saved 10 ms segmentation frame"
+    },
+    "005_fresh_shadow_on": {
+      "events_in_query_union": 3448,
+      "events_by_region": {
+        "target": 280,
+        "robot": 1195,
+        "floor": 1973,
+        "other_or_unknown": 0
+      },
+      "event_time_min_s": 0.5605532240889298,
+      "event_time_max_s": 0.5904928469275709,
+      "mask_assignment": "nearest saved 10 ms segmentation frame"
+    }
+  },
+  "summary": [
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "all",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 10.989512750066497,
+      "median_xy_error_mm": 10.428446951089509,
+      "max_xy_error_mm": 16.7063725840186,
+      "mean_event_count_25ms": 2249.285714285714
+    },
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "drop_target",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 17.74902231322014,
+      "median_xy_error_mm": 16.48842951767103,
+      "max_xy_error_mm": 22.875473889758712,
+      "mean_event_count_25ms": 2111.714285714286
+    },
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "drop_robot",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 8.697394745376448,
+      "median_xy_error_mm": 6.661681565410588,
+      "max_xy_error_mm": 16.579863213053287,
+      "mean_event_count_25ms": 1730.7142857142858
+    },
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "drop_floor",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 224.0860598491136,
+      "median_xy_error_mm": 229.7485685123789,
+      "max_xy_error_mm": 398.5042566235453,
+      "mean_event_count_25ms": 656.1428571428571
+    },
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "target_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 230.61787769299033,
+      "median_xy_error_mm": 222.9194490897638,
+      "max_xy_error_mm": 266.0596263079269,
+      "mean_event_count_25ms": 137.57142857142858
+    },
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "robot_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 162.23011649204219,
+      "median_xy_error_mm": 174.34512043387272,
+      "max_xy_error_mm": 251.63383131462925,
+      "mean_event_count_25ms": 518.5714285714286
+    },
+    {
+      "episode_id": "004",
+      "source": "archived",
+      "region_ablation": "floor_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 17.429145757828802,
+      "median_xy_error_mm": 17.899626407645805,
+      "max_xy_error_mm": 21.925127528671055,
+      "mean_event_count_25ms": 1593.142857142857
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "all",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 10.454917671662315,
+      "median_xy_error_mm": 10.42789178947542,
+      "max_xy_error_mm": 11.857245266693843,
+      "mean_event_count_25ms": 1748.5714285714287
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "drop_target",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 14.40215944031758,
+      "median_xy_error_mm": 15.344620287130647,
+      "max_xy_error_mm": 16.743659997883963,
+      "mean_event_count_25ms": 1622.0
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "drop_robot",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 7.055143005232914,
+      "median_xy_error_mm": 7.124851940615813,
+      "max_xy_error_mm": 8.623434431859371,
+      "mean_event_count_25ms": 1395.2857142857142
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "drop_floor",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 359.14696785360877,
+      "median_xy_error_mm": 329.86308402210085,
+      "max_xy_error_mm": 537.0631980884325,
+      "mean_event_count_25ms": 479.85714285714283
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "target_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 230.42038852497643,
+      "median_xy_error_mm": 222.38006035956812,
+      "max_xy_error_mm": 263.60153948972965,
+      "mean_event_count_25ms": 126.57142857142857
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "robot_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 281.7849918537137,
+      "median_xy_error_mm": 334.7385208254414,
+      "max_xy_error_mm": 407.2831226127868,
+      "mean_event_count_25ms": 353.2857142857143
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_shadow_on",
+      "region_ablation": "floor_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 12.497015012460164,
+      "median_xy_error_mm": 12.502421995039303,
+      "max_xy_error_mm": 15.998965619515047,
+      "mean_event_count_25ms": 1268.7142857142858
+    },
+    {
+      "episode_id": "004",
+      "source": "archive_background_fresh_target",
+      "region_ablation": "cross_source_swap_target_vs_background",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 10.554367022125145,
+      "median_xy_error_mm": 9.885595078353678,
+      "max_xy_error_mm": 14.55343925598704,
+      "mean_event_count_25ms": 2238.285714285714
+    },
+    {
+      "episode_id": "004",
+      "source": "fresh_background_archive_target",
+      "region_ablation": "cross_source_swap_target_vs_background",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 10.48232218223492,
+      "median_xy_error_mm": 10.659574057909305,
+      "max_xy_error_mm": 12.149841406998865,
+      "mean_event_count_25ms": 1759.5714285714287
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "all",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 58.91695743541054,
+      "median_xy_error_mm": 59.171506658412774,
+      "max_xy_error_mm": 111.11096417929248,
+      "mean_event_count_25ms": 3809.8571428571427
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "drop_target",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 17.443650433765878,
+      "median_xy_error_mm": 17.88742296416627,
+      "max_xy_error_mm": 21.993457351978154,
+      "mean_event_count_25ms": 3672.5714285714284
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "drop_robot",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 53.65930889949668,
+      "median_xy_error_mm": 50.8334801794608,
+      "max_xy_error_mm": 98.58821585475138,
+      "mean_event_count_25ms": 2443.1428571428573
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "drop_floor",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 555.1972399065472,
+      "median_xy_error_mm": 565.5233476437319,
+      "max_xy_error_mm": 604.989128238879,
+      "mean_event_count_25ms": 1504.0
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "target_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 86.5673855792934,
+      "median_xy_error_mm": 56.318459605269354,
+      "max_xy_error_mm": 177.08946548149558,
+      "mean_event_count_25ms": 137.28571428571428
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "robot_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 606.2266725082201,
+      "median_xy_error_mm": 590.1333104039439,
+      "max_xy_error_mm": 719.6144130874707,
+      "mean_event_count_25ms": 1366.7142857142858
+    },
+    {
+      "episode_id": "005",
+      "source": "archived",
+      "region_ablation": "floor_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 26.86640041076678,
+      "median_xy_error_mm": 28.45672133061023,
+      "max_xy_error_mm": 31.52021416547935,
+      "mean_event_count_25ms": 2305.8571428571427
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "all",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 10.641016495073513,
+      "median_xy_error_mm": 9.47811506438117,
+      "max_xy_error_mm": 19.26734791509147,
+      "mean_event_count_25ms": 2875.4285714285716
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "drop_target",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 17.151914275006487,
+      "median_xy_error_mm": 16.451960112419975,
+      "max_xy_error_mm": 19.485033514111315,
+      "mean_event_count_25ms": 2654.714285714286
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "drop_robot",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 13.44549007357077,
+      "median_xy_error_mm": 12.014637314564354,
+      "max_xy_error_mm": 22.64228723971633,
+      "mean_event_count_25ms": 1889.5714285714287
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "drop_floor",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 151.31413931871376,
+      "median_xy_error_mm": 121.69251798842903,
+      "max_xy_error_mm": 398.11278582060436,
+      "mean_event_count_25ms": 1206.5714285714287
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "target_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 44.25504182965726,
+      "median_xy_error_mm": 38.68388168931893,
+      "max_xy_error_mm": 66.43024692557844,
+      "mean_event_count_25ms": 220.71428571428572
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "robot_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 388.23600181162857,
+      "median_xy_error_mm": 400.9119214902863,
+      "max_xy_error_mm": 582.392787662361,
+      "mean_event_count_25ms": 985.8571428571429
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_shadow_on",
+      "region_ablation": "floor_only",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 23.606837727876187,
+      "median_xy_error_mm": 23.53204867700662,
+      "max_xy_error_mm": 26.674215723615678,
+      "mean_event_count_25ms": 1668.857142857143
+    },
+    {
+      "episode_id": "005",
+      "source": "archive_background_fresh_target",
+      "region_ablation": "cross_source_swap_target_vs_background",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 17.58667249480415,
+      "median_xy_error_mm": 14.734995478348763,
+      "max_xy_error_mm": 34.27172953219708,
+      "mean_event_count_25ms": 3893.285714285714
+    },
+    {
+      "episode_id": "005",
+      "source": "fresh_background_archive_target",
+      "region_ablation": "cross_source_swap_target_vs_background",
+      "queries": 7,
+      "available": 7,
+      "mean_xy_error_mm": 14.68274775446923,
+      "median_xy_error_mm": 15.584463867927,
+      "max_xy_error_mm": 20.303709988952697,
+      "mean_event_count_25ms": 2792.0
+    }
+  ],
+  "wall_s": 1.8317915499937953,
+  "per_query_csv": "per_query_region_ablation.csv"
+}
