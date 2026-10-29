@@ -314,7 +314,7 @@ def main() -> None:
             if len(values):
                 target_votes.append(int(values[np.argmax(counts)]))
         target_id = int(np.bincount(np.asarray(target_votes, dtype=np.int64)).argmax())
-        robot_ids = pose_ids - {target_id}
+        robot_ids = set(map(int, pose_ids.tolist())) - {target_id}
         artifact_name = f"{episode}_same_schedule_dense_resampled_events.npz"
         np.savez_compressed(out / artifact_name, events=counterfactual_events)
 
