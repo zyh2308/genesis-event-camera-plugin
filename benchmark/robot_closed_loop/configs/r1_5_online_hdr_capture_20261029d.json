@@ -1,0 +1,40 @@
+{
+  "schema": "r1_5_online_hdr_capture_v1",
+  "experiment_id": "r1_5_online_hdr_capture_20261029d",
+  "purpose": "Capture actual online Direct-HDR frames from an exact-seed source replay and compare them with cached-state rerenders at the same physical states.",
+  "source_replay": {
+    "runner_repository_commit": "2100645b0473c294760789bc4475b644f261d9cf",
+    "renderer_diagnostic_checkout_commit": "855b4b0bc7de96170b4bfee8d7002b370782f346",
+    "seed": 2026103425,
+    "episode": 5,
+    "speed_m_s": 0.4,
+    "launch_y_m": 0.055,
+    "physics_dt_s": 0.0005,
+    "event_controller_hz": 2000,
+    "reference_controller_source": "gt_current",
+    "capture_window_s": [0.5505, 0.5905],
+    "capture_interval_s": 0.0005,
+    "expected_frame_count": 81,
+    "expected_archive_trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c",
+    "expected_archive_event_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6"
+  },
+  "capture_hook": {
+    "source": "existing DirectHdrEventSource.last_hdr buffer",
+    "additional_render_calls": 0,
+    "additional_physics_steps": 0,
+    "additional_control_calls": 0
+  },
+  "comparison": {
+    "cached_state_replay_conditions": [
+      "MSAA on, 47-frame source cadence",
+      "MSAA on, 81-frame 2 kHz cadence",
+      "MSAA off, 81-frame 2 kHz cadence"
+    ],
+    "compare_exact_shared_timestamps_only": true,
+    "compare_linear_hdr_and_log_luma": true,
+    "compare_generated_events_and_old_checkpoint_localization": true,
+    "GT_or_masks_are_diagnostic_only": true
+  },
+  "formal_ranking": false,
+  "frozen_core_modified": false
+}

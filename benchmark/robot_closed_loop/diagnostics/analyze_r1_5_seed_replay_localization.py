@@ -111,6 +111,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compact-evidence", type=Path, required=True)
     parser.add_argument("--fresh-shadow-events", type=Path, required=True)
+    parser.add_argument("--fresh-source-label", default="fresh_shadow_on",
+                        help="name recorded in output for the supplied fresh event stream")
     parser.add_argument("--scene-config", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -147,7 +149,7 @@ def main() -> int:
             raise RuntimeError("compact GT query timestamp mismatch")
         rows.append(evaluate(archive_events, archive_labels[i], "archive_and_exact_rerun",
                              model_record, width, height, camera, intrinsics, fixed_height))
-        rows.append(evaluate(fresh_events, archive_labels[i], "fresh_shadow_on",
+        rows.append(evaluate(fresh_events, archive_labels[i], args.fresh_source_label,
                              model_record, width, height, camera, intrinsics, fixed_height))
 
     csv_path = output / "query_localization.csv"
@@ -157,7 +159,8 @@ def main() -> int:
         writer.writerows(rows)
     summary: dict[str, Any] = {
         "status": "PASS",
-        "experiment": "exact seed replay versus cached-state shadow-on event stream; old checkpoint diagnostic only",
+        "experiment": "exact seed replay versus cached-state event stream; old checkpoint diagnostic only",
+        "fresh_source_label": args.fresh_source_label,
         "inputs": {
             "compact_evidence_sha256": sha256(args.compact_evidence),
             "fresh_shadow_events_sha256": sha256(args.fresh_shadow_events),
@@ -177,7 +180,7 @@ def main() -> int:
                 "velocity_xy_error_mm_s": stats([float(r["velocity_xy_error_mm_s"]) for r in rows
                                                   if r["source"] == source and r["velocity_xy_error_mm_s"] is not None]),
                 "valid_fraction": float(np.mean([r["state_available"] for r in rows if r["source"] == source])),
-            } for source in ("archive_and_exact_rerun", "fresh_shadow_on")
+            } for source in ("archive_and_exact_rerun", args.fresh_source_label)
         },
         "queries": rows,
         "gt_boundary": evidence["boundary"],
