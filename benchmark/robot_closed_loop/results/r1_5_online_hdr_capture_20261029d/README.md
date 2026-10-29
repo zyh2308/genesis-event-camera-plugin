@@ -52,7 +52,7 @@ PYTHONPATH=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a \
 ## 版本、配置与哈希
 
 - 分支：`exp/robot-closed-loop-v1`；最终诊断脚本提交：`dd42abb`。
-- g1 源 episode runner commit：`2100645b0473c294760789bc4475b644f261d9cf`；冻结 simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`。
+- g1 源 episode runner commit：`2100645b0473c294760789bc4475b644f261d9cf`；HDR capture driver commit：`bac8463fea68dd0ae78b193190f2407e9f3ed85f`，driver SHA256 `b84c0ffc337d59e49f19e251f24c84f831de35239edc9c507d6f646929f2778b`；active launcher commit：`197e68ec69419fde0b421a2fa55acfcf3c5e5c7a`，launcher SHA256 `729cea67e984355d877870013cb70dda107542de773cc1da54fd66b8836ff031`；冻结 simulator core：`e79e656ac00f7847b98db9e12bf43b093f3afff1`。
 - renderer checkout：`855b4b0bc7de96170b4bfee8d7002b370782f346`；场景配置 SHA256：`aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`。
 - 在线 capture 配置 SHA256：`0609f01207ceb7679771a53296607bc3a038ba34af5f703079834dde5638c6cd`；最终诊断脚本 SHA256：`b6acac82d6878645eaa70917c3674e2cb0bd416e1a1c173f7106165f65f1958c`（commit `dd42abb`）。
 - 在线 HDR 帧 SHA256：`986cbf19c6297b4d55db2d1e5ad7634f23c0c19634faa4c4e02bf2689a0e8c1c`；源 raw events SHA256：`b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6`；关键快照 SHA256：`d28c52a260eb82746b560e4c9435ae39b67842cc61f02377a7c6c59901e5f97b`。
