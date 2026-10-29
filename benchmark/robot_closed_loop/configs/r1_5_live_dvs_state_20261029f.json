@@ -1,0 +1,33 @@
+{
+  "schema": "r1_5_live_dvs_state_v1",
+  "experiment_id": "r1_5_live_dvs_state_20261029f",
+  "purpose": "Separate event-input log transform from DVS comparator-history initialization using the exact online and cached HDR frames.",
+  "inputs": {
+    "online_seed": 2026103425,
+    "online_window_s": [0.5505, 0.5905],
+    "online_interval_s": 0.0005,
+    "cached_dense_msaa_on_rows": 81,
+    "online_and_cached_dense_hdr_expected_bitwise_equal": true,
+    "event_history_source": "the same exact-seed Direct-HDR 2 kHz stream through the interval start",
+    "initial_hdr_source": "the same run's launch snapshot at t=0"
+  },
+  "factorial": {
+    "frame_log_transform": ["online_precomputed_natural_log_luma", "cached_physical_log_from_linear_luminance"],
+    "comparator_initialization": ["cold_initialize_at_window_start", "seed_from_launch_image_and_prior_events"]
+  },
+  "response": {
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "threshold_mismatch_std": 0.0,
+    "noise": false,
+    "refractory_s": 0.0,
+    "bandwidth": "infinite",
+    "readout": "ideal_readout"
+  },
+  "scope": {
+    "physics_or_renderer_started": false,
+    "target_gt_segmentation_depth_or_future_state_used": false,
+    "frozen_core_modified": false,
+    "formal_ranking": false
+  }
+}
