@@ -119,6 +119,13 @@ def main() -> int:
     parser.add_argument("--events", type=Path, required=True)
     parser.add_argument("--queries", type=Path, required=True)
     parser.add_argument("--scene-config", type=Path, required=True)
+    parser.add_argument("--query-source-field", default="source")
+    parser.add_argument("--query-source-value", default="archive_and_exact_rerun")
+    parser.add_argument("--query-time-field", default="query_s")
+    parser.add_argument("--query-position-field", default="gt_position_xy_m")
+    parser.add_argument("--query-x-field")
+    parser.add_argument("--query-y-field")
+    parser.add_argument("--query-z-field")
     parser.add_argument("--checkpoint", action="append", required=True,
                         help="NAME=PATH; repeat for paired checkpoint comparison")
     parser.add_argument("--roi-padding-px", type=float, default=6.0)
@@ -142,10 +149,12 @@ def main() -> int:
             raise KeyError(f"expected events key in {args.events}; found {archive.files}")
         events = np.asarray(archive["events"], dtype=np.float64).reshape(-1, 4)
     with args.queries.open(newline="", encoding="utf-8") as stream:
-        queries = [row for row in csv.DictReader(stream)
-                   if row.get("source") == "archive_and_exact_rerun"]
+        all_queries = list(csv.DictReader(stream))
+    queries = [row for row in all_queries
+               if row.get(args.query_source_field) == args.query_source_value]
     if not queries:
-        raise ValueError("query CSV has no archive_and_exact_rerun labels")
+        raise ValueError(
+            f"query CSV has no rows where {args.query_source_field}={args.query_source_value!r}")
 
     checkpoints: list[tuple[str, Path, Any, torch.Tensor, torch.Tensor, dict[str, Any]]] = []
     for spec in args.checkpoint:
@@ -161,9 +170,21 @@ def main() -> int:
     rows: list[dict[str, Any]] = []
     started = time.perf_counter()
     for query in queries:
-        cutoff = float(query["query_s"])
-        gt_position = np.asarray(json.loads(query["gt_position_xy_m"]), dtype=np.float64)
-        gt_position = np.asarray([gt_position[0], gt_position[1], fixed_height], dtype=np.float64)
+        cutoff = float(query[args.query_time_field])
+        if args.query_position_field in query:
+            raw_position = np.asarray(json.loads(query[args.query_position_field]), dtype=np.float64)
+            gt_position = np.asarray([raw_position[0], raw_position[1],
+                                      raw_position[2] if len(raw_position) > 2 else fixed_height],
+                                     dtype=np.float64)
+        elif args.query_x_field and args.query_y_field:
+            gt_position = np.asarray([
+                float(query[args.query_x_field]),
+                float(query[args.query_y_field]),
+                float(query[args.query_z_field]) if args.query_z_field else fixed_height,
+            ], dtype=np.float64)
+        else:
+            raise KeyError(
+                f"query position requires {args.query_position_field} or --query-x-field/--query-y-field")
         gt_uv = project_world(gt_position[None, :], world_from_camera, intrinsics)[0]
         roi = cube_bounds(gt_position, target_size, world_from_camera, intrinsics,
                           args.roi_padding_px, width, height)
@@ -178,7 +199,9 @@ def main() -> int:
         roi_bin_counts = np.bincount(np.clip(bin_index[in_roi], 0, 4), minlength=5).astype(int)
         common = {
             "query_s": cutoff,
-            "gt_position_xy_m": json.loads(query["gt_position_xy_m"]),
+            "query_source_label": query.get(args.query_source_field, ""),
+            "episode_id": query.get("episode_id", ""),
+            "gt_position_xy_m": gt_position[:2].tolist(),
             "gt_pixel_uv": gt_uv.tolist(),
             "target_roi_xyxy_px": list(roi),
             "event_count_25ms": int(len(window_events)),
@@ -246,8 +269,18 @@ def main() -> int:
         "status": "completed",
         "purpose": "offline heatmap and target-event support diagnosis; no new training or rendering",
         "git_commit_at_run": git_commit,
+        "diagnostic_script_sha256": sha256(Path(__file__).resolve()),
         "runtime_s": time.perf_counter() - started,
         "device": "cpu",
+        "query_selection": {
+            "source_field": args.query_source_field,
+            "source_value": args.query_source_value,
+            "time_field": args.query_time_field,
+            "position_field": args.query_position_field,
+            "x_field": args.query_x_field,
+            "y_field": args.query_y_field,
+            "z_field": args.query_z_field,
+        },
         "roi_padding_px": args.roi_padding_px,
         "heatmap_temperature": args.temperature,
         "inputs": {
