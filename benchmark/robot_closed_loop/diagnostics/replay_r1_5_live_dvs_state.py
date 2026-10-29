@@ -232,6 +232,8 @@ def main() -> int:
     residual = frame_log_start - seeded_base
     physical_seeded_base = physical_seeded_base_flat.reshape(frame_log_start.shape)
     physical_residual = cached_input_log[0] - physical_seeded_base
+    physical_state_mapped_base = cached_input_log[0] - residual
+    physical_state_mapped_residual = cached_input_log[0] - physical_state_mapped_base
 
     cold_physical = run_stream(cached_frames, cached_times, cached_config(), already_log=False)
     cold_online = run_stream(online_frames, online_times, online_config(), already_log=True)
@@ -240,6 +242,10 @@ def main() -> int:
     online_input_log = np.stack([online_log_gray(frame) for frame in online_frames])
     warm_physical = run_stream(cached_frames, cached_times, cached_config(), already_log=False,
                                initial_base=physical_seeded_base, initial_lp=cached_input_log[0])
+    warm_physical_state_mapped = run_stream(
+        cached_frames, cached_times, cached_config(), already_log=False,
+        initial_base=physical_state_mapped_base, initial_lp=cached_input_log[0]
+    )
     transform_delta = np.abs(online_input_log - cached_input_log)
 
     comparison = {
@@ -247,12 +253,17 @@ def main() -> int:
         "cold_online_log_transform": event_match(source_window, cold_online),
         "history_seeded_online_log_transform": event_match(source_window, warm_online),
         "history_seeded_physical_log_transform": event_match(source_window, warm_physical),
+        "history_seeded_physical_state_mapped_transform": event_match(
+            source_window, warm_physical_state_mapped
+        ),
         "cold_physical_vs_saved_cached_stream": event_match(cached_events, cold_physical),
     }
     out_events = output / "history_seeded_online_events.npz"
     np.savez_compressed(out_events, events=warm_online)
     out_physical_events = output / "history_seeded_physical_events.npz"
     np.savez_compressed(out_physical_events, events=warm_physical)
+    out_mapped_events = output / "history_seeded_physical_state_mapped_events.npz"
+    np.savez_compressed(out_mapped_events, events=warm_physical_state_mapped)
     input_frames_sha256 = sha256(args.online_frames)
     per_sample: list[dict[str, Any]] = []
     previous_t = float(online_times[0])
@@ -260,7 +271,8 @@ def main() -> int:
         row: dict[str, Any] = {"sample_end_s": float(t), "sample_start_s": previous_t}
         for name, events in (("online", source_window), ("cold_physical", cold_physical),
                              ("cold_online", cold_online), ("history_seeded_online", warm_online),
-                             ("history_seeded_physical", warm_physical)):
+                             ("history_seeded_physical", warm_physical),
+                             ("physical_state_mapped", warm_physical_state_mapped)):
             row[f"{name}_events"] = int(np.count_nonzero((events[:, 0] > previous_t) &
                                                           (events[:, 0] <= float(t))))
         per_sample.append(row)
@@ -295,6 +307,12 @@ def main() -> int:
             "max_below_negative_threshold": float(np.max(-0.2 - physical_residual)),
             "seed_baseline": "physical-log launch snapshot plus the same causal event-history counts",
         },
+        "physical_state_mapped_residual_from_live_frame": {
+            "abs_stats": stats(np.abs(physical_state_mapped_residual)),
+            "max_above_positive_threshold": float(np.max(physical_state_mapped_residual - 0.2)),
+            "max_below_negative_threshold": float(np.max(-0.2 - physical_state_mapped_residual)),
+            "seed_baseline": "map the exact online start residual into physical-log coordinates",
+        },
         "input_log_transform_abs_delta": {
             "stats": stats(transform_delta.ravel()),
             "fraction_nonzero": float(np.mean(transform_delta != 0)),
@@ -310,6 +328,8 @@ def main() -> int:
         "event_output_sha256": sha256(out_events),
         "physical_event_output": out_physical_events.name,
         "physical_event_output_sha256": sha256(out_physical_events),
+        "state_mapped_physical_event_output": out_mapped_events.name,
+        "state_mapped_physical_event_output_sha256": sha256(out_mapped_events),
         "per_sample_csv": csv_path.name,
         "no_physics_or_renderer": True,
         "GT_segmentation_depth_or_future_state_used": False,
