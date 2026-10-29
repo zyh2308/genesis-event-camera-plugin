@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -353,8 +354,9 @@ def main() -> int:
     code_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     summary = {
         "status": "PASS",
-        "experiment_id": "r1_5_shadow_perception_causal_replay_20261029a",
-        "code_commit": code_commit,
+        "experiment_id": experiment_config["experiment_id"],
+        "repository_checkout_commit": code_commit,
+        "diagnostic_source_commit": os.environ.get("DIAGNOSTIC_SCRIPT_SOURCE_COMMIT"),
         "diagnostic_script_sha256": _sha256(Path(__file__).resolve()),
         "config_sha256": _sha256(args.scene_config.resolve()),
         "experiment_config_sha256": _sha256(args.experiment_config.resolve()),
