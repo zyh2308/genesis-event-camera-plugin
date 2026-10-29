@@ -233,6 +233,11 @@ def main() -> int:
                     if dx == 0 and dy == 0:
                         continue
                     shifted_voxel = translate_voxel(archive_counts, dx, dy)
+                    shifted_cosine = cosine(shifted_voxel, shadow_on_voxel)
+                    shifted_l1_relative = float(
+                        np.abs(shifted_voxel - shadow_on_voxel).sum()
+                        / max(float(shadow_on_voxel.sum()), 1.0)
+                    )
                     pred_state = predict_voxel(
                         shifted_voxel, model_records["ours_old_checkpoint"], camera_pose,
                         intrinsics, (width, height), fixed_height,
@@ -240,6 +245,8 @@ def main() -> int:
                     spatial_shift_counterfactuals.append({
                         "shift_x_64grid_cells": dx,
                         "shift_y_64grid_cells": dy,
+                        "event_tensor_cosine_vs_shadow_on": shifted_cosine,
+                        "relative_l1_vs_shadow_on": shifted_l1_relative,
                         "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
                         "counterfactual_only": True,
                     })
@@ -304,6 +311,10 @@ def main() -> int:
                 "archived_rate_scale_counterfactuals": count_scale_counterfactuals,
                 "single_bin_replacement_counterfactuals": bin_replacement_counterfactuals,
                 "spatial_shift_counterfactuals": spatial_shift_counterfactuals,
+                "best_unsupervised_spatial_alignment_vs_shadow_on": max(
+                    spatial_shift_counterfactuals,
+                    key=lambda item: item["event_tensor_cosine_vs_shadow_on"] or -1.0,
+                ),
                 "event_pixel_shift_counterfactuals": event_pixel_shift_counterfactuals,
             }
             query_rows.append(record)
