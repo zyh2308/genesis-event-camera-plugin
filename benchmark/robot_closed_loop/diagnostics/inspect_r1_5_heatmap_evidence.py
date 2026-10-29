@@ -126,12 +126,15 @@ def main() -> int:
     parser.add_argument("--query-x-field")
     parser.add_argument("--query-y-field")
     parser.add_argument("--query-z-field")
+    parser.add_argument("--query-phase-field")
+    parser.add_argument("--query-phase-value")
     parser.add_argument("--event-key", default="auto",
                         help="event array key in NPZ; auto accepts events or events_2000hz")
     parser.add_argument("--checkpoint", action="append", required=True,
                         help="NAME=PATH; repeat for paired checkpoint comparison")
     parser.add_argument("--roi-padding-px", type=float, default=6.0)
     parser.add_argument("--temperature", type=float, default=0.5)
+    parser.add_argument("--local-radius-cells", type=int, default=2)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -157,6 +160,9 @@ def main() -> int:
         all_queries = list(csv.DictReader(stream))
     queries = [row for row in all_queries
                if row.get(args.query_source_field) == args.query_source_value]
+    if args.query_phase_field and args.query_phase_value is not None:
+        queries = [row for row in queries
+                   if row.get(args.query_phase_field) == args.query_phase_value]
     if not queries:
         raise ValueError(
             f"query CSV has no rows where {args.query_source_field}={args.query_source_value!r}")
@@ -242,6 +248,20 @@ def main() -> int:
                 fixed_height, world_from_camera, intrinsics)
             peak_distance_px = float(np.linalg.norm(
                 np.asarray([heatmap_argmax["u_px"], heatmap_argmax["v_px"]]) - gt_uv))
+            peak_y, peak_x = np.unravel_index(int(flat[0]), prob.shape)
+            radius = max(0, int(args.local_radius_cells))
+            local_y0, local_y1 = max(0, peak_y - radius), min(64, peak_y + radius + 1)
+            local_x0, local_x1 = max(0, peak_x - radius), min(64, peak_x + radius + 1)
+            local_patch = prob[local_y0:local_y1, local_x0:local_x1]
+            local_patch_mass = float(local_patch.sum())
+            local_patch = local_patch / max(local_patch_mass, 1e-30)
+            local_xs = (np.arange(local_x0, local_x1, dtype=np.float64) + 0.5) * width / 64
+            local_ys = (np.arange(local_y0, local_y1, dtype=np.float64) + 0.5) * height / 64
+            local_uv = np.asarray([
+                float(local_patch.sum(axis=0) @ local_xs),
+                float(local_patch.sum(axis=1) @ local_ys),
+            ], dtype=np.float64)
+            local_position = unproject_to_plane(local_uv, fixed_height, world_from_camera, intrinsics)
             rows.append({
                 **common,
                 "checkpoint": name,
@@ -254,6 +274,11 @@ def main() -> int:
                 "heatmap_argmax_position_xy_m": peak_position[:2].tolist(),
                 "heatmap_argmax_position_xy_error_mm": float(
                     np.linalg.norm(peak_position[:2] - gt_position[:2]) * 1000),
+                "local_softargmax_pixel_uv": local_uv.tolist(),
+                "local_softargmax_position_xy_m": local_position[:2].tolist(),
+                "local_softargmax_position_xy_error_mm": float(
+                    np.linalg.norm(local_position[:2] - gt_position[:2]) * 1000),
+                "local_patch_probability_mass": local_patch_mass,
                 "heatmap_peak_probability": heatmap_argmax["probability"],
                 "heatmap_entropy_normalized": entropy / np.log(prob.size),
                 "heatmap_effective_cells": float(np.exp(entropy)),
@@ -285,9 +310,12 @@ def main() -> int:
             "x_field": args.query_x_field,
             "y_field": args.query_y_field,
             "z_field": args.query_z_field,
+            "phase_field": args.query_phase_field,
+            "phase_value": args.query_phase_value,
         },
         "roi_padding_px": args.roi_padding_px,
         "heatmap_temperature": args.temperature,
+        "local_radius_cells": args.local_radius_cells,
         "inputs": {
             "events_sha256": sha256(args.events),
             "event_key": event_key,

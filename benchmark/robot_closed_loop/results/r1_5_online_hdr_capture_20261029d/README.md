@@ -77,8 +77,8 @@ PYTHONPATH=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a \
 ### 同一 Direct-HDR 输入下的热图/解码检查
 
 - 同一组 `6179` 个 history-seeded Direct-HDR 事件、相同 7 个因果查询和相同 `heatmap_v2` 输出头，分别送入旧 PNG checkpoint 与 native HDR checkpoint。GT 只在推理后用于投影一个 4 cm 方块框并统计框内事件；事件张量没有加入 GT、分割或深度。
-- 两模型的预测热图在最差时刻仍把最高峰放在目标投影附近：native HDR checkpoint 在 `0.5875 s` 的全图 soft-argmax 解码误差为 `137.5 mm`，而热图最高峰单独投到固定方块平面后的误差为 `18.5 mm`；旧 PNG checkpoint 在 `0.5895 s` 分别为 `111.1 mm` 与 `4.2 mm`。七个相邻 cutoff 上，native HDR soft-argmax mean/max 为 `43.5/137.5 mm`，最高峰解码为 `18.1/19.1 mm`；旧 checkpoint 为 `58.7/111.1 mm` 与 `10.0/19.1 mm`。
-- 这表明本片段的最大跳变至少有一部分出现在网络热图到 XY 的**全局 soft-argmax 解码**：空间热图同时有多个候选响应，平均所有位置会把结果拉到两个候选之间。最高峰解码只是离线反事实，不是已验证控制器修复，也不能据这 7 个相邻窗口声称闭环稳定。
+- 两模型的预测热图在最差时刻仍把最高峰放在目标投影附近：native HDR checkpoint 在 `0.5875 s` 的全图 soft-argmax 解码误差为 `137.5 mm`，而热图最高峰单独投到固定方块平面后的误差为 `18.5 mm`；旧 PNG checkpoint 在 `0.5895 s` 分别为 `111.1 mm` 与 `4.2 mm`。七个相邻 cutoff 上，native HDR 全图 soft-argmax mean/max 为 `43.5/137.5 mm`，最高峰解码为 `18.1/19.1 mm`；只在最高峰周围 5×5 个热图 cell 内做局部 soft-argmax，则为 `14.4/18.6 mm`。旧 checkpoint 的对应结果为 `58.7/111.1 mm`、`10.0/19.1 mm`、`9.7/12.8 mm`。
+- 这表明本片段的最大跳变至少有一部分出现在网络热图到 XY 的**全局 soft-argmax 解码**：空间热图同时有多个候选响应，平均全图位置会把结果拉到多个候选之间。局部 soft-argmax 在这段上比单纯最高峰更平滑，但仍只是离线反事实，不是已验证控制器修复，也不能据这 7 个相邻窗口声称闭环稳定。
 - 目标投影框使用 4 cm 立方体加 6 px padding，框内仍有 `491–534` 个事件/25 ms（约 `13.1–13.9%` 的窗口事件）；这是近似几何 ROI 统计，不能当作真实分割或目标事件充分性的证明。native 热图在最差 cutoff 仍有 `54.7%` 概率落在该框内，说明输出有歧义，不是干净单峰定位。
 - native HDR checkpoint 在其独立验证 episode 005（seed `2026104135`、中心、0.4 m/s）的自有事件路径上，`0.55–0.60 s` 六个预测误差为 `7.0, 22.0, 26.2, 24.8, 2.6, 1.6 mm`。这与 +55 mm Direct-HDR 测试轨迹不同 seed/位置，只能说明 native 事件域仍有可定位窗口；不能把误差差异单独归因于重建或事件源。
 
@@ -96,4 +96,4 @@ python3 benchmark/robot_closed_loop/diagnostics/inspect_r1_5_heatmap_evidence.py
   --output benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/<new-run-id>
 ```
 
-代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与 `heatmap_spatial_signature_20261029b/summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `67da54d9fa5e8f825532705f35c6ec5389cb61162299cb77116eaa2229ca0a53`；本次运行记录 HEAD `ff01443` 与该工作树脚本哈希，脚本与事件/查询摘要均在输出 JSON 中，耗时 `0.17 s`。下一项最有信息量的工作是把“全局 soft-argmax / 最高峰 / 局部峰”作为**同一模型输出的离线解码消融**，在现有共同 Direct-HDR 开发集和 native HDR 留出事件上共同跑完，再决定是否进入闭环；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。
+代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与 `heatmap_spatial_signature_20261029b/summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `105e0a3f404bc3650766a8741fd8392690133aaabcec12f92ae3f76188c3d378`；本次运行记录 HEAD `67c92a1` 与该工作树脚本哈希，耗时 `0.16 s`。下一项最有信息量的工作是把全图 soft-argmax、最高峰和局部 soft-argmax 作为**同一模型输出的离线解码消融**，先在 native HDR 留出 episode 的接触前窗口，再在现有共同 Direct-HDR 开发集上跑完；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。
