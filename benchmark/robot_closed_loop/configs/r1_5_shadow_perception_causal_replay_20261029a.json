@@ -1,0 +1,33 @@
+{
+  "schema": "r1_5_shadow_perception_causal_replay_v1",
+  "experiment_id": "r1_5_shadow_perception_causal_replay_20261029a",
+  "episode_ids": ["004", "005"],
+  "query_interval_s": [0.5905, 0.595],
+  "query_selection": "use only exact timestamps present in the archived state_control trace; do not synthesize state rows",
+  "causal_window_s": 0.025,
+  "causal_input": "five 5 ms bins x two polarities x 64x64 log1p event counts",
+  "shadow_conditions": [true, false],
+  "fixed_render_settings": {
+    "gl_multisample_enabled": true,
+    "capture_repeats_per_exact_state": 2,
+    "warmup_passes_at_first_state": 1,
+    "physics_steps": 0,
+    "render_channels": ["scene_linear_hdr", "depth", "segmentation"]
+  },
+  "event_response": {
+    "mode": "physical_log",
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "noise": false,
+    "refractory": false,
+    "bandwidth_limit": false,
+    "radiometric_gain": 1.0,
+    "radiometric_offset": 0.0,
+    "radiometric_floor": 1e-6,
+    "calibration_status": "uncalibrated"
+  },
+  "checkpoint_role": "old Ours development checkpoint used only as a diagnostic probe; no retraining and no ranking",
+  "model_input_boundary": "raw ideal-DVS events only; no target GT, depth, or segmentation",
+  "evaluator_boundary": "target GT joins after forward pass; segmentation/depth are audit-only",
+  "frozen_core_modified": false
+}
