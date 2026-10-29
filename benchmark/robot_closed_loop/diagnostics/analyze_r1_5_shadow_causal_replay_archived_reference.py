@@ -250,6 +250,17 @@ def main() -> int:
                         "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
                         "counterfactual_only": True,
                     })
+            unshifted_alignment = {
+                "shift_x_64grid_cells": 0,
+                "shift_y_64grid_cells": 0,
+                "event_tensor_cosine_vs_shadow_on": cosine(archive_counts, shadow_on_voxel),
+                "relative_l1_vs_shadow_on": float(
+                    np.abs(archive_counts - shadow_on_voxel).sum()
+                    / max(float(shadow_on_voxel.sum()), 1.0)
+                ),
+                "position_error_xy_mm": reference_estimate.get("position_error_xy_mm"),
+                "counterfactual_only": False,
+            }
             event_pixel_shift_counterfactuals: list[dict[str, Any]] = []
             for delta_px in (-4, -3, -2, -1, 1, 2, 3, 4):
                 for axis in ("x", "y"):
@@ -312,7 +323,7 @@ def main() -> int:
                 "single_bin_replacement_counterfactuals": bin_replacement_counterfactuals,
                 "spatial_shift_counterfactuals": spatial_shift_counterfactuals,
                 "best_unsupervised_spatial_alignment_vs_shadow_on": max(
-                    spatial_shift_counterfactuals,
+                    [unshifted_alignment, *spatial_shift_counterfactuals],
                     key=lambda item: item["event_tensor_cosine_vs_shadow_on"] or -1.0,
                 ),
                 "event_pixel_shift_counterfactuals": event_pixel_shift_counterfactuals,
