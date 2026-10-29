@@ -14,6 +14,7 @@ import argparse
 import csv
 import hashlib
 import json
+import shutil
 import time
 from pathlib import Path
 from typing import Any
@@ -145,6 +146,71 @@ def summarize_events(events: np.ndarray) -> dict[str, Any]:
     }
 
 
+def event_region_counts(events: np.ndarray, direct_times: np.ndarray,
+                        segmentations: np.ndarray, target_id: int,
+                        robot_ids: set[int]) -> dict[str, Any]:
+    if not len(events):
+        return {"target": 0, "robot": 0, "static_or_scene": 0, "unlabeled": 0}
+    t, x0, y0 = events[:, 0], events[:, 1], events[:, 2]
+    x, y = np.rint(x0).astype(np.int64), np.rint(y0).astype(np.int64)
+    h, w = segmentations.shape[1:]
+    valid = (x >= 0) & (x < w) & (y >= 0) & (y < h)
+    idx = np.abs(t[:, None] - direct_times[None, :]).argmin(axis=1)
+    ids = segmentations[idx, np.clip(y, 0, h - 1), np.clip(x, 0, w - 1)]
+    return {
+        "target": int(np.count_nonzero(valid & (ids == target_id))),
+        "robot": int(np.count_nonzero(valid & np.isin(ids, list(robot_ids)))),
+        "static_or_scene": int(np.count_nonzero(valid & (ids != 0) & (ids != target_id) & ~np.isin(ids, list(robot_ids)))),
+        "unlabeled": int(np.count_nonzero(valid & (ids == 0))),
+        "out_of_bounds": int(np.count_nonzero(~valid)),
+    }
+
+
+def summarize_diff_regions(log_diff: np.ndarray, sample_times: np.ndarray,
+                           direct_times: np.ndarray, segmentations: np.ndarray,
+                           target_id: int, robot_ids: set[int]) -> dict[str, Any]:
+    over = log_diff > 0.2
+    frame_idx = np.abs(sample_times[:, None] - direct_times[None, :]).argmin(axis=1)
+    labels = segmentations[frame_idx]
+    regions = {
+        "target": labels == target_id,
+        "robot": np.isin(labels, list(robot_ids)),
+    }
+    regions["static_or_scene"] = (labels != 0) & ~regions["target"] & ~regions["robot"]
+    regions["unlabeled"] = labels == 0
+    class_stats = {}
+    for name, mask in regions.items():
+        total = int(np.count_nonzero(mask))
+        affected = int(np.count_nonzero(mask & over))
+        class_stats[name] = {
+            "pixel_samples": total,
+            "pixel_samples_log_luma_diff_over_0p2": affected,
+            "fraction_over_0p2": float(affected / total) if total else 0.0,
+            "max_log_luma_diff": float(np.max(np.where(mask, log_diff, 0.0))) if total else 0.0,
+        }
+    any_bad = np.any(over, axis=(1, 2))
+    first_idx = int(np.flatnonzero(any_bad)[0]) if np.any(any_bad) else None
+    max_flat = int(np.argmax(log_diff))
+    ti, y, x = np.unravel_index(max_flat, log_diff.shape)
+    region_id = int(labels[ti, y, x])
+    region_name = ("target" if region_id == target_id else "robot" if region_id in robot_ids
+                   else "unlabeled" if region_id == 0 else "static_or_scene")
+    return {
+        "threshold_log_luma_difference": 0.2,
+        "affected_pixel_sample_count": int(np.count_nonzero(over)),
+        "total_pixel_sample_count": int(over.size),
+        "samples_with_any_affected_pixel": int(np.count_nonzero(any_bad)),
+        "first_sample_with_affected_pixel_s": None if first_idx is None else float(sample_times[first_idx]),
+        "affected_pixel_samples_by_posthoc_region": class_stats,
+        "global_max_location": {
+            "sample_time_s": float(sample_times[ti]), "u_px": int(x), "v_px": int(y),
+            "segmentation_id": region_id, "region": region_name,
+            "log_luma_absolute_difference": float(log_diff[ti, y, x]),
+            "nearest_direct_state_time_s": float(direct_times[frame_idx[ti]]),
+        },
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--result-root", type=Path, required=True)
@@ -153,6 +219,7 @@ def main() -> None:
     parser.add_argument("--checkpoint-v2e", type=Path, required=True)
     parser.add_argument("--scene-config", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--code-commit", required=True)
     args = parser.parse_args()
     root = args.result_root.resolve()
     cache_root = args.cache_root.resolve()
@@ -169,6 +236,9 @@ def main() -> None:
         "physics_advanced": False,
         "frozen_core_modified": False,
         "runtime_device": "CPU only; same DvsEmulator class/response configuration in separate continuous histories",
+        "code_commit": args.code_commit,
+        "script_sha256": sha256(Path(__file__)),
+        "config_sha256": sha256(args.scene_config),
         "checkpoints": {"ours_sha256": sha256(args.checkpoint_ours), "v2e_sha256": sha256(args.checkpoint_v2e)},
         "episodes": {},
     }
@@ -181,6 +251,8 @@ def main() -> None:
         with h5py.File(frame_h5, "r") as h5:
             direct_times = np.asarray(h5["timestamps_s"][:], dtype=np.float64)
             direct_luma = np.asarray(h5["radiance_luma"][:], dtype=np.float32)
+            direct_segmentation = np.asarray(h5["segmentation_post_inference_only"][:], dtype=np.int32)
+            pose_ids = set(map(int, np.asarray(h5.attrs["segmentation_pose_ids"]).tolist()))
             camera_pose = np.asarray(h5.attrs["camera_to_world_cv"], dtype=np.float64)
             fov = float(h5.attrs["vertical_fov_deg"])
             width, height = map(int, h5.attrs["resolution_wh"])
@@ -232,6 +304,17 @@ def main() -> None:
         native_logs = np.log(np.maximum(sample_frames, 1e-6))
         direct_logs = np.log(np.maximum(same_schedule_luma, 1e-6))
         log_diff = np.abs(native_logs - direct_logs)
+        target_query_rows = [r for r in query_rows if r["episode"] == episode and r["source"] == "direct_hdr" and r["checkpoint"] == "v2e"]
+        target_votes = []
+        for row in target_query_rows:
+            qi = int(np.argmin(np.abs(direct_times - float(row["query_s"]))))
+            u, v = int(round(float(row["gt_u_px"]))), int(round(float(row["gt_v_px"])))
+            crop = direct_segmentation[qi, max(0, v - 7):min(height, v + 8), max(0, u - 7):min(width, u + 8)]
+            values, counts = np.unique(crop[crop != 0], return_counts=True)
+            if len(values):
+                target_votes.append(int(values[np.argmax(counts)]))
+        target_id = int(np.bincount(np.asarray(target_votes, dtype=np.int64)).argmax())
+        robot_ids = pose_ids - {target_id}
         artifact_name = f"{episode}_same_schedule_dense_resampled_events.npz"
         np.savez_compressed(out / artifact_name, events=counterfactual_events)
 
@@ -279,9 +362,13 @@ def main() -> None:
                 "p95": float(np.percentile(log_diff, 95)),
                 "max": float(log_diff.max()),
                 "fraction_pixels_over_0p2": float(np.mean(log_diff > 0.2)),
+                "posthoc_spatial_attribution": summarize_diff_regions(
+                    log_diff, sample_times, direct_times, direct_segmentation, target_id, robot_ids),
             },
             "native_plugin_events": summarize_events(native_replay),
             "same_schedule_direct_resampled_events": summarize_events(counterfactual_events),
+            "posthoc_counterfactual_event_region_counts": event_region_counts(
+                counterfactual_events, direct_times, direct_segmentation, target_id, robot_ids),
             "checkpoint_metrics_same_schedule_direct_resampled": {
                 checkpoint: {
                     "queries": len(rows),
@@ -307,7 +394,10 @@ def main() -> None:
         writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
         writer.writerows(counterfactual_rows)
+    shutil.copy2(Path(__file__), out / Path(__file__).name)
     (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    manifest = {path.name: sha256(path) for path in sorted(out.iterdir()) if path.is_file()}
+    (out / "SHA256SUMS").write_text("".join(f"{digest}  {name}\n" for name, digest in manifest.items()), encoding="utf-8")
     print(json.dumps({"output_dir": str(out), "episodes": {
         ep: {"native_events": d["native_plugin_events"]["count"],
              "same_schedule_resampled_events": d["same_schedule_direct_resampled_events"]["count"],
