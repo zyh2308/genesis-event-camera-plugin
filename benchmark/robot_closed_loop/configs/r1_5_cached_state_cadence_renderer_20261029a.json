@@ -1,0 +1,53 @@
+{
+  "schema": "r1_5_cached_state_cadence_renderer_v1",
+  "experiment_id": "r1_5_cached_state_cadence_renderer_20261029a",
+  "question": "With identical saved physical states and renderer, does 2 kHz event sampling reproduce the archived online source, while the exact 47-row E cadence reproduces E's shadow-on source; does GL multisampling alter either stream?",
+  "archive": {
+    "source_code_commit": "2100645b0473c294760789bc4475b644f261d9cf",
+    "episode": 5,
+    "seed": 2026103425,
+    "speed_m_s": 0.4,
+    "launch_y_m": 0.055,
+    "physics_dt_s": 0.0005,
+    "event_rate_hz": 2000,
+    "event_file_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6",
+    "state_trace_sha256": "310837ea07ab2f819f590ccce91b3952dd9e85ea5005537bc1f4d1a339bff28c"
+  },
+  "cached_state_replay": {
+    "renderer_checkout_commit": "855b4b0bc7de96170b4bfee8d7002b370782f346",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "time_window_s": [0.5505, 0.5905],
+    "dense_state_rows": 81,
+    "dense_interval_s": 0.0005,
+    "sparse_rows": 47,
+    "sparse_trace_sha256": "f0f556842029cd54b3fc082ee0e2848dd194f3322a8a9c0769c2c889a6f6ae5d",
+    "sparse_event_sha256": "c46f7bc28504ed9f43e76c334533534291d0de64b0c0f9bd429fa1a49eab58d8",
+    "shadow": true,
+    "multisample_conditions": [true, false],
+    "capture_repeats_per_state": 2,
+    "warmup_passes": 1,
+    "physics_steps": 0
+  },
+  "dvs": {
+    "implementation": "same generate_dense_direct and response_config as cached-state E replay",
+    "polarity_threshold": 0.2,
+    "noise": false,
+    "refractory": false,
+    "bandwidth_limit": false,
+    "initialization_time_s": 0.5505
+  },
+  "comparison": {
+    "event_window_s": [0.5505, 0.5905],
+    "match_rule": "same pixel and polarity, greedy one-to-one timestamp match within 0.5 ms",
+    "regions": "full image for primary event comparison; no GT masks supplied to DVS or model",
+    "outputs": [
+      "dense 2 kHz replay events for MSAA on/off",
+      "47-row E-cadence replay events for MSAA on/off",
+      "dense HDR frames and renderer pass audits for both MSAA states",
+      "event source matches against original online archive and saved E shadow-on stream"
+    ]
+  },
+  "input_boundary": "The renderer restores saved robot/target qpos only. Event generation receives HDR frames and timestamps. No GT, segmentation, or depth is supplied to event generation.",
+  "frozen_core_modified": false,
+  "formal_ranking": false
+}
