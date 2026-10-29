@@ -175,6 +175,26 @@ def main() -> int:
                     "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
                     "counterfactual_only": True,
                 }
+            bin_replacement_counterfactuals: list[dict[str, Any]] = []
+            for bin_idx in range(5):
+                archive_with_on_bin = archive_counts.copy()
+                archive_with_on_bin[bin_idx] = shadow_on_voxel[bin_idx]
+                on_with_archive_bin = shadow_on_voxel.copy()
+                on_with_archive_bin[bin_idx] = archive_counts[bin_idx]
+                for direction, counterfactual_voxel in (
+                    ("archive_replace_bin_with_shadow_on", archive_with_on_bin),
+                    ("shadow_on_replace_bin_with_archive", on_with_archive_bin),
+                ):
+                    pred_state = predict_voxel(
+                        counterfactual_voxel, model_records["ours_old_checkpoint"], camera_pose,
+                        intrinsics, (width, height), fixed_height,
+                    )
+                    bin_replacement_counterfactuals.append({
+                        "direction": direction,
+                        "bin_index_oldest_to_newest": bin_idx,
+                        "position_error_xy_mm": float(np.linalg.norm(pred_state[:2] - gt_position[:2]) * 1000.0),
+                        "counterfactual_only": True,
+                    })
             for condition in ("shadow_on", "shadow_off"):
                 estimate = replay_summary["per_query_model_metrics"][query_index][condition]
                 condition_voxel = shadow_voxels[condition][query_index].astype(np.float64)
@@ -208,6 +228,7 @@ def main() -> int:
                 "shadow_off": conditions["shadow_off"],
                 "five_ms_bin_comparison_vs_archived": bin_comparison,
                 "archived_rate_scale_counterfactuals": count_scale_counterfactuals,
+                "single_bin_replacement_counterfactuals": bin_replacement_counterfactuals,
             }
             query_rows.append(record)
             for condition, estimate in conditions.items():
