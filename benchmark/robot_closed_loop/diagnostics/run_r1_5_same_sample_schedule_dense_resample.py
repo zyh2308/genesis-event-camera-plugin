@@ -146,6 +146,21 @@ def summarize_events(events: np.ndarray) -> dict[str, Any]:
     }
 
 
+def run_dvs_sequence(frames: np.ndarray, timestamps: np.ndarray,
+                     initial_luma: np.ndarray) -> tuple[np.ndarray, float]:
+    h, w = frames.shape[1:]
+    emulator = DvsEmulator(res=(h, w), config=response_config(), device="cpu")
+    emulator.initialize(initial_luma, t=float(timestamps[0]))
+    start = time.perf_counter()
+    chunks = [emulator.generate_events(frame, float(t)) for frame, t in zip(frames, timestamps)]
+    elapsed = time.perf_counter() - start
+    events = np.concatenate([np.asarray(e, dtype=np.float64).reshape(-1, 4)
+                             for e in chunks if len(e)], axis=0) if any(len(e) for e in chunks) else np.empty((0, 4), dtype=np.float64)
+    if len(events):
+        events = events[np.argsort(events[:, 0], kind="stable")]
+    return events, elapsed
+
+
 def event_region_counts(events: np.ndarray, direct_times: np.ndarray,
                         segmentations: np.ndarray, target_id: int,
                         robot_ids: set[int]) -> dict[str, Any]:
@@ -293,14 +308,6 @@ def main() -> None:
             "exact_array_match": bool(native_replay.shape == archived_native.shape and np.array_equal(native_replay, archived_native)),
         }
         same_schedule_luma, resample_info = interpolate_log_luma(direct_luma, direct_times, sample_times)
-        direct_dvs = DvsEmulator(res=(height, width), config=response_config(), device="cpu")
-        direct_dvs.initialize(direct_luma[0], t=float(direct_times[0]))
-        direct_chunks = [direct_dvs.generate_events(frame, float(t))
-                         for frame, t in zip(same_schedule_luma, sample_times)]
-        counterfactual_events = np.concatenate([np.asarray(e, dtype=np.float64).reshape(-1, 4)
-                                                for e in direct_chunks if len(e)], axis=0) if any(len(e) for e in direct_chunks) else np.empty((0, 4), dtype=np.float64)
-        if len(counterfactual_events):
-            counterfactual_events = counterfactual_events[np.argsort(counterfactual_events[:, 0], kind="stable")]
         native_logs = np.log(np.maximum(sample_frames, 1e-6))
         direct_logs = np.log(np.maximum(same_schedule_luma, 1e-6))
         log_diff = np.abs(native_logs - direct_logs)
@@ -315,8 +322,22 @@ def main() -> None:
                 target_votes.append(int(values[np.argmax(counts)]))
         target_id = int(np.bincount(np.asarray(target_votes, dtype=np.int64)).argmax())
         robot_ids = set(map(int, pose_ids.tolist())) - {target_id}
-        artifact_name = f"{episode}_same_schedule_dense_resampled_events.npz"
-        np.savez_compressed(out / artifact_name, events=counterfactual_events)
+        sample_state_idx = np.abs(sample_times[:, None] - direct_times[None, :]).argmin(axis=1)
+        sample_segmentation = direct_segmentation[sample_state_idx]
+        robot_mask = np.isin(sample_segmentation, list(robot_ids))
+        scheduled_frames = {
+            "native_plugin_frames": sample_frames,
+            "direct_resampled_all_pixels": same_schedule_luma,
+            "direct_resampled_robot_pixels_only": np.where(robot_mask, same_schedule_luma, sample_frames).astype(np.float32),
+            "direct_resampled_nonrobot_pixels_only": np.where(~robot_mask, same_schedule_luma, sample_frames).astype(np.float32),
+        }
+        event_sources: dict[str, np.ndarray] = {"native_plugin_frames": native_replay}
+        runtime_by_variant = {"native_plugin_frames": plugin_s}
+        for variant in ("direct_resampled_all_pixels", "direct_resampled_robot_pixels_only",
+                        "direct_resampled_nonrobot_pixels_only"):
+            event_sources[variant], runtime_by_variant[variant] = run_dvs_sequence(
+                scheduled_frames[variant], sample_times, direct_luma[0])
+            np.savez_compressed(out / f"{episode}_{variant}_events.npz", events=event_sources[variant])
 
         episode_queries = [r for r in query_rows if r["episode"] == episode and r["source"] == "direct_hdr" and r["checkpoint"] == "v2e"]
         episode_queries.sort(key=lambda r: float(r["query_s"]))
@@ -326,26 +347,37 @@ def main() -> None:
         models, model_hashes = load_event_models(
             {"ours_native_hdr": args.checkpoint_ours, "v2e": args.checkpoint_v2e},
             camera_pose, intrinsics, (width, height))
-        cf_group_rows = []
-        for checkpoint, model in models.items():
-            for row in episode_queries:
-                cutoff = float(row["query_s"])
-                state, _ = infer_event_state(counterfactual_events, model, cutoff, width, height,
-                                             camera_pose, intrinsics,
-                                             fixed_height_m)
-                pred = state.get("position_xyz_m")
-                error = None if pred is None else float(np.hypot(
-                    float(pred[0]) * 1000.0 - float(row["gt_x_mm"]),
-                    float(pred[1]) * 1000.0 - float(row["gt_y_mm"])))
-                out_row = {
-                    "episode": episode, "query_s": cutoff, "checkpoint": checkpoint,
-                    "state_available": bool(state.get("state_available")),
-                    "event_count_25ms": int(state.get("event_count_25ms", 0)),
-                    "nonempty_5ms_bins": int(state.get("nonempty_5ms_bins", 0)),
-                    "planar_error_xy_mm": error,
-                }
-                counterfactual_rows.append(out_row)
-                cf_group_rows.append(out_row)
+        group_rows: dict[str, list[dict[str, Any]]] = {variant: [] for variant in event_sources}
+        for variant, stream in event_sources.items():
+            for checkpoint, model in models.items():
+                for row in episode_queries:
+                    cutoff = float(row["query_s"])
+                    state, _ = infer_event_state(stream, model, cutoff, width, height,
+                                                 camera_pose, intrinsics, fixed_height_m)
+                    pred = state.get("position_xyz_m")
+                    error = None if pred is None else float(np.hypot(
+                        float(pred[0]) * 1000.0 - float(row["gt_x_mm"]),
+                        float(pred[1]) * 1000.0 - float(row["gt_y_mm"])))
+                    out_row = {
+                        "episode": episode, "variant": variant, "query_s": cutoff,
+                        "checkpoint": checkpoint,
+                        "state_available": bool(state.get("state_available")),
+                        "event_count_25ms": int(state.get("event_count_25ms", 0)),
+                        "nonempty_5ms_bins": int(state.get("nonempty_5ms_bins", 0)),
+                        "planar_error_xy_mm": error,
+                    }
+                    counterfactual_rows.append(out_row)
+                    group_rows[variant].append(out_row)
+
+        def summarize_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
+            errors = [r["planar_error_xy_mm"] for r in rows if r["planar_error_xy_mm"] is not None]
+            return {
+                "queries": len(rows),
+                "state_available_fraction": float(np.mean([r["state_available"] for r in rows])),
+                "planar_error_xy_mm_mean": float(np.mean(errors)) if errors else None,
+                "planar_error_xy_mm_p95": float(np.percentile(errors, 95)) if errors else None,
+                "per_query": rows,
+            }
 
         summary["episodes"][episode] = {
             "episode_id": ep_id,
@@ -365,20 +397,19 @@ def main() -> None:
                 "posthoc_spatial_attribution": summarize_diff_regions(
                     log_diff, sample_times, direct_times, direct_segmentation, target_id, robot_ids),
             },
-            "native_plugin_events": summarize_events(native_replay),
-            "same_schedule_direct_resampled_events": summarize_events(counterfactual_events),
-            "posthoc_counterfactual_event_region_counts": event_region_counts(
-                counterfactual_events, direct_times, direct_segmentation, target_id, robot_ids),
-            "checkpoint_metrics_same_schedule_direct_resampled": {
-                checkpoint: {
-                    "queries": len(rows),
-                    "state_available_fraction": float(np.mean([r["state_available"] for r in rows])),
-                    "planar_error_xy_mm_mean": float(np.mean([r["planar_error_xy_mm"] for r in rows if r["planar_error_xy_mm"] is not None])) if any(r["planar_error_xy_mm"] is not None for r in rows) else None,
-                    "planar_error_xy_mm_p95": float(np.percentile([r["planar_error_xy_mm"] for r in rows if r["planar_error_xy_mm"] is not None], 95)) if any(r["planar_error_xy_mm"] is not None for r in rows) else None,
-                    "per_query": rows,
+            "event_sources": {
+                variant: {
+                    "event_summary": summarize_events(stream),
+                    "posthoc_region_counts": event_region_counts(
+                        stream, direct_times, direct_segmentation, target_id, robot_ids),
+                    "event_generation_runtime_s": runtime_by_variant[variant],
+                    "checkpoint_metrics": {
+                        checkpoint: summarize_group([r for r in group_rows[variant] if r["checkpoint"] == checkpoint])
+                        for checkpoint in ("ours_native_hdr", "v2e")
+                    },
+                    "events_file": f"{episode}_{variant}_events.npz",
                 }
-                for checkpoint in ("ours_native_hdr", "v2e")
-                for rows in [[r for r in cf_group_rows if r["checkpoint"] == checkpoint]]
+                for variant, stream in event_sources.items()
             },
             "input_hashes": {
                 "direct_frames_h5": sha256(frame_h5),
@@ -386,7 +417,6 @@ def main() -> None:
                 "archived_native_raw_events": sha256(episode_dir / "raw_events_ours_native_hdr.npz"),
                 "archived_direct_raw_events": sha256(episode_dir / "raw_events_direct_hdr.npz"),
             },
-            "counterfactual_events_file": artifact_name,
         }
 
     with (out / "counterfactual_queries.csv").open("w", newline="", encoding="utf-8") as stream:
@@ -399,11 +429,11 @@ def main() -> None:
     manifest = {path.name: sha256(path) for path in sorted(out.iterdir()) if path.is_file()}
     (out / "SHA256SUMS").write_text("".join(f"{digest}  {name}\n" for name, digest in manifest.items()), encoding="utf-8")
     print(json.dumps({"output_dir": str(out), "episodes": {
-        ep: {"native_events": d["native_plugin_events"]["count"],
-             "same_schedule_resampled_events": d["same_schedule_direct_resampled_events"]["count"],
+        ep: {"native_events": d["event_sources"]["native_plugin_frames"]["event_summary"]["count"],
+             "same_schedule_resampled_events": d["event_sources"]["direct_resampled_all_pixels"]["event_summary"]["count"],
              "luma_diff_p95": d["native_vs_same_schedule_direct_resample_log_luma_error"]["p95"],
-             "ours_err_mean": d["checkpoint_metrics_same_schedule_direct_resampled"]["ours_native_hdr"]["planar_error_xy_mm_mean"],
-             "v2e_err_mean": d["checkpoint_metrics_same_schedule_direct_resampled"]["v2e"]["planar_error_xy_mm_mean"]}
+             "ours_err_mean": d["event_sources"]["direct_resampled_all_pixels"]["checkpoint_metrics"]["ours_native_hdr"]["planar_error_xy_mm_mean"],
+             "v2e_err_mean": d["event_sources"]["direct_resampled_all_pixels"]["checkpoint_metrics"]["v2e"]["planar_error_xy_mm_mean"]}
         for ep, d in summary["episodes"].items()}, "script_sha256": sha256(Path(__file__))}, indent=2))
 
 
