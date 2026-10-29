@@ -74,7 +74,8 @@ def cached_config() -> DvsNoiseConfig:
 
 
 def run_stream(frames: np.ndarray, times: np.ndarray, config: DvsNoiseConfig,
-               *, already_log: bool, initial_base: np.ndarray | None = None) -> np.ndarray:
+               *, already_log: bool, initial_base: np.ndarray | None = None,
+               initial_lp: np.ndarray | None = None) -> np.ndarray:
     height, width = frames.shape[1:3]
     emulator = DvsEmulator(res=(height, width), config=config, device="cpu")
 
@@ -87,6 +88,11 @@ def run_stream(frames: np.ndarray, times: np.ndarray, config: DvsNoiseConfig,
             raise ValueError("reconstructed comparator state shape mismatch")
         emulator.base_log_frame = torch.as_tensor(initial_base, dtype=torch.float64,
                                                    device=emulator.device).clone()
+    if initial_lp is not None:
+        if initial_lp.shape != (height, width):
+            raise ValueError("reconstructed photoreceptor state shape mismatch")
+        emulator.lp_log_frame = torch.as_tensor(initial_lp, dtype=torch.float64,
+                                                 device=emulator.device).clone()
     chunks: list[np.ndarray] = []
     for index in range(1, len(times)):
         events = emulator.generate_events(convert(frames[index]), float(times[index]))
@@ -179,7 +185,14 @@ def main() -> int:
                                   (online_events[:, 0] <= end_s)]
     history = online_events[online_events[:, 0] <= start_s]
     initial_log = online_log_gray(snapshots[launch_index])
+    initial_physical_log = np.log(np.maximum(
+        linear_luminance(snapshots[launch_index]).astype(np.float64), 1e-6
+    ))
     frame_log_start = online_log_gray(online_frames[0])
+    cached_input_log = np.stack([
+        np.log(np.maximum(linear_luminance(frame).astype(np.float64), 1e-6))
+        for frame in cached_frames_aligned
+    ])
     positive = history[history[:, 3] > 0]
     negative = history[history[:, 3] < 0]
     # Rebuild the live comparator in the original 0.5ms call order. The DVS
@@ -202,6 +215,7 @@ def main() -> int:
     tick_counts = np.bincount(sorted_ticks, minlength=len(history_ticks))
     tick_starts = np.concatenate(([0], np.cumsum(tick_counts)))
     seeded_base_flat = initial_log.reshape(-1).copy()
+    physical_seeded_base_flat = initial_physical_log.reshape(-1).copy()
     width = frame_log_start.shape[1]
     for tick in range(len(history_ticks)):
         sample_events = sorted_history[tick_starts[tick]:tick_starts[tick + 1]]
@@ -211,36 +225,42 @@ def main() -> int:
                 continue
             pixels = selected[:, 2].astype(np.int64) * width + selected[:, 1].astype(np.int64)
             unique_pixels, counts = np.unique(pixels, return_counts=True)
-            seeded_base_flat[unique_pixels] += sign * counts.astype(np.float64) * 0.2
+            increment = sign * counts.astype(np.float64) * 0.2
+            seeded_base_flat[unique_pixels] += increment
+            physical_seeded_base_flat[unique_pixels] += increment
     seeded_base = seeded_base_flat.reshape(frame_log_start.shape)
     residual = frame_log_start - seeded_base
+    physical_seeded_base = physical_seeded_base_flat.reshape(frame_log_start.shape)
+    physical_residual = cached_input_log[0] - physical_seeded_base
 
     cold_physical = run_stream(cached_frames, cached_times, cached_config(), already_log=False)
     cold_online = run_stream(online_frames, online_times, online_config(), already_log=True)
     warm_online = run_stream(online_frames, online_times, online_config(), already_log=True,
                               initial_base=seeded_base)
     online_input_log = np.stack([online_log_gray(frame) for frame in online_frames])
-    cached_input_log = np.stack([
-        np.log(np.maximum(linear_luminance(frame).astype(np.float64), 1e-6))
-        for frame in cached_frames_aligned
-    ])
+    warm_physical = run_stream(cached_frames, cached_times, cached_config(), already_log=False,
+                               initial_base=physical_seeded_base, initial_lp=cached_input_log[0])
     transform_delta = np.abs(online_input_log - cached_input_log)
 
     comparison = {
         "cold_physical_transform": event_match(source_window, cold_physical),
         "cold_online_log_transform": event_match(source_window, cold_online),
         "history_seeded_online_log_transform": event_match(source_window, warm_online),
+        "history_seeded_physical_log_transform": event_match(source_window, warm_physical),
         "cold_physical_vs_saved_cached_stream": event_match(cached_events, cold_physical),
     }
     out_events = output / "history_seeded_online_events.npz"
     np.savez_compressed(out_events, events=warm_online)
+    out_physical_events = output / "history_seeded_physical_events.npz"
+    np.savez_compressed(out_physical_events, events=warm_physical)
     input_frames_sha256 = sha256(args.online_frames)
     per_sample: list[dict[str, Any]] = []
     previous_t = float(online_times[0])
     for t in online_times[1:]:
         row: dict[str, Any] = {"sample_end_s": float(t), "sample_start_s": previous_t}
         for name, events in (("online", source_window), ("cold_physical", cold_physical),
-                             ("cold_online", cold_online), ("history_seeded", warm_online)):
+                             ("cold_online", cold_online), ("history_seeded_online", warm_online),
+                             ("history_seeded_physical", warm_physical)):
             row[f"{name}_events"] = int(np.count_nonzero((events[:, 0] > previous_t) &
                                                           (events[:, 0] <= float(t))))
         per_sample.append(row)
@@ -269,6 +289,12 @@ def main() -> int:
             "max_above_positive_threshold": float(np.max(residual - 0.2)),
             "max_below_negative_threshold": float(np.max(-0.2 - residual)),
         },
+        "physical_state_seed_residual_from_live_frame": {
+            "abs_stats": stats(np.abs(physical_residual)),
+            "max_above_positive_threshold": float(np.max(physical_residual - 0.2)),
+            "max_below_negative_threshold": float(np.max(-0.2 - physical_residual)),
+            "seed_baseline": "physical-log launch snapshot plus the same causal event-history counts",
+        },
         "input_log_transform_abs_delta": {
             "stats": stats(transform_delta.ravel()),
             "fraction_nonzero": float(np.mean(transform_delta != 0)),
@@ -282,6 +308,8 @@ def main() -> int:
         )},
         "event_output": out_events.name,
         "event_output_sha256": sha256(out_events),
+        "physical_event_output": out_physical_events.name,
+        "physical_event_output_sha256": sha256(out_physical_events),
         "per_sample_csv": csv_path.name,
         "no_physics_or_renderer": True,
         "GT_segmentation_depth_or_future_state_used": False,
