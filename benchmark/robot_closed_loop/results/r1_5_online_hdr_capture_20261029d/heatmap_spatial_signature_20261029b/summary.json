@@ -1,0 +1,37 @@
+{
+  "status": "completed",
+  "purpose": "offline heatmap and target-event support diagnosis; no new training or rendering",
+  "git_commit_at_run": "c0ec0018cb18a1aa338bc0b4719bd42ef73cbb06",
+  "runtime_s": 0.1251850239932537,
+  "device": "cpu",
+  "roi_padding_px": 6.0,
+  "heatmap_temperature": 0.5,
+  "inputs": {
+    "events_sha256": "93d17785b5c408aad543c542f9e1f37367c055f4d7ac9aa1a805e54c086761eb",
+    "queries_sha256": "292d9ebd0ad1256d051e46bc0aa789b2c369e6ba45017f7e8f5b93f241c9ace3",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "event_count_in_archive": 6179,
+    "event_time_range_s": [
+      0.5505164469656877,
+      0.5904999999999999
+    ]
+  },
+  "checkpoints": [
+    {
+      "name": "old_display_png",
+      "path": "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/ours_fit/spatial_event_state.pt",
+      "sha256": "d391fec293e2c6c50cdb267e15f742ed09e77e7b28e56a79fdf700f633e804e9",
+      "architecture": "event-heatmap64-aux-z-velocity-v2"
+    },
+    {
+      "name": "native_hdr",
+      "path": "/home/\u79d1\u7814/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt",
+      "sha256": "6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2",
+      "architecture": "event-heatmap64-aux-z-velocity-v2"
+    }
+  ],
+  "rows": 14,
+  "output_csv": "heatmap_spatial_signature.csv",
+  "diagnostic_boundary": "GT projects a post-inference cube ROI for counting only; the network input is the same causal five-bin event tensor.",
+  "diagnostic_script_sha256": "c9a99d9278f84d1d8ebb80be4b216fd772dcbe3dfa599bdb54b3880a286b1357"
+}

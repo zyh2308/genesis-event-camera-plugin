@@ -65,6 +65,35 @@ PYTHONPATH=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a \
 
 早期临时对照曾把在线路径的 comparator 基线直接用于另一亮度坐标，导致窗口第一个子帧出现人为脉冲；该变体已排除，不用于表中结论。最终保留 launch 基线和相同起点残差两种状态映射，作为转换对照的敏感性范围。
 
-## 下一步
+## 后续训练路径审计与热图定位诊断（2026-10-29）
 
-先审计旧模型训练样本的事件窗口是否从整段 episode 连续生成，以及训练和评估是否使用完全相同的 HDR→log 函数、DVS 历史状态和时间采样。修好这条数据契约后，再用原预算做一次小重训和未参与拟合的新 episode 定位检查。当前结果不支持修改 frozen core，也不支持开始正式 Ours/V2E 排名。
+### 训练数据契约核查
+
+- 旧 checkpoint `d391fec…e804e9` 实际用的是显示 PNG 灰度（OpenCV 灰度 DN）生成的训练事件；它不是 native HDR 模型。
+- native HDR checkpoint `6ecea6a…dbec8d2` 使用 `trajectory_cache.h5/radiance` 的 scene-linear renderer radiance，经 `physical_log` 生成事件。
+- 两条训练路径都以一次 `start_episode()` 开始，然后按整集时间戳连续生成事件；没有逐 query 或逐 window 重置比较器。窗口重置只发生在此前冷启动缓存回放诊断中，不是训练缺陷。
+- native HDR 训练 episode 005 的种子为 `2026104135`、速度 `0.4 m/s`、中心位置；它不是本节在线 Direct-HDR 轨迹（seed `2026103425`、`+55 mm`）。因此两者是不同轨迹的域内/跨域参照，不是逐状态配对对照。
+
+### 同一 Direct-HDR 输入下的热图/解码检查
+
+- 同一组 `6179` 个 history-seeded Direct-HDR 事件、相同 7 个因果查询和相同 `heatmap_v2` 输出头，分别送入旧 PNG checkpoint 与 native HDR checkpoint。GT 只在推理后用于投影一个 4 cm 方块框并统计框内事件；事件张量没有加入 GT、分割或深度。
+- 两模型的预测热图在最差时刻仍把最高峰放在目标投影附近：native HDR checkpoint 在 `0.5875 s` 的全图 soft-argmax 解码误差为 `137.5 mm`，而热图最高峰单独投到固定方块平面后的误差为 `18.5 mm`；旧 PNG checkpoint 在 `0.5895 s` 分别为 `111.1 mm` 与 `4.2 mm`。七个相邻 cutoff 上，native HDR soft-argmax mean/max 为 `43.5/137.5 mm`，最高峰解码为 `18.1/19.1 mm`；旧 checkpoint 为 `58.7/111.1 mm` 与 `10.0/19.1 mm`。
+- 这表明本片段的最大跳变至少有一部分出现在网络热图到 XY 的**全局 soft-argmax 解码**：空间热图同时有多个候选响应，平均所有位置会把结果拉到两个候选之间。最高峰解码只是离线反事实，不是已验证控制器修复，也不能据这 7 个相邻窗口声称闭环稳定。
+- 目标投影框使用 4 cm 立方体加 6 px padding，框内仍有 `491–534` 个事件/25 ms（约 `13.1–13.9%` 的窗口事件）；这是近似几何 ROI 统计，不能当作真实分割或目标事件充分性的证明。native 热图在最差 cutoff 仍有 `54.7%` 概率落在该框内，说明输出有歧义，不是干净单峰定位。
+- native HDR checkpoint 在其独立验证 episode 005（seed `2026104135`、中心、0.4 m/s）的自有事件路径上，`0.55–0.60 s` 六个预测误差为 `7.0, 22.0, 26.2, 24.8, 2.6, 1.6 mm`。这与 +55 mm Direct-HDR 测试轨迹不同 seed/位置，只能说明 native 事件域仍有可定位窗口；不能把误差差异单独归因于重建或事件源。
+
+### 可复跑入口与范围
+
+本诊断是 WSL CPU 离线推理与统计；没有新建 Genesis 场景、渲染、物理 rollout、训练或服务器 GPU 作业。复跑时使用新的输出目录：
+
+```bash
+python3 benchmark/robot_closed_loop/diagnostics/inspect_r1_5_heatmap_evidence.py \
+  --events benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/remote_data/dvs_transform_state_mapped_20261029i/output/history_seeded_online_events.npz \
+  --queries benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/localization_native_hdr_checkpoint_exact_online/query_localization.csv \
+  --scene-config benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json \
+  --checkpoint old_display_png=benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018b/paired_r1/ours_fit/spatial_event_state.pt \
+  --checkpoint native_hdr=benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/ours_fit/spatial_event_state.pt \
+  --output benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/<new-run-id>
+```
+
+代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与 `heatmap_spatial_signature_20261029b/summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `c9a99d9278f84d1d8ebb80be4b216fd772dcbe3dfa599bdb54b3880a286b1357`；本次运行记录 HEAD `c0ec0018cb18a1aa338bc0b4719bd42ef73cbb06`，脚本与事件/查询摘要均在输出 JSON 中，耗时 `0.13 s`。下一项最有信息量的工作是把“全局 soft-argmax / 最高峰 / 局部峰”作为**同一模型输出的离线解码消融**，在现有共同 Direct-HDR 开发集和 native HDR 留出事件上共同跑完，再决定是否进入闭环；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。
