@@ -96,4 +96,20 @@ python3 benchmark/robot_closed_loop/diagnostics/inspect_r1_5_heatmap_evidence.py
   --output benchmark/robot_closed_loop/results/r1_5_online_hdr_capture_20261029d/<new-run-id>
 ```
 
-代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与 `heatmap_spatial_signature_20261029b/summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `105e0a3f404bc3650766a8741fd8392690133aaabcec12f92ae3f76188c3d378`；本次运行记录 HEAD `67c92a1` 与该工作树脚本哈希，耗时 `0.16 s`。下一项最有信息量的工作是把全图 soft-argmax、最高峰和局部 soft-argmax 作为**同一模型输出的离线解码消融**，先在 native HDR 留出 episode 的接触前窗口，再在现有共同 Direct-HDR 开发集上跑完；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。
+代码、两个 checkpoint、事件、查询、场景配置的 SHA256 见本目录 `SHA256SUMS` 与各次 `summary.json`。诊断脚本 `inspect_r1_5_heatmap_evidence.py` SHA256 为 `105e0a3f404bc3650766a8741fd8392690133aaabcec12f92ae3f76188c3d378`；Direct-HDR 复跑记录 HEAD `67c92a1` 与该工作树脚本哈希，耗时 `0.16 s`。下一项最有信息量的工作是把全图 soft-argmax、最高峰和局部 soft-argmax 作为**同一模型输出的离线解码消融**，先在 native HDR 留出 episode 的接触前窗口，再在现有共同 Direct-HDR 开发集上跑完；不要据此先改 frozen core 或训练预算。冻结 core 保持不变。
+
+### Native HDR 留出 episode 的接触前解码对照（2026-10-29；g1 CPU）
+
+为了判断上面的局部解码候选是否只适合 Direct-HDR 失败片段，我用同一 native HDR checkpoint 对 3 个原 validation episode 的全部接触前窗口做了对照。输入事件仍是各 episode 自己的 native HDR `events_2000hz` 全轨迹；状态标签只用于评分。此处固定目标中心高度为 20 mm，符合接触前平面假设；接触到抬升和抬升后窗口不参与本表。GT 投影 ROI 只做事后事件统计。
+
+| Validation episode | seed | 速度 | 发射 y | 接触前查询 | 全图 soft-argmax mean / P95 / max | 最高峰 mean / P95 / max | 局部 soft-argmax mean / P95 / max |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 004 | 2026104134 | 0.30 m/s | +55 mm | 91 | 4.93 / 12.53 / 16.29 mm | 6.22 / 14.05 / 20.23 mm | 4.89 / 12.61 / 14.32 mm |
+| 005 | 2026104135 | 0.40 m/s | 0 mm | 58 | 2.10 / 4.61 / 6.82 mm | 3.93 / 7.22 / 7.97 mm | 2.11 / 4.73 / 6.86 mm |
+| 006 | 2026104136 | 0.50 m/s | −55 mm | 45 | 3.82 / 7.40 / 7.82 mm | 4.69 / 9.51 / 9.92 mm | 3.83 / 7.44 / 7.82 mm |
+
+跨 194 个窗口汇总，全图 soft-argmax mean/P95 为 `3.83/10.14 mm`，最高峰 `5.18/11.07 mm`，局部 soft-argmax `3.81/10.30 mm`。相邻窗口相关，不能按 194 个独立 episode 解读。这里最高峰解码在三集上略差，局部 soft-argmax 与原解码基本一致；所以不能全局切换成 argmax。结合 Direct-HDR +55 mm 单片段中局部 soft-argmax 将 native checkpoint 的 mean/max 从 `43.5/137.5` 降到 `14.4/18.6 mm`，它是继续扩大离线配对诊断的合理候选，但还不足以改闭环或证明事件源是唯一根因。
+
+三集输出、各自输入哈希和 2 kHz 事件源路径在 [`native_validation_episode004_006_decoder_20261029d`](native_validation_episode004_006_decoder_20261029d/) 与 [`native_validation_episode005_decoder_20261029c`](native_validation_episode005_decoder_20261029c/)；g1 原输出目录分别为 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-nativehdr-20261019a/benchmark/robot_closed_loop/results/r1_5_native_validation_peak_decoder_20261029d/` 和 `.../r1_5_native_validation_peak_decoder_20261029c/`。运行使用脚本 SHA256 `105e0a3f404bc3650766a8741fd8392690133aaabcec12f92ae3f76188c3d378`（本分支代码 commit `a29c4be`），远端数据 checkout `4c5f5f29d4c46dd50401c0aa9079874f97afcbc6`，scene SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`，native checkpoint SHA256 `6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2`。query CSV SHA256 为 `22d7e7b38de9a8770b927284dd4ef745a3dbe112d23d20346c005400ca634344`；episode 004/005/006 raw event SHA256 分别为 `fee21ed2f91224886d3a7099a3257b5d0cf5316b172c1b071d725067e5556382`、`fdf832746b5b922e5ca785463d02ffdcbf70755bed9b8f78c98e362d42135aa1`、`88a39e69a284948c706f400c3fc2627f0ae956847bcda4127147db9f6843094f`。三次 CPU 推理计时合计约 `6.31 s`，没有渲染、物理步进或 GPU 任务。
+
+完整输出含各 episode 所有接触前查询，在目录内的 `SHA256SUMS` 校验；仓库根目录 `SHA256SUMS` 同时覆盖本报告和轻量结果。最初对 episode 005 全阶段使用固定 20 mm 平面时，接触/抬升后的 XY 误差不适合解释为图像定位失败，因为物体高度已离开该平面；正式表因此只纳入 `phase=pre_contact`。
