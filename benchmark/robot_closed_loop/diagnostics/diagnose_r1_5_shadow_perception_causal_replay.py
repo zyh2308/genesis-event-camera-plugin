@@ -21,7 +21,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-import h5py
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -55,6 +54,22 @@ from benchmark.robot_closed_loop.diagnostics.diagnose_r1_5_shadow_on_off_cached_
 
 def file_record(path: Path) -> dict[str, Any]:
     return {"path": str(path.resolve()), "sha256": _sha256(path), "bytes": path.stat().st_size}
+
+
+def camera_to_world_cv_from_config(config: dict[str, Any]) -> np.ndarray:
+    """Recreate the fixed Genesis look-at camera in the benchmark CV convention."""
+    camera = config["camera"]
+    position = np.asarray(camera["position_m"], dtype=np.float64)
+    forward = np.asarray(camera["lookat_m"], dtype=np.float64) - position
+    forward /= np.linalg.norm(forward)
+    up = np.asarray(camera["up_m"], dtype=np.float64)
+    right = np.cross(forward, up)
+    right /= np.linalg.norm(right)
+    camera_up = np.cross(right, forward)
+    transform = np.eye(4, dtype=np.float64)
+    transform[:3, :3] = np.column_stack((right, -camera_up, forward))
+    transform[:3, 3] = position
+    return transform
 
 
 def exact_causal_rows(trace: list[dict[str, Any]], query_start: float,
@@ -151,17 +166,11 @@ def main() -> int:
     for ep in episode_ids:
         cache_dir = args.cache_root / f"episode_{ep}"
         trace_path = cache_dir / "trace_window.jsonl"
-        source_cache_path = cache_dir / "same_state_source_cache.h5"
         trace = read_trace(trace_path)
         rows, row_times, cutoffs = exact_causal_rows(
             trace, query_start_s, query_end_s, window_s,
         )
-        with h5py.File(source_cache_path, "r") as h5:
-            camera_values = np.asarray(h5["camera_to_world_cv"][:], dtype=np.float64)
-            if camera_values.ndim == 3:
-                camera_pose = camera_values[3]
-            else:
-                camera_pose = camera_values
+        camera_pose = camera_to_world_cv_from_config(scene_config)
 
         model_records, checkpoint_hashes = load_event_models(
             {"ours_old_checkpoint": args.checkpoint.resolve()}, camera_pose,
@@ -317,10 +326,10 @@ def main() -> int:
             "inference_total_wall_s": inference_wall_s,
             "source_hashes": {
                 "trace_window_jsonl": file_record(trace_path),
-                "same_state_source_cache_h5": file_record(source_cache_path),
                 "scene_config": file_record(args.scene_config),
                 "checkpoint": file_record(args.checkpoint),
             },
+            "camera_calibration_contract": "CV extrinsics reconstructed from the fixed scene config and verified against the checkpoint; intrinsics derived from the same resolution/FOV and checked by the checkpoint loader",
             "checkpoint_loader_sha256": checkpoint_hashes,
             "limitations": [
                 "old Ours checkpoint is a diagnostic probe, not a model retrained for this shadow ablation",
