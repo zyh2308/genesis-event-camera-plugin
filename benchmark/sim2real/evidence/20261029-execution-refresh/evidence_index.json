@@ -1,0 +1,359 @@
+{
+  "schema": "sim2real_stage7_evidence_index_v1",
+  "captured_utc": "2026-10-29T06:03:00Z",
+  "repository_branch": "exp/public-sim2real-v1",
+  "code_commit_used_for_flow_run": "d0e36796f04826a14a0931878405abed943a49a3",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_scoring_policy": "HQF fixed evaluation completed and report-only; MVSEC and E-POSE scoring not run; real data did not select checkpoints or tune training.",
+  "resource_observations": [
+    {
+      "host": "g1.pkuml.org",
+      "observed_utc": "2026-10-29T06:02:30Z",
+      "result": "GPU0 had two gec-robot processes (~316 MiB total); GPUs1-5 had other processes; no safe GPU allocation."
+    },
+    {
+      "host": "g3.pkuml.org",
+      "observed_utc": "2026-10-29T06:02:51Z",
+      "result": "nvidia-smi returned Unknown Error for GPU 0000:56:00.0; complete device/process allocation not confirmed; no job launched."
+    }
+  ],
+  "artifacts": {
+    "hqf": {
+      "status": "real_hqf14_paired_scoring_completed",
+      "run_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-actual-r2",
+      "paired_score": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261025-hqf14-e2vid-seed0-actual-r2/paired_score.json",
+        "size_bytes": 38472430,
+        "sha256": "4fb0679ddcde1f4af3b2cbccf1af99fc0e193c9c51e809b171947b2dd36a3692"
+      },
+      "run_manifest_sha256": "a8041212a2c73a4ed0aa67fc4baaf59b3a7cfe735751f1d64a80ac8a511bf67d",
+      "data_manifest_sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add",
+      "checkpoint_sha256": {
+        "eventgenesis": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc",
+        "v2e": "598b1e7837b4b02b50a7f390889c7737ed797840043a3f23121f54dc99d050d8"
+      },
+      "equal_sequence_mean": {
+        "eventgenesis": {
+          "lpips_alex": 0.5707381395533369,
+          "ssim": 0.2552825745644461,
+          "psnr_db": 11.634839261823668,
+          "mse": 0.08614728341404365
+        },
+        "v2e": {
+          "lpips_alex": 0.5822195403288457,
+          "ssim": 0.2500349422659423,
+          "psnr_db": 12.074157567577435,
+          "mse": 0.08066656123013195
+        }
+      },
+      "checkpoint_selection_allowed": false,
+      "checkpoint_artifacts": [
+        {
+          "arm": "eventgenesis",
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+          "size_bytes": 171428482,
+          "sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc"
+        },
+        {
+          "arm": "v2e",
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/v2e/synthetic_best.pt",
+          "size_bytes": 171428482,
+          "sha256": "598b1e7837b4b02b50a7f390889c7737ed797840043a3f23121f54dc99d050d8"
+        }
+      ]
+    },
+    "flow_gt_fit": {
+      "status": "fit_and_independent_eval_complete; outer run exit 1 during standalone restore check",
+      "run_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2",
+      "host": "g3.pkuml.org",
+      "gpu_uuid": "GPU-dd93b58d-df3d-9d33-bffc-2203bb503e87",
+      "training_device_logged": "NVIDIA GeForce RTX 4090",
+      "started_utc": "2026-10-28T16:20:43Z",
+      "finished_utc": "2026-10-28T17:04:21Z",
+      "exit_code": 1,
+      "environment": {
+        "python": "3.11.15",
+        "torch": "2.5.1+cu121",
+        "h5py": "3.14.0",
+        "numpy": "2.4.6",
+        "opencv": "5.0.0"
+      },
+      "source_commit": "d0e36796f04826a14a0931878405abed943a49a3",
+      "config_sha256": "ce7c7e6c7670f2514e75db821eb7ef93939ff6794bcb5af8bc90e024b4597665",
+      "shared_bank_sha256": "2f0db064a1fdf90417f31e345e99813bcdb036759cf2dbbdce344e9a7700352c",
+      "bank_manifest_sha256": "ef2143559215277cd077f8b3cc10b502d1edc64ccc3792873cc8b2771369177b",
+      "split_sha256": "a1d0947f40e413334ee77883959fe8fd1a709cf03800e5127594b7a50f3ba268",
+      "paired_data_manifest_sha256": "02f8eab65559a9b8442fe04b46ae202fe23a15116ae62fe7b3385e7e6c3cf50d",
+      "initialization_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+      "fit_updates_per_arm": 200,
+      "sample": "s5q_02_train/dt1_000",
+      "validation_rollout": "s5q_02_val",
+      "validation_windows": 66,
+      "fixed_sample": {
+        "eventgenesis": {
+          "objective_initial": 2.5064754486,
+          "objective_final": 0.0174704418,
+          "active_epe_initial": 1.9387935677,
+          "active_epe_final": 0.1034392938,
+          "full_epe_initial": 0.6989377628,
+          "full_epe_final": 0.0380176907,
+          "zero_active_epe": 0.0138492901,
+          "zero_full_epe": 0.015067105
+        },
+        "v2e": {
+          "objective_initial": 0.4346039593,
+          "objective_final": 0.0036114275,
+          "active_epe_initial": 0.2634532403,
+          "active_epe_final": 0.01290146,
+          "full_epe_initial": 0.0992408602,
+          "full_epe_final": 0.0070479155,
+          "zero_active_epe": 0.0138492901,
+          "zero_full_epe": 0.015067105
+        }
+      },
+      "independent_eval": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/independent_rollout_eval.json",
+        "size_bytes": 184778,
+        "sha256": "b499e104d47ae8e8bc3f5a2f825d7460d4f74aee035f34043f409313c07adb05",
+        "valid_pixels": 5928597,
+        "common_active_pixels": 74541,
+        "active_coverage": 0.012572,
+        "gt_motion_pixels": 113066,
+        "epe_px_per_30ms": {
+          "eventgenesis": {
+            "full_valid": 0.0369918404,
+            "full_zero": 0.0310426947,
+            "common_active": 0.6218128467,
+            "active_zero": 0.560272061,
+            "gt_motion_ge_0_5": 1.4073133302,
+            "gt_motion_zero": 1.4070811785
+          },
+          "v2e": {
+            "full_valid": 0.0477579903,
+            "full_zero": 0.0310426947,
+            "common_active": 0.7209093991,
+            "active_zero": 0.560272061,
+            "gt_motion_ge_0_5": 1.3946365317,
+            "gt_motion_zero": 1.4070811785
+          }
+        }
+      },
+      "checkpoint_sha256": {
+        "eventgenesis": "4da12339e52e29be1425287e3e4af5056cc3c7a125f7cc12f3ba326ad69f2a9b",
+        "v2e": "07bae17f1c1d5c635e863b73349a13ea04c635f1a079c31f466b254142bf143c"
+      },
+      "fit_summary": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/summary.json",
+        "size_bytes": 252976,
+        "sha256": "c0b30ce6bbccfeebf10dda8a3780115704f6dda9d926ef9339f9f1ee11249a9e"
+      },
+      "update_log_sha256": {
+        "eventgenesis": "0fed390a61231d6047ece05538d5df8d705c6741e8f1cc643dd552adce77ca62",
+        "v2e": "4ea4dba52603fe940dfb0a84d08bac2ea75f63281476cef6cbac820db80f4b64"
+      },
+      "in_process_restore": {
+        "both_arms_state_equal": true,
+        "optimizer_step": [
+          200
+        ],
+        "prediction_max_abs_difference": 0.0
+      },
+      "standalone_restore": {
+        "status": "not_verified",
+        "primary_failure": "driver passed literal ${arm}_last.pt; fixed attempts then failed CUDA initialization on g3",
+        "cpu_fallback": "pinned STEFlowNet forward uses Tensor.cuda() internally",
+        "attempt_directories": [
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/checkpoint_restore_recheck",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/checkpoint_restore_recheck_attempt02",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/checkpoint_restore_recheck_attempt03",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/checkpoint_restore_cpu_resume"
+        ]
+      },
+      "run_state_file_sha256": "6da5b18878e110928643ebcc38dbb7552cf3a296eea56493e23edc2b93eecff8",
+      "exit_code_file_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "driver_script": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/driver.sh",
+      "checkpoint_artifacts": [
+        {
+          "arm": "eventgenesis",
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/eventgenesis_last.pt",
+          "size_bytes": 580024762,
+          "sha256": "4da12339e52e29be1425287e3e4af5056cc3c7a125f7cc12f3ba326ad69f2a9b"
+        },
+        {
+          "arm": "v2e",
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/v2e_last.pt",
+          "size_bytes": 580022034,
+          "sha256": "07bae17f1c1d5c635e863b73349a13ea04c635f1a079c31f466b254142bf143c"
+        }
+      ],
+      "event_artifacts": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/v2e/s5q_02_train.h5",
+          "size_bytes": 111767,
+          "sha256": "c59e659d879e659a82d81e63ba97e678b0531e1a9f19685e64ed2ae09c937f30"
+        },
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/v2e/s5q_02_val.h5",
+          "size_bytes": 382298,
+          "sha256": "1f51752ae1ea49f98fb044ae8a7572fbe9333ef1d4879f1b4c4056dbcb861939"
+        }
+      ],
+      "update_logs": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/eventgenesis_fixed_sample_updates.jsonl",
+          "size_bytes": 83164,
+          "sha256": "0fed390a61231d6047ece05538d5df8d705c6741e8f1cc643dd552adce77ca62"
+        },
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/v2e_fixed_sample_updates.jsonl",
+          "size_bytes": 83922,
+          "sha256": "4ea4dba52603fe940dfb0a84d08bac2ea75f63281476cef6cbac820db80f4b64"
+        }
+      ],
+      "driver_artifacts": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/driver.sh",
+          "size_bytes": 4432,
+          "sha256": "eb58e376d5fb053e4a66c36c7d46dbb0c8bb024e5178fc4cebb5fa3aac4edfd3"
+        }
+      ],
+      "driver_log_remote_only": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/driver.log",
+        "size_bytes": 12488,
+        "sha256": "546059d8ed194c641b63eef38c5cbeb504e6627032de7e93928a3d20a0f9e0c2",
+        "reason": "Raw nvidia-smi output retained on g1 to avoid publishing unrelated processes."
+      }
+    },
+    "epose": {
+      "status": "sample semantics audited; no pose train or real score",
+      "ingestion_dir": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1",
+      "ingestion_archives": "18/18",
+      "extracted_file_count": 2377982,
+      "raw_h5": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/original_data/original_data/block/r_01_gl/data.h5",
+      "raw_h5_sha256": "a589e204be51970f128a39315954bdb814157945be90d6c63f56d739566f863a",
+      "mat_samples": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/block/block/r_01_gl/0001_data.mat",
+          "sha256": "bd369f867e671a194b067ba03cf11664adb6b389b1762203aba3b2ed1b6edb0c",
+          "window_s": [
+            0.0613679886,
+            0.0713729858
+          ],
+          "events_matched": 717,
+          "events_total": 717
+        },
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/block/block/r_01_gl/0002_data.mat",
+          "sha256": "edd0768470f857825220eb501650e54347df15aa1990623c945d7512d0b532a8",
+          "window_s": [
+            0.0713729858,
+            0.0814039707
+          ],
+          "events_matched": 729,
+          "events_total": 729
+        }
+      ],
+      "cad": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/external/sim2real_assets/epose_wood_block_20261024",
+        "vertex_count": 8194,
+        "dimensions_m": [
+          0.103917,
+          0.103464,
+          0.206003
+        ],
+        "xyz_sha256": "b86ea03231c65b6a3caa373737234f6815dfac2b9ce0b29e83ac5629b2fbf8f7",
+        "ply_sha256": "8c653731426cf73b5b5d4ffbfa3bdd4ebb14cb82d413da82559bce1b5ee3ab37"
+      },
+      "projection_error_px": {
+        "per_point_depth_mean": [
+          16.7612,
+          16.708
+        ],
+        "per_point_depth_max": [
+          47.8047,
+          47.5043
+        ],
+        "legacy_shared_depth_mean": [
+          0.1094,
+          0.1086
+        ],
+        "legacy_shared_depth_max": [
+          0.3249,
+          0.3228
+        ]
+      },
+      "camera_pose_time_alignment": {
+        "sample1_translation_error_m": 5.603451574e-06,
+        "sample1_rotation_error_deg": 0.000387937,
+        "sample2_translation_error_m": 0.0008185483,
+        "sample2_rotation_error_deg": 0.05666956,
+        "formula": "raw_camera_pose_time = first_raw_event_time - 0.100 + MAT.time"
+      },
+      "sample_audit_json": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-epose-second-sample-audit/result.json",
+        "size_bytes": 8046,
+        "sha256": "2116dc6272aabc5dda1b7e189dffca47d53e135d044cd37bd0fd42fc0922d468"
+      },
+      "camera_pose_v3_json": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-epose-second-sample-audit/camera_pose_trajectory_v3.json",
+        "size_bytes": 2740,
+        "sha256": "36f634899f2314eb520a17ba027e9fec4633313c9e1aaed5b4ac9ac27f862ace"
+      },
+      "camera_pose_v3_script": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-epose-second-sample-audit/camera_pose_trajectory_audit_v3.py",
+        "size_bytes": 2737,
+        "checked_in_copy": {
+          "path": "benchmark/sim2real/evidence/20261029-execution-refresh/epose/camera_pose_trajectory_audit_v3.py",
+          "size_bytes": 2737,
+          "sha256": "6ad9476363ef7c1b3bd570ed3fd34578f3eccfd3ba0b94c275ea39a6105ba4cc"
+        }
+      }
+    }
+  },
+  "checked_in_evidence_copies": {
+    "flow": [
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/flow/driver.sh",
+        "size_bytes": 4432,
+        "sha256": "eb58e376d5fb053e4a66c36c7d46dbb0c8bb024e5178fc4cebb5fa3aac4edfd3"
+      },
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/flow/fixed_sample_fit/eventgenesis_fixed_sample_updates.jsonl",
+        "size_bytes": 83164,
+        "sha256": "0fed390a61231d6047ece05538d5df8d705c6741e8f1cc643dd552adce77ca62"
+      },
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/flow/fixed_sample_fit/summary.json",
+        "size_bytes": 252976,
+        "sha256": "c0b30ce6bbccfeebf10dda8a3780115704f6dda9d926ef9339f9f1ee11249a9e"
+      },
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/flow/fixed_sample_fit/v2e_fixed_sample_updates.jsonl",
+        "size_bytes": 83922,
+        "sha256": "4ea4dba52603fe940dfb0a84d08bac2ea75f63281476cef6cbac820db80f4b64"
+      },
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/flow/independent_rollout_eval.json",
+        "size_bytes": 184778,
+        "sha256": "b499e104d47ae8e8bc3f5a2f825d7460d4f74aee035f34043f409313c07adb05"
+      }
+    ],
+    "epose": [
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/epose/camera_pose_trajectory_audit_v3.py",
+        "size_bytes": 2737,
+        "sha256": "6ad9476363ef7c1b3bd570ed3fd34578f3eccfd3ba0b94c275ea39a6105ba4cc"
+      },
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/epose/camera_pose_trajectory_v3.json",
+        "size_bytes": 2740,
+        "sha256": "36f634899f2314eb520a17ba027e9fec4633313c9e1aaed5b4ac9ac27f862ace"
+      },
+      {
+        "path": "benchmark/sim2real/evidence/20261029-execution-refresh/epose/result.json",
+        "size_bytes": 8046,
+        "sha256": "2116dc6272aabc5dda1b7e189dffca47d53e135d044cd37bd0fd42fc0922d468"
+      }
+    ]
+  }
+}
