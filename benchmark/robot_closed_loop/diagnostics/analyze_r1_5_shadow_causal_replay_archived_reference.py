@@ -137,6 +137,26 @@ def main() -> int:
                 reference_estimate["position_error_xy_mm"] = float(np.linalg.norm(ref_xy - gt_position[:2]) * 1000.0)
                 reference_estimate["heatmap_uv_error_px"] = float(np.linalg.norm(ref_uv - gt_uv))
 
+            timestamp_shift_counterfactuals: list[dict[str, Any]] = []
+            for shift_s in (-0.005, -0.0025, -0.001, -0.0005, 0.0005, 0.001, 0.0025, 0.005):
+                shifted_events = archived_events.copy()
+                shifted_events[:, 0] += shift_s
+                shifted_estimate, _ = infer_event_state(
+                    shifted_events, model_records["ours_old_checkpoint"], float(cutoff),
+                    width, height, camera_pose, intrinsics, fixed_height,
+                )
+                shifted_error = None
+                if shifted_estimate.get("state_available"):
+                    shifted_xy = np.asarray(shifted_estimate["position_xyz_m"], dtype=np.float64)[:2]
+                    shifted_error = float(np.linalg.norm(shifted_xy - gt_position[:2]) * 1000.0)
+                timestamp_shift_counterfactuals.append({
+                    "event_timestamp_shift_s": shift_s,
+                    "state_available": bool(shifted_estimate.get("state_available")),
+                    "event_count_25ms": int(shifted_estimate["event_count_25ms"]),
+                    "position_error_xy_mm": shifted_error,
+                    "counterfactual_only": True,
+                })
+
             conditions: dict[str, Any] = {"archived_direct_hdr_2khz": reference_estimate}
             ref_flat = reference_voxel.astype(np.float64).ravel()
             ref_bin_counts = reference_voxel.sum(axis=(1, 2, 3)).astype(np.int64)
@@ -224,6 +244,7 @@ def main() -> int:
                 "gt_position_xy_m": gt_position[:2].tolist(),
                 "gt_label_method": gt["label_method"],
                 "archived_direct_hdr_2khz": conditions["archived_direct_hdr_2khz"],
+                "archived_timestamp_shift_counterfactuals": timestamp_shift_counterfactuals,
                 "shadow_on": conditions["shadow_on"],
                 "shadow_off": conditions["shadow_off"],
                 "five_ms_bin_comparison_vs_archived": bin_comparison,
