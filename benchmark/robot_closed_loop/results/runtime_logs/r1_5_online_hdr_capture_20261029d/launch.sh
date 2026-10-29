@@ -146,5 +146,12 @@ for _ in $(seq 1 20); do [[ -s "$LOGDIR/worker_pid.txt" ]] && break; sleep 0.25;
 test -s "$LOGDIR/worker_pid.txt"
 ps -o user,pid,ppid,etime,cmd -p "$WORKER_PID" > "$LOGDIR/detach_verification.txt"
 tmux has-session -t "$SESSION"
+python3 - "$LOCK/allocation.json" "$RUN_ID" "$WORKER_PID" "$SESSION" <<'PY'
+import datetime,json,sys
+p,run_id,pid,session=sys.argv[1:]
+d=json.load(open(p)); assert d.get('run_id')==run_id
+d.update(status='running',worker_pid=int(pid),tmux_session=session,launched_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+json.dump(d,open(p,'w'),indent=2)
+PY
 printf 'session=%s worker_pid=%s output=%s\n' "$SESSION" "$WORKER_PID" "$OUT"
 KEEP_LOCK=1
