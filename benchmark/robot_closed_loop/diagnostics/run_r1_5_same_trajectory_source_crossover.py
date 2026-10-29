@@ -178,7 +178,7 @@ def _context_panel(frame: dict[str, Any], probability: np.ndarray, row: dict[str
     panel = Image.new("RGB", (width, height + 28), (18, 20, 24))
     panel.paste(canvas, (0, 28))
     d = ImageDraw.Draw(panel)
-    d.text((4, 7), f"{title} | {float(row['query_s']):.4f}s | XY {float(row['planar_error_xy_mm']):.1f}mm", fill=(245, 245, 245))
+    d.text((4, 7), f"{float(row['query_s']):.4f}s | XY {float(row['planar_error_xy_mm']):.1f}mm", fill=(245, 245, 245))
     return panel
 
 
