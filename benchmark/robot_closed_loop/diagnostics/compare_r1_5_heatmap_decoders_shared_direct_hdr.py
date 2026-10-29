@@ -91,7 +91,7 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     # checkpoint, event tensor and causal cutoff.
     pivot: dict[tuple[str, str, str], dict[str, float]] = defaultdict(dict)
     for row in rows:
-        pivot[(row["checkpoint"], row["episode_id"], row["query_s"])][row["decoder"]] = float(
+        pivot[(row["checkpoint"], row["episode_id"], row["cutoff_s"])][row["decoder"]] = float(
             row["position_xy_error_mm"])
     paired = defaultdict(list)
     for (checkpoint, _episode, _query), values in pivot.items():
