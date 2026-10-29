@@ -147,8 +147,19 @@ def main() -> int:
     with np.load(args.cached_frames, allow_pickle=False) as archive:
         cached_times = np.asarray(archive["times_s"], dtype=np.float64)
         cached_frames = np.asarray(archive["hdr_rgb"], dtype=np.float32)
-    if not np.array_equal(online_times, cached_times) or not np.array_equal(online_frames, cached_frames):
-        raise RuntimeError("dense cached HDR frames do not exactly match the online captured frames")
+    if len(online_times) != len(cached_times) or online_frames.shape != cached_frames.shape:
+        raise RuntimeError("online and cached dense HDR arrays have different shapes")
+    cached_indices: list[int] = []
+    timestamp_deltas: list[float] = []
+    for time_s in online_times:
+        matches = np.flatnonzero(np.abs(cached_times - time_s) <= 1e-9)
+        if len(matches) != 1:
+            raise RuntimeError(f"expected one cached frame near online t={time_s}, got {len(matches)}")
+        cached_indices.append(int(matches[0]))
+        timestamp_deltas.append(abs(float(cached_times[matches[0]] - time_s)))
+    cached_frames_aligned = cached_frames[cached_indices]
+    if not np.array_equal(online_frames, cached_frames_aligned):
+        raise RuntimeError("dense cached HDR pixels differ from online frames at shared timestamps")
     with np.load(args.online_events, allow_pickle=False) as archive:
         online_events = np.asarray(archive["events_2000hz"], dtype=np.float64).reshape(-1, 4)
     with np.load(args.cached_events, allow_pickle=False) as archive:
@@ -187,7 +198,7 @@ def main() -> int:
     online_input_log = np.stack([online_log_gray(frame) for frame in online_frames])
     cached_input_log = np.stack([
         np.log(np.maximum(linear_luminance(frame).astype(np.float64), 1e-6))
-        for frame in cached_frames
+        for frame in cached_frames_aligned
     ])
     transform_delta = np.abs(online_input_log - cached_input_log)
 
@@ -222,7 +233,8 @@ def main() -> int:
         "experiment": "same HDR frames with cold versus reconstructed live DVS comparator state; online-log versus physical-log routes",
         "window_s": [start_s, end_s],
         "frame_count": int(len(online_times)),
-        "frames_online_and_cached_bitwise_identical": True,
+        "frames_bitwise_equal_at_shared_timestamps": True,
+        "max_shared_timestamp_delta_s": float(max(timestamp_deltas)),
         "source_events_in_window_excluding_start": int(len(source_window)),
         "history_events_used_through_window_start": int(len(history)),
         "history_events_on": int(len(positive)),
