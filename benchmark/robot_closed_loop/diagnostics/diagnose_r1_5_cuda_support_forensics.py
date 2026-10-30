@@ -647,8 +647,9 @@ def main():
             array_store[f"{ep}_strict_actual_{key}"] = value
         summary["episodes"].append(episode)
 
-    renderer_cost_path = ROOT / "benchmark/robot_closed_loop/results/r1_5_multiref_surface_cached_replay_20261021d/summary.json"
-    renderer_cost_summary = json.loads(renderer_cost_path.read_text(encoding="utf-8"))
+    renderer_cost_reference = config.get("measured_render_cost_reference")
+    if not renderer_cost_reference:
+        raise ValueError("config must include the hash-verified measured render-cost reference")
     summary["photometric_sampling_and_render_cost"] = {
         "exact_cached_direct_hdr_samples": {
             item["episode"]: {
@@ -665,28 +666,10 @@ def main():
                 "cached_api_wall_s_cpu": item["strict_api_wall_s_cpu_using_cached_frames"],
                 "new_renderer_cost_measured": item["new_renderer_cost_measured"],
             }
-            for item in summary["episodes"]
+            for episode in summary["episodes"]
+            for item in [episode["strict_actual_intermediate_radiance"]]
         },
-        "measured_full_frame_fallback_reference": {
-            "source_summary_path": renderer_cost_path.relative_to(ROOT).as_posix(),
-            "source_summary_sha256": sha256(renderer_cost_path),
-            "source_code_commit": renderer_cost_summary["code_commit"],
-            "episodes": {
-                key: {
-                    "fallback_rendered_frames": value["candidate"]["full_frame_fallback_count"],
-                    "fallback_render_wall_s": value["candidate"]["fallback_render_wall_s"],
-                    "candidate_total_wall_s": value["candidate"]["total_production_wall_s_estimate"],
-                    "direct_render_wall_s_47_states": value["direct_render"]["wall_s_all_for_audit"],
-                    "direct_dvs_wall_s": value["direct_logged_state_comparator"]["dvs_wall_s"],
-                    "direct_render_plus_dvs_wall_s": value["direct_render"]["wall_s_all_for_audit"] + value["direct_logged_state_comparator"]["dvs_wall_s"],
-                    "candidate_over_direct_pipeline_ratio": value["candidate"]["total_production_wall_s_estimate"] / max(
-                        value["direct_render"]["wall_s_all_for_audit"] + value["direct_logged_state_comparator"]["dvs_wall_s"], 1e-12,
-                    ),
-                }
-                for key, value in renderer_cost_summary["episodes"].items()
-            },
-            "scope_note": "Historical actual Genesis rerender measurement of the multi-reference candidate on 42 intermediate states per 40 ms clip; it bounds the cost of full-frame fallback, not the exact cost of the current six-request 10 ms schedule.",
-        },
+        "measured_full_frame_fallback_reference": renderer_cost_reference,
         "current_strict_provider_cost_measured": False,
         "freeze_recommendation": "do_not_freeze_default_core_until exact-time intermediate render-provider wall cost and online availability are measured; strict cached frames prove temporal fidelity but do not measure a live provider",
     }

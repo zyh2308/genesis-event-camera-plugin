@@ -1,0 +1,79 @@
+{
+  "run_id": "r1_5_cuda_support_forensics_20261031f",
+  "purpose": "Rerun the 004/005 parity forensics through both the low-level projection/compositor APIs and the public PhysicsInterpolator CPU/CUDA path, with complete DVS backend cross checks.",
+  "candidate_branch": "exp/r1_5-core-candidate-20261030",
+  "episodes": [
+    "004",
+    "005"
+  ],
+  "interval_s": [
+    0.5805,
+    0.5905
+  ],
+  "midpoint_query_s": 0.5855,
+  "source_paths": {
+    "state_and_direct_hdr_cache": "benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059",
+    "prior_parity_arrays": "benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz"
+  },
+  "comparison_design": {
+    "same_projection_input": "NumPy and CUDA compositors each receive the same serialized float32 uv/z/valid arrays from one projector.",
+    "independent_projection": "Compare NumPy float64 geometry with Torch float64 ray/SE3/projection geometry, both returning float32 uv/z; feed each projection into both compositors.",
+    "torch_projection_precision": "Float64 alphas, camera/object poses, intrinsics, rays and SE3/projection geometry at both core and public caller; float32 uv/z outputs.",
+    "event_paths": "For both projection sources and both reconstruction backends, run identical initial state and timestamps through CPU and CUDA DVS.",
+    "support_threshold_fraction": 0.995,
+    "depth_tie_abs_m": 1e-07,
+    "depth_tie_rtol": 9.5367431640625e-07,
+    "cross_endpoint_surface_depth_abs_m": 0.001,
+    "cross_endpoint_surface_depth_rtol": 0.001,
+    "invalid_pixel_policy": "hold I1 at alpha=0.5, matching the archived causal replay",
+    "dvs": {
+      "threshold_pos": 0.2,
+      "threshold_neg": 0.2,
+      "sigma_threshold": 0.0,
+      "cutoff_hz": 0.0,
+      "leak_rate_hz": 0.0,
+      "shot_noise_rate_hz": 0.0,
+      "refractory_period_s": 0.0,
+      "response_mode": "physical_log",
+      "readout_model": "ideal_readout",
+      "seed": 42
+    },
+    "production_interpolator": "Run public PhysicsInterpolator with the same cached endpoints and adaptive sample schedule on NumPy and CUDA; compare every intermediate support mask, supported log-luminance, and CPU/CUDA DVS outputs."
+  },
+  "controls": [
+    "coverage at and one float32 ULP around the 0.995 threshold",
+    "tiny positive footprint remains visible but unsupported",
+    "front/back occlusion preserves nearest surface radiance",
+    "threshold-adjacent DVS probes for both polarities"
+  ],
+  "acceptance": {
+    "numpy_torch_supported_mask_mismatch_pixels": 0,
+    "max_abs_log_luminance_delta_supported_pixels": 0.02,
+    "threshold_dvs_cpu_cuda_event_sequence_exact": true,
+    "cached_clip_event_count_relative_delta_max": 0.02,
+    "note": "These are the previously frozen parity criteria; the supported-mask and supported-luminance gates apply to each backend native end-to-end projection plus compositor. This forensic run does not relax them. Renderer fidelity, intermediate-radiance sampling, render cost, and closed-loop perception remain separate acceptance items. The public PhysicsInterpolator multi-sample path must also satisfy the same mask/luminance limits and its CPU/CUDA DVS event-count delta must remain within the frozen 0.02 bound."
+  },
+  "output_dir": "benchmark/robot_closed_loop/results/r1_5_cuda_support_forensics_20261031f",
+  "measured_render_cost_reference": {
+    "artifact": "benchmark/robot_closed_loop/results/r1_5_multiref_surface_cached_replay_20261021d/summary.json",
+    "artifact_sha256": "a505de6432aed810404826bd14c509293bf8dedfa9bd2e95d941cc4fa1be8166",
+    "executed_code_commit": "378442a45afb85e494acbc53f95859028ddd9163",
+    "scope": "Actual Genesis renderer measurement of the selective multi-reference candidate; 42 intermediate states over each 40 ms clip all triggered full-frame fallback. This does not measure the current six-request 10 ms strict provider schedule.",
+    "episodes": {
+      "004": {
+        "fallback_frame_count": 42,
+        "fallback_render_wall_s": 0.6769612226635218,
+        "candidate_total_pipeline_wall_s": 7.102035214193165,
+        "direct_render_47_state_wall_s": 0.7520476225763559,
+        "direct_dvs_wall_s": 0.4681383529677987
+      },
+      "005": {
+        "fallback_frame_count": 42,
+        "fallback_render_wall_s": 0.9500257382169366,
+        "candidate_total_pipeline_wall_s": 6.107042407616973,
+        "direct_render_47_state_wall_s": 1.0660504419356585,
+        "direct_dvs_wall_s": 0.6471374686807394
+      }
+    }
+  }
+}
