@@ -1,8 +1,17 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-30（Asia/Tokyo）
-**阶段：** R1.5 主要 warp 异常已由具体 splat 规则解释，并完成 CPU NumPy/Torch 候选一致性与连续表面/遮挡控制。候选把两片段旧路径约 85–93% 的超限像素时间点压下，但仍有动态亮度和轮廓残差。当前还发现：旧完整 Torch/NumPy 插值器对仅 `1.1e-4 px` 的投影差异反应不稳定，亮度最大差达 `0.95/1.06`；coverage 候选在两自有投影下最大亮度差低于 `0.001`。Frozen core 未改，实际 CUDA 路径未验证；g1 只读检查成功，但没有取得 GPU 项目分配，未启动远端计算。详见 [`像素规则归因`](../../benchmark/robot_closed_loop/results/r1_5_pixel_rule_attribution_20261030d_commit_eb41274/README.md) 与 [`跨后端候选验证`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md)。
+**阶段：** R1.5 已完成隔离 core 候选和缓存验收，候选代码提交 `52d4df15b0c3e89da972471c784278c0cfcbbb32`。CPU 端点/coverage/遮挡/ramp 控制通过，004/005 的 1 ms archived Direct-HDR replay 逐像素及 raw events 完全一致。单个 5 ms 中点对动态机器人片段不够：事件计数 L1 为 212/324，P95 时间差 4.013/4.275 ms；一个 10 ms 窗口默认运动采样器要求额外 6 个真实状态。候选的 4.37–4.67% unknown 和支持区内部误差 P95 通过预设门槛，但轮廓附近仍有超过 0.2 log 的支持像素。g1 六卡均有活跃任务；CUDA 与本候选新 renderer 成本未测。候选不建议冻结，报告和逐项结果见 [`R1.5 core candidate`](r1_5_core_candidate_20261030.md) 与 [`复跑数据`](../../benchmark/robot_closed_loop/results/r1_5_core_candidate_20261030b_cpu_cached/summary.json)。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
+
+## R1.5 core candidate acceptance（2026-10-30）
+
+- 实现在隔离分支 `exp/r1_5-core-candidate-20261030`；主 checkout 仍为 `exp/robot-closed-loop-v1`，未切分支、reset 或覆盖。候选把双线性足迹近似、支持/unknown 分离、精确端点和 strict 光度锚点组合在一起；不宣称双线性核是 renderer 精确 coverage。
+- 候选配置 [`r1_5_core_candidate_20261030.json`](../../benchmark/robot_closed_loop/configs/r1_5_core_candidate_20261030.json)，验收脚本 [`validate_r1_5_core_candidate.py`](../../benchmark/robot_closed_loop/diagnostics/validate_r1_5_core_candidate.py)，阶段报告见上方链接。CPU 输出为 `benchmark/robot_closed_loop/results/r1_5_core_candidate_20261030b_cpu_cached/`，含 summary、逐条件 CSV、raw events/midpoint NPZ 与 SHA256SUMS；校验清单全部通过。
+- 两轨迹的 shadow × MSAA 共八格使用 0.5805/0.5855/0.5905 s 原始缓存。阴影和 MSAA 都显著改变稀疏三帧 DVS 事件；shadow-off 仅作归因，不改变正式场景。strict 接口输入已存中间辐亮度后八格 raw events 精确匹配，但额外 render 为 0，因此不等于在线独立渲染成本。
+- 单个中点不满足 1 ms 参考；默认运动采样器在 episode 004 同 10 ms 窗口另请求六个时间点。候选可在当前 CPU 表示中表达真实样本和可用时刻，但实时闭环延迟尚未通过。
+- 本轮 g1 资源检查时间 `2026-10-30T11:05:55Z`；GPU0–5 均有活跃任务，利用率 81–91%，未启动 CUDA。g3 只读检查因 Windows OpenSSH 无法读取已配置 `known_hosts` 而主机校验失败，已按规则停止，没有执行远端命令。
+- **冻结建议：暂不冻结。** 先取得可分配 GPU 并核对 CUDA parity/阈值附近事件和候选 renderer 成本；研究侧需在“动态区近 direct 采样”与“收窄 warp 支持范围并显式 unknown”之间决定精度/延迟边界。冻结 core 与 A/B/C 场景均未更改。
 
 **历史运行状态（截至 2026-10-25；后续结果见文末）：** 10/24 的 SSH 阻塞已解除。候选实现 `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已同步到 g1；当前实验分支与状态文档均在 `f8563d2fee7ec62881971c14489a219cb101795a`，较 d390 只有协调文档变化。两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最新 GPU 复查六张卡都有运行进程，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
 

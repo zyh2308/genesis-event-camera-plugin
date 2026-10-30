@@ -1,0 +1,51 @@
+{
+  "schema": "r1_5_core_candidate_v1",
+  "candidate": "exp/r1_5-core-candidate-20261030",
+  "official_frozen_core_modified": false,
+  "warping": {
+    "composite": "same_surface_log_linear",
+    "coverage_interpretation": "bilinear footprint approximation; not exact renderer pixel coverage",
+    "min_coverage_fraction": 0.995,
+    "depth_tie_absolute_m": 1e-7,
+    "depth_tie_relative_float32_eps_multiple": 8,
+    "surface_depth_absolute_m": 0.001,
+    "surface_depth_relative": 0.001,
+    "unsupported_pixels": "retain unknown mask; strict path requires real radiance sample; permissive hold is labeled approximation"
+  },
+  "photometric_sampling": {
+    "strict_fidelity_default": false,
+    "max_real_anchor_gap_s": 0.005,
+    "temporal_model_between_observed_anchors": "piecewise log-linear radiance approximation",
+    "required_output_available_at": "right endpoint of the state bracket",
+    "sample_input": "scene-linear radiance at an exact requested timestamp with declared render/cache provenance",
+    "geometry_gt_required_for_radiance_only_sample": false,
+    "max_render_anchors_per_bracket": 128,
+    "unobserved_sub_5ms_variation_claim": "unsupported; no accuracy claim for changes between real anchors"
+  },
+  "validation_acceptance": {
+    "exact_endpoint_max_abs_radiance": 0.0,
+    "numpy_torch_cpu_max_abs_radiance": 0.0001,
+    "numpy_torch_cpu_support_mismatch_pixels": 0,
+    "continuous_surface_plus_minus_1e-6_px_interior_max_abs_radiance_change": 0.0001,
+    "single_1e-6_coverage_neighbor_support": false,
+    "foreground_interior_max_abs_radiance_error": 0.001,
+    "known_ramp_event_count": 48,
+    "known_ramp_event_time_max_abs_error_s": 0.001,
+    "cached_factorial_unknown_fraction_ceiling_for_freeze": 0.15,
+    "cached_factorial_supported_interior_log_error_p95_ceiling_for_freeze": 0.2,
+    "cached_factorial_added_render_policy": "at most one required midpoint per 10 ms interval unless the existing motion sampler requests more",
+    "production_cuda_required_for_freeze": true,
+    "renderer_cost_required_for_freeze": true
+  },
+  "diagnostic_sources": {
+    "robot_cache": "benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_004 and episode_005",
+    "shadow_msaa_factorial": "benchmark/robot_closed_loop/results/r1_5_shadow_multisample_cached_states_20261029_g1_gpu0_previewfix_855b4b0",
+    "shadow_msaa_factorial_conditions": [
+      "shadow_on_multisample_on",
+      "shadow_on_multisample_off",
+      "shadow_off_multisample_on",
+      "shadow_off_multisample_off"
+    ],
+    "new_renderer_run_in_this_candidate_validation": false
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "strict_missing_sample_requests": [
+    {
+      "t": 0.005,
+      "alpha": 0.5,
+      "reason": "strict_real_radiance_sample",
+      "invalid_fraction": 0.0,
+      "radiance_residual_p99": 0.0,
+      "recommend_render": true,
+      "available_at": 0.01,
+      "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+    }
+  ],
+  "strict_output_times_s": [
+    0.005,
+    0.01
+  ],
+  "strict_uncertainty": {
+    "invalid_fraction": 0.0,
+    "high_gradient_invalid_fraction": 0.0,
+    "endpoint_radiance_residual_max": 0.6931471824645996,
+    "endpoint_radiance_residual_p99": 0.6931471824645996,
+    "constant_twist_endpoint_assumption": true,
+    "recommend_render": false,
+    "radiometric_calibration_status": "provided_by_caller",
+    "disocclusion_domain": "projected_target_image",
+    "depth_correspondence_method": "source_material_point",
+    "strict_sampling_status": "actual_state_samples",
+    "photometric_request_resolved": true,
+    "strict_sample_output": "direct_radiance_frames_at_observed_states",
+    "photometric_temporal_model": "piecewise_log_radiance_between_actual_samples",
+    "photometric_anchor_count": 3,
+    "photometric_max_anchor_gap_s": 0.005,
+    "max_photometric_interval_s": 0.005,
+    "adaptive_sample_count": 2,
+    "extra_render_count": 1,
+    "direct_sample_frame_count": 1,
+    "render_provider_wall_s": 1.018599868984893e-05,
+    "anchor_provenance": [
+      "caller_endpoint",
+      "analytic_log_linear_ramp_control",
+      "caller_endpoint"
+    ],
+    "anchor_available_at_s": [
+      0.0,
+      0.005,
+      0.01
+    ],
+    "output_available_at_s": 0.01,
+    "output_ready_after_right_endpoint_wall_s": 0.003026443999260664,
+    "future_state_used": false,
+    "geometry_warp_used_for_strict_output": false,
+    "causal_input_contract": "timestamp_match_plus_explicit_sample_provenance; output_available_no_earlier_than_right_endpoint"
+  },
+  "provider_request_count": 1,
+  "provider_requests": [
+    {
+      "t": 0.005,
+      "alpha": 0.5,
+      "reason": "strict_real_radiance_sample",
+      "invalid_fraction": 0.0,
+      "radiance_residual_p99": 0.0,
+      "recommend_render": true,
+      "available_at": 0.01,
+      "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+    }
+  ],
+  "candidate_event_count": 48,
+  "reference_event_count": 48,
+  "pixel_1_1_candidate_event_times_s": [
+    0.002885389821982809,
+    0.005770779782764756,
+    0.008656170124337847
+  ],
+  "analytic_expected_event_times_s": [
+    0.002885390081777927,
+    0.005770780163555854,
+    0.008656170245333782
+  ],
+  "max_abs_timing_error_s": 3.8079109830613245e-10,
+  "candidate_vs_reference_raw_events_exact": false,
+  "candidate_vs_reference_event_metrics": {
+    "reference_event_count": 48,
+    "candidate_event_count": 48,
+    "reference_on_count": 48,
+    "candidate_on_count": 48,
+    "reference_off_count": 0,
+    "candidate_off_count": 0,
+    "pixel_polarity_count_l1": 0,
+    "matched_event_slots": 48,
+    "matched_event_time_abs_error_median_s": 1.5086847396372782e-10,
+    "matched_event_time_abs_error_p95_s": 2.0158082538260236e-10,
+    "matched_event_time_abs_error_max_s": 2.0158082538260236e-10,
+    "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+  },
+  "static_scene_event_count": 0,
+  "cached_state_api_wall_s_cpu": 0.0030493820013361983,
+  "actual_renderer_cost_measured": false,
+  "claim_boundary": "known analytic log-linear ramp only; changes between 5 ms real anchors remain unobserved"
+}
