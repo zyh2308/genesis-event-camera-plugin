@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SSH = Path("/mnt/c/Windows/System32/OpenSSH/ssh.exe")
 SCP = Path("/mnt/c/Windows/System32/OpenSSH/scp.exe")
 REMOTE_AGENT = ROOT / "benchmark/robot_closed_loop/diagnostics/launch_r1_5_cuda_support_forensics_remote.sh"
-RUN_ID = "r1_5_cuda_support_forensics_20261031a"
+RUN_ID = "r1_5_cuda_support_forensics_20261031b"
 BRANCH = "exp/r1_5-core-candidate-20261030"
 HOSTS = ("g1.pkuml.org", "g3.pkuml.org")
 REMOTE_RUN_ROOT = f"/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/{RUN_ID}"
@@ -123,7 +123,7 @@ def stage_source(host: str, source_commit: str, timeout_s: float) -> str:
         "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py",
         "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py",
         "benchmark/robot_closed_loop/diagnostics/launch_r1_5_cuda_support_forensics_worker.sh",
-        "benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031a.json",
+        "benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031b.json",
         "benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz",
     ]
     bundle = io.BytesIO()

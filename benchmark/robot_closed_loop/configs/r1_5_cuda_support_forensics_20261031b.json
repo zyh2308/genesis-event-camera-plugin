@@ -1,0 +1,49 @@
+{
+  "run_id": "r1_5_cuda_support_forensics_20261031b",
+  "purpose": "Forensic split of endpoint projection, coverage/depth-layer compositing, and CPU/CUDA DVS parity on archived episodes 004/005.",
+  "candidate_branch": "exp/r1_5-core-candidate-20261030",
+  "episodes": ["004", "005"],
+  "interval_s": [0.5805, 0.5905],
+  "midpoint_query_s": 0.5855,
+  "source_paths": {
+    "state_and_direct_hdr_cache": "benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059",
+    "prior_parity_arrays": "benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz"
+  },
+  "comparison_design": {
+    "same_projection_input": "NumPy and CUDA compositors each receive the same serialized float32 uv/z/valid arrays from one projector.",
+    "independent_projection": "Compare NumPy float64 geometry then float32 output with Torch float32 projection; feed each projection into both compositors.",
+    "event_paths": "For both projection sources and both reconstruction backends, run identical initial state and timestamps through CPU and CUDA DVS.",
+    "support_threshold_fraction": 0.995,
+    "depth_tie_abs_m": 1e-7,
+    "depth_tie_rtol": 9.5367431640625e-7,
+    "cross_endpoint_surface_depth_abs_m": 0.001,
+    "cross_endpoint_surface_depth_rtol": 0.001,
+    "invalid_pixel_policy": "hold I1 at alpha=0.5, matching the archived causal replay",
+    "dvs": {
+      "threshold_pos": 0.2,
+      "threshold_neg": 0.2,
+      "sigma_threshold": 0.0,
+      "cutoff_hz": 0.0,
+      "leak_rate_hz": 0.0,
+      "shot_noise_rate_hz": 0.0,
+      "refractory_period_s": 0.0,
+      "response_mode": "physical_log",
+      "readout_model": "ideal_readout",
+      "seed": 42
+    }
+  },
+  "controls": [
+    "coverage at and one float32 ULP around the 0.995 threshold",
+    "tiny positive footprint remains visible but unsupported",
+    "front/back occlusion preserves nearest surface radiance",
+    "threshold-adjacent DVS probes for both polarities"
+  ],
+  "acceptance": {
+    "numpy_torch_supported_mask_mismatch_pixels": 0,
+    "max_abs_log_luminance_delta_supported_pixels": 0.02,
+    "threshold_dvs_cpu_cuda_event_sequence_exact": true,
+    "cached_clip_event_count_relative_delta_max": 0.02,
+    "note": "These are the previously frozen parity criteria; this forensic run does not relax them. Renderer fidelity, intermediate-radiance sampling, render cost, and closed-loop perception remain separate acceptance items."
+  },
+  "output_dir": "benchmark/robot_closed_loop/results/r1_5_cuda_support_forensics_20261031b"
+}

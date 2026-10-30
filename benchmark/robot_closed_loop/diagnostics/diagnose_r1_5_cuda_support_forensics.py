@@ -54,6 +54,14 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def json_default(value):
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    raise TypeError(f"not JSON serializable: {type(value).__name__}")
+
+
 def _as_numpy_diag(diag):
     return {k: v.detach().cpu().numpy()[0] for k, v in diag.items()}
 
@@ -459,7 +467,7 @@ def main():
                     z0, z1 = float(diag["z_buffer0"][y, x]), float(diag["z_buffer1"][y, x])
                     row["cross_endpoint_depth_abs_delta_m"] = abs(z0 - z1)
                     row["cross_endpoint_depth_tolerance_m"] = max(SURFACE_DEPTH_ABS, SURFACE_DEPTH_RTOL * max(abs(z0), abs(z1)))
-                    point_rows.append({k: json.dumps(v, separators=(",", ":")) if isinstance(v, (list, dict)) else v for k, v in row.items()})
+                    point_rows.append({k: json.dumps(v, separators=(",", ":"), default=json_default) if isinstance(v, (list, dict)) else v for k, v in row.items()})
                 case["original_xor_target_rejection_counts"] = target_reason_counts
                 episode["cases"].append(case)
 
@@ -525,6 +533,11 @@ def main():
     summary["controls"] = run_minimal_controls()
     threshold_rows = run_threshold_probes()
     summary["threshold_probe_cpu_cuda_arrays_exact"] = [bool(row["raw_event_arrays_exact"]) for row in threshold_rows]
+    summary["threshold_probe_results"] = []
+    for index, row in enumerate(threshold_rows):
+        summary["threshold_probe_results"].append({k: v for k, v in row.items() if k not in {"cpu_events", "cuda_events"}})
+        array_store[f"threshold_{index:02d}_cpu_events"] = row["cpu_events"]
+        array_store[f"threshold_{index:02d}_cuda_events"] = row["cuda_events"]
     acceptance = config["acceptance"]
     threshold_exact = all(summary["threshold_probe_cpu_cuda_arrays_exact"])
     episode_gates = {}
@@ -556,6 +569,13 @@ def main():
     }
     summary["wall_s_total"] = float(time.perf_counter() - start)
     summary["scope"] = "forensic parity only; renderer, physics advancement, training and ranking excluded"
+    summary["replay_command"] = (
+        "python -u benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py "
+        "--cache-root <verified-cache-root> --prior-arrays "
+        "benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz "
+        "--config benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031a.json "
+        "--output benchmark/robot_closed_loop/results/r1_5_cuda_support_forensics_20261031a"
+    )
 
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
@@ -567,7 +587,7 @@ def main():
         writer.writeheader(); writer.writerows(event_rows)
     with (args.output / "layer_contributors.jsonl").open("w", encoding="utf-8") as f:
         for row in layer_records:
-            f.write(json.dumps(row, separators=(",", ":")) + "\n")
+            f.write(json.dumps(row, separators=(",", ":"), default=json_default) + "\n")
     np.savez_compressed(args.output / "forensic_arrays.npz", **array_store)
     (args.output / "README.md").write_text(
         f"# {args.output.name}\n\nSame-projection-input and independently projected CPU/CUDA support trace on cached episodes 004/005. "
