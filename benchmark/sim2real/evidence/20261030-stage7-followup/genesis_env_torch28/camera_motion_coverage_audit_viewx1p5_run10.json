@@ -1,0 +1,159 @@
+{
+  "created_utc": "2026-10-30T13:24:18.065922+00:00",
+  "criteria": {
+    "path": "/home/\u79d1\u7814/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/20261030-stage7-followup/genesis_env_torch28/camera_motion_coverage_criteria_v1.json",
+    "sha256": "724f361ad1ebb5b251c554dad38f43036e74145fc68a9ba23295c06a23773f1d",
+    "values": {
+      "events": {
+        "common_mask": "union of normal EventGenesis and pinned V2E active-pixel support for the same interval",
+        "pixel_support": "round event x/y to nearest integer pixel; active if at least one event in the interval",
+        "window_rule": "left-open, right-closed event timestamp intervals; EG seconds and V2E microseconds converted to seconds"
+      },
+      "flow": {
+        "label": "10 ms endpoint displacement from the saved renderer z-depth, pixel-index K, and captured camera poses",
+        "motion_mask": "flow magnitude > 1.0 pixel per 10 ms interval",
+        "valid": "compute_se3_flow validity AND projected endpoint inside [0,W) x [0,H)"
+      },
+      "intervals": [
+        "(0,0.01] s",
+        "(0.01,0.02] s",
+        "(0.02,0.03] s"
+      ],
+      "registered_utc": "2026-10-30T13:10:00Z",
+      "reported_coverages": [
+        "valid-frame area",
+        "GT-motion area within valid frame",
+        "texture area within valid frame",
+        "texture AND GT-motion area within valid frame",
+        "per-generator active pixels and shared union active pixels",
+        "shared union coverage over valid, GT-motion, and texture AND GT-motion areas"
+      ],
+      "schema": "stage7_camera_motion_observability_criteria_v1",
+      "scope": "descriptive audit of the already registered single apt_1 camera-only 30 ms pilot; not a training acceptance or generator ranking rule",
+      "selection_or_tuning": "No sample, scene, camera pose, threshold, generator setting, model, or checkpoint is selected using these counts or metrics.",
+      "texture": {
+        "gradient": "hypot(numpy.gradient(Y, axis=0), numpy.gradient(Y, axis=1))",
+        "image": "scene-linear float32 radiance luma Y=0.2126R+0.7152G+0.0722B at each interval's first endpoint",
+        "texture_mask": "gradient magnitude > 0.005 radiance units per pixel"
+      }
+    }
+  },
+  "elapsed_s": 0.05949338700156659,
+  "inputs": {
+    "K_pixel_index": [
+      [
+        165.16583045654082,
+        0.0,
+        159.5
+      ],
+      [
+        0.0,
+        165.16583045654082,
+        119.5
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "camera_motion_dir": "/home/\u79d1\u7814/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/20261030-stage7-followup/genesis_env_torch28/camera_motion_viewx1p5_run10/camera_motion_30ms",
+    "camera_poses_sha256": "90eec2e4f5ea81982202bd80cbc9695fde20efe5462e00143c296af4dff4a26b",
+    "depth_frames_sha256": "e1a214f76679f805d4f3a96fcd54a773e7d07ba46ae9b3a7f4dc8223314ceb11",
+    "eventgenesis_events_sha256": "655d32ea6922fa1a78dd1c7c487c9206704ff916de0136770dd8b028b36caa8e",
+    "flow_implementation_sha256": "a7efbbf1e339084ae9c92e5252257a059aaeac4ff1f8269c1c245330bd51b3b7",
+    "radiance_frames_sha256": "f208eb92ead6d6a57e429c40abd309055b8eaddfa8c95e0febab0bd536756244",
+    "segmentation_sha256": "77b573f8aca05602c977f07bde55fdce72bbd4ac00165067c2af0dbc7be5e48b",
+    "v2e_h5": "/home/\u79d1\u7814/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/evidence/20261030-stage7-followup/genesis_env_torch28/v2e_camera_motion_viewx1p5_run11/artifacts/v2e_events.h5",
+    "v2e_h5_sha256": "7f6228ce59f0b2bd2af8ce1c8b3d85953010d903a48141956b3c58891c122359"
+  },
+  "intervals": [
+    {
+      "coverage_fraction_over_gt_motion_gt_1px": 0.04118388665425947,
+      "coverage_fraction_over_texture_and_motion": 0.22030651340996169,
+      "coverage_fraction_over_valid_frame": 0.06372516795729743,
+      "eventgenesis_active_pixels": 3987,
+      "eventgenesis_event_count": 8364,
+      "flow_magnitude_px_quantiles_0_10_50_90_99_100": [
+        0.055056486278772354,
+        0.055056486278772354,
+        0.5814148783683777,
+        1.2102066278457642,
+        1.3394086360931396,
+        1.5379046201705933
+      ],
+      "flow_valid_inframe_pixels": 76061,
+      "gt_motion_gt_1px_pixels": 16657,
+      "interval_s": [
+        0.0,
+        0.01
+      ],
+      "shared_union_active_pixels": 4896,
+      "texture_and_motion_pixels": 2610,
+      "texture_gt_0_005_pixels": 23257,
+      "v2e_active_pixels": 1786,
+      "v2e_event_count": 3437
+    },
+    {
+      "coverage_fraction_over_gt_motion_gt_1px": 0.083596214511041,
+      "coverage_fraction_over_texture_and_motion": 0.4252479023646072,
+      "coverage_fraction_over_valid_frame": 0.08965508172577485,
+      "eventgenesis_active_pixels": 5523,
+      "eventgenesis_event_count": 11902,
+      "flow_magnitude_px_quantiles_0_10_50_90_99_100": [
+        0.055056486278772354,
+        0.055056486278772354,
+        0.581399142742157,
+        1.2072943210601808,
+        1.327974796295166,
+        1.5378975868225098
+      ],
+      "flow_valid_inframe_pixels": 76047,
+      "gt_motion_gt_1px_pixels": 16484,
+      "interval_s": [
+        0.01,
+        0.02
+      ],
+      "shared_union_active_pixels": 6832,
+      "texture_and_motion_pixels": 2622,
+      "texture_gt_0_005_pixels": 23366,
+      "v2e_active_pixels": 3230,
+      "v2e_event_count": 6306
+    },
+    {
+      "coverage_fraction_over_gt_motion_gt_1px": 0.10957479351483634,
+      "coverage_fraction_over_texture_and_motion": 0.457196261682243,
+      "coverage_fraction_over_valid_frame": 0.10462379869318854,
+      "eventgenesis_active_pixels": 6530,
+      "eventgenesis_event_count": 14000,
+      "flow_magnitude_px_quantiles_0_10_50_90_99_100": [
+        0.055056486278772354,
+        0.055056486278772354,
+        0.5802353024482727,
+        1.198184847831726,
+        1.3251915454864502,
+        1.5379010438919067
+      ],
+      "flow_valid_inframe_pixels": 76063,
+      "gt_motion_gt_1px_pixels": 16345,
+      "interval_s": [
+        0.02,
+        0.03
+      ],
+      "shared_union_active_pixels": 7965,
+      "texture_and_motion_pixels": 2675,
+      "texture_gt_0_005_pixels": 23461,
+      "v2e_active_pixels": 3738,
+      "v2e_event_count": 7083
+    }
+  ],
+  "limitations": [
+    "single camera pose/path and static layout only",
+    "renderer segmentation remains raw and unmapped",
+    "radiometric calibration unverified",
+    "coverage metrics are descriptive and do not select a scene or generator"
+  ],
+  "schema": "stage7_camera_motion_observability_audit_v1",
+  "scope": "one camera-only 30 ms interval divided into three aligned 10 ms windows; not a training-bank acceptance result",
+  "status": "completed_descriptive_single_path_audit"
+}

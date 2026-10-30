@@ -1,0 +1,46 @@
+{
+  "common_camera_condition": {
+    "duration_s": 0.03,
+    "endpoints": [
+      "0 ms",
+      "10 ms",
+      "20 ms",
+      "30 ms"
+    ],
+    "motion": "camera-only +Habitat X; orientation held fixed",
+    "resolution_wh": [
+      320,
+      240
+    ],
+    "speed_m_s": 2.0,
+    "start_habitat_position_y_up_m": [
+      1.5,
+      1.55,
+      7.1
+    ],
+    "start_lookat_habitat_m": [
+      1.5,
+      1.1,
+      2.0
+    ],
+    "total_translation_m": 0.06
+  },
+  "frozen_variables": [
+    "ReplicaCAD archive SHA256 d571c2c1315601c7faed35452e54a15c56646393a4c330235f20fb6fc8d8edfd",
+    "Stage-5 nominal uncalibrated sensor settings",
+    "camera path and speed",
+    "flow geometry/texture/event support thresholds v1"
+  ],
+  "layout_candidates": "benchmark/sim2real/evidence/20261030-stage7-followup/replicad_layout_candidate_registration_v1.json",
+  "not_claimed": [
+    "no training bank yet",
+    "no model-learning or generalization claim",
+    "radiometric/sensor calibration unverified",
+    "renderer segmentation-to-physical-link mapping still unverified and therefore only camera motion labels are used"
+  ],
+  "pipeline": "same Genesis importer and renderer overlay; per-scene depth/pose/K flow labels; EventGenesis from each scene radiance; V2E later consumes exact same scene radiance frames",
+  "registered_utc": "2026-10-30T13:33:24.138920+00:00",
+  "schema": "stage7_replicad_layout_camera_motion_pilot_registration_v1",
+  "selection_rule": "run every registered candidate that imports and yields valid geometry; do not choose or filter by EventGenesis/V2E event counts or model outputs. If import or camera-geometry fails, preserve and document the failure.",
+  "split": "sc0/sc1 pilot-train candidate layouts; sc2 pilot-validation candidate layout; complete stage family kept intact; not independent-home generalization."
+}

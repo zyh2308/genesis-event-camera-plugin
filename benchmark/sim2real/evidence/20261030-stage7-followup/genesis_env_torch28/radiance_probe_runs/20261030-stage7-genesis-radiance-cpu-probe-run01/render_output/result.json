@@ -1,0 +1,28 @@
+{
+  "schema": "genesis_radiance_cpu_probe_v1",
+  "genesis_version": "1.2.2",
+  "backend": "0",
+  "device": "cpu",
+  "cuda_visible_devices": "empty",
+  "probe_scene": "one colored box over plane, 96x72 camera",
+  "radiance_units": "unverified; this probe tests the API path, not physical calibration",
+  "camera_render_signature": "(rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False, antialiasing=False, force_render=False)",
+  "camera_render_source": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/utils/misc.py",
+  "camera_render_source_sha256": "b4ceb01518bdeb4de6e5f2e2e1b4a3069de3aca0235d04badbdb46e9da1049df",
+  "radiance_request": "failed",
+  "radiance_error": "TypeError: Camera.render() got an unexpected keyword argument 'radiance'",
+  "radiance_traceback": "Traceback (most recent call last):\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-genesis-radiance-cpu-probe-run01/probe_genesis_radiance_cpu.py\", line 82, in main\n    radiance, _, _, _ = camera.render(\n                        ^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/utils/misc.py\", line 144, in wrapper\n    return method(self, *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Camera.render() got an unexpected keyword argument 'radiance'\n",
+  "ordinary_rgb": {
+    "shape": [
+      72,
+      96,
+      3
+    ],
+    "dtype": "uint8",
+    "finite_fraction": 1.0,
+    "min": 10.0,
+    "max": 234.0
+  },
+  "elapsed_seconds": 22.572149840008933,
+  "status": "probe_completed_radiance_api_failed"
+}

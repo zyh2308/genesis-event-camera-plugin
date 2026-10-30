@@ -1,0 +1,50 @@
+{
+  "schema": "stage7_replicad_layout_multiaxis_camera_paths_registration_v1",
+  "registered_utc": "2026-10-30T16:46:39Z",
+  "source_scene_registration": "benchmark/sim2real/evidence/20261030-stage7-followup/replicad_layout_candidate_registration_v1.json",
+  "scene_source": {
+    "archive_sha256": "d571c2c1315601c7faed35452e54a15c56646393a4c330235f20fb6fc8d8edfd",
+    "scene_layout_families": {
+      "v3_sc0_staging_00": "pilot_train_candidate",
+      "v3_sc1_staging_00": "pilot_train_candidate",
+      "v3_sc2_staging_00": "pilot_validation_candidate"
+    },
+    "split_unit": "complete ReplicaCAD stage/layout family; no windows from a layout family cross train/validation"
+  },
+  "shared_camera": {
+    "resolution_wh": [320, 240],
+    "start_habitat_position_y_up_m": [1.5, 1.55, 7.1],
+    "start_lookat_habitat_m": [1.5, 1.1, 2.0],
+    "duration_s": 0.03,
+    "endpoints_ms": [0, 10, 20, 30],
+    "orientation": "fixed; position and lookat receive the same translation"
+  },
+  "paths": [
+    {
+      "path_id": "camera_translate_habitat_x_060mm_v1",
+      "translation_habitat_xyz_m": [0.06, 0.0, 0.0],
+      "speed_m_s": 2.0,
+      "status": "previously executed; retained as path 1"
+    },
+    {
+      "path_id": "camera_translate_habitat_y_040mm_v1",
+      "translation_habitat_xyz_m": [0.0, 0.04, 0.0],
+      "speed_m_s": 1.3333333333333333,
+      "status": "new path registered before rendering",
+      "geometric_rationale": "move the camera and look direction 4 cm upward from a 1.55 m start while keeping orientation fixed; adds a distinct image-motion direction without leaving the registered room view"
+    }
+  ],
+  "shared_variables": [
+    "same scene assets and placement per layout family",
+    "same camera intrinsics, resolution and endpoint times",
+    "same event sensor and generator configurations as the paired path pilots",
+    "same physical depth, camera pose and interval flow labels for EventGenesis and V2E"
+  ],
+  "selection_rule": "execute every listed layout/path combination; do not filter by EventGenesis or V2E event counts, model outputs, or downstream scores",
+  "known_limits": [
+    "all paths are camera-only; no independent object motion or dynamic occlusion is claimed",
+    "raw segmentation IDs are not mapped to physical link IDs",
+    "radiometric exposure and sensor calibration remain unverified",
+    "these six short trajectories are a pilot, not a formal training bank or domain-generalization result"
+  ]
+}

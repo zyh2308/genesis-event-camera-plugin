@@ -1,0 +1,147 @@
+{
+  "camera_pose_check": {
+    "K_pixel_index": [
+      [
+        165.16583045654082,
+        0.0,
+        159.5
+      ],
+      [
+        0.0,
+        165.16583045654082,
+        119.5
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "K_renderer": [
+      [
+        165.16583045654082,
+        0.0,
+        160.0
+      ],
+      [
+        0.0,
+        165.16583045654082,
+        120.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "expected_delta_camera_xyz_m": [
+      0.0,
+      -0.03984519481658936,
+      -0.0035157519578933715
+    ],
+    "max_rotation_matrix_delta": 2.2351741790771484e-08,
+    "observed_delta_camera_xyz_m": [
+      0.0,
+      -0.03984527556518458,
+      -0.003515759082768355
+    ]
+  },
+  "created_utc": "2026-10-30T16:52:35Z",
+  "events": {
+    "counts_by_10ms_interval": [
+      5938,
+      7017,
+      7601
+    ],
+    "generator": "repository GenesisPhysicsEventPlugin; CPU, NumPy warp backend",
+    "input": "same scene-linear float32 radiance frames used by the physical interpolation plugin",
+    "sensor_calibration": "uncalibrated; reused Stage-5 pilot values only",
+    "timestamp_unit": "seconds",
+    "total_count": 20556
+  },
+  "flow": {
+    "analytic_comparison_pixels": 75097,
+    "depth_contract": "Genesis renderer depth supplied as z-depth; checked by independent pinhole reprojection",
+    "expected_relation": "camera-only pinhole reprojection from relative camera pose; orientation held fixed",
+    "independent_check": "project source 3-D pixels through inv(Tcw1)@Tcw0 and compare with compute_se3_flow",
+    "mean_vector_px": [
+      0.06822115927934647,
+      4.604498386383057
+    ],
+    "median_analytic_endpoint_error_px": 6.61753117078563e-08,
+    "p99_analytic_endpoint_error_px": 4.622594366554286e-07,
+    "units": "pixel displacement over t0 to t30ms",
+    "valid_pixels": 76800
+  },
+  "limitations": [
+    "camera translation only; no independently moving objects or visibility change trajectory",
+    "EventGenesis pilot only; V2E has not yet consumed these exact frames",
+    "physics flow is checked against an analytic camera-only pinhole relation, but scene conversion validity is not comprehensively certified",
+    "raw renderer segmentation IDs retained and not mapped to physical link IDs; no moving-object labels used",
+    "sensor radiometric calibration and actual camera characterization remain unverified"
+  ],
+  "per_10ms_ground_truth": {
+    "flow_path": "gt_flow_px_each_10ms_interval.npy",
+    "shape": [
+      3,
+      2,
+      240,
+      320
+    ],
+    "units": "pixel displacement for the corresponding adjacent 10 ms endpoints",
+    "valid_path": "gt_flow_valid_each_10ms_interval.npy",
+    "valid_pixels_per_interval": [
+      76800,
+      76800,
+      76800
+    ]
+  },
+  "schema": "replicacad_layout_camera_translation_flow_event_probe_v1",
+  "signal": {
+    "interframe_absdiff_mean": [
+      0.008337619714438915,
+      0.008627677336335182,
+      0.008425315842032433
+    ],
+    "ordinary_rgb_endpoint_matches_static_path": "not checked in this run",
+    "radiance_range": [
+      0.0,
+      1.033203125
+    ],
+    "radiance_shape": [
+      4,
+      240,
+      320,
+      3
+    ]
+  },
+  "status": "passed_camera_translation_flow_analytic_check",
+  "trajectory": {
+    "camera_only": true,
+    "duration_s": 0.03,
+    "endpoint_count": 3,
+    "interval_s": [
+      0.01,
+      0.01,
+      0.009999999999999998
+    ],
+    "registered_translation_habitat_x_m": 0.0,
+    "registered_translation_habitat_xyz_m": [
+      0.0,
+      0.04,
+      0.0
+    ],
+    "scene_timestep_s": 0.001,
+    "speed_m_s": 1.3333333333333335,
+    "start_habitat_lookat_m": [
+      1.5,
+      1.1,
+      2.0
+    ],
+    "start_habitat_position_m": [
+      1.5,
+      1.55,
+      7.1
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "stage7_replicad_multiaxis_selfsup_diagnostic_v1",
+  "registered_at": "2026-10-31T02:33:09+09:00",
+  "registered_before_execution": true,
+  "purpose": "Bounded paired 100-update diagnostic of the pinned STE-FlowNet self-supervised photometric plus smoothness objective on the new ReplicaCAD shared bank.",
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "checkpoint_selection": false,
+  "model": {
+    "name": "STE-FlowNet",
+    "source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "event_only_inference": true,
+    "input": "Pinned five-bin equal-event-count Gaussian representation per polarity; native 240x320, zero padded to 352x352."
+  },
+  "code": {
+    "training_script": "benchmark/sim2real/scripts/train_stage7_replicad_selfsup_diagnostic.py",
+    "training_script_sha256": "7ff0881374ba3b15240c1e9dd38489996e332b9c130881e73f69945bb50d4471",
+    "pinned_helpers": {
+      "benchmark/sim2real/scripts/run_steflow_stage2_pilot.py": "167a88520162d06a7b1973eb4fcca64cf73680d50a8f583a60f953f27a0dd48a",
+      "benchmark/sim2real/compat/steflow_align_corners.py": "0f7290aa45b8ba020c03d2d26b64a0cc213ccec7536e386bce186e4d0446393e",
+      "benchmark/sim2real/scripts/verify_pinned_source.py": "0d96c38cb84d844eb933bed0148abb295c4d5e098b90b286f0ffc1f150cd991d"
+    }
+  },
+  "data": {
+    "bank_run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261031-stage7-replicad-multiaxis-pathpilot-v1/flow_bank_retry01",
+    "manifest_sha256": "995aac5c0163ef8efacfb1eb2599b02d05538ee8f05bc98104e4e25690522717",
+    "train_rollouts": [
+      "v3_sc0_x_060mm",
+      "v3_sc0_y_040mm",
+      "v3_sc1_x_060mm",
+      "v3_sc1_y_040mm"
+    ],
+    "validation_rollouts": [
+      "v3_sc2_x_060mm",
+      "v3_sc2_y_040mm"
+    ],
+    "split_unit": "complete scene/layout family",
+    "samples_per_rollout": 1,
+    "shared_gt_used_in_optimizer": false,
+    "event_count_filtering": "none",
+    "gray_endpoints": "Per-pixel linear luma 0.2126*R + 0.7152*G + 0.0722*B from the same registered Genesis float32 radiance frames at indices 0 and 3 (0ms and 30ms); no gamma inversion or per-frame fitting.",
+    "paired_event_representation_and_labels": "Same physical rollout, shared 30ms flow and visibility-valid mask; generator-specific event tensors only."
+  },
+  "training": {
+    "seed": 0,
+    "paired_initial_state_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+    "updates_per_arm": 100,
+    "batch_size": 1,
+    "optimizer": "Adam",
+    "learning_rate": 0.0004,
+    "betas": [0.9, 0.999],
+    "weight_decay_weights": 0.0004,
+    "weight_decay_biases": 0.0,
+    "sampler_seed": 20261031,
+    "scheduler": "none in this fixed 100-update diagnostic",
+    "sampling": "At each of 25 cycles, a seeded permutation of the four complete training rollouts; same rollout order for both arms.",
+    "augmentation": "disabled to isolate the registered one-window-per-rollout inputs; identical preprocessing and no event-count-based sampling.",
+    "padding": "Events zero padded to 352x352; endpoint grayscale replicate padded from native 240x320 to 352x352. Output is cropped back to native coordinates for EPE.",
+    "objective": "Pinned STE-FlowNet four-scale Charbonnier photometric loss plus 10x pinned second-order smoothness; uses the existing objective_dt1 helper and align_corners compatibility patch without changing loss code.",
+    "stop_rule": "Exactly 100 optimizer updates per arm; fail on nonfinite objective/gradient, zero gradient, nonadvancing Adam step, or unequal initialization.",
+    "evaluation_updates": [0, 20, 40, 60, 80, 100]
+  },
+  "evaluation": {
+    "masks": "Same shared GT validity and pre-frozen union of nonzero normal EventGenesis/V2E event support; full-valid and common-active EPE reported.",
+    "flow_unit": "pixels per 30ms endpoint interval",
+    "diagnostics": ["zero-flow EPE", "event-active EPE", "prediction/GT magnitude", "direction cosine", "normal vs zero-event vs reversed-five-bin input"],
+    "perturbation_mask": "Frozen from normal paired inputs; never recomputed after intervention.",
+    "real_scoring": false
+  },
+  "interpretation_limits": [
+    "Only four training and two independent validation rollouts, with one 30ms sample per rollout.",
+    "This diagnostic tests the original self-supervised optimization path; it is not a formal long training run or a generator superiority comparison.",
+    "Static-scene camera motion only; no moving-object or dynamic-occlusion supervision is represented.",
+    "A short training response does not establish generalization to MVSEC or any other real domain."
+  ]
+}

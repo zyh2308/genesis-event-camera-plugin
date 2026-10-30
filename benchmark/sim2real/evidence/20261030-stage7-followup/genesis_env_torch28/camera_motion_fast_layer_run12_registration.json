@@ -1,0 +1,47 @@
+{
+  "condition_id": "replicacad_apt1_x1p5_habitat_x_fast_translation_30ms_run12",
+  "geometry_basis": "run10 used the same scene/view with 1 m/s translation and the geometry-only audit found p50 valid flow 0.58 px and p90 about 1.20 px per 10 ms; use a 2 m/s motion layer to test whether larger GT displacement increases observable texture-motion support. This rationale uses rendered geometry/GT flow only, not generator event counts or model results.",
+  "predeclared_checks": [
+    "observed camera transform matches 0.06m +X and unchanged orientation",
+    "SE3 depth flow compared against independent pinhole translation relation",
+    "same fixed 10ms geometry/texture/event-support criteria v1",
+    "EventGenesis and V2E consume the same exact four radiance frames",
+    "no training, real data, sample filtering, generator adjustment, or model selection"
+  ],
+  "purpose": "separate exploratory fast camera-motion layer; not a training result or a data-selection rule",
+  "registered_utc": "2026-10-30T13:25:36.495237+00:00",
+  "schema": "stage7_camera_motion_condition_registration_v1",
+  "trajectory": {
+    "camera_start_habitat_y_up_m": [
+      1.5,
+      1.55,
+      7.1
+    ],
+    "duration_s": 0.03,
+    "lookat_start_habitat_m": [
+      1.5,
+      1.1,
+      2.0
+    ],
+    "motion": "camera-only +Habitat X translation; camera orientation held constant",
+    "render_size_wh": [
+      320,
+      240
+    ],
+    "samples": [
+      "t=0",
+      "t=10ms",
+      "t=20ms",
+      "t=30ms"
+    ],
+    "scene": "ReplicaCAD v1.5 apt_1 (same apartment shell; not an independent-home claim)",
+    "speed_m_s": 2.0,
+    "total_dx_m": 0.06
+  },
+  "unchanged": {
+    "frozen_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1; no modification",
+    "generator_sensor_values": "reuse existing nominal Stage-5 settings, explicitly uncalibrated",
+    "radiance": "same scene-linear renderer overlay and per-run four-endpoint frames",
+    "scene_assets": "same checked ReplicaCAD archive and apt_1 source config"
+  }
+}

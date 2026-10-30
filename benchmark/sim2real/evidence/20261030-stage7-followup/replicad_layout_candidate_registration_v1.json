@@ -1,0 +1,33 @@
+{
+  "archive_path": "/home/\u79d1\u7814/Eventbased_WAM/external_sources/ReplicaCAD_dataset_v1.5.zip",
+  "archive_sha256": "d571c2c1315601c7faed35452e54a15c56646393a4c330235f20fb6fc8d8edfd",
+  "candidate_layouts": [
+    {
+      "contract_audit": "benchmark/sim2real/evidence/20261030-stage7-followup/replicad_layout_contracts/v3_sc0_staging_00.json",
+      "role": "pilot_train_candidate",
+      "scene_config": "configs/scenes/v3_sc0_staging_00.scene_instance.json",
+      "stage_family": "Stage_v3_sc0_staging"
+    },
+    {
+      "contract_audit": "benchmark/sim2real/evidence/20261030-stage7-followup/replicad_layout_contracts/v3_sc1_staging_00.json",
+      "role": "pilot_train_candidate",
+      "scene_config": "configs/scenes/v3_sc1_staging_00.scene_instance.json",
+      "stage_family": "Stage_v3_sc1_staging"
+    },
+    {
+      "contract_audit": "benchmark/sim2real/evidence/20261030-stage7-followup/replicad_layout_contracts/v3_sc2_staging_00.json",
+      "role": "pilot_validation_candidate",
+      "scene_config": "configs/scenes/v3_sc2_staging_00.scene_instance.json",
+      "stage_family": "Stage_v3_sc2_staging"
+    }
+  ],
+  "registered_utc": "2026-10-30T13:31:44.452305+00:00",
+  "schema": "stage7_replicad_layout_pilot_candidates_v1",
+  "scope_and_limits": [
+    "These are ReplicaCAD stage-family/layout candidates, not verified independent homes or real-home generalization domains.",
+    "Archive contract audits are static only; Genesis import/render, camera safety, GT flow, radiance, and event coverage remain to be checked.",
+    "The train/validation roles are pilot-only and may be revised only before generation if a candidate has a documented import/geometry failure; no sample may be selected using either generator count or model score.",
+    "No training, real data, or ranking is performed by this registration."
+  ],
+  "selection_basis": "first staging-00 configuration from three distinct ReplicaCAD stage families that passed the archive-level config/render/collision-reference closure check. No model outputs or EventGenesis/V2E counts used."
+}

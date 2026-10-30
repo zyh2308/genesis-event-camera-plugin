@@ -1,0 +1,70 @@
+{
+  "schema": "stage7_replicad_multiaxis_gtfit_v1",
+  "registered_utc": "2026-10-30T16:52:00Z",
+  "purpose": "bounded paired GT-supervised STE-FlowNet network-fit and independent-layout diagnostic; not a formal long-run comparison",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "model": {
+    "name": "STE-FlowNet",
+    "source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "event_only_inference": true,
+    "input": "official STE five equal-event-count Gaussian-count temporal bins per polarity, 320x240 native raster; symmetric zero-pad to 352x352"
+  },
+  "data": {
+    "registration": "benchmark/sim2real/evidence/20261030-stage7-followup/replicad_layout_multiaxis_paths_registration_v1.json",
+    "bank_manifest": "training_bank_manifest.json",
+    "physical_sample": "one full (0,30ms] event window and matched 30ms endpoint flow per registered scene/path rollout",
+    "split": "complete layout family: sc0/sc1 train; sc2 validation",
+    "training_rollouts": [
+      "v3_sc0_x_060mm",
+      "v3_sc0_y_040mm",
+      "v3_sc1_x_060mm",
+      "v3_sc1_y_040mm"
+    ],
+    "validation_rollouts": [
+      "v3_sc2_x_060mm",
+      "v3_sc2_y_040mm"
+    ],
+    "shared_label_and_visibility_mask": true,
+    "real_data_used": false
+  },
+  "pairing": {
+    "arms": ["eventgenesis", "v2e"],
+    "same_initialization_seed": 0,
+    "same_rollout_order_and_update_budget": true,
+    "sampler_seed": 20261031,
+    "same_model_optimizer_representation_and_preprocessing": true,
+    "random_augmentation": false,
+    "batch_size": 1,
+    "sample_replacement": "repeat a seeded permutation of the four train rollouts until the fixed update budget is met",
+    "optimizer": "Adam",
+    "learning_rate": 0.0004,
+    "betas": [0.9, 0.999],
+    "weight_decay_weights": 0.0004,
+    "weight_decay_biases": 0.0
+  },
+  "objective": {
+    "type": "four-scale robust endpoint error from the existing Stage 5 synthetic GT pilot",
+    "scale_weights": [1.0, 1.0, 1.0, 1.0],
+    "validity_downsampling": "area coverage >= 0.999 at each scale",
+    "selection_or_tuning": false
+  },
+  "diagnostic_budget": {
+    "updates_per_arm": 100,
+    "evaluation_updates": [0, 20, 40, 60, 80, 100],
+    "stop_on": ["nonfinite objective", "nonfinite or zero aggregate gradient", "optimizer step not advancing", "paired initialization mismatch"],
+    "success_interpretation": "evidence that the real STE-FlowNet optimization path can fit these camera-motion samples; not evidence of independent generalization or generator superiority"
+  },
+  "evaluation_masks": {
+    "primary_diagnostic": "fixed paired union of nonzero normal-input EventGenesis and V2E event pixels intersected with shared visibility-checked GT validity",
+    "full_valid_diagnostic": "shared visibility-checked GT validity",
+    "same_mask_for_both_arms": true,
+    "empty_active_mask": "preserve and report null active EPE; do not filter the rollout"
+  },
+  "limits": [
+    "four train and two held-out layout-family rollouts; one sample per trajectory",
+    "camera-only static-scene motion; moving objects and dynamic occlusion are not covered",
+    "this diagnostic does not replace the formal synthetic training protocol or any real test"
+  ]
+}

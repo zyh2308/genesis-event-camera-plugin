@@ -1,0 +1,119 @@
+{
+  "camera_pose_check": {
+    "K_pixel_index": [
+      [
+        165.16583045654082,
+        0.0,
+        159.5
+      ],
+      [
+        0.0,
+        165.16583045654082,
+        119.5
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "K_renderer": [
+      [
+        165.16583045654082,
+        0.0,
+        160.0
+      ],
+      [
+        0.0,
+        165.16583045654082,
+        120.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "max_rotation_matrix_delta": 0.0,
+    "observed_delta_camera_xyz_m": [
+      0.059999942779541016,
+      0.0,
+      0.0
+    ]
+  },
+  "created_utc": "2026-10-30T13:28:36Z",
+  "events": {
+    "counts_by_10ms_interval": [
+      15566,
+      24133,
+      26036
+    ],
+    "generator": "repository GenesisPhysicsEventPlugin; CPU, NumPy warp backend",
+    "input": "same scene-linear float32 radiance frames used by the physical interpolation plugin",
+    "sensor_calibration": "uncalibrated; reused Stage-5 pilot values only",
+    "timestamp_unit": "seconds",
+    "total_count": 65735
+  },
+  "flow": {
+    "analytic_comparison_pixels": 74018,
+    "depth_contract": "Genesis renderer depth supplied as z-depth; independently checked by analytic translation relation",
+    "expected_relation": "u=-fx*camera_dx/z; v=0 for unchanged orientation and static world",
+    "mean_vector_px": [
+      -3.591219186782837,
+      4.763596828327938e-15
+    ],
+    "median_analytic_endpoint_error_px": 2.9802322387695312e-08,
+    "p99_analytic_endpoint_error_px": 4.76837158203125e-07,
+    "units": "pixel displacement over t0 to t30ms",
+    "valid_pixels": 76800
+  },
+  "limitations": [
+    "camera translation only; no independently moving objects or visibility change trajectory",
+    "EventGenesis pilot only; V2E has not yet consumed these exact frames",
+    "physics flow is checked against an analytic camera-only pinhole relation, but scene conversion validity is not comprehensively certified",
+    "raw renderer segmentation IDs retained and not mapped to physical link IDs; no moving-object labels used",
+    "sensor radiometric calibration and actual camera characterization remain unverified"
+  ],
+  "schema": "replicacad_apt1_camera_translation_flow_event_probe_v1",
+  "signal": {
+    "interframe_absdiff_mean": [
+      0.019801490008831024,
+      0.01992626115679741,
+      0.02002020739018917
+    ],
+    "ordinary_rgb_endpoint_matches_static_path": "not checked in this run",
+    "radiance_range": [
+      0.0,
+      1.1220703125
+    ],
+    "radiance_shape": [
+      4,
+      240,
+      320,
+      3
+    ]
+  },
+  "status": "passed_camera_translation_flow_analytic_check",
+  "trajectory": {
+    "camera_only": true,
+    "duration_s": 0.03,
+    "endpoint_count": 3,
+    "interval_s": [
+      0.01,
+      0.01,
+      0.009999999999999998
+    ],
+    "registered_translation_habitat_x_m": 0.06,
+    "scene_timestep_s": 0.001,
+    "start_habitat_lookat_m": [
+      1.5,
+      1.1,
+      2.0
+    ],
+    "start_habitat_position_m": [
+      1.5,
+      1.55,
+      7.1
+    ]
+  }
+}

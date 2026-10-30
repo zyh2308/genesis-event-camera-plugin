@@ -1,0 +1,95 @@
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-replicad-apt1-cpu-preview-run03/replicad_apt1_cpu_import_preview.py", line 332, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-replicad-apt1-cpu-preview-run03/replicad_apt1_cpu_import_preview.py", line 209, in main
+    scene.add_entity(
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/utils/misc.py", line 134, in wrapper
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/scene.py", line 499, in add_entity
+    entity = self._sim._add_entity(morph, material, surface, visualize_contact, name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/simulator.py", line 166, in _add_entity
+    entity = self.rigid_solver.add_entity(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/solvers/rigid/rigid_solver.py", line 302, in add_entity
+    entity = EntityClass(
+             ^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 2366, in __init__
+    super().__init__(
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 136, in __init__
+    self._load_model()
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 2477, in _load_model
+    super()._load_model()
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 373, in _load_model
+    self._load_morph(self._morph)
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 160, in _load_morph
+    self._load_scene(morph, self._surface)
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 2482, in _load_scene
+    l_infos, links_j_infos, links_g_infos, eqs_info = self._parse_scene(morph, surface)
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/engine/entities/rigid_entity/rigid_entity.py", line 634, in _parse_scene
+    l_infos, links_j_infos, links_g_infos, eqs_info = uu.parse_urdf(morph, surface)
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/utils/urdf.py", line 135, in parse_urdf
+    robot = urdfpy.URDF.load(path)
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 3751, in load
+    return URDF._from_xml(node, node, path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 3937, in _from_xml
+    kwargs = cls._parse(node, root, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 167, in _parse
+    kwargs.update(cls._parse_simple_elements(node, root, path))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 139, in _parse_simple_elements
+    v = [t._from_xml(n, node, path) for n in vs]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 139, in <listcomp>
+    v = [t._from_xml(n, node, path) for n in vs]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 191, in _from_xml
+    return cls(**cls._parse(node, root, path))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 167, in _parse
+    kwargs.update(cls._parse_simple_elements(node, root, path))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 139, in _parse_simple_elements
+    v = [t._from_xml(n, node, path) for n in vs]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 139, in <listcomp>
+    v = [t._from_xml(n, node, path) for n in vs]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 1215, in _from_xml
+    kwargs = cls._parse(node, root, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 167, in _parse
+    kwargs.update(cls._parse_simple_elements(node, root, path))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 130, in _parse_simple_elements
+    v = t._from_xml(v, root, path)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 191, in _from_xml
+    return cls(**cls._parse(node, root, path))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 167, in _parse
+    kwargs.update(cls._parse_simple_elements(node, root, path))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 130, in _parse_simple_elements
+    v = t._from_xml(v, root, path)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 654, in _from_xml
+    kwargs = cls._parse(node, root, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 166, in _parse
+    kwargs = cls._parse_simple_attribs(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 97, in _parse_simple_attribs
+    v = cls._parse_attrib(t, node.attrib[a])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/ext/urdfpy/urdf.py", line 63, in _parse_attrib
+    val = np.fromstring(val, sep=" ")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: string or file could not be read to its end due to unmatched data
+

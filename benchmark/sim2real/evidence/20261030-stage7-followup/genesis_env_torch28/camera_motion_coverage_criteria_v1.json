@@ -1,0 +1,30 @@
+{
+  "schema": "stage7_camera_motion_observability_criteria_v1",
+  "registered_utc": "2026-10-30T13:10:00Z",
+  "scope": "descriptive audit of the already registered single apt_1 camera-only 30 ms pilot; not a training acceptance or generator ranking rule",
+  "intervals": ["(0,0.01] s", "(0.01,0.02] s", "(0.02,0.03] s"],
+  "flow": {
+    "label": "10 ms endpoint displacement from the saved renderer z-depth, pixel-index K, and captured camera poses",
+    "valid": "compute_se3_flow validity AND projected endpoint inside [0,W) x [0,H)",
+    "motion_mask": "flow magnitude > 1.0 pixel per 10 ms interval"
+  },
+  "texture": {
+    "image": "scene-linear float32 radiance luma Y=0.2126R+0.7152G+0.0722B at each interval's first endpoint",
+    "gradient": "hypot(numpy.gradient(Y, axis=0), numpy.gradient(Y, axis=1))",
+    "texture_mask": "gradient magnitude > 0.005 radiance units per pixel"
+  },
+  "events": {
+    "pixel_support": "round event x/y to nearest integer pixel; active if at least one event in the interval",
+    "common_mask": "union of normal EventGenesis and pinned V2E active-pixel support for the same interval",
+    "window_rule": "left-open, right-closed event timestamp intervals; EG seconds and V2E microseconds converted to seconds"
+  },
+  "reported_coverages": [
+    "valid-frame area",
+    "GT-motion area within valid frame",
+    "texture area within valid frame",
+    "texture AND GT-motion area within valid frame",
+    "per-generator active pixels and shared union active pixels",
+    "shared union coverage over valid, GT-motion, and texture AND GT-motion areas"
+  ],
+  "selection_or_tuning": "No sample, scene, camera pose, threshold, generator setting, model, or checkpoint is selected using these counts or metrics."
+}

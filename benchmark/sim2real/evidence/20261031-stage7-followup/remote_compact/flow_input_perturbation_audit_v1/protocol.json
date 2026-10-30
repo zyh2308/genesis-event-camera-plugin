@@ -1,0 +1,54 @@
+{
+  "schema": "stage7_flow_input_perturbation_protocol_v1",
+  "registered_at": "2026-10-31T02:23:52+09:00",
+  "registered_before_execution": true,
+  "purpose": "Small synthetic-only sensitivity audit of the two fixed 100-update GT-supervised STE-FlowNet diagnostic checkpoints; not a formal model comparison or checkpoint-selection run.",
+  "data": {
+    "bank": "flow_bank_retry01",
+    "split": "all fixed validation rollouts, no filtering",
+    "rollouts": ["v3_sc2_x_060mm", "v3_sc2_y_040mm"],
+    "labels": "shared 30ms endpoint flow and shared visibility-valid mask",
+    "real_data_used": false
+  },
+  "models": {
+    "architecture": "Pinned STE-FlowNet source eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "checkpoints": {
+      "eventgenesis": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261031-stage7-replicad-multiaxis-pathpilot-v1/flow_gtfit_retry02/eventgenesis/checkpoint_final.pt",
+        "sha256": "e3d749995f4366458cd41f9f03c873d083e332fa9aa963342b5dd7c2be38613a"
+      },
+      "v2e": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261031-stage7-replicad-multiaxis-pathpilot-v1/flow_gtfit_retry02/v2e/checkpoint_final.pt",
+        "sha256": "6facd11bea759fb12dd4064cc54c7dd2b0f936dcbdd027e2f2cb67142be5e16a"
+      }
+    },
+    "inference": "ordinary model.eval(), event representation only; no GT input"
+  },
+  "input_conditions": {
+    "normal": "Original registered five-bin per-polarity event representation.",
+    "zero_events": "Set the complete event tensor to zero while retaining the original normal-input common mask.",
+    "reverse_bins": "Reverse the five temporal-bin order independently for each polarity; preserves each pixel's per-polarity total and the normal event spatial support, but changes temporal ordering. This is a representation perturbation, not a reconstruction of reversed raw events."
+  },
+  "fixed_regions": {
+    "common_event_active": "Union of nonzero spatial support from both original normal generator inputs, intersected with shared GT validity; frozen before any intervention and identical for both arms and all conditions.",
+    "active_motion": "Fixed common_event_active intersected with GT magnitude >= 0.5 pixels per 30ms endpoint interval.",
+    "full_valid": "Shared visibility-checked GT validity."
+  },
+  "metrics": [
+    "EPE on full_valid, common_event_active, and active_motion",
+    "zero-flow EPE on the same unchanged masks",
+    "prediction magnitude and direction cosine on active_motion",
+    "prediction change from normal input",
+    "input hash, nonzero support, and aggregate representation count"
+  ],
+  "interpretation_limits": [
+    "A response to perturbation shows input sensitivity only; it does not establish correct event-to-motion learning.",
+    "The checkpoints were trained with synthetic GT supervision for 100 updates; this does not validate the formal self-supervised objective.",
+    "The two held-out rollouts belong to one registered validation layout family and have sparse shared event support on the vertical path."
+  ],
+  "gpu_policy": {
+    "allocate_only_after_live_resource_check": true,
+    "atomic_project_reservation_required": true,
+    "release_own_reservation_on_exit": true
+  }
+}
