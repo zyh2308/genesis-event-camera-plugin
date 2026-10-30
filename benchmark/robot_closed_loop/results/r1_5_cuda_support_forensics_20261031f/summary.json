@@ -1,0 +1,1599 @@
+{
+  "run_id": "r1_5_cuda_support_forensics_20261031f",
+  "source_commit": "9e6b5d7e2689d541087a56ff1fbf0fc904571b69",
+  "python": "3.11.15",
+  "platform": "Linux-5.4.0-216-generic-x86_64-with-glibc2.31",
+  "torch": "2.5.1+cu121",
+  "cuda_runtime": "12.1",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3090",
+    "capability": [
+      8,
+      6
+    ]
+  },
+  "inputs": {
+    "004": {
+      "state_cache_sha256": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+      "direct_hdr_evidence_sha256": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321"
+    },
+    "005": {
+      "state_cache_sha256": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+      "direct_hdr_evidence_sha256": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236"
+    }
+  },
+  "episodes": [
+    {
+      "episode": "004",
+      "state_cache_sha256": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+      "direct_hdr_evidence_sha256": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321",
+      "original_xor_target_count": 79,
+      "projection_delta": [
+        {
+          "endpoint": 0,
+          "valid_xor_pixels": 0,
+          "uv_abs_max_px_both_valid": 2.842170943040401e-14,
+          "uv_abs_p99_px_both_valid": 0.0,
+          "z_abs_max_m_both_valid": 0.0,
+          "uv_differing_pixels": 219
+        },
+        {
+          "endpoint": 1,
+          "valid_xor_pixels": 0,
+          "uv_abs_max_px_both_valid": 2.842170943040401e-14,
+          "uv_abs_p99_px_both_valid": 0.0,
+          "z_abs_max_m_both_valid": 0.0,
+          "uv_differing_pixels": 219
+        }
+      ],
+      "cases": [
+        {
+          "projection": "numpy_projection",
+          "compositor": "numpy",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.9562890625,
+          "invalid_reason_counts": {
+            "coverage0": 104,
+            "coverage1": 735,
+            "surface_consistency0": 0,
+            "surface_consistency1": 2,
+            "surface_id": 705,
+            "depth_match": 2638
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_consistency1": 1,
+            "coverage1": 27
+          }
+        },
+        {
+          "projection": "numpy_projection",
+          "compositor": "cuda",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.9562890625,
+          "invalid_reason_counts": {
+            "coverage0": 104,
+            "coverage1": 735,
+            "surface_consistency0": 0,
+            "surface_consistency1": 2,
+            "surface_id": 705,
+            "depth_match": 2638
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_consistency1": 1,
+            "coverage1": 27
+          }
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "numpy",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.9562890625,
+          "invalid_reason_counts": {
+            "coverage0": 104,
+            "coverage1": 735,
+            "surface_consistency0": 0,
+            "surface_consistency1": 2,
+            "surface_id": 705,
+            "depth_match": 2638
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_consistency1": 1,
+            "coverage1": 27
+          }
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "cuda",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.9562890625,
+          "invalid_reason_counts": {
+            "coverage0": 104,
+            "coverage1": 735,
+            "surface_consistency0": 0,
+            "surface_consistency1": 2,
+            "surface_id": 705,
+            "depth_match": 2638
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_consistency1": 1,
+            "coverage1": 27
+          }
+        }
+      ],
+      "dvs_backend_comparisons": [
+        {
+          "projection": "numpy_projection",
+          "compositor": "numpy",
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        },
+        {
+          "projection": "numpy_projection",
+          "compositor": "cuda",
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "numpy",
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "cuda",
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        }
+      ],
+      "same_projection_compositor_pair": [
+        {
+          "projection": "numpy_projection",
+          "same_projection_input_compositor_mask_xor_pixels": 0,
+          "same_projection_input_component_mismatches": {
+            "support0": 0,
+            "support1": 0,
+            "surface_consistent0": 0,
+            "surface_consistent1": 0,
+            "surface_id0": 0,
+            "surface_id1": 0
+          },
+          "coverage_abs_max_by_endpoint": [
+            5.960464477539063e-08,
+            1.1920928955078125e-07
+          ],
+          "coverage_abs_p99_by_endpoint": [
+            0.0,
+            5.960464477539063e-08
+          ],
+          "zbuffer_abs_max_m_by_endpoint": [
+            0.0,
+            0.0
+          ],
+          "same_projection_input_supported_log_luma_abs_max": 4.76837158203125e-07
+        },
+        {
+          "projection": "cuda_projection",
+          "same_projection_input_compositor_mask_xor_pixels": 0,
+          "same_projection_input_component_mismatches": {
+            "support0": 0,
+            "support1": 0,
+            "surface_consistent0": 0,
+            "surface_consistent1": 0,
+            "surface_id0": 0,
+            "surface_id1": 0
+          },
+          "coverage_abs_max_by_endpoint": [
+            5.960464477539063e-08,
+            1.1920928955078125e-07
+          ],
+          "coverage_abs_p99_by_endpoint": [
+            0.0,
+            5.960464477539063e-08
+          ],
+          "zbuffer_abs_max_m_by_endpoint": [
+            0.0,
+            0.0
+          ],
+          "same_projection_input_supported_log_luma_abs_max": 4.76837158203125e-07
+        }
+      ],
+      "projector_effects_same_compositor": {
+        "numpy": {
+          "final_mask_xor_pixels": 0,
+          "common_supported_log_luma_abs_max": 0.0
+        },
+        "cuda": {
+          "final_mask_xor_pixels": 0,
+          "common_supported_log_luma_abs_max": 0.0
+        }
+      },
+      "native_end_to_end": {
+        "support_mask_xor_pixels": 0,
+        "common_supported_log_luma_abs_max": 4.76837158203125e-07,
+        "numpy_projection_numpy_compositor_cpu_dvs_vs_cuda_projection_cuda_compositor_cuda_dvs": {
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 7.088816200706554e-10,
+          "matched_event_time_abs_error_max_s": 4.221738736376324e-09,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        }
+      },
+      "production_interpolator": {
+        "sample_times_s": [
+          0.5819285714285715,
+          0.5833571428571429,
+          0.5847857142857144,
+          0.5862142857142857,
+          0.5876428571428571,
+          0.5890714285714286,
+          0.5905
+        ],
+        "sample_count": 7,
+        "numpy_unknown_fraction_by_frame": [
+          0.048776041666666665,
+          0.04829427083333333,
+          0.0479296875,
+          0.03829427083333333,
+          0.035768229166666665,
+          0.035768229166666665,
+          0.0
+        ],
+        "cuda_unknown_fraction_by_frame": [
+          0.048776041666666665,
+          0.04829427083333333,
+          0.0479296875,
+          0.03829427083333333,
+          0.035768229166666665,
+          0.035768229166666665,
+          0.0
+        ],
+        "timestamp_max_abs_delta_s": 0.0,
+        "support_mask_xor_pixels_all_frames": 0,
+        "common_supported_log_luma_abs_max_all_frames": 4.76837158203125e-07,
+        "wall_s": {
+          "numpy": 1.1175741309998557,
+          "cuda": 0.2261355200316757
+        },
+        "dvs_backend_comparisons_per_reconstruction": [
+          {
+            "reconstruction": "numpy",
+            "reference_event_count": 397,
+            "candidate_event_count": 397,
+            "reference_on_count": 243,
+            "candidate_on_count": 243,
+            "reference_off_count": 154,
+            "candidate_off_count": 154,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 397,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+            "event_count_relative_delta": 0.0
+          },
+          {
+            "reconstruction": "cuda",
+            "reference_event_count": 397,
+            "candidate_event_count": 397,
+            "reference_on_count": 243,
+            "candidate_on_count": 243,
+            "reference_off_count": 154,
+            "candidate_off_count": 154,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 397,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+            "event_count_relative_delta": 0.0
+          }
+        ],
+        "cpu_dvs_numpy_vs_cuda_reconstruction": {
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 2.314384017765292e-09,
+          "matched_event_time_abs_error_max_s": 9.946506729363591e-09,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "cuda_dvs_numpy_vs_cuda_reconstruction": {
+          "reference_event_count": 397,
+          "candidate_event_count": 397,
+          "reference_on_count": 243,
+          "candidate_on_count": 243,
+          "reference_off_count": 154,
+          "candidate_off_count": 154,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 397,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 2.314384017765292e-09,
+          "matched_event_time_abs_error_max_s": 9.946506729363591e-09,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "path_details": {
+          "numpy": {
+            "sample_count": 7,
+            "uncertainty": {
+              "invalid_fraction": 0.0,
+              "high_gradient_invalid_fraction": 0.0,
+              "endpoint_radiance_residual_max": 4.0804033279418945,
+              "endpoint_radiance_residual_p99": 0.6408711075782776,
+              "constant_twist_endpoint_assumption": true,
+              "recommend_render": true,
+              "radiometric_calibration_status": "provided_by_caller",
+              "disocclusion_domain": "projected_target_image",
+              "depth_correspondence_method": "source_material_point",
+              "photometric_temporal_model": "unobserved_endpoint_log_radiance_approximation",
+              "photometric_anchor_count": 2,
+              "photometric_max_anchor_gap_s": 0.010000000000000009,
+              "photometric_anchor_provenance": [
+                "caller_endpoint",
+                "caller_endpoint"
+              ],
+              "extra_render_count": 0,
+              "render_provider_wall_s": 0.0,
+              "resolved_render_request_count": 0,
+              "output_available_at_s": 0.5905,
+              "output_ready_after_right_endpoint_wall_s": 1.1175414019962773,
+              "future_state_used": false,
+              "photometric_spacing_satisfied": false
+            },
+            "unknown_fraction_by_frame": [
+              0.048776041666666665,
+              0.04829427083333333,
+              0.0479296875,
+              0.03829427083333333,
+              0.035768229166666665,
+              0.035768229166666665,
+              0.0
+            ]
+          },
+          "cuda": {
+            "sample_count": 7,
+            "uncertainty": {
+              "invalid_fraction": 0.0,
+              "high_gradient_invalid_fraction": 0.0,
+              "endpoint_radiance_residual_max": 4.0804033279418945,
+              "endpoint_radiance_residual_p99": 0.6408711075782776,
+              "constant_twist_endpoint_assumption": true,
+              "recommend_render": true,
+              "radiometric_calibration_status": "provided_by_caller",
+              "disocclusion_domain": "projected_target_image",
+              "depth_correspondence_method": "source_material_point",
+              "photometric_temporal_model": "unobserved_endpoint_log_radiance_approximation",
+              "photometric_anchor_count": 2,
+              "photometric_max_anchor_gap_s": 0.010000000000000009,
+              "photometric_anchor_provenance": [
+                "caller_endpoint",
+                "caller_endpoint"
+              ],
+              "extra_render_count": 0,
+              "render_provider_wall_s": 0.0,
+              "resolved_render_request_count": 0,
+              "output_available_at_s": 0.5905,
+              "output_ready_after_right_endpoint_wall_s": 0.22603588399942964,
+              "future_state_used": false,
+              "photometric_spacing_satisfied": false
+            },
+            "unknown_fraction_by_frame": [
+              0.048776041666666665,
+              0.04829427083333333,
+              0.0479296875,
+              0.03829427083333333,
+              0.035768229166666665,
+              0.035768229166666665,
+              0.0
+            ]
+          }
+        }
+      },
+      "strict_actual_intermediate_radiance": {
+        "episode": "004",
+        "input_sha256": {
+          "state_cache": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+          "direct_hdr_evidence": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321"
+        },
+        "timestamp_count": 10,
+        "timestamps_s": [
+          0.5815,
+          0.5825,
+          0.5835,
+          0.5845,
+          0.5855,
+          0.5865,
+          0.5875,
+          0.5885,
+          0.5895,
+          0.5905
+        ],
+        "max_abs_luma_delta_from_archived_direct_frames": 0.0,
+        "exact_image_sequence_match": true,
+        "raw_events": {
+          "reference_event_count": 625,
+          "candidate_event_count": 625,
+          "reference_on_count": 354,
+          "candidate_on_count": 354,
+          "reference_off_count": 271,
+          "candidate_off_count": 271,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 625,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "raw_events_exact_match": true,
+        "one_midpoint_5ms_sampling_ablation": {
+          "status": "forced_photometric_minimum; adaptive max_samples=2 to isolate one midpoint",
+          "direct_reference_events_1ms": 625,
+          "midpoint_sample_events": 413,
+          "event_metrics_vs_dense_1ms_direct": {
+            "reference_event_count": 625,
+            "candidate_event_count": 413,
+            "reference_on_count": 354,
+            "candidate_on_count": 251,
+            "reference_off_count": 271,
+            "candidate_off_count": 162,
+            "pixel_polarity_count_l1": 212,
+            "matched_event_slots": 413,
+            "matched_event_time_abs_error_median_s": 0.0012736850081846995,
+            "matched_event_time_abs_error_p95_s": 0.004012950355988886,
+            "matched_event_time_abs_error_max_s": 0.008127609492208587,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_extra_render_count_with_cached_midpoint": 0,
+          "max_anchor_gap_s": 0.0050000000000000044,
+          "output_ready_after_right_endpoint_wall_s_cpu": 0.30336961295688525,
+          "claim_boundary": "5ms piecewise log-radiance contract; does not meet tighter motion-derived sampling if the default sampler requests more"
+        },
+        "default_motion_sampler_midpoint_only_probe": {
+          "status": "additional_real_samples_required_by_default_sampler",
+          "adaptive_sample_count": 7,
+          "required_additional_sample_count": 6,
+          "requests": [
+            {
+              "t": 0.58175,
+              "alpha": 0.12499999999999722,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.583,
+              "alpha": 0.24999999999999445,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.58425,
+              "alpha": 0.3750000000000028,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.58675,
+              "alpha": 0.6249999999999972,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.5880000000000001,
+              "alpha": 0.7500000000000056,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.58925,
+              "alpha": 0.8750000000000028,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            }
+          ]
+        },
+        "extra_render_count": 0,
+        "photometric_anchor_count": 11,
+        "max_anchor_gap_s": 0.0010000000000000009,
+        "output_available_at_s": 0.5905,
+        "anchor_provenance": [
+          "caller_endpoint",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "caller_endpoint"
+        ],
+        "strict_api_wall_s_cpu_using_cached_frames": 1.1314936429844238,
+        "new_renderer_cost_measured": false
+      }
+    },
+    {
+      "episode": "005",
+      "state_cache_sha256": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+      "direct_hdr_evidence_sha256": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236",
+      "original_xor_target_count": 27,
+      "projection_delta": [
+        {
+          "endpoint": 0,
+          "valid_xor_pixels": 0,
+          "uv_abs_max_px_both_valid": 2.842170943040401e-14,
+          "uv_abs_p99_px_both_valid": 0.0,
+          "z_abs_max_m_both_valid": 0.0,
+          "uv_differing_pixels": 212
+        },
+        {
+          "endpoint": 1,
+          "valid_xor_pixels": 0,
+          "uv_abs_max_px_both_valid": 2.842170943040401e-14,
+          "uv_abs_p99_px_both_valid": 0.0,
+          "z_abs_max_m_both_valid": 0.0,
+          "uv_differing_pixels": 212
+        }
+      ],
+      "cases": [
+        {
+          "projection": "numpy_projection",
+          "compositor": "numpy",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.954453125,
+          "invalid_reason_counts": {
+            "coverage0": 316,
+            "coverage1": 1017,
+            "surface_consistency0": 0,
+            "surface_consistency1": 0,
+            "surface_id": 664,
+            "depth_match": 2474
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_id": 1,
+            "depth_match": 1,
+            "coverage1": 8
+          }
+        },
+        {
+          "projection": "numpy_projection",
+          "compositor": "cuda",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.954453125,
+          "invalid_reason_counts": {
+            "coverage0": 316,
+            "coverage1": 1017,
+            "surface_consistency0": 0,
+            "surface_consistency1": 0,
+            "surface_id": 664,
+            "depth_match": 2474
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_id": 1,
+            "depth_match": 1,
+            "coverage1": 8
+          }
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "numpy",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.954453125,
+          "invalid_reason_counts": {
+            "coverage0": 316,
+            "coverage1": 1017,
+            "surface_consistency0": 0,
+            "surface_consistency1": 0,
+            "surface_id": 664,
+            "depth_match": 2474
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_id": 1,
+            "depth_match": 1,
+            "coverage1": 8
+          }
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "cuda",
+          "final_mask_xor_vs_other_compositor": 0,
+          "valid_fraction": 0.954453125,
+          "invalid_reason_counts": {
+            "coverage0": 316,
+            "coverage1": 1017,
+            "surface_consistency0": 0,
+            "surface_consistency1": 0,
+            "surface_id": 664,
+            "depth_match": 2474
+          },
+          "original_xor_target_rejection_counts": {
+            "surface_id": 1,
+            "depth_match": 1,
+            "coverage1": 8
+          }
+        }
+      ],
+      "dvs_backend_comparisons": [
+        {
+          "projection": "numpy_projection",
+          "compositor": "numpy",
+          "reference_event_count": 582,
+          "candidate_event_count": 582,
+          "reference_on_count": 361,
+          "candidate_on_count": 361,
+          "reference_off_count": 221,
+          "candidate_off_count": 221,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 582,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        },
+        {
+          "projection": "numpy_projection",
+          "compositor": "cuda",
+          "reference_event_count": 582,
+          "candidate_event_count": 582,
+          "reference_on_count": 361,
+          "candidate_on_count": 361,
+          "reference_off_count": 221,
+          "candidate_off_count": 221,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 582,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "numpy",
+          "reference_event_count": 582,
+          "candidate_event_count": 582,
+          "reference_on_count": 361,
+          "candidate_on_count": 361,
+          "reference_off_count": 221,
+          "candidate_off_count": 221,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 582,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        },
+        {
+          "projection": "cuda_projection",
+          "compositor": "cuda",
+          "reference_event_count": 582,
+          "candidate_event_count": 582,
+          "reference_on_count": 361,
+          "candidate_on_count": 361,
+          "reference_off_count": 221,
+          "candidate_off_count": 221,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 582,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+          "event_count_relative_delta": 0.0
+        }
+      ],
+      "same_projection_compositor_pair": [
+        {
+          "projection": "numpy_projection",
+          "same_projection_input_compositor_mask_xor_pixels": 0,
+          "same_projection_input_component_mismatches": {
+            "support0": 0,
+            "support1": 0,
+            "surface_consistent0": 0,
+            "surface_consistent1": 0,
+            "surface_id0": 0,
+            "surface_id1": 0
+          },
+          "coverage_abs_max_by_endpoint": [
+            5.960464477539063e-08,
+            1.1920928955078125e-07
+          ],
+          "coverage_abs_p99_by_endpoint": [
+            0.0,
+            0.0
+          ],
+          "zbuffer_abs_max_m_by_endpoint": [
+            0.0,
+            0.0
+          ],
+          "same_projection_input_supported_log_luma_abs_max": 4.76837158203125e-07
+        },
+        {
+          "projection": "cuda_projection",
+          "same_projection_input_compositor_mask_xor_pixels": 0,
+          "same_projection_input_component_mismatches": {
+            "support0": 0,
+            "support1": 0,
+            "surface_consistent0": 0,
+            "surface_consistent1": 0,
+            "surface_id0": 0,
+            "surface_id1": 0
+          },
+          "coverage_abs_max_by_endpoint": [
+            5.960464477539063e-08,
+            1.1920928955078125e-07
+          ],
+          "coverage_abs_p99_by_endpoint": [
+            0.0,
+            0.0
+          ],
+          "zbuffer_abs_max_m_by_endpoint": [
+            0.0,
+            0.0
+          ],
+          "same_projection_input_supported_log_luma_abs_max": 4.76837158203125e-07
+        }
+      ],
+      "projector_effects_same_compositor": {
+        "numpy": {
+          "final_mask_xor_pixels": 0,
+          "common_supported_log_luma_abs_max": 0.0
+        },
+        "cuda": {
+          "final_mask_xor_pixels": 0,
+          "common_supported_log_luma_abs_max": 0.0
+        }
+      },
+      "native_end_to_end": {
+        "support_mask_xor_pixels": 0,
+        "common_supported_log_luma_abs_max": 4.76837158203125e-07,
+        "numpy_projection_numpy_compositor_cpu_dvs_vs_cuda_projection_cuda_compositor_cuda_dvs": {
+          "reference_event_count": 582,
+          "candidate_event_count": 582,
+          "reference_on_count": 361,
+          "candidate_on_count": 361,
+          "reference_off_count": 221,
+          "candidate_off_count": 221,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 582,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 9.826868652140765e-10,
+          "matched_event_time_abs_error_max_s": 3.8289680315273245e-09,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        }
+      },
+      "production_interpolator": {
+        "sample_times_s": [
+          0.5819285714285715,
+          0.5833571428571429,
+          0.5847857142857144,
+          0.5862142857142857,
+          0.5876428571428571,
+          0.5890714285714286,
+          0.5905
+        ],
+        "sample_count": 7,
+        "numpy_unknown_fraction_by_frame": [
+          0.04875,
+          0.04876302083333333,
+          0.0496875,
+          0.039075520833333335,
+          0.0368359375,
+          0.03704427083333333,
+          0.0
+        ],
+        "cuda_unknown_fraction_by_frame": [
+          0.04875,
+          0.04876302083333333,
+          0.0496875,
+          0.039075520833333335,
+          0.0368359375,
+          0.03704427083333333,
+          0.0
+        ],
+        "timestamp_max_abs_delta_s": 0.0,
+        "support_mask_xor_pixels_all_frames": 0,
+        "common_supported_log_luma_abs_max_all_frames": 4.76837158203125e-07,
+        "wall_s": {
+          "numpy": 0.8437358689843677,
+          "cuda": 0.15840721497079358
+        },
+        "dvs_backend_comparisons_per_reconstruction": [
+          {
+            "reconstruction": "numpy",
+            "reference_event_count": 587,
+            "candidate_event_count": 587,
+            "reference_on_count": 363,
+            "candidate_on_count": 363,
+            "reference_off_count": 224,
+            "candidate_off_count": 224,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 587,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+            "event_count_relative_delta": 0.0
+          },
+          {
+            "reconstruction": "cuda",
+            "reference_event_count": 587,
+            "candidate_event_count": 587,
+            "reference_on_count": 363,
+            "candidate_on_count": 363,
+            "reference_off_count": 224,
+            "candidate_off_count": 224,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 587,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}",
+            "event_count_relative_delta": 0.0
+          }
+        ],
+        "cpu_dvs_numpy_vs_cuda_reconstruction": {
+          "reference_event_count": 587,
+          "candidate_event_count": 587,
+          "reference_on_count": 363,
+          "candidate_on_count": 363,
+          "reference_off_count": 224,
+          "candidate_off_count": 224,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 587,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 3.0965533359683598e-09,
+          "matched_event_time_abs_error_max_s": 1.1784861975172589e-08,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "cuda_dvs_numpy_vs_cuda_reconstruction": {
+          "reference_event_count": 587,
+          "candidate_event_count": 587,
+          "reference_on_count": 363,
+          "candidate_on_count": 363,
+          "reference_off_count": 224,
+          "candidate_off_count": 224,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 587,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 3.0965533359683598e-09,
+          "matched_event_time_abs_error_max_s": 1.1784861975172589e-08,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "path_details": {
+          "numpy": {
+            "sample_count": 7,
+            "uncertainty": {
+              "invalid_fraction": 2.604166666666667e-05,
+              "high_gradient_invalid_fraction": 0.00013020833333333333,
+              "endpoint_radiance_residual_max": 4.130878448486328,
+              "endpoint_radiance_residual_p99": 0.6654067039489746,
+              "constant_twist_endpoint_assumption": true,
+              "recommend_render": true,
+              "radiometric_calibration_status": "provided_by_caller",
+              "disocclusion_domain": "projected_target_image",
+              "depth_correspondence_method": "source_material_point",
+              "photometric_temporal_model": "unobserved_endpoint_log_radiance_approximation",
+              "photometric_anchor_count": 2,
+              "photometric_max_anchor_gap_s": 0.010000000000000009,
+              "photometric_anchor_provenance": [
+                "caller_endpoint",
+                "caller_endpoint"
+              ],
+              "extra_render_count": 0,
+              "render_provider_wall_s": 0.0,
+              "resolved_render_request_count": 0,
+              "output_available_at_s": 0.5905,
+              "output_ready_after_right_endpoint_wall_s": 0.8437166450312361,
+              "future_state_used": false,
+              "photometric_spacing_satisfied": false
+            },
+            "unknown_fraction_by_frame": [
+              0.04875,
+              0.04876302083333333,
+              0.0496875,
+              0.039075520833333335,
+              0.0368359375,
+              0.03704427083333333,
+              0.0
+            ]
+          },
+          "cuda": {
+            "sample_count": 7,
+            "uncertainty": {
+              "invalid_fraction": 2.604166666666667e-05,
+              "high_gradient_invalid_fraction": 0.00013020833333333333,
+              "endpoint_radiance_residual_max": 4.130878448486328,
+              "endpoint_radiance_residual_p99": 0.6654067039489746,
+              "constant_twist_endpoint_assumption": true,
+              "recommend_render": true,
+              "radiometric_calibration_status": "provided_by_caller",
+              "disocclusion_domain": "projected_target_image",
+              "depth_correspondence_method": "source_material_point",
+              "photometric_temporal_model": "unobserved_endpoint_log_radiance_approximation",
+              "photometric_anchor_count": 2,
+              "photometric_max_anchor_gap_s": 0.010000000000000009,
+              "photometric_anchor_provenance": [
+                "caller_endpoint",
+                "caller_endpoint"
+              ],
+              "extra_render_count": 0,
+              "render_provider_wall_s": 0.0,
+              "resolved_render_request_count": 0,
+              "output_available_at_s": 0.5905,
+              "output_ready_after_right_endpoint_wall_s": 0.15834694099612534,
+              "future_state_used": false,
+              "photometric_spacing_satisfied": false
+            },
+            "unknown_fraction_by_frame": [
+              0.04875,
+              0.04876302083333333,
+              0.0496875,
+              0.039075520833333335,
+              0.0368359375,
+              0.03704427083333333,
+              0.0
+            ]
+          }
+        }
+      },
+      "strict_actual_intermediate_radiance": {
+        "episode": "005",
+        "input_sha256": {
+          "state_cache": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+          "direct_hdr_evidence": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236"
+        },
+        "timestamp_count": 10,
+        "timestamps_s": [
+          0.5815,
+          0.5825,
+          0.5835,
+          0.5845,
+          0.5855,
+          0.5865,
+          0.5875,
+          0.5885,
+          0.5895,
+          0.5905
+        ],
+        "max_abs_luma_delta_from_archived_direct_frames": 0.0,
+        "exact_image_sequence_match": true,
+        "raw_events": {
+          "reference_event_count": 939,
+          "candidate_event_count": 939,
+          "reference_on_count": 536,
+          "candidate_on_count": 536,
+          "reference_off_count": 403,
+          "candidate_off_count": 403,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 939,
+          "matched_event_time_abs_error_median_s": 0.0,
+          "matched_event_time_abs_error_p95_s": 0.0,
+          "matched_event_time_abs_error_max_s": 0.0,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "raw_events_exact_match": true,
+        "one_midpoint_5ms_sampling_ablation": {
+          "status": "forced_photometric_minimum; adaptive max_samples=2 to isolate one midpoint",
+          "direct_reference_events_1ms": 939,
+          "midpoint_sample_events": 615,
+          "event_metrics_vs_dense_1ms_direct": {
+            "reference_event_count": 939,
+            "candidate_event_count": 615,
+            "reference_on_count": 536,
+            "candidate_on_count": 375,
+            "reference_off_count": 403,
+            "candidate_off_count": 240,
+            "pixel_polarity_count_l1": 324,
+            "matched_event_slots": 615,
+            "matched_event_time_abs_error_median_s": 0.0011430970222879866,
+            "matched_event_time_abs_error_p95_s": 0.004274979139070915,
+            "matched_event_time_abs_error_max_s": 0.009484743833428788,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_extra_render_count_with_cached_midpoint": 0,
+          "max_anchor_gap_s": 0.0050000000000000044,
+          "output_ready_after_right_endpoint_wall_s_cpu": 0.24434113001916558,
+          "claim_boundary": "5ms piecewise log-radiance contract; does not meet tighter motion-derived sampling if the default sampler requests more"
+        },
+        "default_motion_sampler_midpoint_only_probe": {
+          "status": "additional_real_samples_required_by_default_sampler",
+          "adaptive_sample_count": 7,
+          "required_additional_sample_count": 6,
+          "requests": [
+            {
+              "t": 0.58175,
+              "alpha": 0.12499999999999722,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.583,
+              "alpha": 0.24999999999999445,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.58425,
+              "alpha": 0.3750000000000028,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.58675,
+              "alpha": 0.6249999999999972,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.5880000000000001,
+              "alpha": 0.7500000000000056,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            },
+            {
+              "t": 0.58925,
+              "alpha": 0.8750000000000028,
+              "reason": "strict_real_radiance_sample",
+              "invalid_fraction": 0.0,
+              "radiance_residual_p99": 0.0,
+              "recommend_render": true,
+              "available_at": 0.5905,
+              "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+            }
+          ]
+        },
+        "extra_render_count": 0,
+        "photometric_anchor_count": 11,
+        "max_anchor_gap_s": 0.0010000000000000009,
+        "output_available_at_s": 0.5905,
+        "anchor_provenance": [
+          "caller_endpoint",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "archived_exact_direct_hdr_frame",
+          "caller_endpoint"
+        ],
+        "strict_api_wall_s_cpu_using_cached_frames": 0.8707481549936347,
+        "new_renderer_cost_measured": false
+      }
+    }
+  ],
+  "controls": {
+    "near_threshold": [
+      {
+        "projected_u": 1.0049998760223389,
+        "coverage_threshold": 0.995,
+        "numpy_coverage_at_target_x1_y3": 0.9950001239776611,
+        "numpy_support_at_target_x1_y3": true,
+        "numpy_visible_at_target_x2_y3": true,
+        "numpy_support_at_target_x2_y3": false,
+        "cuda_coverage_at_target_x1_y3": 0.9950001239776611,
+        "cuda_support_at_target_x1_y3": true,
+        "cuda_visible_at_target_x2_y3": true,
+        "cuda_support_at_target_x2_y3": false
+      },
+      {
+        "projected_u": 1.0049999952316284,
+        "coverage_threshold": 0.995,
+        "numpy_coverage_at_target_x1_y3": 0.9950000047683716,
+        "numpy_support_at_target_x1_y3": true,
+        "numpy_visible_at_target_x2_y3": true,
+        "numpy_support_at_target_x2_y3": false,
+        "cuda_coverage_at_target_x1_y3": 0.9950000047683716,
+        "cuda_support_at_target_x1_y3": true,
+        "cuda_visible_at_target_x2_y3": true,
+        "cuda_support_at_target_x2_y3": false
+      },
+      {
+        "projected_u": 1.005000114440918,
+        "coverage_threshold": 0.995,
+        "numpy_coverage_at_target_x1_y3": 0.994999885559082,
+        "numpy_support_at_target_x1_y3": false,
+        "numpy_visible_at_target_x2_y3": true,
+        "numpy_support_at_target_x2_y3": false,
+        "cuda_coverage_at_target_x1_y3": 0.994999885559082,
+        "cuda_support_at_target_x1_y3": false,
+        "cuda_visible_at_target_x2_y3": true,
+        "cuda_support_at_target_x2_y3": false
+      }
+    ],
+    "tiny_footprint": {
+      "expected": "visible but unsupported",
+      "numpy_neighbor_coverage": 9.5367431640625e-07,
+      "numpy_neighbor_visible": true,
+      "numpy_neighbor_supported": false,
+      "cuda_neighbor_coverage": 9.5367431640625e-07,
+      "cuda_neighbor_visible": true,
+      "cuda_neighbor_supported": false
+    },
+    "front_back_occlusion": {
+      "numpy": {
+        "support_count": 72,
+        "visibility_count": 80,
+        "edge_luma_high": 0.6050000190734863,
+        "edge_luma_low": 0.2150000035762787,
+        "edge_surface_consistent": [
+          true,
+          true
+        ]
+      },
+      "cuda": {
+        "support_count": 72,
+        "visibility_count": 80,
+        "edge_luma_high": 0.6050000190734863,
+        "edge_luma_low": 0.2150000035762787,
+        "edge_surface_consistent": [
+          true,
+          true
+        ]
+      }
+    },
+    "control_gates": {
+      "near_threshold_cpu_cuda_support_equal": true,
+      "tiny_positive_footprint_visible_but_unsupported_both": true,
+      "front_back_occlusion_preserved_both": true
+    }
+  },
+  "source_sha256": {
+    "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py": "6b0339fd5c045c4ed25071d4419f20639b1ecfd3dc39944fedaf99c30ec26229",
+    "genesis_event_plugin/physics_warp.py": "8c23c601677cf25c1df445ea65235b154f5895353ba9bc67f37da40a3ae3fe41",
+    "genesis_event_plugin/torch_physics.py": "8a409765268746fefedb15a805c4d95db857bf6a4359c899cd65e6ac4dfe5955",
+    "genesis_event_plugin/dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638"
+  },
+  "config_sha256": "649219ea880b73e5c9dcf73c1cbd39165d5c6a309e386a97cc3fe94ef65dccf8",
+  "prior_result_sha256": "fb5e22ba285a4aaafbf3433565587b77de98b8b28a0cb8ba13eddaac8384ab51",
+  "prior_acceptance": {
+    "numpy_torch_supported_mask_mismatch_pixels": 0,
+    "max_abs_log_luminance_delta_supported_pixels": 0.02,
+    "threshold_dvs_cpu_cuda_event_sequence_exact": true,
+    "cached_clip_event_count_relative_delta_max": 0.02,
+    "note": "These are the previously frozen parity criteria; the supported-mask and supported-luminance gates apply to each backend native end-to-end projection plus compositor. This forensic run does not relax them. Renderer fidelity, intermediate-radiance sampling, render cost, and closed-loop perception remain separate acceptance items. The public PhysicsInterpolator multi-sample path must also satisfy the same mask/luminance limits and its CPU/CUDA DVS event-count delta must remain within the frozen 0.02 bound."
+  },
+  "photometric_sampling_and_render_cost": {
+    "exact_cached_direct_hdr_samples": {
+      "004": {
+        "sample_times_s": [
+          0.5815,
+          0.5825,
+          0.5835,
+          0.5845,
+          0.5855,
+          0.5865,
+          0.5875,
+          0.5885,
+          0.5895,
+          0.5905
+        ],
+        "exact_image_sequence_match": true,
+        "raw_events_exact_match": true,
+        "maximum_anchor_gap_s": 0.0010000000000000009,
+        "output_available_at_s": 0.5905,
+        "default_motion_sampler_requests_beyond_one_midpoint": 6,
+        "one_midpoint_5ms_event_count": 413,
+        "one_midpoint_5ms_reference_event_count": 625,
+        "one_midpoint_5ms_event_pixel_polarity_l1": 212,
+        "one_midpoint_5ms_event_time_p95_error_s": 0.004012950355988886,
+        "cached_api_wall_s_cpu": 1.1314936429844238,
+        "new_renderer_cost_measured": false
+      },
+      "005": {
+        "sample_times_s": [
+          0.5815,
+          0.5825,
+          0.5835,
+          0.5845,
+          0.5855,
+          0.5865,
+          0.5875,
+          0.5885,
+          0.5895,
+          0.5905
+        ],
+        "exact_image_sequence_match": true,
+        "raw_events_exact_match": true,
+        "maximum_anchor_gap_s": 0.0010000000000000009,
+        "output_available_at_s": 0.5905,
+        "default_motion_sampler_requests_beyond_one_midpoint": 6,
+        "one_midpoint_5ms_event_count": 615,
+        "one_midpoint_5ms_reference_event_count": 939,
+        "one_midpoint_5ms_event_pixel_polarity_l1": 324,
+        "one_midpoint_5ms_event_time_p95_error_s": 0.004274979139070915,
+        "cached_api_wall_s_cpu": 0.8707481549936347,
+        "new_renderer_cost_measured": false
+      }
+    },
+    "measured_full_frame_fallback_reference": {
+      "artifact": "benchmark/robot_closed_loop/results/r1_5_multiref_surface_cached_replay_20261021d/summary.json",
+      "artifact_sha256": "a505de6432aed810404826bd14c509293bf8dedfa9bd2e95d941cc4fa1be8166",
+      "executed_code_commit": "378442a45afb85e494acbc53f95859028ddd9163",
+      "scope": "Actual Genesis renderer measurement of the selective multi-reference candidate; 42 intermediate states over each 40 ms clip all triggered full-frame fallback. This does not measure the current six-request 10 ms strict provider schedule.",
+      "episodes": {
+        "004": {
+          "fallback_frame_count": 42,
+          "fallback_render_wall_s": 0.6769612226635218,
+          "candidate_total_pipeline_wall_s": 7.102035214193165,
+          "direct_render_47_state_wall_s": 0.7520476225763559,
+          "direct_dvs_wall_s": 0.4681383529677987
+        },
+        "005": {
+          "fallback_frame_count": 42,
+          "fallback_render_wall_s": 0.9500257382169366,
+          "candidate_total_pipeline_wall_s": 6.107042407616973,
+          "direct_render_47_state_wall_s": 1.0660504419356585,
+          "direct_dvs_wall_s": 0.6471374686807394
+        }
+      }
+    },
+    "current_strict_provider_cost_measured": false,
+    "freeze_recommendation": "do_not_freeze_default_core_until exact-time intermediate render-provider wall cost and online availability are measured; strict cached frames prove temporal fidelity but do not measure a live provider"
+  },
+  "threshold_probe_cpu_cuda_arrays_exact": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "threshold_probe_results": [
+    {
+      "log_contrast": 0.1999,
+      "cpu_event_count": 0,
+      "cuda_event_count": 0,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": 0.2,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 6
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 6
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": 0.2001,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 6
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 6
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": 0.3999,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 6
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 6
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": 0.4,
+      "cpu_event_count": 12,
+      "cuda_event_count": 12,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 12
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 12
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": 0.4001,
+      "cpu_event_count": 12,
+      "cuda_event_count": 12,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 12
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 12
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": -0.1999,
+      "cpu_event_count": 0,
+      "cuda_event_count": 0,
+      "cpu_polarities": {
+        "-1": 0,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 0,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": -0.2,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": -0.2001,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": -0.3999,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": -0.4,
+      "cpu_event_count": 6,
+      "cuda_event_count": 6,
+      "cpu_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 6,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    },
+    {
+      "log_contrast": -0.4001,
+      "cpu_event_count": 12,
+      "cuda_event_count": 12,
+      "cpu_polarities": {
+        "-1": 12,
+        "1": 0
+      },
+      "cuda_polarities": {
+        "-1": 12,
+        "1": 0
+      },
+      "raw_event_arrays_exact": true
+    }
+  ],
+  "acceptance_result": {
+    "threshold_dvs_cpu_cuda_exact": true,
+    "controls": {
+      "near_threshold_cpu_cuda_support_equal": true,
+      "tiny_positive_footprint_visible_but_unsupported_both": true,
+      "front_back_occlusion_preserved_both": true
+    },
+    "episodes": {
+      "004": {
+        "same_projection_compositor": {
+          "numpy_projection": {
+            "support_mask_exact": true,
+            "supported_log_luma_max_within_limit": true
+          },
+          "cuda_projection": {
+            "support_mask_exact": true,
+            "supported_log_luma_max_within_limit": true
+          }
+        },
+        "cpu_cuda_dvs_event_count_within_limit": {
+          "numpy_projection:numpy": true,
+          "numpy_projection:cuda": true,
+          "cuda_projection:numpy": true,
+          "cuda_projection:cuda": true
+        },
+        "native_end_to_end": {
+          "support_mask_exact": true,
+          "supported_log_luma_max_within_limit": true
+        },
+        "public_PhysicsInterpolator_end_to_end": {
+          "support_mask_exact_all_samples": true,
+          "supported_log_luma_max_within_limit_all_samples": true,
+          "cpu_cuda_dvs_event_counts_within_limit": true
+        },
+        "all_pass": true
+      },
+      "005": {
+        "same_projection_compositor": {
+          "numpy_projection": {
+            "support_mask_exact": true,
+            "supported_log_luma_max_within_limit": true
+          },
+          "cuda_projection": {
+            "support_mask_exact": true,
+            "supported_log_luma_max_within_limit": true
+          }
+        },
+        "cpu_cuda_dvs_event_count_within_limit": {
+          "numpy_projection:numpy": true,
+          "numpy_projection:cuda": true,
+          "cuda_projection:numpy": true,
+          "cuda_projection:cuda": true
+        },
+        "native_end_to_end": {
+          "support_mask_exact": true,
+          "supported_log_luma_max_within_limit": true
+        },
+        "public_PhysicsInterpolator_end_to_end": {
+          "support_mask_exact_all_samples": true,
+          "supported_log_luma_max_within_limit_all_samples": true,
+          "cpu_cuda_dvs_event_counts_within_limit": true
+        },
+        "all_pass": true
+      }
+    },
+    "all_gates_pass": true,
+    "criteria": {
+      "numpy_torch_supported_mask_mismatch_pixels": 0,
+      "max_abs_log_luminance_delta_supported_pixels": 0.02,
+      "threshold_dvs_cpu_cuda_event_sequence_exact": true,
+      "cached_clip_event_count_relative_delta_max": 0.02,
+      "note": "These are the previously frozen parity criteria; the supported-mask and supported-luminance gates apply to each backend native end-to-end projection plus compositor. This forensic run does not relax them. Renderer fidelity, intermediate-radiance sampling, render cost, and closed-loop perception remain separate acceptance items. The public PhysicsInterpolator multi-sample path must also satisfy the same mask/luminance limits and its CPU/CUDA DVS event-count delta must remain within the frozen 0.02 bound."
+    }
+  },
+  "wall_s_total": 11.212277105019893,
+  "scope": "forensic parity only; renderer, physics advancement, training and ranking excluded",
+  "replay_command": "python -u benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py --cache-root <verified-cache-root> --prior-arrays benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz --config /home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_cuda_support_forensics_20261031f/source/benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031f.json --output /home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_cuda_support_forensics_20261031f/output"
+}

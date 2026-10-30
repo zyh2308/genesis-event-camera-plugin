@@ -1253,3 +1253,8 @@ This section supersedes the preceding â€œNext candidate (`20261021e`, underway)â
 #### R1.5 CUDA parity run `r1_5_cuda_support_forensics_20261031e`
 
 - Remote exit code `1`; no result summary was produced. Runtime logs are in `benchmark/robot_closed_loop/results/runtime_logs/r1_5_cuda_support_forensics_20261031e/`.
+
+#### R1.5 support forensics run `r1_5_cuda_support_forensics_20261031f` (accepted)
+
+- Source commit `9e6b5d7e2689d541087a56ff1fbf0fc904571b69`; exit code `0`; device `NVIDIA GeForce RTX 3090`. Native end-to-end mask XOR / max log-luminance error: `{"004":{"mask_xor":0,"max_abs_log_luma":4.76837158203125e-07},"005":{"mask_xor":0,"max_abs_log_luma":4.76837158203125e-07}}`. Full acceptance: `True`.
+- [Detailed report and arrays](../../benchmark/robot_closed_loop/results/r1_5_cuda_support_forensics_20261031f/README.md); runtime logs: `benchmark/robot_closed_loop/results/runtime_logs/r1_5_cuda_support_forensics_20261031f/`.
