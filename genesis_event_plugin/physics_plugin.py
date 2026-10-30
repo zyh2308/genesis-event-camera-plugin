@@ -74,7 +74,7 @@ class GenesisPhysicsEventPlugin:
         sensor_eps_target: float = 0.05,
         readout_model: str = "ideal_readout",
         disocclusion_policy: str = "hold",
-        warp_composite: str = "next_primary",
+        warp_composite: str = "same_surface_log_linear",
         warp_backend: str = "auto",
         camera_margin: CameraMargin = None,
         device: str = None,
@@ -82,6 +82,9 @@ class GenesisPhysicsEventPlugin:
         radiance_provider: Optional[Callable] = None,
         motion_state_provider: Optional[Callable] = None,
         frame_provider: Optional[Callable] = None,
+        intermediate_state_provider: Optional[Callable] = None,
+        max_photometric_interval_s: float = 5e-3,
+        min_coverage_fraction: float = 0.995,
         output_rgb_frames: bool = False,
     ):
         if input_space not in {"linear", "srgb"}:
@@ -91,6 +94,9 @@ class GenesisPhysicsEventPlugin:
         self.radiance_provider = radiance_provider
         self.motion_state_provider = motion_state_provider
         self.frame_provider = frame_provider
+        self.intermediate_state_provider = intermediate_state_provider
+        self.max_photometric_interval_s = float(max_photometric_interval_s)
+        self.min_coverage_fraction = float(min_coverage_fraction)
         self.camera_profile = (
             get_camera_profile(camera_profile) if isinstance(camera_profile, str)
             else camera_profile
@@ -170,6 +176,8 @@ class GenesisPhysicsEventPlugin:
             device=self.device,
             warp_backend=self.warp_backend,
             strict_fidelity=self.strict_fidelity,
+            max_photometric_interval_s=self.max_photometric_interval_s,
+            min_coverage_fraction=self.min_coverage_fraction,
         )
         render_resolution_wh = (int(cam.res[0]), int(cam.res[1]))
         if self.camera_margin is not None:
@@ -323,6 +331,7 @@ class GenesisPhysicsEventPlugin:
             object_delta, self._prev["t"], t_current, input_space="linear",
             object_world0=self._prev["motion"]["object_to_world"],
             object_world1=motion["object_to_world"],
+            intermediate_state_provider=self.intermediate_state_provider,
         )
         self.interpolator.last_uncertainty[
             "radiometric_calibration_status"

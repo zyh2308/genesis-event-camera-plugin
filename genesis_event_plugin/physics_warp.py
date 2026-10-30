@@ -333,6 +333,130 @@ def _splat_projected_diagnostics(
     }
 
 
+def _splat_projected_coverage_diagnostics(
+    image: np.ndarray,
+    source_depth: np.ndarray,
+    target_uv: np.ndarray,
+    target_z: np.ndarray,
+    source_valid: Optional[np.ndarray] = None,
+    source_surface_id: Optional[np.ndarray] = None,
+    min_coverage_fraction: float = 0.995,
+    depth_tie_abs_m: float = 1e-7,
+    depth_tie_rtol: float = 8.0 * np.finfo(np.float32).eps,
+) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
+    """Candidate front-to-back splat with approximate footprint coverage.
+
+    Bilinear weights are only an area approximation, not exact renderer
+    coverage. A target pixel whose known samples cover less than the declared
+    fraction remains unsupported even though a conditional radiance estimate
+    is returned for diagnostics.
+    """
+    if not 0.0 < min_coverage_fraction <= 1.0:
+        raise ValueError("min_coverage_fraction must be in (0,1]")
+    if depth_tie_abs_m < 0 or depth_tie_rtol < 0:
+        raise ValueError("depth tie tolerances must be non-negative")
+    image = np.asarray(image, dtype=np.float32)
+    depth = np.asarray(source_depth, dtype=np.float32)
+    uv = np.asarray(target_uv, dtype=np.float32)
+    z = np.asarray(target_z, dtype=np.float32)
+    H, W = depth.shape
+    scalar = image.ndim == 2
+    src = image[..., None] if scalar else image
+    if src.shape[:2] != (H, W) or uv.shape != (2, H, W) or z.shape != (H, W):
+        raise ValueError("image/depth/target projection shapes do not agree")
+    labels = None if source_surface_id is None else np.asarray(source_surface_id, dtype=np.int64)
+    if labels is not None and labels.shape != (H, W):
+        raise ValueError("source_surface_id must have shape (H,W)")
+    valid = np.isfinite(src).all(axis=-1) & np.isfinite(depth) & (depth > 1e-6)
+    valid &= np.isfinite(z) & (z > 1e-6) & np.isfinite(uv).all(axis=0)
+    if source_valid is not None:
+        valid &= np.asarray(source_valid, dtype=bool)
+
+    tx, ty = uv[0], uv[1]
+    x0, y0 = np.floor(tx).astype(np.int32), np.floor(ty).astype(np.int32)
+    wx, wy = tx - x0, ty - y0
+    candidates = []
+    occupancy = np.zeros((H, W), dtype=bool)
+    z_buffer = np.full((H, W), np.inf, dtype=np.float32)
+    for ox, oy, weight in (
+        (0, 0, (1.0 - wx) * (1.0 - wy)),
+        (1, 0, wx * (1.0 - wy)),
+        (0, 1, (1.0 - wx) * wy),
+        (1, 1, wx * wy),
+    ):
+        x, y = x0 + ox, y0 + oy
+        keep = valid & (weight > 0) & (x >= 0) & (x < W) & (y >= 0) & (y < H)
+        if np.any(keep):
+            entry = (x[keep], y[keep], weight[keep], z[keep], src[keep])
+            if labels is not None:
+                entry += (labels[keep],)
+            else:
+                entry += (None,)
+            candidates.append(entry)
+            np.logical_or.at(occupancy, (y[keep], x[keep]), True)
+            np.minimum.at(z_buffer, (y[keep], x[keep]), z[keep])
+
+    out = np.zeros((H, W, src.shape[-1]), dtype=np.float32)
+    coverage = np.zeros((H, W), dtype=np.float32)
+    surface_id = np.full((H, W), -1, dtype=np.int64)
+    surface_consistent = np.zeros((H, W), dtype=bool)
+    if candidates:
+        count = np.zeros((H, W), dtype=np.int32)
+        for x, y, *_ in candidates:
+            np.add.at(count, (y, x), 1)
+        unresolved = [np.ones(len(item[0]), dtype=bool) for item in candidates]
+        for _ in range(int(count.max())):
+            nearest = np.full((H, W), np.inf, dtype=np.float32)
+            for (x, y, _weight, zc, _value, _label), active in zip(candidates, unresolved):
+                if np.any(active):
+                    np.minimum.at(nearest, (y[active], x[active]), zc[active])
+            if not np.isfinite(nearest).any():
+                break
+            tie = np.maximum(depth_tie_abs_m, depth_tie_rtol * np.abs(nearest))
+            layer_weight = np.zeros((H, W), dtype=np.float32)
+            layer_value = np.zeros_like(out)
+            label_min = np.full((H, W), np.iinfo(np.int64).max, dtype=np.int64)
+            label_max = np.full((H, W), np.iinfo(np.int64).min, dtype=np.int64)
+            next_unresolved = []
+            for (x, y, weight, zc, value, label), active in zip(candidates, unresolved):
+                take = active & (zc <= nearest[y, x] + tie[y, x])
+                next_unresolved.append(active & ~take)
+                if not np.any(take):
+                    continue
+                xt, yt, wt, vt = x[take], y[take], weight[take], value[take]
+                np.add.at(layer_weight, (yt, xt), wt)
+                for channel in range(src.shape[-1]):
+                    np.add.at(layer_value[..., channel], (yt, xt), wt * vt[:, channel])
+                if label is not None:
+                    np.minimum.at(label_min, (yt, xt), label[take])
+                    np.maximum.at(label_max, (yt, xt), label[take])
+            first_layer = coverage <= 1e-8
+            is_first = first_layer & (layer_weight > 0)
+            if labels is not None:
+                surface_id[is_first] = label_min[is_first]
+                surface_consistent[is_first] = label_min[is_first] == label_max[is_first]
+            accepted = np.minimum(layer_weight, np.maximum(1.0 - coverage, 0.0))
+            scale = np.divide(accepted, layer_weight, out=np.zeros_like(accepted), where=layer_weight > 0)
+            out += layer_value * scale[..., None]
+            coverage = np.minimum(coverage + accepted, 1.0)
+            unresolved = next_unresolved
+
+    visible = coverage > 1e-8
+    out[visible] /= coverage[visible, None]
+    if labels is None:
+        surface_consistent[visible] = True
+        surface_id[visible] = 0
+    return (out[..., 0] if scalar else out), {
+        "occupancy": occupancy,
+        "visibility": visible,
+        "coverage": coverage,
+        "support": coverage >= min_coverage_fraction,
+        "z_buffer": z_buffer,
+        "surface_id": surface_id,
+        "surface_consistent": surface_consistent,
+    }
+
+
 def projected_target_visibility(
     source_depth: np.ndarray,
     target_uv: np.ndarray,
@@ -368,12 +492,32 @@ def depth_aware_bidirectional_warp_projected(
     z1: np.ndarray,
     valid1: np.ndarray,
     composite: str = "next_primary",
+    alpha: float = 0.5,
+    surface_id0: Optional[np.ndarray] = None,
+    surface_id1: Optional[np.ndarray] = None,
+    min_coverage_fraction: float = 0.995,
+    depth_tie_abs_m: float = 1e-7,
+    depth_tie_rtol: float = 8.0 * np.finfo(np.float32).eps,
+    surface_depth_abs_m: float = 1e-3,
+    surface_depth_rtol: float = 1e-3,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Warp endpoints using true projections in one target image domain.
 
     The second return value is the intermediate target-domain visibility mask,
     not either endpoint's source-valid mask.
     """
+    if composite == "same_surface_log_linear":
+        out, valid, _ = depth_aware_bidirectional_warp_projected_diagnostics(
+            frame0, depth0, uv0, z0, valid0,
+            frame1, depth1, uv1, z1, valid1,
+            composite=composite, alpha=alpha,
+            surface_id0=surface_id0, surface_id1=surface_id1,
+            min_coverage_fraction=min_coverage_fraction,
+            depth_tie_abs_m=depth_tie_abs_m, depth_tie_rtol=depth_tie_rtol,
+            surface_depth_abs_m=surface_depth_abs_m,
+            surface_depth_rtol=surface_depth_rtol,
+        )
+        return out, valid
     a0, d0 = _splat_projected_diagnostics(frame0, depth0, uv0, z0, valid0)
     a1, d1 = _splat_projected_diagnostics(frame1, depth1, uv1, z1, valid1)
     v0, v1 = d0["visibility"], d1["visibility"]
@@ -409,6 +553,14 @@ def depth_aware_bidirectional_warp_projected_diagnostics(
     z1: np.ndarray,
     valid1: np.ndarray,
     composite: str = "next_primary",
+    alpha: float = 0.5,
+    surface_id0: Optional[np.ndarray] = None,
+    surface_id1: Optional[np.ndarray] = None,
+    min_coverage_fraction: float = 0.995,
+    depth_tie_abs_m: float = 1e-7,
+    depth_tie_rtol: float = 8.0 * np.finfo(np.float32).eps,
+    surface_depth_abs_m: float = 1e-3,
+    surface_depth_rtol: float = 1e-3,
 ) -> Tuple[np.ndarray, np.ndarray, Dict[str, np.ndarray]]:
     """Warp and expose source/target visibility diagnostics.
 
@@ -417,6 +569,89 @@ def depth_aware_bidirectional_warp_projected_diagnostics(
     mask identifies hidden content beyond the support of both endpoint
     projections; such content requires a real Genesis intermediate render.
     """
+    if not 0.0 <= float(alpha) <= 1.0:
+        raise ValueError("alpha must be in [0,1]")
+    if composite == "same_surface_log_linear":
+        exact_frame, exact_valid, exact_endpoint = None, None, None
+        if alpha == 0.0:
+            exact_frame, exact_valid, exact_endpoint = frame0, valid0, 0
+        elif alpha == 1.0:
+            exact_frame, exact_valid, exact_endpoint = frame1, valid1, 1
+        if exact_frame is not None:
+            # Direct endpoint radiance remains observed even when depth is
+            # missing; depth support only limits geometric interpolation.
+            exact_valid = (
+                np.isfinite(exact_frame).all(axis=-1)
+                if exact_frame.ndim == 3 else np.isfinite(exact_frame)
+            )
+            shape = exact_valid.shape
+            false = np.zeros(shape, dtype=bool)
+            zero = np.zeros(shape, dtype=np.float32)
+            sid0 = np.asarray(surface_id0) if surface_id0 is not None else np.zeros(shape, dtype=np.int64)
+            sid1 = np.asarray(surface_id1) if surface_id1 is not None else np.zeros(shape, dtype=np.int64)
+            diag = {
+                "occupancy0": exact_valid.copy() if exact_endpoint == 0 else false,
+                "occupancy1": exact_valid.copy() if exact_endpoint == 1 else false,
+                "visibility0": exact_valid.copy() if exact_endpoint == 0 else false,
+                "visibility1": exact_valid.copy() if exact_endpoint == 1 else false,
+                "support0": exact_valid.copy() if exact_endpoint == 0 else false,
+                "support1": exact_valid.copy() if exact_endpoint == 1 else false,
+                "coverage0": exact_valid.astype(np.float32) if exact_endpoint == 0 else zero,
+                "coverage1": exact_valid.astype(np.float32) if exact_endpoint == 1 else zero,
+                "z_buffer0": np.asarray(z0, dtype=np.float32) if exact_endpoint == 0 else np.full(shape, np.inf, dtype=np.float32),
+                "z_buffer1": np.asarray(z1, dtype=np.float32) if exact_endpoint == 1 else np.full(shape, np.inf, dtype=np.float32),
+                "surface_id0": sid0 if exact_endpoint == 0 else np.full(shape, -1, dtype=np.int64),
+                "surface_id1": sid1 if exact_endpoint == 1 else np.full(shape, -1, dtype=np.int64),
+                "surface_consistent0": exact_valid.copy() if exact_endpoint == 0 else false,
+                "surface_consistent1": exact_valid.copy() if exact_endpoint == 1 else false,
+                "surface_match": exact_valid.copy(),
+                "intermediate_visibility": exact_valid.copy(),
+                "intermediate_unknown": ~exact_valid,
+                "intermediate_coverage": exact_valid.astype(np.float32),
+                "disocclusion": ~exact_valid,
+            }
+            return np.asarray(exact_frame, dtype=np.float32).copy(), exact_valid, diag
+        a0, d0 = _splat_projected_coverage_diagnostics(
+            frame0, depth0, uv0, z0, valid0, surface_id0,
+            min_coverage_fraction, depth_tie_abs_m, depth_tie_rtol,
+        )
+        a1, d1 = _splat_projected_coverage_diagnostics(
+            frame1, depth1, uv1, z1, valid1, surface_id1,
+            min_coverage_fraction, depth_tie_abs_m, depth_tie_rtol,
+        )
+        zmatch = np.abs(d0["z_buffer"] - d1["z_buffer"]) <= np.maximum(
+            float(surface_depth_abs_m),
+            float(surface_depth_rtol) * np.maximum(np.abs(d0["z_buffer"]), np.abs(d1["z_buffer"])),
+        )
+        surface_match = (
+            d0["support"] & d1["support"]
+            & d0["surface_consistent"] & d1["surface_consistent"]
+            & (d0["surface_id"] == d1["surface_id"])
+            & zmatch
+        )
+        out = np.full_like(a0, np.nan, dtype=np.float32)
+        safe0 = np.maximum(a0, 1e-6)
+        safe1 = np.maximum(a1, 1e-6)
+        mixed_log = (1.0 - float(alpha)) * np.log(safe0) + float(alpha) * np.log(safe1)
+        out[surface_match] = np.exp(mixed_log[surface_match]).astype(np.float32)
+        visible = surface_match
+        diag = {
+            "occupancy0": d0["occupancy"], "occupancy1": d1["occupancy"],
+            "visibility0": d0["visibility"], "visibility1": d1["visibility"],
+            "support0": d0["support"], "support1": d1["support"],
+            "coverage0": d0["coverage"], "coverage1": d1["coverage"],
+            "z_buffer0": d0["z_buffer"], "z_buffer1": d1["z_buffer"],
+            "surface_id0": d0["surface_id"], "surface_id1": d1["surface_id"],
+            "surface_consistent0": d0["surface_consistent"],
+            "surface_consistent1": d1["surface_consistent"],
+            "surface_match": surface_match,
+            "intermediate_visibility": visible,
+            "intermediate_unknown": ~visible,
+            "intermediate_coverage": np.minimum(d0["coverage"], d1["coverage"]),
+            "disocclusion": ~visible,
+        }
+        return out, visible, diag
+
     a0, d0 = _splat_projected_diagnostics(frame0, depth0, uv0, z0, valid0)
     a1, d1 = _splat_projected_diagnostics(frame1, depth1, uv1, z1, valid1)
     v0, v1 = d0["visibility"], d1["visibility"]
