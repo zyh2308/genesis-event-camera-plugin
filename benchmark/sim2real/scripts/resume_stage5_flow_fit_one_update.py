@@ -73,6 +73,7 @@ def main() -> None:
 
     config = json.loads(args.config.read_text())
     sample_cfg = config["sample"]
+    config_sha = sha256(args.config.resolve())
     source_checkpoint = args.checkpoint.resolve()
     source_sha_before = sha256(source_checkpoint)
     checkpoint = torch.load(source_checkpoint, map_location="cpu", weights_only=False)
@@ -82,6 +83,8 @@ def main() -> None:
         raise RuntimeError(f"expected source update 200, found {checkpoint.get('updates')!r}")
     if checkpoint.get("sample_id") != sample_cfg["sample_id"]:
         raise RuntimeError("source checkpoint sample ID differs from frozen config")
+    if checkpoint.get("config_sha256") != config_sha:
+        raise RuntimeError("source checkpoint was trained with a different config fingerprint")
     if checkpoint.get("flow_unit") != FLOW_UNIT:
         raise RuntimeError("source checkpoint flow unit mismatch")
     if checkpoint.get("real_data_used") is not False:
@@ -203,7 +206,7 @@ def main() -> None:
         "sample_id": sample_cfg["sample_id"],
         "rollout_id": sample_cfg["rollout_id"],
         "window_index": int(sample_cfg["window_index"]),
-        "config_sha256": sha256(args.config.resolve()),
+        "config_sha256": config_sha,
         "data_manifest_sha256": manifest_sha,
         "paired_labels_identical": True,
         "flow_unit": FLOW_UNIT,
