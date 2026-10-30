@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SSH = Path("/mnt/c/Windows/System32/OpenSSH/ssh.exe")
 SCP = Path("/mnt/c/Windows/System32/OpenSSH/scp.exe")
 REMOTE_AGENT = ROOT / "benchmark/robot_closed_loop/diagnostics/launch_r1_5_candidate_cuda_parity_remote.sh"
-RUN_ID = "r1_5_core_cuda_parity_20261030b"
+RUN_ID = "r1_5_core_cuda_parity_20261030c"
 BRANCH = "exp/r1_5-core-candidate-20261030"
 HOSTS = ("g1.pkuml.org", "g3.pkuml.org")
 REMOTE_RUN_ROOT = f"/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/{RUN_ID}"
@@ -122,7 +122,7 @@ def stage_source(host: str, source_commit: str, timeout_s: float) -> str:
         "benchmark/robot_closed_loop/diagnostics/validate_r1_5_core_candidate.py",
         "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py",
         "benchmark/robot_closed_loop/diagnostics/launch_r1_5_candidate_cuda_parity_worker.sh",
-        "benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json",
+        "benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030c.json",
     ]
     bundle = io.BytesIO()
     with tarfile.open(fileobj=bundle, mode="w:gz") as archive:
@@ -256,7 +256,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument("--max-hours", type=float, default=24.0)
-    parser.add_argument("--log-dir", type=Path, default=ROOT.parent.parent / "runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030b")
+    parser.add_argument("--log-dir", type=Path, default=ROOT.parent.parent / "runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030c")
     parser.add_argument("--ssh-timeout-seconds", type=float, default=25.0)
     args = parser.parse_args()
     if not SSH.exists() or not SCP.exists():

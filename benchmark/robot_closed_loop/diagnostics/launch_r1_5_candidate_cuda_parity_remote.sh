@@ -6,7 +6,8 @@ SOURCE_COMMIT=${3:?source commit}
 GPU_INDEX=${4:?GPU index}
 GPU_UUID=${5:?GPU UUID}
 HOME_ROOT=/home/zhaoyuhan/Eventbased_WAM
-BASE="$HOME_ROOT/repositories/genesis-event-camera-plugin"
+BASE="$HOME_ROOT/repositories/genesis-event-camera-plugin-r1-diag-20261019"
+CACHE="$BASE/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059"
 RUN_ROOT="$HOME_ROOT/runs/robot_scenes/genesis_event_camera_plugin/$RUN_ID"
 ROOT="$RUN_ROOT/source"
 LOCK_PARENT="$HOME_ROOT/runs/robot_scenes/.gpu_reservations"
@@ -16,8 +17,9 @@ OUT="$RUN_ROOT/output"
 LOGDIR="$RUN_ROOT/logs"
 PYTHON=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
 WORKER="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_candidate_cuda_parity_worker.sh"
-SESSION=r15cuda20261030b
+SESSION=r15cuda20261030c
 KEEP_LOCK=0
+preflight_fail() { echo "PREFLIGHT_FAIL: $*" >&2; exit 70; }
 
 cleanup_unlaunched() {
   if [[ "$KEEP_LOCK" == 0 ]]; then
@@ -33,17 +35,19 @@ cleanup_unlaunched() {
 }
 trap cleanup_unlaunched EXIT
 
-[[ "$(hostname -s)" == "$HOST" ]]
-[[ "$(findmnt -T "$HOME_ROOT" -no FSTYPE)" == nfs ]]
-[[ -d "$ROOT/genesis_event_plugin" && -f "$ROOT/source_provenance.json" ]]
-[[ ! -e "$OUT" && ! -e "$LOGDIR" ]]
-grep -Fq "$SOURCE_COMMIT" "$ROOT/source_provenance.json"
-[[ -x "$PYTHON" && -x "$WORKER" ]]
-[[ -f "$BASE/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_004/same_state_source_cache.h5" ]]
-[[ -f "$BASE/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_005/same_state_source_cache.h5" ]]
-"$PYTHON" -c 'import torch,numpy,h5py; assert torch.cuda.is_available(); print("torch",torch.__version__,"cuda",torch.version.cuda,"numpy",numpy.__version__,"h5py",h5py.__version__)'
-command -v tmux >/dev/null
-command -v nvidia-smi >/dev/null
+[[ "$(hostname -s)" == "$HOST" ]] || preflight_fail "host identity expected=$HOST actual=$(hostname -s)"
+[[ "$(findmnt -T "$HOME_ROOT" -no FSTYPE)" == nfs ]] || preflight_fail "project home is not on verified NFS"
+[[ -d "$ROOT/genesis_event_plugin" && -f "$ROOT/source_provenance.json" ]] || preflight_fail "staged source/provenance missing"
+[[ ! -e "$OUT" && ! -e "$LOGDIR" ]] || preflight_fail "run output/log path already exists"
+grep -Fq "$SOURCE_COMMIT" "$ROOT/source_provenance.json" || preflight_fail "staged source commit mismatch"
+[[ -x "$PYTHON" && -x "$WORKER" ]] || preflight_fail "python or worker is not executable"
+[[ -r "$CACHE/episode_004/same_state_source_cache.h5" && -r "$CACHE/episode_005/same_state_source_cache.h5" ]] || preflight_fail "archived cache missing at $CACHE"
+printf '%s  %s\n' \
+  0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7 "$CACHE/episode_004/same_state_source_cache.h5" \
+  91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434 "$CACHE/episode_005/same_state_source_cache.h5" | sha256sum -c - || preflight_fail "archived cache hash mismatch"
+"$PYTHON" -c 'import torch,numpy,h5py; assert torch.cuda.is_available(); print("torch",torch.__version__,"cuda",torch.version.cuda,"numpy",numpy.__version__,"h5py",h5py.__version__)' || preflight_fail "CUDA runtime/import check failed"
+command -v tmux >/dev/null || preflight_fail "tmux unavailable"
+command -v nvidia-smi >/dev/null || preflight_fail "nvidia-smi unavailable"
 
 gpu_free() {
   local row idx uuid util mem apps pmon
@@ -108,7 +112,7 @@ mkdir -p "$LOGDIR"
   echo "load=$(cat /proc/loadavg)"; free -h; df -h "$HOME_ROOT"
   "$PYTHON" -c 'import torch,numpy,h5py; print("torch",torch.__version__,"cuda",torch.version.cuda,"available",torch.cuda.is_available()); print("numpy",numpy.__version__,"h5py",h5py.__version__)'
   cat "$ROOT/source_provenance.json"
-  sha256sum "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py" "$ROOT/benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json"
+  sha256sum "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py" "$ROOT/benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030c.json"
 } > "$LOGDIR/preflight.txt" 2>&1
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then

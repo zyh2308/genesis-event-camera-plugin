@@ -7,7 +7,7 @@ GPU_UUID=${4:?GPU UUID}
 SOURCE_COMMIT=${5:?source commit}
 RUN_ROOT="/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/$RUN_ID"
 ROOT="$RUN_ROOT/source"
-CACHE_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059
+CACHE_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059
 PYTHON=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
 LOCK_PARENT=/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/.gpu_reservations
 GPU_LOCK="$LOCK_PARENT/$GPU_UUID"
@@ -15,7 +15,7 @@ SLOT="$LOCK_PARENT/.r1_5_core_candidate_cuda_slot"
 OUT="$RUN_ROOT/output"
 LOGDIR="$RUN_ROOT/logs"
 SCRIPT=benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py
-CONFIG=benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json
+CONFIG=benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030c.json
 
 printf '%s\n' "$$" > "$LOGDIR/worker_pid.txt"
 printf 'started_utc=%s\ncode_commit=%s\n' "$(date -u +%FT%TZ)" "$SOURCE_COMMIT" > "$LOGDIR/worker_started.txt"

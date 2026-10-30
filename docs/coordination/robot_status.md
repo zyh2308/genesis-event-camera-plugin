@@ -1226,7 +1226,8 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 #### R1.5 candidate CUDA 诊断部署修正（2026-10-30；GPU 复查后再启动）
 
 - **待运行：**episode 004/005 候选 NumPy vs Torch/CUDA warp parity，以及理想 DVS 阈值附近 CPU/CUDA 对照。首次 run `20261030a` 未启动：g1 资源检查通过后，远端 checkout 准备超过 75 s；60 s 冷却后的精确核验确认没有对应 tmux、预约、slot 或 worktree。没有诊断进程确认运行。
-- **部署修正：**新 run `r1_5_core_cuda_parity_20261030b` 不再要求服务器 `git fetch` 或初始化 worktree。WSL 只上传必要源码小包到共享 NFS；事件缓存仍只读复用原路径。输出完毕后拉回小结果和日志，哈希校验并在源分支头未变化时提交。
+- **部署修正：**run `20261030b` 的源码小包 staged 成功，但启动器缓存路径错误，快速失败在 GPU 预约之前；只读核验确认无 tmux、GPU UUID 锁、全局 slot、输出或日志，未占用 GPU。缓存真实路径已核实为 `/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059`，ep004/005 缓存 SHA256 与归档完全一致（分别 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7`、`91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434`）。
+- **新运行配置：**下一 run 固定为 `r1_5_core_cuda_parity_20261030c`；启动器现校验两个缓存哈希并在预检失败时报告具体原因。只读数据继续留在原 NFS 路径，不复制。
 - **watcher：**WSL 脚本 `benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py` 按 60 s 检查 g1、g3。两次空闲观测、无进程/项目 UUID 锁、显存 ≤512 MiB、util ≤5%，并通过主机资源门槛后才原子预约并 tmux 启动；只部署一个任务，24 h 超时退出。运行入口和阈值见 [`R1.5 候选报告`](r1_5_core_candidate_20261030.md)。
-- **最近成功资源观察（不是当前快照）：**g1 `13:09:32Z`、`13:10:43Z` 六卡均无进程且 0% 利用率；部署超时后 watcher 停止，尚未重新探测。g3 同期 load 约 440/128 CPU，且原先表面空闲的 GPU2 后续出现进程，因此没被选用。
-- **证据状态：**候选 CUDA 实验尚未运行；新脚本、配置、staging 和回收路径须先经语法检查并提交，再重启 watcher。通过 CUDA parity 后才评估 renderer 成本；若不通过，保留完整 trace，停止后续 GPU renderer 作业。
+- **最近资源观察（均非当前快照）：**g1 `13:19:27Z`、`13:20:36Z` 与部署前复查通过 GPU/主机门槛，但缓存路径错误使其未预约；g3 当时未过主机负载门槛。`13:21:53Z` 只读核验缓存哈希成功。下一次 watcher 会重新检查两台服务器，不沿用这些快照。
+- **证据状态：**候选 CUDA 实验仍未运行。watcher 已调整为 C run 的唯一目录，并在本地完成 shell 语法和 Python 编译检查；配置 SHA256 `44c392479abbb27deac484c99ee6065e2ad9aa819bf14e133e5cbf99d38a8656`。代码变更提交并推送后才会启动监控；若 parity 不通过，保留 trace，不启动 renderer GPU 作业。
