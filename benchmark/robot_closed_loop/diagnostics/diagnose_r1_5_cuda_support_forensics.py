@@ -231,7 +231,6 @@ def run_production_interpolator_pair(src, K, left, right, objects0, objects1, wi
         "dvs_backend_comparisons_per_reconstruction": event_comparisons,
         "cpu_dvs_numpy_vs_cuda_reconstruction": cross_reconstruction["cpu"],
         "cuda_dvs_numpy_vs_cuda_reconstruction": cross_reconstruction["cuda0"],
-        "event_arrays": events,
         "path_details": details,
     }
 
@@ -763,7 +762,9 @@ def main():
     )
 
     args.output.mkdir(parents=True, exist_ok=True)
-    (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    (args.output / "summary.json").write_text(
+        json.dumps(summary, indent=2, default=json_default) + "\n", encoding="utf-8",
+    )
     with (args.output / "point_components.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(point_rows[0]))
         writer.writeheader(); writer.writerows(point_rows)

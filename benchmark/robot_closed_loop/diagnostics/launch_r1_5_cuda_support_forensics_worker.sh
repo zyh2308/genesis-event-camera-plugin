@@ -15,7 +15,7 @@ SLOT="$LOCK_PARENT/.r1_5_core_candidate_cuda_slot"
 OUT="$RUN_ROOT/output"
 LOGDIR="$RUN_ROOT/logs"
 SCRIPT=benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py
-CONFIG=benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031d.json
+CONFIG=benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031e.json
 PRIOR_ARRAYS="$ROOT/benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz"
 
 printf '%s\n' "$$" > "$LOGDIR/worker_pid.txt"
