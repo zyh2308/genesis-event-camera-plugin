@@ -96,8 +96,8 @@ def _so3_log_torch(rotation: torch.Tensor) -> torch.Tensor:
         rotation[0, 2] - rotation[2, 0],
         rotation[1, 0] - rotation[0, 1],
     ))
-    scale = theta / torch.clamp(torch.sin(theta), min=1e-6)
-    return torch.where(theta < 1e-5, vee, vee * scale)
+    scale = theta / torch.clamp(torch.sin(theta), min=1e-15)
+    return torch.where(theta < 1e-10, vee, vee * scale)
 
 
 def _so3_exp_batch_torch(rotation_vectors: torch.Tensor) -> torch.Tensor:
@@ -111,8 +111,8 @@ def _so3_exp_batch_torch(rotation_vectors: torch.Tensor) -> torch.Tensor:
         -y, x, zeros,
     ), dim=-1).reshape(-1, 3, 3)
     theta2 = theta * theta
-    a = torch.where(theta < 1e-5, 1.0 - theta2 / 6.0, torch.sin(theta) / torch.clamp(theta, min=1e-6))
-    b = torch.where(theta < 1e-5, 0.5 - theta2 / 24.0, (1.0 - torch.cos(theta)) / torch.clamp(theta2, min=1e-6))
+    a = torch.where(theta < 1e-10, 1.0 - theta2 / 6.0, torch.sin(theta) / torch.clamp(theta, min=1e-15))
+    b = torch.where(theta < 1e-10, 0.5 - theta2 / 24.0, (1.0 - torch.cos(theta)) / torch.clamp(theta2, min=1e-30))
     eye = torch.eye(3, dtype=rotation_vectors.dtype, device=rotation_vectors.device).expand(rotation_vectors.shape[0], -1, -1)
     return eye + a[:, None, None] * K + b[:, None, None] * torch.bmm(K, K)
 
@@ -123,8 +123,11 @@ def interpolate_se3_stack_torch(
     alphas: torch.Tensor,
 ) -> torch.Tensor:
     """GPU endpoint SE(3) interpolation for a stack of alphas."""
-    T0 = camera_to_world0.to(dtype=torch.float32)
-    T1 = camera_to_world1.to(device=T0.device, dtype=torch.float32)
+    # Projection geometry is evaluated in float64 so the CUDA path has the
+    # same precision contract as physics_warp.interpolate_se3. Results are
+    # cast to float32 only at the projected uv/z API boundary.
+    T0 = camera_to_world0.to(dtype=torch.float64)
+    T1 = camera_to_world1.to(device=T0.device, dtype=torch.float64)
     a = alphas.to(device=T0.device, dtype=T0.dtype).reshape(-1)
     rel = T0[:3, :3].transpose(0, 1) @ T1[:3, :3]
     w = _so3_log_torch(rel)
@@ -160,7 +163,7 @@ def project_endpoint_to_alpha_stack_torch(
     if depth_source.ndim != 2 or seg_source.shape != depth_source.shape:
         raise ValueError("depth_source and seg_source must be HxW")
     device = depth_source.device
-    dtype = torch.float32
+    dtype = torch.float64
     depth = depth_source.to(dtype=dtype)
     seg = seg_source.to(device=device)
     K = K.to(device=device, dtype=dtype)
@@ -208,8 +211,8 @@ def project_endpoint_to_alpha_stack_torch(
     valid = torch.isfinite(p_alpha_cam).all(dim=-1) & base_valid[None, :] & (z > 1e-6)
     u = torch.where(valid, K[0, 0] * p_alpha_cam[..., 0] / torch.clamp(z, min=1e-6) + K[0, 2], torch.zeros_like(z))
     v = torch.where(valid, K[1, 1] * p_alpha_cam[..., 1] / torch.clamp(z, min=1e-6) + K[1, 2], torch.zeros_like(z))
-    uv = torch.stack((u, v), dim=1).reshape(-1, 2, H, W)
-    return uv, z.reshape(-1, H, W), valid.reshape(-1, H, W)
+    uv = torch.stack((u, v), dim=1).reshape(-1, 2, H, W).to(dtype=torch.float32)
+    return uv, z.reshape(-1, H, W).to(dtype=torch.float32), valid.reshape(-1, H, W)
 
 
 def _splat_torch(image, depth, flow, amount):

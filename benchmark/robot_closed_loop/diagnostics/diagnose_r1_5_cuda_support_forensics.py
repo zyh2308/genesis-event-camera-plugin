@@ -85,17 +85,17 @@ def project_numpy_pair(src, K, left, right, objects0, objects1):
 
 def project_cuda_pair(src, K, left, right, objects0, objects1):
     device = torch.device("cuda:0")
-    alphas = torch.tensor([ALPHA], dtype=torch.float32, device=device)
-    K_t = torch.as_tensor(K, dtype=torch.float32, device=device)
-    cam0 = torch.as_tensor(src["camera_to_world_cv"][left], dtype=torch.float32, device=device)
-    cam1 = torch.as_tensor(src["camera_to_world_cv"][right], dtype=torch.float32, device=device)
+    alphas = torch.tensor([ALPHA], dtype=torch.float64, device=device)
+    K_t = torch.as_tensor(K, dtype=torch.float64, device=device)
+    cam0 = torch.as_tensor(src["camera_to_world_cv"][left], dtype=torch.float64, device=device)
+    cam1 = torch.as_tensor(src["camera_to_world_cv"][right], dtype=torch.float64, device=device)
     out = []
     with torch.inference_mode():
         for side, frame_index, source_camera in ((0, left, cam0), (1, right, cam1)):
-            d = torch.as_tensor(src["depth"][frame_index], dtype=torch.float32, device=device)
+            d = torch.as_tensor(src["depth"][frame_index], dtype=torch.float64, device=device)
             seg = torch.as_tensor(src["segmentation"][frame_index], device=device)
-            o0 = {int(k): torch.as_tensor(v, dtype=torch.float32, device=device) for k, v in objects0.items()}
-            o1 = {int(k): torch.as_tensor(v, dtype=torch.float32, device=device) for k, v in objects1.items()}
+            o0 = {int(k): torch.as_tensor(v, dtype=torch.float64, device=device) for k, v in objects0.items()}
+            o1 = {int(k): torch.as_tensor(v, dtype=torch.float64, device=device) for k, v in objects1.items()}
             uv, z, valid = project_endpoint_to_alpha_stack_torch(
                 d, seg, K_t, source_camera, cam0, cam1, alphas, side, o0, o1, None,
             )
@@ -373,7 +373,7 @@ def main():
         source_commit = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
     except Exception:
         source_commit = __import__("os").environ.get("GENESIS_EVENT_PLUGIN_SOURCE_COMMIT", "source_commit_unavailable")
-    summary = {"run_id": args.output.name,
+    summary = {"run_id": config["run_id"],
                "source_commit": source_commit,
                "python": sys.version.split()[0], "platform": platform.platform(), "torch": torch.__version__,
                "cuda_runtime": torch.version.cuda,
@@ -528,6 +528,22 @@ def main():
                 "final_mask_xor_pixels": int(np.count_nonzero(np_valid != cu_valid)),
                 "common_supported_log_luma_abs_max": float(delta.max()) if delta.size else None,
             }
+        native_numpy_out, native_numpy_valid, _ = projection_outputs["numpy_projection"]["numpy"]
+        native_cuda_out, native_cuda_valid, _ = projection_outputs["cuda_projection"]["cuda"]
+        native_common = native_numpy_valid & native_cuda_valid
+        native_delta = np.abs(
+            np.log(np.maximum(native_numpy_out[native_common], 1e-6))
+            - np.log(np.maximum(native_cuda_out[native_common], 1e-6))
+        ) if native_common.any() else np.asarray([])
+        native_event_pair = event_metrics(
+            array_store[f"{ep}_numpy_projection_numpy_cpu_events"],
+            array_store[f"{ep}_cuda_projection_cuda_cuda0_events"], width,
+        )
+        episode["native_end_to_end"] = {
+            "support_mask_xor_pixels": int(np.count_nonzero(native_numpy_valid != native_cuda_valid)),
+            "common_supported_log_luma_abs_max": float(native_delta.max()) if native_delta.size else None,
+            "numpy_projection_numpy_compositor_cpu_dvs_vs_cuda_projection_cuda_compositor_cuda_dvs": native_event_pair,
+        }
         summary["episodes"].append(episode)
 
     summary["controls"] = run_minimal_controls()
@@ -542,7 +558,7 @@ def main():
     threshold_exact = all(summary["threshold_probe_cpu_cuda_arrays_exact"])
     episode_gates = {}
     for episode in summary["episodes"]:
-        mask_and_image = {
+        shared_projection_gates = {
             row["projection"]: {
                 "support_mask_exact": row["same_projection_input_compositor_mask_xor_pixels"] == 0,
                 "supported_log_luma_max_within_limit": row["same_projection_input_supported_log_luma_abs_max"] is not None
@@ -555,9 +571,18 @@ def main():
             for row in episode["dvs_backend_comparisons"]
         }
         episode_gates[episode["episode"]] = {
-            "same_projection_compositor": mask_and_image,
+            "same_projection_compositor": shared_projection_gates,
             "cpu_cuda_dvs_event_count_within_limit": event_gates,
-            "all_pass": all(all(gates.values()) for gates in mask_and_image.values()) and all(event_gates.values()),
+            "native_end_to_end": {
+                "support_mask_exact": episode["native_end_to_end"]["support_mask_xor_pixels"] == 0,
+                "supported_log_luma_max_within_limit": episode["native_end_to_end"]["common_supported_log_luma_abs_max"] is not None
+                    and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"],
+            },
+            "all_pass": all(all(gates.values()) for gates in shared_projection_gates.values())
+                and all(event_gates.values())
+                and episode["native_end_to_end"]["support_mask_xor_pixels"] == 0
+                and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] is not None
+                and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"],
         }
     control_gates = summary["controls"]["control_gates"]
     summary["acceptance_result"] = {
@@ -573,8 +598,8 @@ def main():
         "python -u benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py "
         "--cache-root <verified-cache-root> --prior-arrays "
         "benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz "
-        "--config benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031a.json "
-        "--output benchmark/robot_closed_loop/results/r1_5_cuda_support_forensics_20261031a"
+        f"--config {args.config.as_posix()} "
+        f"--output {args.output.as_posix()}"
     )
 
     args.output.mkdir(parents=True, exist_ok=True)
@@ -583,7 +608,7 @@ def main():
         writer = csv.DictWriter(f, fieldnames=list(point_rows[0]))
         writer.writeheader(); writer.writerows(point_rows)
     with (args.output / "event_metrics.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(event_rows[0]))
+        writer = csv.DictWriter(f, fieldnames=sorted({key for row in event_rows for key in row}))
         writer.writeheader(); writer.writerows(event_rows)
     with (args.output / "layer_contributors.jsonl").open("w", encoding="utf-8") as f:
         for row in layer_records:

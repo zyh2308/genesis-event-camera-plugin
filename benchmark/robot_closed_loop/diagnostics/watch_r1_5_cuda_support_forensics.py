@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SSH = Path("/mnt/c/Windows/System32/OpenSSH/ssh.exe")
 SCP = Path("/mnt/c/Windows/System32/OpenSSH/scp.exe")
 REMOTE_AGENT = ROOT / "benchmark/robot_closed_loop/diagnostics/launch_r1_5_cuda_support_forensics_remote.sh"
-RUN_ID = "r1_5_cuda_support_forensics_20261031b"
+RUN_ID = "r1_5_cuda_support_forensics_20261031c"
 BRANCH = "exp/r1_5-core-candidate-20261030"
 HOSTS = ("g1.pkuml.org", "g3.pkuml.org")
 REMOTE_RUN_ROOT = f"/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/{RUN_ID}"
@@ -123,7 +123,7 @@ def stage_source(host: str, source_commit: str, timeout_s: float) -> str:
         "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py",
         "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py",
         "benchmark/robot_closed_loop/diagnostics/launch_r1_5_cuda_support_forensics_worker.sh",
-        "benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031b.json",
+        "benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031c.json",
         "benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz",
     ]
     bundle = io.BytesIO()
@@ -225,13 +225,21 @@ def archive_results(host: str, source_commit: str, status: dict, log_stream, tim
     if summary_path.is_file():
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
         acceptance = summary.get("acceptance_result", {})
+        native = {
+            item["episode"]: {
+                "mask_xor": item.get("native_end_to_end", {}).get("support_mask_xor_pixels"),
+                "max_abs_log_luma": item.get("native_end_to_end", {}).get("common_supported_log_luma_abs_max"),
+            }
+            for item in summary.get("episodes", [])
+        }
+        complete = status.get("exit_code") == 0 and acceptance.get("all_gates_pass") is True
         status_line = (
-            f"\n#### R1.5 support forensics run `{RUN_ID}` ({summary.get('gpu', {}).get('name', 'GPU')}; "
-            f"{summary.get('acceptance_result', {}).get('all_gates_pass', 'unknown')})\n\n"
-            f"- Source commit: `{source_commit}`; device `{summary.get('gpu', {}).get('name', 'unknown')}`. "
-            f"Acceptance: `{json.dumps(acceptance, separators=(',', ':'))}`.\n"
-            f"- Detailed summary/arrays: [`{RUN_ID}`](../../benchmark/robot_closed_loop/results/{RUN_ID}/README.md); "
-            f"runtime log copy: `benchmark/robot_closed_loop/results/runtime_logs/{RUN_ID}/`.\n"
+            f"\n#### R1.5 support forensics run `{RUN_ID}` ({'accepted' if complete else 'not accepted'})\n\n"
+            f"- Source commit `{source_commit}`; exit code `{status.get('exit_code')}`; device `{summary.get('gpu', {}).get('name', 'unknown')}`. "
+            f"Native end-to-end mask XOR / max log-luminance error: `{json.dumps(native, separators=(',', ':'))}`. "
+            f"Full acceptance: `{acceptance.get('all_gates_pass', 'unknown')}`.\n"
+            f"- [Detailed report and arrays](../../benchmark/robot_closed_loop/results/{RUN_ID}/README.md); "
+            f"runtime logs: `benchmark/robot_closed_loop/results/runtime_logs/{RUN_ID}/`.\n"
         )
         status_doc = ROOT / "docs/coordination/robot_status.md"
         with status_doc.open("a", encoding="utf-8", newline="\n") as stream:

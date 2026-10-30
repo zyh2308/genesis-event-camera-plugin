@@ -17,7 +17,7 @@ OUT="$RUN_ROOT/output"
 LOGDIR="$RUN_ROOT/logs"
 PYTHON=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
 WORKER="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_cuda_support_forensics_worker.sh"
-SESSION=r15supportforensics20261031b
+SESSION=r15supportforensics20261031c
 KEEP_LOCK=0
 preflight_fail() { echo "PREFLIGHT_FAIL: $*" >&2; exit 70; }
 
@@ -42,7 +42,7 @@ trap cleanup_unlaunched EXIT
 grep -Fq "$SOURCE_COMMIT" "$ROOT/source_provenance.json" || preflight_fail "staged source commit mismatch"
 [[ -x "$PYTHON" && -x "$WORKER" ]] || preflight_fail "python or worker is not executable"
 [[ -r "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py" ]] || preflight_fail "forensic script missing"
-[[ -r "$ROOT/benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031b.json" ]] || preflight_fail "forensic config missing"
+[[ -r "$ROOT/benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031c.json" ]] || preflight_fail "forensic config missing"
 [[ -r "$ROOT/benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz" ]] || preflight_fail "prior mask arrays missing"
 [[ -r "$CACHE/episode_004/same_state_source_cache.h5" && -r "$CACHE/episode_005/same_state_source_cache.h5" ]] || preflight_fail "archived cache missing at $CACHE"
 printf '%s  %s\n' \
@@ -115,7 +115,7 @@ mkdir -p "$LOGDIR"
   echo "load=$(cat /proc/loadavg)"; free -h; df -h "$HOME_ROOT"
   "$PYTHON" -c 'import torch,numpy,h5py; print("torch",torch.__version__,"cuda",torch.version.cuda,"available",torch.cuda.is_available()); print("numpy",numpy.__version__,"h5py",h5py.__version__)'
   cat "$ROOT/source_provenance.json"
-  sha256sum "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py" "$ROOT/benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031b.json" "$ROOT/benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz"
+  sha256sum "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_cuda_support_forensics.py" "$ROOT/benchmark/robot_closed_loop/configs/r1_5_cuda_support_forensics_20261031c.json" "$ROOT/benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/cuda_parity_arrays.npz"
 } > "$LOGDIR/preflight.txt" 2>&1
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
