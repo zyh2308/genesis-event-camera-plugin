@@ -290,6 +290,10 @@ def run_episode(base, cache_root: Path, ep: str):
     residual_csv = []
     per_frame = []
     all_candidate_errors = []
+    stable_background_residual_pixel_times = 0
+    stable_background_interior_residual_pixel_times = 0
+    stable_background_pixel_times = 0
+    stable_background_interior_pixel_times = 0
 
     np_interp = PhysicsInterpolator(K, sampler_config=AdaptiveSamplingConfig(min_samples=10, max_samples=10),
                                     disocclusion_policy="hold", composite="next_primary", warp_backend="numpy")
@@ -422,11 +426,17 @@ def run_episode(base, cache_root: Path, ep: str):
         base_err = log_error(baseline, ref)
         bad = err > 0.2
         edge_band, _ = frame_edge_metrics(direct_seg[qi])
+        stable_background = direct_seg[qi] == 1
+        stable_background_interior = stable_background & ~edge_band
         residual_count += int(bad.sum())
         boundary_residual += int((bad & edge_band).sum())
         residual_unknown += int((bad & ~candidate_valid).sum())
         yy, xx = np.mgrid[:height, :width]
         residual_border += int((bad & ((xx < 2) | (xx >= width - 2) | (yy < 2) | (yy >= height - 2))).sum())
+        stable_background_residual_pixel_times += int((bad & stable_background).sum())
+        stable_background_interior_residual_pixel_times += int((bad & stable_background_interior).sum())
+        stable_background_pixel_times += int(stable_background.sum())
+        stable_background_interior_pixel_times += int(stable_background_interior.sum())
         labels, counts = np.unique(direct_seg[qi][bad], return_counts=True)
         for label, count in zip(labels, counts):
             residual_labels[str(int(label))] = residual_labels.get(str(int(label)), 0) + int(count)
@@ -437,6 +447,8 @@ def run_episode(base, cache_root: Path, ep: str):
             "baseline_bad_px_over_0p2": int((base_err > 0.2).sum()),
             "candidate_unknown_px": int((~candidate_valid).sum()),
             "residual_on_direct_segmentation_boundary_band": int((bad & edge_band).sum()),
+            "residual_in_stable_background_seg1": int((bad & stable_background).sum()),
+            "residual_in_background_seg1_away_from_boundary": int((bad & stable_background_interior).sum()),
         })
         if bad.any():
             order = np.argsort(err.ravel())[::-1]
@@ -461,6 +473,12 @@ def run_episode(base, cache_root: Path, ep: str):
                     break
 
     candidate_error = np.concatenate([e[None] for e in all_candidate_errors], axis=0)
+    stable_background_mask = np.all(direct_seg == 1, axis=0)
+    boundary_any_frame = np.logical_or.reduce([frame_edge_metrics(seg)[0] for seg in direct_seg])
+    stable_background_interior_mask = stable_background_mask & ~boundary_any_frame
+    direct_log = np.log(np.maximum(direct, LOG_EPS))
+    direct_log_range = direct_log.max(axis=0) - direct_log.min(axis=0)
+    background_log_range = direct_log_range[stable_background_interior_mask]
     backend_trace_rows = []
     for flat in np.argsort(active_delta.ravel())[-10:][::-1]:
         qi, local = divmod(int(flat), height * width)
@@ -515,6 +533,22 @@ def run_episode(base, cache_root: Path, ep: str):
             "edge_band_pixel_times": boundary_residual,
             "unknown_support_pixel_times": residual_unknown,
             "image_border_pixel_times": residual_border,
+            "residual_in_stable_background_seg1": stable_background_residual_pixel_times,
+            "residual_in_background_seg1_away_from_boundary": stable_background_interior_residual_pixel_times,
+            "stable_background_seg1_pixel_times": stable_background_pixel_times,
+            "stable_background_interior_pixel_times": stable_background_interior_pixel_times,
+            "stable_background_direct_log_luma_range": {
+                "eligible_pixels": int(background_log_range.size),
+                "median": float(np.median(background_log_range)),
+                "p95": float(np.quantile(background_log_range, 0.95)),
+                "max": float(background_log_range.max()),
+                "pixels_over_0p1_log": int((background_log_range > 0.1).sum()),
+                "pixels_over_0p2_log": int((background_log_range > 0.2).sum()),
+                "interior_residual_pixel_times_whose_pixel_range_over_0p2": int(
+                    ((np.stack(all_candidate_errors) > 0.2)
+                     & stable_background_interior_mask[None]
+                     & (direct_log_range[None] > 0.2)).sum()),
+            },
             "label_counts_posthoc": residual_labels,
             "mean_abs_log_error": float(candidate_error.mean()),
             "p95_abs_log_error": float(np.quantile(candidate_error, 0.95)),
