@@ -1,0 +1,26 @@
+{
+  "run_id": "r1_5_core_cuda_parity_20261030a",
+  "purpose": "bounded CUDA parity check for the isolated R1.5 core candidate",
+  "episodes": ["004", "005"],
+  "time_interval_s": [0.5805, 0.5905],
+  "warp_samples": 2,
+  "candidate_backend": "torch",
+  "reference_backend": "numpy",
+  "dvs": {
+    "threshold_pos": 0.2,
+    "threshold_neg": 0.2,
+    "threshold_probe_log_contrasts": [0.1999, 0.2, 0.2001, 0.3999, 0.4, 0.4001],
+    "threshold_probe_both_polarities": true,
+    "noise_disabled": true,
+    "response_mode": "physical_log",
+    "readout_model": "ideal_readout"
+  },
+  "acceptance": {
+    "cuda_required": true,
+    "numpy_torch_supported_mask_mismatch_pixels": 0,
+    "max_abs_log_luminance_delta_supported_pixels": 0.02,
+    "threshold_dvs_cpu_cuda_event_sequence_exact": true,
+    "cached_clip_event_count_relative_delta_max": 0.02,
+    "scope": "backend parity only; does not establish renderer fidelity, real-time cost, or closed-loop recovery"
+  }
+}

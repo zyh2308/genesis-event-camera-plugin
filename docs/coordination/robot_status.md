@@ -1222,3 +1222,10 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **g1 / 资源：**通过 Windows OpenSSH 成功连入并只读检查。两张 RTX 3090 有其他任务；其余卡未见明确项目分配，因此没有启动 CUDA。远端检查未修改代码或文件；本轮没有 renderer、物理推进、训练或 core 修改。
 - **复跑和哈希：**运行代码 commit `724b894f47cac40ee37fee9648fb344ff4591295`，验证脚本 SHA256 `c88388da22f2f96495864d08043c4ac4084d258a4e7b4db8c87c04445c27932b`；本地 WSL CPU，Python 3.14.6、NumPy 2.5.2、Torch 2.13.0+cu130。活动模块路径/哈希和两个缓存输入哈希详见 [`候选验证报告`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md) 与 `summary.json`。结果 manifest SHA256 `1938b2b0f86e006cffc646dea23ad17c0bad937139b4a854fcf6be886952528b`。
 - **后续：**候选通过了目前的合成连续表面、部分遮挡和双后端 CPU 检查，但剩余图像残差尚未全部归因。冻结版本继续保留；需要拿到明确 CUDA 资源分配后再验证 GPU 路径，并对稳定区域时间亮度变化做因果区分。Direct-HDR 仍只是已保存状态下的诊断参照，不以事件数量接近证明真实性。
+
+#### R1.5 candidate CUDA 诊断排队（2026-10-30；等待稳定 GPU）
+
+- **待运行：**episode 004/005 候选 NumPy vs Torch/CUDA warp parity，以及理想 DVS 阈值附近 CPU/CUDA 对照。固定 run id：`r1_5_core_cuda_parity_20261030a`。范围仅候选后端核验，不涉及 renderer、物理推进、训练或正式 core 切换。
+- **watcher：**WSL 脚本 `benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py` 按 60 s 低频检查 g1、g3。两次空闲观测、无进程/项目 UUID 锁、显存 ≤512 MiB、util ≤5%，并通过主机资源门槛后才原子预约并 tmux 启动；只部署一个任务，成功后退出，24 h 超时退出。运行入口和所有阈值在 [`R1.5 候选报告`](r1_5_core_candidate_20261030.md)。
+- **最新远端只读观察：**g1 `12:59:32Z` 六卡均有其他 compute 进程；g3 `13:00:00Z` GPU2 UUID `GPU-b89ca413-eb9c-61a5-a89b-9c244d032fff` 表面空闲（0% / 4 MiB / compute list 无该 UUID），但只有单次记录，未启动。两节点 `/home` 都核实为 NFS；隔离候选 worktree 尚待 launcher 创建。
+- **证据状态：**脚本与配置已写入候选分支、仅通过语法检查；GPU 测量尚未发生。资源 gate 通过时产物会写入唯一结果目录和 runtime log，并尝试 push 到候选分支。CUDA 通过后再据实际误差与时间决定 renderer 成本诊断顺序；CUDA 不通过则保留完整失败 trace 并停止后续 GPU renderer 作业。
