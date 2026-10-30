@@ -2,7 +2,7 @@
 
 **Latest handoff:** [Stage 7 engineering progress](reviews/stage7_20261030/ENGINEERING_PROGRESS_20261030.md). The 2026-10-29 report remains preserved as the prior snapshot; the superseded 2026-10-26 snapshot is preserved at `reports/archive/sim2real_status_20261026.md`.
 
-**Latest live resource refresh:** g1 2026-10-30 12:09:43 UTC; g3 12:09:36 UTC. The isolated `/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28` clone now imports PyTorch 2.8.0+cu126 and Genesis 1.2.2; the shared base environment is unchanged. All six g1 GPUs and all seven g3 RTX 4090s had other-user processes, so no GPU reservation or training/render job was started. g3 GPU2's brief 12:07:21 low-allocation observation was invalidated by a 12:09:10 recheck showing two other-user V2E processes.
+**Latest live resource refresh:** g1 2026-10-30 12:13:18 UTC; g3 12:13:21 UTC. The isolated `/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28` clone now imports PyTorch 2.8.0+cu126 and Genesis 1.2.2; the shared base environment is unchanged. All six g1 GPUs and all seven g3 RTX 4090s had other-user processes, so no GPU reservation or training/render job was started. A per-GPU UUID/utilization/memory/process snapshot is saved at `evidence/20261030-stage7-followup/genesis_env_torch28/resource_refresh_20261030T121318Z.txt`; no GPU was claimable.
 
 | Line | Current verified state | Next actionable step |
 |---|---|---|

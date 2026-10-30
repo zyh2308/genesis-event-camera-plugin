@@ -1,0 +1,32 @@
+Fresh sequential SSH resource refresh (not a historical estimate)
+Captured 2026-10-30T12:13:18Z on g1 and 2026-10-30T12:13:21Z on g3.
+SSH client: /mnt/c/Windows/System32/OpenSSH/ssh.exe
+Hosts: zhaoyuhan@g1.pkuml.org:22, then zhaoyuhan@g3.pkuml.org:22
+Project path checked on both: /home/zhaoyuhan/Eventbased_WAM
+Shared /home mount on both: 172.16.1.21:/export/home (116T total, 108T used, 7.7T free, 94%).
+Reservation directory checked on both: runs/sim2real/.gpu_reservations; no reservation entries were listed.
+
+G1 at 2026-10-30T12:13:18Z
+CPU loadavg: 6.69 7.50 7.71, 128 cores
+Memory: 503 GiB total, 435 GiB available
+GPU 0: RTX 3090, UUID GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23, 81% utilization, 2563/24576 MiB
+GPU 1: RTX 3090, UUID GPU-0262d545-e9bd-7fcb-66e5-2ef81465c460, 65% utilization, 2563/24576 MiB
+GPU 2: V100S-PCIE-32GB, UUID GPU-a02affe0-7598-579e-ca39-f551f35ad6e9, 81% utilization, 2639/32768 MiB
+GPU 3: V100S-PCIE-32GB, UUID GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd, 81% utilization, 2613/32768 MiB
+GPU 4: V100S-PCIE-32GB, UUID GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3, 79% utilization, 2613/32768 MiB
+GPU 5: TITAN RTX, UUID GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885, 84% utilization, 2457/24576 MiB
+Visible GPU process records belonged to /home/lzx/anaconda3/envs/r2dreamer/bin/python. No GPU reservation was made.
+
+G3 at 2026-10-30T12:13:21Z
+CPU loadavg: 573.98 511.01 510.23, 128 cores
+Memory: 503 GiB total, 296 GiB available
+GPU 0: RTX 4090, UUID GPU-1c25cab2-5cc0-4f29-fb76-15da94f694d9, 0% utilization, 9209/24564 MiB
+GPU 1: RTX 4090, UUID GPU-3674ea09-263f-c27e-73c3-e991988d9213, 6% utilization, 10361/24564 MiB
+GPU 2: RTX 4090, UUID GPU-b89ca413-eb9c-61a5-a89b-9c244d032fff, 0% utilization, 2461/23028 MiB
+GPU 3: RTX 4090, UUID GPU-6abcaa7a-dce0-14b3-df38-beb754686a01, 3% utilization, 10388/24564 MiB
+GPU 4: RTX 4090, UUID GPU-2100db0e-93b4-541c-c489-8b47c284597e, 1% utilization, 9149/24564 MiB
+GPU 5: RTX 4090, UUID GPU-dd93b58d-df3d-9d33-bffc-2203bb503e87, 9% utilization, 10359/24564 MiB
+GPU 6: RTX 4090, UUID GPU-48385047-4365-b814-dac9-7d0d2c63d9b0, 0% utilization, 10315/24564 MiB
+Visible GPU process records included other users' r2dreamer Python, CARLA, and V2E Python processes. Low utilization on some cards did not mean available compute: all seven cards had memory allocated and visible jobs. No GPU reservation was made.
+
+Decision: no Genesis rendering or training was launched. CPU/RAM availability was sufficient for bounded CPU audits, but no free/assigned GPU was available for the requested rasterized scene preview and pilot. Do not treat this snapshot as current availability; refresh before any allocation.

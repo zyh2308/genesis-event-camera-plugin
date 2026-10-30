@@ -1,0 +1,24 @@
+Genesis 1.2.2 mesh-import API inspection (CPU-only; not an asset import)
+
+Remote host/path: g1.pkuml.org, /home/zhaoyuhan/Eventbased_WAM
+Run path: /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-genesis-api-inspection-run01
+Start/end: 2026-10-30T12:16:00Z / 2026-10-30T12:16:14Z
+Exit code: 0
+Environment: /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python; Python 3.11 environment; Genesis 1.2.2; PyTorch 2.8.0+cu126 (CUDA build 12.6).
+Resource guard: CPU load1 and available memory were checked before launch; 1 CPU thread; CUDA_VISIBLE_DEVICES was empty. No Genesis scene, CUDA context, renderer, ReplicaCAD mesh, or training job was created.
+
+Observed API:
+- gs.morphs.Mesh parameters include file, parse_glb_with_zup, file_meshes_are_zup, scale, pos, euler, visualization, and collision.
+- gs.renderers.Rasterizer is present in the installed Genesis package.
+- Genesis module resolved from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/genesis/__init__.py.
+
+Command form:
+timeout 90s env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python -u -c 'import genesis as gs, torch, inspect; s=inspect.signature(gs.morphs.Mesh); keys=("file","parse_glb_with_zup","file_meshes_are_zup","scale","pos","euler","visualization","collision"); print("genesis",gs.__version__); print("torch",torch.__version__,"cuda_build",torch.version.cuda); print("genesis_module",gs.__file__); print("mesh_import_parameters",{k:str(s.parameters[k].default) for k in keys}); print("rasterizer_api",gs.renderers.Rasterizer); print("cuda_visible_devices_empty_no_scene_or_cuda_initialized",True)'
+
+Remote run artifact SHA256:
+- environment.txt: 2eb92e0f70f7e2ca4da631ba84fd3cd82414f308dd1acb5ddd5c8f5d1860be52
+- stdout.txt: bdae32cc08893facfd7cbba822a1a5e527beef1e46b3e8baec618c35b73182b5
+- stderr.txt: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+- python_executable.sha256: a93a6caccdc464f97968ee1e76d7f1b77973197bb47a098186299cdced40cb93
+
+Interpretation: this reduces uncertainty about the installed API surface only. It does not establish ReplicaCAD GLB parsing, transforms, coordinate alignment, Genesis rendering, native radiance availability, or physical flow labels.

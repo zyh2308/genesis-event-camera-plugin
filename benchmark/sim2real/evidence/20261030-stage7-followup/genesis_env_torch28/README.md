@@ -35,7 +35,7 @@ Torch/vision/audio came from the official [PyTorch CUDA 12.6 wheel index](https:
 
 ## Resource boundary
 
-At `2026-10-30T12:09:43Z`, all six g1 GPUs had processes; at `12:09:36Z`, all seven g3 RTX 4090s had processes. g3 GPU2 briefly appeared unused at `12:07:21Z`, but a `12:09:10Z` recheck found two other-user V2E processes on it. No reservation was made and no renderer/training job was started. The first actual ReplicaCAD render still requires a fresh free-GPU check and a reservation.
+A later sequential refresh at `2026-10-30T12:13:18Z` on g1 and `12:13:21Z` on g3 again found other-user processes on all GPUs. The full per-GPU snapshot, UUIDs, utilization, memory, and visible process owners are in `resource_refresh_20261030T121318Z.txt`. Earlier, g3 GPU2 briefly appeared unused at `12:07:21Z`, but a `12:09:10Z` recheck found two other-user V2E processes on it. No reservation was made and no renderer/training job was started. The first actual ReplicaCAD render still requires a fresh free-GPU check and a reservation.
 
 ## Reproduction
 
@@ -48,3 +48,7 @@ bash benchmark/sim2real/evidence/20261030-stage7-followup/genesis_env_torch28/st
 ```
 
 The environment installation driver rechecks CPU/memory, confirms no process is using the cloned environment, validates wheel hashes, records GPU ownership without allocating a GPU, and performs CPU-only imports. The corresponding remote command output is retained at the run paths below.
+
+## CPU-only importer API check
+
+At `2026-10-30T12:16:14Z`, the cloned environment exposed Genesis `gs.morphs.Mesh` controls for GLB/Z-up parsing, coordinate convention, transforms, visualization, and collision. CUDA was hidden. This was package API introspection only; it did not load a ReplicaCAD file or initialize a renderer. The command, limitations, and remote log hashes are recorded in `genesis_api_inspection_20261030T121600Z.txt`.
