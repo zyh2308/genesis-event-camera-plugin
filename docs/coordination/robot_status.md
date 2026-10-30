@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-30（Asia/Tokyo）
-**阶段：** R1.5 中间图像规则归因已在本地 CPU 缓存诊断完成（开发诊断，非正式排名）。中心 episode 004 与 +55 mm episode 005 显示，主要已解释异常来自 `physics_warp.py::_splat_projected_diagnostics`：极小双线性覆盖权重先赢得 z-buffer，再把贡献归一化成整像素。诊断候选消除了 92.5% / 84.4% 的超限像素-时间点；跨端点简单取较近深度不是通用修复。Frozen core、模型与控制器均未改；未训练、未排名。详细证据、复跑命令和哈希见下方 [`像素规则归因报告`](../../benchmark/robot_closed_loop/results/r1_5_pixel_rule_attribution_20261030b_commit_2b84747/README.md)。
+**阶段：** R1.5 主要 warp 异常已由具体 splat 规则解释，并完成 CPU NumPy/Torch 候选一致性与连续表面/遮挡控制。候选把两片段旧路径约 85–93% 的超限像素时间点压下，但仍有动态亮度和轮廓残差。当前还发现：旧完整 Torch/NumPy 插值器对仅 `1.1e-4 px` 的投影差异反应不稳定，亮度最大差达 `0.95/1.06`；coverage 候选在两自有投影下最大亮度差低于 `0.001`。Frozen core 未改，实际 CUDA 路径未验证；g1 只读检查成功，但没有取得 GPU 项目分配，未启动远端计算。详见 [`像素规则归因`](../../benchmark/robot_closed_loop/results/r1_5_pixel_rule_attribution_20261030d_commit_eb41274/README.md) 与 [`跨后端候选验证`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md)。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 **历史运行状态（截至 2026-10-25；后续结果见文末）：** 10/24 的 SSH 阻塞已解除。候选实现 `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已同步到 g1；当前实验分支与状态文档均在 `f8563d2fee7ec62881971c14489a219cb101795a`，较 d390 只有协调文档变化。两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最新 GPU 复查六张卡都有运行进程，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
@@ -1201,3 +1201,14 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **DVS 文档更正：**旧表述“DVS threshold history couples pixels”不准确。理想 DVS 的参考/阈值状态是逐像素的；分区替换的 segmentation mask 随时间变化，同一像素可能切换输入来源，从而改变该像素自己的后续 crossing。这不是跨像素耦合。本轮 10 ms 窗口中心/+55 robot mask 共切换 2/18 个像素-时间边界，事件非加性为 4/50；旧全窗 13/277 尚未进一步拆分。
 - **运行复现与边界：**脚本运行代码 commit `eb41274c887c45874c212ee6317092add2600b46`，诊断脚本 SHA256 `a41661a7467d848095e644bde347bb0a2acaa392e063c0b6d01c5ce7048ea724`；WSL CPU、Python 3.14.6、NumPy 2.5.2、h5py 3.16.0。活动 NumPy 路径精确重现两条缓存的全部 10 张中间亮度图（max abs delta 0）。研究侧独立 native-event 重放有 +3/-5 个事件差，且未读取 Direct-HDR HDF5 相机属性；本轮不宣称跨环境逐元素事件复现。ep004 输入哈希 `0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7` / `b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321`；ep005 `91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434` / `f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236`。
 - **报告与下一步：**[`像素规则归因报告及复跑入口`](../../benchmark/robot_closed_loop/results/r1_5_pixel_rule_attribution_20261030d_commit_eb41274/README.md) 含逐像素、逐时刻、DVS 历史和 SHA 清单；结果 `SHA256SUMS` 文件 SHA256 `bf55e300bebde63c951b731bc60e5d6b392576b41eb7bb01b8972111f3897c10`。本轮未连 g1、未使用 GPU/renderer、未训练，frozen core 未改。证据足以报告“主要实际异常由 splat 深度获胜时忽略覆盖权重造成”，并请求审查 candidate；暂不切换正式 core。切换前需验证 NumPy/Torch 一致性、更多动态表面和遮挡情况，并解释残余超限像素。
+
+
+#### R1.5 coverage-splat 候选跨后端与残差归因（2026-10-30；CPU 完成）
+
+- **候选与 NumPy/Torch 一致性：**在相同投影坐标下，两实现亮度最大差 `6.94e-5`，可见掩码完全一致。各自使用 NumPy / Torch 原生投影时，ep004/005 候选亮度最大差 `7.45e-5 / 6.93e-4`、P99 `3.81e-6 / 3.93e-6`，无像素超过 `1e-3`，可见掩码差为 0。
+- **旧后端不稳定证据：**完整旧插值器在相同 episode 004/005 的 NumPy/Torch CPU 路径最大亮度差 `0.949 / 1.064`，P99 `0.0407 / 0.0830`，有 61/81 个输出像素时间点可见性不一致。两路径投影仅差最大 `1.07e-4 px`、深度 `3.58e-7 m`，源有效掩码完全一致。ep005 在 `(266,10), 0.5905 s`，NumPy 端由权重 `9.54e-7` 的亮前景样本取胜，luma `1.083`；Torch 端由另一个权重 `7.63e-6` 的较近暗样本取胜，luma `0.01854`。源权重/深度见 backend projection trace CSV。说明后端差异由同一条微小覆盖参与 z-buffer 的规则放大。
+- **通用控制：**具有平滑深度斜率的线性辐亮度平面在 `-0.5…+0.5 px` 移动时，候选内部图与解析结果最大误差 `<6e-8`；旧 splat 对 `+1e-6 px` 移动产生 `0.003` 中心亮度跳变，候选低于 `3e-8`。前景 `0.8`、背景 `0.02` 的移动遮挡控制在 `+0.25 px` 时左右边缘输出 `0.605/0.215`，与覆盖面积计算相符；NumPy/Torch 输出一致。
+- **残差结构：**候选仍有 665/1,377 个 `|Δlog L|>0.2` 像素时间点；其中 293/691 在一像素分割边界带，候选无支持点为 0，图像边缘仅 3/5。另有 274/370 个残差位于每帧稳定的 segmentation ID 1 区域且远离轮廓；这类区域的 Direct-HDR 在 89/125 个像素发生超过 `0.2` log 的时间亮度变化，274/368 个对应残差像素时间点也落在这些变亮度像素上。该模式支持继续查移动阴影或其他时间变化光度项，但不是阴影因果证明。
+- **g1 / 资源：**通过 Windows OpenSSH 成功连入并只读检查。两张 RTX 3090 有其他任务；其余卡未见明确项目分配，因此没有启动 CUDA。远端检查未修改代码或文件；本轮没有 renderer、物理推进、训练或 core 修改。
+- **复跑和哈希：**运行代码 commit `724b894f47cac40ee37fee9648fb344ff4591295`，验证脚本 SHA256 `c88388da22f2f96495864d08043c4ac4084d258a4e7b4db8c87c04445c27932b`；本地 WSL CPU，Python 3.14.6、NumPy 2.5.2、Torch 2.13.0+cu130。活动模块路径/哈希和两个缓存输入哈希详见 [`候选验证报告`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md) 与 `summary.json`。结果 manifest SHA256 `1938b2b0f86e006cffc646dea23ad17c0bad937139b4a854fcf6be886952528b`。
+- **后续：**候选通过了目前的合成连续表面、部分遮挡和双后端 CPU 检查，但剩余图像残差尚未全部归因。冻结版本继续保留；需要拿到明确 CUDA 资源分配后再验证 GPU 路径，并对稳定区域时间亮度变化做因果区分。Direct-HDR 仍只是已保存状态下的诊断参照，不以事件数量接近证明真实性。
