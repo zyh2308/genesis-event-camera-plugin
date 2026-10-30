@@ -28,6 +28,8 @@ from stage5_flow_supervised_pilot import (  # noqa: E402
     state_sha256,
 )
 
+MANIFEST_FLOW_UNIT = "pixels per 30ms endpoint interval"
+
 
 def optimizer_step_values(optimizer: torch.optim.Optimizer) -> list[int]:
     return sorted({int(state["step"].item()) for state in optimizer.state.values()
@@ -98,7 +100,7 @@ def main() -> None:
     manifest_sha = sha256(manifest_path)
     if checkpoint.get("data_manifest_sha256") != manifest_sha:
         raise RuntimeError("checkpoint and paired data manifest hashes differ")
-    if manifest.get("flow_unit") != FLOW_UNIT:
+    if manifest.get("flow_unit") != MANIFEST_FLOW_UNIT:
         raise RuntimeError("paired bank flow unit mismatch")
 
     rows = {(row["generator"], row["rollout_id"]): row for row in manifest["entries"]}
@@ -227,6 +229,7 @@ def main() -> None:
         "data_manifest_sha256": manifest_sha,
         "paired_labels_identical": True,
         "flow_unit": FLOW_UNIT,
+        "data_manifest_flow_unit": manifest.get("flow_unit"),
         "real_data_used": False,
         "source_checkpoint": {
             "path": str(source_checkpoint),
