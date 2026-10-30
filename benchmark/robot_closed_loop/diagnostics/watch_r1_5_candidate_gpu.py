@@ -125,7 +125,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument("--max-hours", type=float, default=24.0)
-    parser.add_argument("--log-dir", type=Path, default=Path.home() / "Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030a")
+    parser.add_argument("--log-dir", type=Path, default=ROOT.parent.parent / "runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030a")
     parser.add_argument("--ssh-timeout-seconds", type=float, default=25.0)
     args = parser.parse_args()
     if not SSH.exists():
