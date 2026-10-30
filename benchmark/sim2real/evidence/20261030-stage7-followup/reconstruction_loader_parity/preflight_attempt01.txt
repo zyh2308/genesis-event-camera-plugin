@@ -1,0 +1,6 @@
+time_utc=2026-10-30T09:54:42Z
+command=ssh g1 then bash start.sh
+result=preflight exited 20 before tmux launch; no run directory or task was created
+stderr=awk: fatal: cannot use gawk builtin `load' as variable name
+stderr2=CPU preflight rejected: load=6.23 limit=102.4
+cause=launcher used reserved gawk identifier `load` as a variable; corrected to `l1` before retry

@@ -1,0 +1,26 @@
+start_utc=2026-10-30T09:56:33Z
+host=g1
+pid=1728539
+repo_commit=d0e36796f04826a14a0931878405abed943a49a3
+script_sha256=596333bbf6864b5250fe1f15395b2fa56d6b5903b03719d60edaebde0228295e
+python=Python 3.11.15
+threads=2
+CUDA_VISIBLE_DEVICES=''
+471960cf7c33e204dcaa3e3328bfa13fcaf8995092406937f6ebc50ada78749e  /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/e2vid_corrected_10ms_20261019_v1/eventgenesis/train/s0_00.h5
+e9f0a4f34c48828a15efd1850b6a74617437e730d4d1e702771a7ba85aa38654  /home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/e2vid_corrected_10ms_20261019_v1/v2e/train/s0_00.h5
+sensor resolution = [260 346]
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage7-flow-resume-d0e3679-20261030/benchmark/sim2real/scripts/audit_e2vid_train_eval_loader_parity.py", line 271, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage7-flow-resume-d0e3679-20261030/benchmark/sim2real/scripts/audit_e2vid_train_eval_loader_parity.py", line 252, in main
+    run_one(args.eventgenesis_h5.resolve(), "eventgenesis", args.model_root.resolve(), args.evreal_root.resolve()),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage7-flow-resume-d0e3679-20261030/benchmark/sim2real/scripts/audit_e2vid_train_eval_loader_parity.py", line 147, in run_one
+    eval_item = evaluation[index + 1]
+                ~~~~~~~~~~^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/EVREAL/dataset.py", line 36, in __getitem__
+    assert 0 <= index < self.__len__(), f"index {index} out of bounds (0 <= x < {self.__len__()})"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: index 200 out of bounds (0 <= x < 200)
+exit_code=1
+end_utc=2026-10-30T09:57:41Z

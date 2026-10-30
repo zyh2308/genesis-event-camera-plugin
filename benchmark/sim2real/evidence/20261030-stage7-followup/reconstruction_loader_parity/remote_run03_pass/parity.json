@@ -1,0 +1,98 @@
+{
+  "schema": "e2vid_train_eval_loader_parity_v1",
+  "created_utc": "2026-10-30T09:58:55.573182+00:00",
+  "python": "3.11.15 (main, Jun 11 2026, 15:20:16) [GCC 14.3.0]",
+  "torch": "2.5.1+cu121",
+  "numpy": "2.4.6",
+  "status": "pass_tensor_parity",
+  "arms": [
+    {
+      "arm": "eventgenesis",
+      "hdf5_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/e2vid_corrected_10ms_20261019_v1/eventgenesis/train/s0_00.h5",
+      "hdf5_size_bytes": 65864945,
+      "hdf5_sha256": "471960cf7c33e204dcaa3e3328bfa13fcaf8995092406937f6ebc50ada78749e",
+      "dataset_attributes": {
+        "sim2real_generator": "eventgenesis",
+        "sim2real_episode_id": "s0_00",
+        "sim2real_split": "train"
+      },
+      "training_source_sha256": {
+        "dataset_py": "b5c87129809c2b4fd0cdbc56b9cde29a8a521ad911a47cfe8e64b2b1fba5f4f0",
+        "event_utils_py": "fcbbea9abf89b0994022bd7ccdf64ef68fe1858cdb617ed50fcb8899204e4907"
+      },
+      "evaluation_source_sha256": {
+        "dataset_py": "b3626d7e6175b1418c7538405517bdb45919adfcbdb0a6f5e05391950b8781d3",
+        "event_utils_py": "167a9f012b19731975ef26c375281b79f1279d3fdc0ff8a38a5ac12540669802"
+      },
+      "event_window_contract": {
+        "stored_endpoint_offsets_equal_numpy_searchsorted_right": true,
+        "manifest_event_window": "(t_i,t_i_plus_1]",
+        "flow_label_contract": "direct source endpoint i to target endpoint i+1 reprojection; px per 10 ms interval",
+        "training_and_eval_interval_mapping": "training index i is compared with EVREAL between_frames index i+1 after an unobserved t0 boundary"
+      },
+      "intervals": 200,
+      "evreal_source_loader_length_before_extension": 200,
+      "event_count_min_median_max": [
+        40,
+        115.5,
+        1091
+      ],
+      "intervals_with_lt3_events": 0,
+      "nonempty_intervals_with_zero_event_time_span": 0,
+      "input_tensor_exact_matches": 200,
+      "input_tensor_mismatches": [],
+      "nonfinite_input_windows": 0,
+      "max_abs_voxel_difference": 0.0,
+      "all_target_images_and_timestamps_exact": true,
+      "concatenated_training_input_sha256": "a1e1f9a5ff7852dc18d1559fb9684bcbdbad423d04901cd002a9795caef48c83",
+      "concatenated_target_sha256": "733504747460dd88ac344ed6a5e0af9b0f590b8114b9f6e5f8b483bc099a1983",
+      "comparison_wall_seconds": 3.1205330489901826,
+      "scope": "synthetic loader/tensor parity only; no model quality claim and no real data"
+    },
+    {
+      "arm": "v2e",
+      "hdf5_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage4/e2vid_corrected_10ms_20261019_v1/v2e/train/s0_00.h5",
+      "hdf5_size_bytes": 65709246,
+      "hdf5_sha256": "e9f0a4f34c48828a15efd1850b6a74617437e730d4d1e702771a7ba85aa38654",
+      "dataset_attributes": {
+        "sim2real_generator": "v2e",
+        "sim2real_episode_id": "s0_00",
+        "sim2real_split": "train"
+      },
+      "training_source_sha256": {
+        "dataset_py": "b5c87129809c2b4fd0cdbc56b9cde29a8a521ad911a47cfe8e64b2b1fba5f4f0",
+        "event_utils_py": "fcbbea9abf89b0994022bd7ccdf64ef68fe1858cdb617ed50fcb8899204e4907"
+      },
+      "evaluation_source_sha256": {
+        "dataset_py": "b3626d7e6175b1418c7538405517bdb45919adfcbdb0a6f5e05391950b8781d3",
+        "event_utils_py": "167a9f012b19731975ef26c375281b79f1279d3fdc0ff8a38a5ac12540669802"
+      },
+      "event_window_contract": {
+        "stored_endpoint_offsets_equal_numpy_searchsorted_right": true,
+        "manifest_event_window": "(t_i,t_i_plus_1]",
+        "flow_label_contract": "direct source endpoint i to target endpoint i+1 reprojection; px per 10 ms interval",
+        "training_and_eval_interval_mapping": "training index i is compared with EVREAL between_frames index i+1 after an unobserved t0 boundary"
+      },
+      "intervals": 200,
+      "evreal_source_loader_length_before_extension": 200,
+      "event_count_min_median_max": [
+        8,
+        40.0,
+        93
+      ],
+      "intervals_with_lt3_events": 0,
+      "nonempty_intervals_with_zero_event_time_span": 0,
+      "input_tensor_exact_matches": 200,
+      "input_tensor_mismatches": [],
+      "nonfinite_input_windows": 0,
+      "max_abs_voxel_difference": 0.0,
+      "all_target_images_and_timestamps_exact": true,
+      "concatenated_training_input_sha256": "a9d66d7061882cff5b742bcdc0971127b0428747a1b78913bc893fcb9f61b6b7",
+      "concatenated_target_sha256": "733504747460dd88ac344ed6a5e0af9b0f590b8114b9f6e5f8b483bc099a1983",
+      "comparison_wall_seconds": 3.9931541519763414,
+      "scope": "synthetic loader/tensor parity only; no model quality claim and no real data"
+    }
+  ],
+  "real_data_used": false,
+  "real_scoring_enabled": false
+}

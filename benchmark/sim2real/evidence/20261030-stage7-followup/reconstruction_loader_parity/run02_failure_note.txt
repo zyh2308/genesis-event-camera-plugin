@@ -1,0 +1,5 @@
+time_utc=2026-10-30T09:56:33Z
+run_path=/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-recon-loader-parity-run02
+result=exit 1 in the last comparison index; no audit JSON was written
+cause=the pinned EVREAL loader reports len=N-1 although its frames_to_use includes N entries; the registered HQF inference adapter explicitly extends length to N and evaluates indices 1..N-1. The audit initially omitted this existing adapter step.
+action=updated the audit to apply and assert the same documented length extension; preserved the failed remote log and used a new run03 path
