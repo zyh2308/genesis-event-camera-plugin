@@ -1223,9 +1223,10 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **复跑和哈希：**运行代码 commit `724b894f47cac40ee37fee9648fb344ff4591295`，验证脚本 SHA256 `c88388da22f2f96495864d08043c4ac4084d258a4e7b4db8c87c04445c27932b`；本地 WSL CPU，Python 3.14.6、NumPy 2.5.2、Torch 2.13.0+cu130。活动模块路径/哈希和两个缓存输入哈希详见 [`候选验证报告`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md) 与 `summary.json`。结果 manifest SHA256 `1938b2b0f86e006cffc646dea23ad17c0bad937139b4a854fcf6be886952528b`。
 - **后续：**候选通过了目前的合成连续表面、部分遮挡和双后端 CPU 检查，但剩余图像残差尚未全部归因。冻结版本继续保留；需要拿到明确 CUDA 资源分配后再验证 GPU 路径，并对稳定区域时间亮度变化做因果区分。Direct-HDR 仍只是已保存状态下的诊断参照，不以事件数量接近证明真实性。
 
-#### R1.5 candidate CUDA 诊断排队（2026-10-30；等待稳定 GPU）
+#### R1.5 candidate CUDA 诊断部署修正（2026-10-30；GPU 复查后再启动）
 
-- **待运行：**episode 004/005 候选 NumPy vs Torch/CUDA warp parity，以及理想 DVS 阈值附近 CPU/CUDA 对照。固定 run id：`r1_5_core_cuda_parity_20261030a`。范围仅候选后端核验，不涉及 renderer、物理推进、训练或正式 core 切换。
-- **watcher：**WSL 脚本 `benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py` 按 60 s 低频检查 g1、g3。两次空闲观测、无进程/项目 UUID 锁、显存 ≤512 MiB、util ≤5%，并通过主机资源门槛后才原子预约并 tmux 启动；只部署一个任务，成功后退出，24 h 超时退出。运行入口和所有阈值在 [`R1.5 候选报告`](r1_5_core_candidate_20261030.md)。
-- **最新远端只读观察：**g1 `12:59:32Z` 六卡均有其他 compute 进程；g3 `13:00:00Z` GPU2 UUID `GPU-b89ca413-eb9c-61a5-a89b-9c244d032fff` 表面空闲（0% / 4 MiB / compute list 无该 UUID），但只有单次记录，未启动。两节点 `/home` 都核实为 NFS；隔离候选 worktree 尚待 launcher 创建。
-- **证据状态：**脚本与配置已写入候选分支、仅通过语法检查；GPU 测量尚未发生。资源 gate 通过时产物会写入唯一结果目录和 runtime log，并尝试 push 到候选分支。CUDA 通过后再据实际误差与时间决定 renderer 成本诊断顺序；CUDA 不通过则保留完整失败 trace 并停止后续 GPU renderer 作业。
+- **待运行：**episode 004/005 候选 NumPy vs Torch/CUDA warp parity，以及理想 DVS 阈值附近 CPU/CUDA 对照。首次 run `20261030a` 未启动：g1 资源检查通过后，远端 checkout 准备超过 75 s；60 s 冷却后的精确核验确认没有对应 tmux、预约、slot 或 worktree。没有诊断进程确认运行。
+- **部署修正：**新 run `r1_5_core_cuda_parity_20261030b` 不再要求服务器 `git fetch` 或初始化 worktree。WSL 只上传必要源码小包到共享 NFS；事件缓存仍只读复用原路径。输出完毕后拉回小结果和日志，哈希校验并在源分支头未变化时提交。
+- **watcher：**WSL 脚本 `benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py` 按 60 s 检查 g1、g3。两次空闲观测、无进程/项目 UUID 锁、显存 ≤512 MiB、util ≤5%，并通过主机资源门槛后才原子预约并 tmux 启动；只部署一个任务，24 h 超时退出。运行入口和阈值见 [`R1.5 候选报告`](r1_5_core_candidate_20261030.md)。
+- **最近成功资源观察（不是当前快照）：**g1 `13:09:32Z`、`13:10:43Z` 六卡均无进程且 0% 利用率；部署超时后 watcher 停止，尚未重新探测。g3 同期 load 约 440/128 CPU，且原先表面空闲的 GPU2 后续出现进程，因此没被选用。
+- **证据状态：**候选 CUDA 实验尚未运行；新脚本、配置、staging 和回收路径须先经语法检查并提交，再重启 watcher。通过 CUDA parity 后才评估 renderer 成本；若不通过，保留完整 trace，停止后续 GPU renderer 作业。

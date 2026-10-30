@@ -4,20 +4,27 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
+import io
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tarfile
 import time
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
 SSH = Path("/mnt/c/Windows/System32/OpenSSH/ssh.exe")
+SCP = Path("/mnt/c/Windows/System32/OpenSSH/scp.exe")
 REMOTE_AGENT = ROOT / "benchmark/robot_closed_loop/diagnostics/launch_r1_5_candidate_cuda_parity_remote.sh"
-RUN_ID = "r1_5_core_cuda_parity_20261030a"
+RUN_ID = "r1_5_core_cuda_parity_20261030b"
 BRANCH = "exp/r1_5-core-candidate-20261030"
 HOSTS = ("g1.pkuml.org", "g3.pkuml.org")
+REMOTE_RUN_ROOT = f"/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/{RUN_ID}"
+LOCAL_PROJECT = ROOT.parent.parent
 PROBE = r'''set -u
 HOME_ROOT=/home/zhaoyuhan/Eventbased_WAM
 LOCK_PARENT="$HOME_ROOT/runs/robot_scenes/.gpu_reservations"
@@ -101,18 +108,53 @@ def probe(host: str, timeout_s: float) -> dict:
     return {"host": host, "meta": meta, "gpus": gpus, "stderr": result.stderr.strip()}
 
 
-def launch(host: str, gpu: dict, source_commit: str, timeout_s: float) -> str:
-    remote_script = REMOTE_AGENT.read_text(encoding="utf-8")
-    remote_command = "bash -s -- {} {} {} {} {} {}".format(
-        "g1" if host.startswith("g1.") else "g3", RUN_ID, BRANCH, source_commit,
-        gpu["index"], gpu["uuid"],
-    )
-    command = [
+def ssh_command(host: str, remote_command: str) -> list[str]:
+    return [
         str(SSH), "-T", "-p", "22", "-o", "BatchMode=yes",
         "-o", "StrictHostKeyChecking=yes", "-o", "ServerAliveInterval=10",
         "-o", "ServerAliveCountMax=2", f"zhaoyuhan@{host}", remote_command,
     ]
-    result = subprocess.run(command, input=remote_script, text=True, capture_output=True, timeout=timeout_s)
+
+
+def stage_source(host: str, source_commit: str, timeout_s: float) -> str:
+    files = [
+        "genesis_event_plugin",
+        "benchmark/robot_closed_loop/diagnostics/validate_r1_5_core_candidate.py",
+        "benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py",
+        "benchmark/robot_closed_loop/diagnostics/launch_r1_5_candidate_cuda_parity_worker.sh",
+        "benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json",
+    ]
+    bundle = io.BytesIO()
+    with tarfile.open(fileobj=bundle, mode="w:gz") as archive:
+        for relative in files:
+            archive.add(ROOT / relative, arcname=relative, filter=lambda item: None if "__pycache__" in item.name or item.name.endswith(".pyc") else item)
+    payload = bundle.getvalue()
+    bundle_hash = hashlib.sha256(payload).hexdigest()
+    provenance = json.dumps({
+        "source_commit": source_commit,
+        "branch": BRANCH,
+        "bundle_sha256": bundle_hash,
+        "staged_utc": utc_now(),
+    }, separators=(",", ":"))
+    source_root = f"{REMOTE_RUN_ROOT}/source"
+    command = (
+        f"mkdir -m 700 -p '{REMOTE_RUN_ROOT}' && test ! -e '{source_root}' && "
+        f"mkdir -m 700 '{source_root}' && tar -xz -C '{source_root}' && "
+        f"printf '%s\\n' '{provenance}' > '{source_root}/source_provenance.json' && "
+        f"test -f '{source_root}/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py'"
+    )
+    result = subprocess.run(ssh_command(host, command), input=payload, capture_output=True, timeout=timeout_s)
+    if result.returncode:
+        raise RuntimeError(f"source staging ssh exit={result.returncode}: {(result.stderr or result.stdout).decode(errors='replace')[-800:]}")
+    return bundle_hash
+
+
+def launch(host: str, gpu: dict, source_commit: str, timeout_s: float) -> str:
+    remote_script = REMOTE_AGENT.read_text(encoding="utf-8")
+    remote_command = "bash -s -- {} {} {} {} {}".format(
+        "g1" if host.startswith("g1.") else "g3", RUN_ID, source_commit, gpu["index"], gpu["uuid"],
+    )
+    result = subprocess.run(ssh_command(host, remote_command), input=remote_script, text=True, capture_output=True, timeout=timeout_s)
     combined = (result.stdout + "\n" + result.stderr).strip()
     if result.returncode:
         raise RuntimeError(f"remote launcher exit={result.returncode}: {combined[-1600:]}")
@@ -121,14 +163,103 @@ def launch(host: str, gpu: dict, source_commit: str, timeout_s: float) -> str:
     return combined
 
 
+def read_remote_status(host: str, timeout_s: float) -> dict | None:
+    path = f"{REMOTE_RUN_ROOT}/logs/status.json"
+    command = f"if test -f '{path}'; then cat '{path}'; else printf 'RUNNING\\n'; fi"
+    result = subprocess.run(ssh_command(host, command), text=True, capture_output=True, timeout=timeout_s)
+    if result.returncode:
+        raise RuntimeError(f"status ssh exit={result.returncode}: {(result.stderr or result.stdout).strip()[-600:]}")
+    content = result.stdout.strip()
+    if content == "RUNNING":
+        return None
+    return json.loads(content)
+
+
+def archive_results(host: str, source_commit: str, status: dict, log_stream, timeout_s: float) -> None:
+    windows_temp = Path("/mnt/c/Users/zhaoyuhan/AppData/Local/Temp") / RUN_ID
+    if not windows_temp.parent.exists():
+        raise FileNotFoundError(f"Windows temp path unavailable: {windows_temp.parent}")
+    if windows_temp.exists():
+        raise FileExistsError(f"refusing to overwrite download staging path: {windows_temp}")
+    windows_temp.mkdir(parents=True)
+    sources = [f"zhaoyuhan@{host}:{REMOTE_RUN_ROOT}/logs"]
+    if status.get("output_exists"):
+        sources.insert(0, f"zhaoyuhan@{host}:{REMOTE_RUN_ROOT}/output")
+    command = [
+        str(SCP), "-r", "-P", "22", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
+        "-o", "ServerAliveInterval=10", "-o", "ServerAliveCountMax=2", *sources,
+        "C:/Users/zhaoyuhan/AppData/Local/Temp/" + RUN_ID + "/",
+    ]
+    result = subprocess.run(command, text=True, capture_output=True, timeout=timeout_s)
+    if result.returncode:
+        raise RuntimeError(f"artifact scp exit={result.returncode}: {(result.stderr or result.stdout).strip()[-1000:]}")
+    local_output = ROOT / "benchmark/robot_closed_loop/results" / RUN_ID
+    local_logs = ROOT / "benchmark/robot_closed_loop/results/runtime_logs" / RUN_ID
+    if local_output.exists() or local_logs.exists():
+        raise FileExistsError("refusing to overwrite existing local result or log directory")
+    downloaded_output = windows_temp / "output"
+    downloaded_logs = windows_temp / "logs"
+    if downloaded_output.is_dir():
+        shutil.copytree(downloaded_output, local_output)
+    if not downloaded_logs.is_dir():
+        raise FileNotFoundError("remote logs directory was not downloaded")
+    shutil.copytree(downloaded_logs, local_logs)
+    if local_output.is_dir() and (local_output / "SHA256SUMS").is_file():
+        verification = subprocess.run(["sha256sum", "-c", "SHA256SUMS"], cwd=local_output, text=True, capture_output=True)
+        if verification.returncode:
+            raise RuntimeError(f"downloaded output checksum failure: {verification.stdout} {verification.stderr}")
+    log(log_stream, f"ARCHIVED remote={REMOTE_RUN_ROOT} local_output={local_output} local_logs={local_logs}")
+    current = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
+    if current != source_commit:
+        log(log_stream, f"ARCHIVE_NOT_COMMITTED branch_head_moved expected={source_commit} actual={current}; files retained locally")
+        return
+    summary_path = local_output / "summary.json"
+    rel_paths = [
+        f"benchmark/robot_closed_loop/results/runtime_logs/{RUN_ID}",
+        "docs/coordination/robot_status.md",
+    ]
+    if summary_path.is_file():
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        acceptance = summary.get("acceptance_result", {})
+        status_line = (
+            f"\n#### R1.5 CUDA parity run `{RUN_ID}` ({summary.get('gpu', {}).get('name', 'GPU')}; "
+            f"{summary.get('acceptance_result', {}).get('all_gates_pass', 'unknown')})\n\n"
+            f"- Source commit: `{source_commit}`; device `{summary.get('gpu', {}).get('name', 'unknown')}`. "
+            f"Acceptance: `{json.dumps(acceptance, separators=(',', ':'))}`.\n"
+            f"- Detailed summary/arrays: [`{RUN_ID}`](../../benchmark/robot_closed_loop/results/{RUN_ID}/README.md); "
+            f"runtime log copy: `benchmark/robot_closed_loop/results/runtime_logs/{RUN_ID}/`.\n"
+        )
+        status_doc = ROOT / "docs/coordination/robot_status.md"
+        with status_doc.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(status_line)
+        rel_paths.insert(0, f"benchmark/robot_closed_loop/results/{RUN_ID}")
+    else:
+        status_doc = ROOT / "docs/coordination/robot_status.md"
+        with status_doc.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(f"\n#### R1.5 CUDA parity run `{RUN_ID}`\n\n- Remote exit code `{status.get('exit_code')}`; no result summary was produced. Runtime logs are in `benchmark/robot_closed_loop/results/runtime_logs/{RUN_ID}/`.\n")
+    (local_logs / "SHA256SUMS").write_text(
+        "".join(
+            f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(local_logs).as_posix()}\n"
+            for path in sorted(local_logs.rglob("*")) if path.is_file() and path.name != "SHA256SUMS"
+        ), encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(ROOT), "add", "-f", *rel_paths], check=True)
+    subprocess.run(["git", "-C", str(ROOT), "commit", "-m", f"Record {RUN_ID} CUDA parity diagnostic"], check=True)
+    pushed = subprocess.run(["git", "-C", str(ROOT), "push", "origin", BRANCH], text=True, capture_output=True, timeout=120)
+    if pushed.returncode:
+        log(log_stream, f"ARCHIVE_PUSH_FAILED {pushed.stderr.strip()[-800:]}; local commit retained")
+    else:
+        log(log_stream, f"ARCHIVE_PUSHED {pushed.stdout.strip()}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument("--max-hours", type=float, default=24.0)
-    parser.add_argument("--log-dir", type=Path, default=ROOT.parent.parent / "runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030a")
+    parser.add_argument("--log-dir", type=Path, default=ROOT.parent.parent / "runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030b")
     parser.add_argument("--ssh-timeout-seconds", type=float, default=25.0)
     args = parser.parse_args()
-    if not SSH.exists():
+    if not SSH.exists() or not SCP.exists():
         raise FileNotFoundError(f"required Windows OpenSSH client missing: {SSH}")
     if not REMOTE_AGENT.is_file():
         raise FileNotFoundError(f"remote launch script missing: {REMOTE_AGENT}")
@@ -136,6 +267,8 @@ def main() -> int:
         raise ValueError("poll interval must be at least 60 seconds")
     args.log_dir.mkdir(parents=True, exist_ok=True)
     log_path = args.log_dir / "watcher.log"
+    if subprocess.check_output(["git", "-C", str(ROOT), "status", "--porcelain"], text=True).strip():
+        raise RuntimeError("candidate checkout must be clean before staging source")
     source_commit = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
     timeout_at = time.monotonic() + args.max_hours * 3600
     streaks: dict[tuple[str, str], int] = {}
@@ -147,9 +280,14 @@ def main() -> int:
     with log_path.open("a", encoding="utf-8", buffering=1) as stream:
         log(stream, f"START run_id={RUN_ID} branch={BRANCH} commit={source_commit} poll_s={args.poll_seconds} hosts={','.join(HOSTS)}")
         log(stream, "criteria: two probes >=60s apart; util<=5%; memory<=512MiB; no compute/pmon PID; no UUID reservation; host load/memory/disk/scheduler gates; shared atomic reservation and final recheck before tmux launch")
+        try:
+            bundle_hash = stage_source("g1.pkuml.org", source_commit, args.ssh_timeout_seconds)
+            log(stream, f"STAGED source_root={REMOTE_RUN_ROOT}/source bundle_sha256={bundle_hash} bytes=see local staging log")
+        except Exception as exc:
+            log(stream, f"SOURCE_STAGE_FAILED {str(exc)!r}; no GPU job was launched")
+            return 3
         while time.monotonic() < timeout_at:
             free_now: set[tuple[str, str]] = set()
-            probe_end = time.monotonic()
             for host in HOSTS:
                 if host in failed_hosts or time.monotonic() < next_probe_at[host]:
                     continue
@@ -199,10 +337,27 @@ def main() -> int:
                     else:
                         detail = launch(host, gpu, source_commit, max(60.0, args.ssh_timeout_seconds * 3))
                         log(stream, f"DEPLOYED {detail}")
-                        return 0
+                        run_deadline = min(timeout_at, time.monotonic() + 6 * 3600)
+                        while time.monotonic() < run_deadline:
+                            time.sleep(args.poll_seconds)
+                            try:
+                                status = read_remote_status(host, args.ssh_timeout_seconds)
+                            except Exception as status_exc:
+                                log(stream, f"STATUS_POLL_ERROR {str(status_exc)!r}; stopping local polling and preserving remote job/output")
+                                return 4
+                            if status is not None:
+                                log(stream, f"REMOTE_JOB_FINISHED {json.dumps(status, separators=(',', ':'))}")
+                                try:
+                                    archive_results(host, source_commit, status, stream, max(90.0, args.ssh_timeout_seconds * 4))
+                                except Exception as archive_exc:
+                                    log(stream, f"ARTIFACT_ARCHIVE_FAILED {str(archive_exc)!r}; remote files preserved at {REMOTE_RUN_ROOT}")
+                                    return 5
+                                return int(status.get("exit_code", 1))
+                        log(stream, f"REMOTE_JOB_STILL_RUNNING status_path={REMOTE_RUN_ROOT}/logs/status.json; remote tmux job continues")
+                        return 6
                 except Exception as exc:
-                    log(stream, f"DEPLOY_ERROR host={host} uuid={uuid} detail={str(exc)!r}; will not retry deployment until fresh stable probes")
-                    streaks[(host, uuid)] = 0
+                    log(stream, f"DEPLOY_ERROR host={host} uuid={uuid} detail={str(exc)!r}; no automatic redeploy after an uncertain launch")
+                    return 7
             prior_free = free_now
             remaining = timeout_at - time.monotonic()
             if remaining <= 0:

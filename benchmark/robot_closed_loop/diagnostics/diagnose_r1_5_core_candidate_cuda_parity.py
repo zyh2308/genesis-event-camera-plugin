@@ -7,6 +7,7 @@ import csv
 import hashlib
 import json
 import math
+import os
 import platform
 import sys
 import time
@@ -32,7 +33,7 @@ from genesis_event_plugin.physics_interpolator import PhysicsInterpolator  # noq
 
 
 DEFAULT_CACHE = ROOT / "benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059"
-DEFAULT_CONFIG = ROOT / "benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030a.json"
+DEFAULT_CONFIG = ROOT / "benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json"
 
 
 def luma_error(a: np.ndarray, b: np.ndarray) -> dict:
@@ -232,11 +233,15 @@ def main() -> int:
         "all_gates_pass": threshold_exact and all(all(gates.values()) for gates in episode_gates.values()),
         "note": "backend parity only; this is not a renderer-fidelity or closed-loop acceptance decision",
     }
+    try:
+        source_commit = __import__("subprocess").check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True, stderr=__import__("subprocess").DEVNULL).strip()
+    except Exception:
+        source_commit = os.environ.get("GENESIS_EVENT_PLUGIN_SOURCE_COMMIT", "source_commit_unavailable")
     summary = {
-        "run_id": "r1_5_core_cuda_parity_20261030a",
+        "run_id": config["run_id"],
         "scope": "isolated candidate CUDA/CPU backend parity on cached tracks and threshold-adjacent noiseless DVS controls; no Genesis renderer, physics advancement, training, or ranking",
         "candidate_branch": "exp/r1_5-core-candidate-20261030",
-        "candidate_commit": __import__("subprocess").check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip(),
+        "candidate_commit": source_commit,
         "python": sys.version.split()[0],
         "torch": torch.__version__,
         "cuda_runtime": torch.version.cuda,
@@ -256,6 +261,17 @@ def main() -> int:
     }
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     (args.output / "threshold_dvs.json").write_text(json.dumps(threshold_summary, indent=2) + "\n", encoding="utf-8")
+    readme = (
+        f"# {config['run_id']}\n\n"
+        "Bounded NumPy versus Torch/CUDA parity on cached robot states, plus noiseless DVS threshold-adjacent controls. "
+        "This does not validate Genesis rendering, photometric sampling fidelity, real-time cost, or closed-loop recovery.\n\n"
+        f"- Source commit: `{source_commit}`\n"
+        f"- GPU: `{device.name}`; Torch `{torch.__version__}`; CUDA runtime `{torch.version.cuda}`\n"
+        f"- Acceptance: `{json.dumps(acceptance, separators=(',', ':'))}`\n"
+        "- Inputs: immutable cached episodes 004 and 005, interval 0.5805–0.5905 s.\n"
+        "- Detailed measurements: `summary.json`, `cached_episode_metrics.csv`, `threshold_dvs.json`; arrays: `cuda_parity_arrays.npz`.\n"
+    )
+    (args.output / "README.md").write_text(readme, encoding="utf-8", newline="\n")
     flat = []
     for episode in episodes:
         for backend in ("numpy", "cuda"):

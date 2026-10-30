@@ -2,21 +2,21 @@
 set -euo pipefail
 HOST=${1:?host label}
 RUN_ID=${2:?run id}
-BRANCH=${3:?branch}
-SOURCE_COMMIT=${4:?source commit}
-GPU_INDEX=${5:?GPU index}
-GPU_UUID=${6:?GPU UUID}
-BASE=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin
+SOURCE_COMMIT=${3:?source commit}
+GPU_INDEX=${4:?GPU index}
+GPU_UUID=${5:?GPU UUID}
 HOME_ROOT=/home/zhaoyuhan/Eventbased_WAM
-ROOT="$HOME_ROOT/repositories/genesis-event-camera-plugin-r1_5-cuda-parity-20261030a"
+BASE="$HOME_ROOT/repositories/genesis-event-camera-plugin"
+RUN_ROOT="$HOME_ROOT/runs/robot_scenes/genesis_event_camera_plugin/$RUN_ID"
+ROOT="$RUN_ROOT/source"
 LOCK_PARENT="$HOME_ROOT/runs/robot_scenes/.gpu_reservations"
 GPU_LOCK="$LOCK_PARENT/$GPU_UUID"
 SLOT="$LOCK_PARENT/.r1_5_core_candidate_cuda_slot"
-OUT="$ROOT/benchmark/robot_closed_loop/results/$RUN_ID"
-LOGDIR="$ROOT/benchmark/robot_closed_loop/results/runtime_logs/$RUN_ID"
+OUT="$RUN_ROOT/output"
+LOGDIR="$RUN_ROOT/logs"
 PYTHON=/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python
 WORKER="$ROOT/benchmark/robot_closed_loop/diagnostics/launch_r1_5_candidate_cuda_parity_worker.sh"
-SESSION=r15cuda20261030a
+SESSION=r15cuda20261030b
 KEEP_LOCK=0
 
 cleanup_unlaunched() {
@@ -35,14 +35,9 @@ trap cleanup_unlaunched EXIT
 
 [[ "$(hostname -s)" == "$HOST" ]]
 [[ "$(findmnt -T "$HOME_ROOT" -no FSTYPE)" == nfs ]]
-[[ -d "$BASE/.git" || -f "$BASE/.git" ]]
+[[ -d "$ROOT/genesis_event_plugin" && -f "$ROOT/source_provenance.json" ]]
 [[ ! -e "$OUT" && ! -e "$LOGDIR" ]]
-if ! git -C "$BASE" cat-file -e "$SOURCE_COMMIT^{commit}" 2>/dev/null; then
-  git -C "$BASE" fetch --no-tags origin "$BRANCH"
-fi
-git -C "$BASE" cat-file -e "$SOURCE_COMMIT^{commit}"
-if [[ ! -e "$ROOT" ]]; then git -C "$BASE" worktree add --detach "$ROOT" "$SOURCE_COMMIT"; fi
-[[ "$(git -C "$ROOT" rev-parse HEAD)" == "$SOURCE_COMMIT" ]]
+grep -Fq "$SOURCE_COMMIT" "$ROOT/source_provenance.json"
 [[ -x "$PYTHON" && -x "$WORKER" ]]
 [[ -f "$BASE/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_004/same_state_source_cache.h5" ]]
 [[ -f "$BASE/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059/episode_005/same_state_source_cache.h5" ]]
@@ -112,15 +107,15 @@ mkdir -p "$LOGDIR"
   nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name --format=csv,noheader 2>&1
   echo "load=$(cat /proc/loadavg)"; free -h; df -h "$HOME_ROOT"
   "$PYTHON" -c 'import torch,numpy,h5py; print("torch",torch.__version__,"cuda",torch.version.cuda,"available",torch.cuda.is_available()); print("numpy",numpy.__version__,"h5py",h5py.__version__)'
-  git -C "$ROOT" rev-parse HEAD
-  sha256sum "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py" "$ROOT/benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030a.json"
+  cat "$ROOT/source_provenance.json"
+  sha256sum "$ROOT/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_core_candidate_cuda_parity.py" "$ROOT/benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json"
 } > "$LOGDIR/preflight.txt" 2>&1
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   echo "ABORT tmux session exists"
   exit 76
 fi
-tmux new-session -d -s "$SESSION" "bash '$WORKER' '$RUN_ID' '$HOST' '$GPU_INDEX' '$GPU_UUID' '$SOURCE_COMMIT' '$ROOT' '$BRANCH'"
+tmux new-session -d -s "$SESSION" "bash '$WORKER' '$RUN_ID' '$HOST' '$GPU_INDEX' '$GPU_UUID' '$SOURCE_COMMIT'"
 sleep 1
 tmux has-session -t "$SESSION"
 PANE_PID=$(tmux display-message -p -t "$SESSION" '#{pane_pid}')

@@ -79,14 +79,14 @@ shadow-off 只用于诊断，不能据此把正式阴影关掉。匹配渲染显
 
 当前没有充分依据推荐把全量补渲染变成默认，也没有依据把 5 ms 间距用于机器人动态片段。若研究侧要求冻结，应先完成 g1 CUDA parity + 阈值附近事件对照、至少一条未调过的动态片段严格采样成本，并书面决定实时延迟预算。
 
-## 后续 CUDA parity 诊断已准备（2026-10-30）
+## CUDA parity 诊断排队与部署修正（2026-10-30）
 
 - **目标：**只验证候选 Torch/CUDA 路径与 NumPy 数值参考在 episode 004/005 同一 `0.5805–0.5905 s` 缓存区间上的一致性，并比较 DVS 在 `±0.1999/0.2/0.2001`、`±0.3999/0.4/0.4001` log 对比度附近的事件。它不包含 Genesis 渲染、物理推进、训练或排名。
-- **候选验收配置：**`benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030a.json`。脚本、共享 UUID 原子预约 launcher、tmux worker 和 WSL watcher 均与这份配置同提交。
-- **资源策略：**本机 WSL watcher 每 60 秒顺序探测 g1、g3。GPU 必须连续两次低利用率、显存不超过 512 MiB、无 compute/pmon PID、无 UUID 预约；主机还要通过 NFS、CPU、可用内存、磁盘和调度队列检查。启动前服务器再次取得全局单任务槽与 GPU UUID 预约并做最终复查。只会启动一次，成功后 watcher 退出；24 小时仍无资源则自动结束。
-- **当前只读快照：**g1 于 `2026-10-30T12:59:32Z` 六张卡均有其他用户 compute PID，未占用。g3 于 `13:00:00Z` 仅 GPU2 (`GPU-b89ca413-eb9c-61a5-a89b-9c244d032fff`) 看起来空闲（0% 利用率、4 MiB 显存、compute 列表无该 UUID）；只是一帧快照，尚不能据此启动。g1/g3 的 `/home/zhaoyuhan/Eventbased_WAM` 都是经本轮核验的 NFS 挂载，candidate checkout 当前不存在，launcher 会在隔离路径通过已有仓库创建 detached worktree。
-- **状态：**脚本完成语法核验；GPU parity 尚未运行。远端资源稳定性、Eventbased_WAM CUDA 可用性和最终部署均由 watcher 重新核实。若 g3 GPU2 仍空闲，满足两次探测后会优先启动本诊断；run id `r1_5_core_cuda_parity_20261030a`。
-- **复跑/监控：**本地 WSL 可运行 `python3 benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py --poll-seconds 60 --max-hours 24`；默认日志位于 `/home/科研/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030a/watcher.log`。部署后远端 session 为 `r15cuda20261030a`，输出目录名同 run id，预期在此候选 worktree 的 `benchmark/robot_closed_loop/results/` 下，并由 worker 尝试提交回当前候选分支。正式 renderer 成本仍是后续独立步骤。
+- **首次部署尝试未运行实验：**run id `r1_5_core_cuda_parity_20261030a` 的候选在 `g1` 连续两次通过资源门槛，但远端准备阶段超过 75 s，客户端未收到 detached launch 确认。按 SSH 规则冷却 60 s 后做了一次精确核验：目标 tmux session、该 UUID 预约、全局槽和 candidate worktree 均不存在，因此没有 GPU 诊断在运行。超时发生在远端代码取回/隔离准备阶段；为避免再次等待服务器 Git 网络或 worktree 初始化，后续改为只暂存约几 MB 的必要源码，不搬运数据缓存。
+- **新 run 与验收配置：**`r1_5_core_cuda_parity_20261030b` 使用 `benchmark/robot_closed_loop/configs/r1_5_core_cuda_parity_20261030b.json`。WSL 先通过已核验 Windows OpenSSH 将插件源码、两个诊断脚本、worker 和配置打成带哈希的小包，写到该 run 的共享 NFS staging 路径；HDR/cache 不复制。两节点确认共用该 NFS 后，g1/g3 都可从同一源码 staging 路径启动。
+- **资源策略：**本机 WSL watcher 每 60 秒顺序探测 g1、g3。GPU 必须连续两次低利用率、显存不超过 512 MiB、无 compute/pmon PID、无 UUID 预约；主机还要通过 NFS、CPU、可用内存、磁盘和调度队列检查。启动前服务器再次申请全局单任务槽与 GPU UUID 预约并做最终复查；使用 tmux，记录 PID 和资源快照。结束后 watcher 低频读取状态，将小型结果/日志拉回本地候选分支、校验并提交。24 小时内无资源自动结束。
+- **最近的资源观察（非当前预约）：**g1 在 `13:09:32Z` 与 `13:10:43Z` 两次快照中六张卡均无进程、约 1–2 MiB 显存、0% 利用率，主机 gate 通过；部署准备超时后 watcher 已停止，所以这些不是当前空闲证明。g3 同期 GPU2 之后出现活动进程，且主机 load `440–449`、128 CPU，未通过本轮 CPU gate。新 watcher 会重新检查。
+- **状态/入口：**GPU parity 尚未运行。脚本、配置和部署修正提交后再重启 watcher；本地 WSL 命令为 `python3 benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py --poll-seconds 60 --max-hours 24`。默认日志在 `/home/科研/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030b/watcher.log`；远端 tmux session 为 `r15cuda20261030b`，共享路径为 `/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_core_cuda_parity_20261030b/`。renderer 成本仍是后续独立步骤。
 
 ## 复跑命令与证据
 
