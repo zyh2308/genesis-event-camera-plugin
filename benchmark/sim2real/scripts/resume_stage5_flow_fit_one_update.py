@@ -63,6 +63,9 @@ def main() -> None:
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--cpu-shim", action="store_true",
+                        help="allow CPU-only diagnosis by mapping upstream Tensor.cuda() calls to identity")
+    parser.add_argument("--cpu-threads", type=int, default=2)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
 
@@ -124,9 +127,23 @@ def main() -> None:
         raise RuntimeError(f"unknown checkpoint generator: {generator!r}")
     sample = paired_samples[generator]
     device = torch.device(args.device)
-    if device.type != "cuda" or not torch.cuda.is_available():
-        raise RuntimeError("the one-update resume probe requires CUDA")
-    torch.cuda.set_device(device)
+    cpu_cuda_shim = False
+    if device.type == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("requested CUDA device is unavailable")
+        torch.cuda.set_device(device)
+    elif device.type == "cpu" and args.cpu_shim:
+        if args.cpu_threads < 1:
+            raise ValueError("--cpu-threads must be positive")
+        torch.set_num_threads(args.cpu_threads)
+        # The pinned upstream STE-FlowNet forward uses Tensor.cuda() for
+        # intermediate tensors. On CPU, preserving the tensor is equivalent
+        # to moving that intermediate to the already selected CPU device.
+        # This process-local shim does not validate CUDA kernels or parity.
+        torch.Tensor.cuda = lambda self, *unused_args, **unused_kwargs: self
+        cpu_cuda_shim = True
+    else:
+        raise RuntimeError("select CUDA, or pass --device cpu --cpu-shim for a CPU-only probe")
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -239,6 +256,12 @@ def main() -> None:
             "size_bytes": output_checkpoint.stat().st_size,
             "sha256": sha256(output_checkpoint),
             "updates": 201,
+        },
+        "execution": {
+            "device": str(device),
+            "cpu_tensor_cuda_identity_shim": cpu_cuda_shim,
+            "cpu_threads": args.cpu_threads if device.type == "cpu" else None,
+            "cuda_kernel_validation": device.type == "cuda",
         },
         "source_patch": source_patch,
         "strict_full_run_bitwise_equivalence_claimed": False,
