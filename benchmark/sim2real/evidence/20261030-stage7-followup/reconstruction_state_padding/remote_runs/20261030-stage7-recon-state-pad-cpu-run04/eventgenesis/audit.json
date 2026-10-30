@@ -1,0 +1,303 @@
+{
+  "candidate_output": {
+    "all_finite": true,
+    "first_native_raw_max": 0.4588351845741272,
+    "first_native_raw_min": 0.07758544385433197,
+    "native_shape": [
+      1,
+      1,
+      260,
+      346
+    ],
+    "padded_shape": [
+      1,
+      1,
+      264,
+      352
+    ],
+    "second_native_raw_max": 0.44456833600997925,
+    "second_native_raw_min": 0.07069402188062668
+  },
+  "checkpoint": {
+    "generator_metadata": "eventgenesis",
+    "model_args": {
+      "base_num_channels": 32,
+      "final_activation": "",
+      "norm": "none",
+      "num_bins": 5,
+      "num_encoders": 3,
+      "num_residual_blocks": 2,
+      "recurrent_block_type": "convlstm",
+      "skip_type": "sum",
+      "use_upsample_conv": true
+    },
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+    "sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc",
+    "size_bytes": 171428482
+  },
+  "checkpoint_selection_allowed": false,
+  "device": "cpu",
+  "elapsed_seconds": 1.8593443660065532,
+  "finished_utc": "2026-10-30T10:26:27Z",
+  "fixture": {
+    "files": {
+      "events_p.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/events_p.npy",
+        "sha256": "8f53903ff5cb6fec0cfaf20174e31c494a5ad7389e999caa92b08bbbd41a0771",
+        "size_bytes": 28148
+      },
+      "events_ts.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/events_ts.npy",
+        "sha256": "64df9dc505407dadd5159ffd33634910dbd67d767e8ffdac2b101c9b072dfc22",
+        "size_bytes": 224288
+      },
+      "events_xy.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/events_xy.npy",
+        "sha256": "122e1919a9df4a31f3a09a222f2db2ae33a2ec38c471c82a3bf589bdf8237922",
+        "size_bytes": 224288
+      },
+      "image_event_indices.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/image_event_indices.npy",
+        "sha256": "df55f002c97f08185547fc33b3cdb4ec2421f860b4c68e813bf8e459dbfb950e",
+        "size_bytes": 1736
+      },
+      "images.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/images.npy",
+        "sha256": "fa5ecf021bfc085862fe67ead5f6f94c5e0931d26f411f9572043516ef3813d9",
+        "size_bytes": 18082088
+      },
+      "images_ts.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/images_ts.npy",
+        "sha256": "baaa003c74f5b7dd773fa6376ddb38f3bb91be58a5b98024ecf0147b3c6faaad",
+        "size_bytes": 1736
+      },
+      "metadata.json": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/metadata.json",
+        "sha256": "88cfbe43730ec3d18e43e5a85abbd4f166377541978248cabce27da550dce734",
+        "size_bytes": 346
+      }
+    },
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/synthetic_fixture_manifest.json",
+    "physical_bank_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3/shared_trajectory.h5",
+    "physical_bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "sha256": "b226d233b8a34f8cf5366558f4fcf020766726f2228a11ff2814a99f28e2c71d"
+  },
+  "generator": "eventgenesis",
+  "host": "g1",
+  "interpretation": "checks ordinary eval forward, recurrent reset, and crop geometry on two synthetic event windows; does not diagnose HQF quality or establish scene generalization",
+  "pad_crop_coordinate_checks": [
+    {
+      "coordinate_roundtrip_max_abs": 0.0,
+      "exact": true,
+      "input_shape": [
+        1,
+        5,
+        260,
+        346
+      ],
+      "native_hw": [
+        260,
+        346
+      ],
+      "padded_hw": [
+        264,
+        352
+      ],
+      "restored_shape": [
+        1,
+        5,
+        260,
+        346
+      ]
+    },
+    {
+      "coordinate_roundtrip_max_abs": 0.0,
+      "exact": true,
+      "input_shape": [
+        1,
+        5,
+        180,
+        240
+      ],
+      "native_hw": [
+        180,
+        240
+      ],
+      "padded_hw": [
+        184,
+        240
+      ],
+      "restored_shape": [
+        1,
+        5,
+        180,
+        240
+      ]
+    }
+  ],
+  "pinned_sources": {
+    "EVREAL": {
+      "bytes_verified": 3749310,
+      "commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+      "files_verified": 480,
+      "repository": "EVREAL",
+      "tree_sha256": "584e7f85ff3002d3ceb9c1a2e6b79ab9e1cc6793f58f06ddb36ec7aeb58ed1f5",
+      "verification": "manifest_file_sha256_and_tree_sha256"
+    },
+    "event_cnn_minimal": {
+      "bytes_verified": 1365090,
+      "commit": "78aa471a66593f55e349303563997297fbc816e8",
+      "files_verified": 121,
+      "repository": "event_cnn_minimal",
+      "tree_sha256": "5933c2b155b20b2a2d39e70367017653f23cfbccb5d24bc079f3fa31f1b328c0",
+      "verification": "manifest_file_sha256_and_tree_sha256"
+    }
+  },
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "recurrent_state": {
+    "first_window_replay_max_abs_native": 0.0,
+    "first_window_replay_max_abs_padded": 0.0,
+    "model_eval": true,
+    "parameter_gradients_disabled": true,
+    "replay_tolerance": 1e-06,
+    "reset_after_activity": {
+      "all_finite": true,
+      "sha256": null,
+      "shapes": [],
+      "tensor_count": 0
+    },
+    "reset_initial": {
+      "all_finite": true,
+      "sha256": null,
+      "shapes": [],
+      "tensor_count": 0
+    },
+    "reset_replay_pass": true,
+    "state_after_first_window": {
+      "all_finite": true,
+      "sha256": "d18f76ed332f2dd6b8f7b499f07b96a7279cad1345605d458e48b006d0b21618",
+      "shapes": [
+        [
+          1,
+          64,
+          132,
+          176
+        ],
+        [
+          1,
+          64,
+          132,
+          176
+        ],
+        [
+          1,
+          128,
+          66,
+          88
+        ],
+        [
+          1,
+          128,
+          66,
+          88
+        ],
+        [
+          1,
+          256,
+          33,
+          44
+        ],
+        [
+          1,
+          256,
+          33,
+          44
+        ]
+      ],
+      "tensor_count": 6
+    },
+    "state_after_second_window": {
+      "all_finite": true,
+      "sha256": "6899b8f4a540949e9504f28165a2d0f8e847e6167f4093d481126791208e643a",
+      "shapes": [
+        [
+          1,
+          64,
+          132,
+          176
+        ],
+        [
+          1,
+          64,
+          132,
+          176
+        ],
+        [
+          1,
+          128,
+          66,
+          88
+        ],
+        [
+          1,
+          128,
+          66,
+          88
+        ],
+        [
+          1,
+          256,
+          33,
+          44
+        ],
+        [
+          1,
+          256,
+          33,
+          44
+        ]
+      ],
+      "tensor_count": 6
+    }
+  },
+  "reference_pixels_used_as_model_input": false,
+  "registered_model_config": {
+    "model_args_source": "reconstruction.model_args",
+    "path": "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage7-flow-resume-d0e3679-20261030/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+    "sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d"
+  },
+  "schema": "e2vid_checkpoint_state_padding_audit_v1",
+  "started_utc": "2026-10-30T10:26:25Z",
+  "status": "synthetic_checkpoint_forward_state_and_padding_pass_no_scoring",
+  "synthetic_sequence": {
+    "event_counts": [
+      6395,
+      2128
+    ],
+    "event_window_semantics": "EVREAL between_frames; event-only intervals ending at each target timestamp",
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis",
+    "resolution_hw": [
+      260,
+      346
+    ],
+    "source_file_hashes": {
+      "events_p.npy": "8f53903ff5cb6fec0cfaf20174e31c494a5ad7389e999caa92b08bbbd41a0771",
+      "events_ts.npy": "64df9dc505407dadd5159ffd33634910dbd67d767e8ffdac2b101c9b072dfc22",
+      "events_xy.npy": "122e1919a9df4a31f3a09a222f2db2ae33a2ec38c471c82a3bf589bdf8237922",
+      "image_event_indices.npy": "df55f002c97f08185547fc33b3cdb4ec2421f860b4c68e813bf8e459dbfb950e",
+      "images.npy": "fa5ecf021bfc085862fe67ead5f6f94c5e0931d26f411f9572043516ef3813d9",
+      "images_ts.npy": "baaa003c74f5b7dd773fa6376ddb38f3bb91be58a5b98024ecf0147b3c6faaad",
+      "metadata.json": "88cfbe43730ec3d18e43e5a85abbd4f166377541978248cabce27da550dce734"
+    },
+    "target_timestamps_s": [
+      0.01,
+      0.02
+    ],
+    "tested_sample_indices": [
+      1,
+      2
+    ]
+  },
+  "threads": 2
+}

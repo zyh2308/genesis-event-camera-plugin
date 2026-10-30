@@ -1,0 +1,214 @@
+{
+  "created_utc": "2026-10-30T10:31:27Z",
+  "elapsed_seconds": 0.01600783201865852,
+  "interpretation": "This creates a separately versioned corrected-label candidate for the raw-event coordinate domain. It does not overwrite official MAT labels, validate all E-POSE timestamps/cameraPose fields, or establish model accuracy.",
+  "projection_domains": {
+    "distort_undistort_roundtrip_px_per_keypoint": [
+      6.355287432313019e-14,
+      2.842170943040401e-14,
+      0.0,
+      0.0,
+      5.728578676879116e-14,
+      2.1316282072803006e-14,
+      0.0,
+      2.9777166713245526e-14
+    ],
+    "forward_tolerance_px": 1e-08,
+    "ideal_alternative_requires": "apply the same pinned K,D undistortion map to event-derived input channels, then use ideal_uv_px",
+    "ideal_alternative_uv_px": [
+      [
+        292.76770672226,
+        157.48200658296057
+      ],
+      [
+        341.7321197147587,
+        164.6781773994591
+      ],
+      [
+        236.09629612933446,
+        167.00641384460752
+      ],
+      [
+        272.6267815886099,
+        177.30369242318784
+      ],
+      [
+        278.50904690349336,
+        34.39281374230814
+      ],
+      [
+        324.51369636435857,
+        9.299954847459993
+      ],
+      [
+        220.32961909871386,
+        37.63564727188336
+      ],
+      [
+        253.06430947676355,
+        11.779710373089111
+      ]
+    ],
+    "independent_forward_vs_cv2_project_points_max_error_px": 5.859285502108464e-14,
+    "model_input_contract": "full-frame event representation built directly from raw event x,y coordinates; no GT crop/mask/box",
+    "negative_or_out_of_frame_labels_clamped": false,
+    "opencv_default_undistort_points_error_px_per_keypoint": [
+      0.0001502181474724771,
+      0.0036635621470483453,
+      2.564512192938213e-07,
+      4.154849602635684e-05,
+      0.0008027890938356974,
+      0.006423304953026632,
+      2.398168839375669e-05,
+      0.000833881091356085
+    ],
+    "opencv_default_undistort_points_max_error_px": 0.006423304953026632,
+    "precise_inverse": {
+      "max_iterations_used": 5,
+      "max_normalized_forward_residual": 5.551115123125783e-17,
+      "method": "analytic-Jacobian Newton inversion of the five-parameter OpenCV Brown-Conrady model"
+    },
+    "roundtrip_max_abs_px": 6.355287432313019e-14,
+    "roundtrip_tolerance_px": 0.001,
+    "selected": "raw_distorted_sensor_pixels",
+    "selected_keypoints_uv_raw_distorted_px": [
+      [
+        285.5942072883506,
+        155.89853712196228
+      ],
+      [
+        323.7421673578858,
+        161.10031996538547
+      ],
+      [
+        234.69657526649286,
+        166.210885616329
+      ],
+      [
+        267.760315923325,
+        175.04814522097496
+      ],
+      [
+        270.2048739801737,
+        41.96675826308544
+      ],
+      [
+        305.27823464776867,
+        24.7238057497363
+      ],
+      [
+        218.2219994106791,
+        41.75633633843972
+      ],
+      [
+        246.72285811182965,
+        21.17519863205831
+      ]
+    ],
+    "selected_label_formula": "OpenCV projectPoints(camera_frame_xyz, rvec=0, tvec=0, K, D)",
+    "stored_legacy_uv_px_preserved_for_audit_only": [
+      [
+        301.25069650715204,
+        159.298419301887
+      ],
+      [
+        318.9897454791946,
+        159.88125966829674
+      ],
+      [
+        234.20508990393915,
+        165.88292092426315
+      ],
+      [
+        249.3071258019712,
+        166.264751087485
+      ],
+      [
+        287.42310524167243,
+        26.059263156252232
+      ],
+      [
+        304.98149725648176,
+        24.522791042728286
+      ],
+      [
+        219.35763417924198,
+        39.351398928797465
+      ],
+      [
+        234.57585877558,
+        38.80442906896147
+      ]
+    ],
+    "stored_legacy_vs_correct_ideal_error_px": {
+      "max": 32.74382735602433,
+      "mean": 16.450069854357295
+    },
+    "stored_legacy_vs_correct_raw_distorted_error_px": {
+      "max": 23.441755231816025,
+      "mean": 11.228010227885996
+    }
+  },
+  "real_scoring_enabled": false,
+  "sample_contract": {
+    "K": [
+      [
+        292.52,
+        0.0,
+        172.61
+      ],
+      [
+        0.0,
+        293.19,
+        130.125
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "camera_frame_xyz_max_abs_difference_from_verified_audit_m": 0.0,
+    "camera_frame_xyz_source": "MAT keypointprojections columns 3:5; exactly matches previously CAD/pose-verified sample points",
+    "distortion_k1_k2_p1_p2_k3": [
+      -0.362,
+      0.115,
+      0.0009576,
+      4.55e-06,
+      0.13
+    ],
+    "event_field_shape": [
+      717,
+      4
+    ],
+    "mat_pose_shape": [
+      4,
+      4
+    ],
+    "raw_event_domain_source_checks": {
+      "mat_events_use_raw_event_frames": true,
+      "mat_keypoints_use_projected_points": true,
+      "raw_event_frames_are_preserved": true,
+      "undistorted_event_images_are_separate": true
+    }
+  },
+  "schema": "epose_projection_domain_sidecar_v1",
+  "source_files": {
+    "official_source": {
+      "commit": "b96ae783fcb6de84e1e9c602e91bce941cab0234",
+      "path": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/E_Pose/CreateSaveDataset.m",
+      "sha256": "62c5668be502b42aee8e612e491a2f9e4b1acb19f984e03eb190f9556f09a438"
+    },
+    "original_mat": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/block/block/r_01_gl/0001_data.mat",
+      "sha256": "bd369f867e671a194b067ba03cf11664adb6b389b1762203aba3b2ed1b6edb0c",
+      "size_bytes": 6017
+    },
+    "previous_cad_pose_audit": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage7-flow-resume-d0e3679-20261030/benchmark/sim2real/evidence/20261024-execution-refresh/epose_block_r01gl_semantic_audit_v1.json",
+      "sha256": "fa374afff7a859ca8a59685cdfd7109d3d051bdf09454b39e519b1442333805e"
+    }
+  },
+  "status": "corrected_projection_domains_verified_on_original_mat_sample_no_scoring",
+  "training_or_model_selection_performed": false
+}

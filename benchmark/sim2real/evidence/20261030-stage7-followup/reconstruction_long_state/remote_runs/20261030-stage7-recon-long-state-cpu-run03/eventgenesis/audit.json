@@ -1,0 +1,1973 @@
+{
+  "checkpoint": {
+    "model_args_source": "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage7-flow-resume-d0e3679-20261030/benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+    "model_config_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261019-stage5-e2vid-tc-aligntrue-seed0/eventgenesis/synthetic_best.pt",
+    "sha256": "506e81bd558f1bcca2b67d34d4c1004836fc7cce65393084eb52a378dfd554bc"
+  },
+  "created_utc": "2026-10-30T10:45:14Z",
+  "device": "cpu",
+  "fixture": {
+    "files": {
+      "events_p.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/events_p.npy",
+        "sha256": "8f53903ff5cb6fec0cfaf20174e31c494a5ad7389e999caa92b08bbbd41a0771",
+        "size_bytes": 28148
+      },
+      "events_ts.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/events_ts.npy",
+        "sha256": "64df9dc505407dadd5159ffd33634910dbd67d767e8ffdac2b101c9b072dfc22",
+        "size_bytes": 224288
+      },
+      "events_xy.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/events_xy.npy",
+        "sha256": "122e1919a9df4a31f3a09a222f2db2ae33a2ec38c471c82a3bf589bdf8237922",
+        "size_bytes": 224288
+      },
+      "image_event_indices.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/image_event_indices.npy",
+        "sha256": "df55f002c97f08185547fc33b3cdb4ec2421f860b4c68e813bf8e459dbfb950e",
+        "size_bytes": 1736
+      },
+      "images.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/images.npy",
+        "sha256": "fa5ecf021bfc085862fe67ead5f6f94c5e0931d26f411f9572043516ef3813d9",
+        "size_bytes": 18082088
+      },
+      "images_ts.npy": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/images_ts.npy",
+        "sha256": "baaa003c74f5b7dd773fa6376ddb38f3bb91be58a5b98024ecf0147b3c6faaad",
+        "size_bytes": 1736
+      },
+      "metadata.json": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis/metadata.json",
+        "sha256": "88cfbe43730ec3d18e43e5a85abbd4f166377541978248cabce27da550dce734",
+        "size_bytes": 346
+      }
+    },
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/synthetic_fixture_manifest.json",
+    "physical_bank_path": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-stage5-flow-coverage-v3-smoke-r3/shared_trajectory.h5",
+    "physical_bank_sha256": "5271c7e683deb09437985c53af071d05a1fe2c3b41420acaa2f1dada3a8b4a1f",
+    "sha256": "b226d233b8a34f8cf5366558f4fcf020766726f2228a11ff2814a99f28e2c71d"
+  },
+  "generator": "eventgenesis",
+  "interpretation": "This audits numerical stability and reset behavior over one fixed synthetic rollout only; it is not an image-quality score or explanation of HQF artifacts.",
+  "model": {
+    "all_200_outputs_finite": true,
+    "model_args": {
+      "base_num_channels": 32,
+      "final_activation": "",
+      "norm": "none",
+      "num_bins": 5,
+      "num_encoders": 3,
+      "num_residual_blocks": 2,
+      "recurrent_block_type": "convlstm",
+      "skip_type": "sum",
+      "use_upsample_conv": true
+    },
+    "output_hw": [
+      260,
+      346
+    ],
+    "recurrent_state_sha256_after_200": "4e73e1459f2c1b02a5a52fcfb37085774c234f686caf4be57dec26d6e9afd6ee",
+    "recurrent_state_tensor_count_after_200": 6,
+    "replay_tolerance": 1e-06,
+    "reset_replay_max_abs": 0.0,
+    "training": false
+  },
+  "per_window_numeric_trace": [
+    {
+      "consecutive_output_delta_rms": null,
+      "interval_index": 1,
+      "output_max": 0.4588351845741272,
+      "output_mean": 0.30201661586761475,
+      "output_min": 0.07758544385433197,
+      "output_std": 0.09530768543481827,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.023052431643009186,
+      "interval_index": 2,
+      "output_max": 0.44456833600997925,
+      "output_mean": 0.30284732580184937,
+      "output_min": 0.07069402188062668,
+      "output_std": 0.10290928930044174,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.010633086785674095,
+      "interval_index": 3,
+      "output_max": 0.4282611310482025,
+      "output_mean": 0.3008604645729065,
+      "output_min": 0.07482226192951202,
+      "output_std": 0.10452304035425186,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.005748281255364418,
+      "interval_index": 4,
+      "output_max": 0.42761072516441345,
+      "output_mean": 0.299593061208725,
+      "output_min": 0.06150437891483307,
+      "output_std": 0.10563260316848755,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.004029577132314444,
+      "interval_index": 5,
+      "output_max": 0.4276074171066284,
+      "output_mean": 0.2989274263381958,
+      "output_min": 0.05033564940094948,
+      "output_std": 0.10623330622911453,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0034075824078172445,
+      "interval_index": 6,
+      "output_max": 0.4280625879764557,
+      "output_mean": 0.29861319065093994,
+      "output_min": 0.05034541338682175,
+      "output_std": 0.10651132464408875,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0031781212892383337,
+      "interval_index": 7,
+      "output_max": 0.4268350899219513,
+      "output_mean": 0.2984144985675812,
+      "output_min": 0.05099298432469368,
+      "output_std": 0.10664653033018112,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002759029623121023,
+      "interval_index": 8,
+      "output_max": 0.43091869354248047,
+      "output_mean": 0.29835250973701477,
+      "output_min": 0.06590946018695831,
+      "output_std": 0.10664550215005875,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002517540007829666,
+      "interval_index": 9,
+      "output_max": 0.42932000756263733,
+      "output_mean": 0.2984277904033661,
+      "output_min": 0.055164821445941925,
+      "output_std": 0.10655175894498825,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0023316999431699514,
+      "interval_index": 10,
+      "output_max": 0.4290752708911896,
+      "output_mean": 0.2985139787197113,
+      "output_min": 0.060383956879377365,
+      "output_std": 0.10646399110555649,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0018816740484908223,
+      "interval_index": 11,
+      "output_max": 0.4289219081401825,
+      "output_mean": 0.29854443669319153,
+      "output_min": 0.06266535073518753,
+      "output_std": 0.10638895630836487,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0019280751002952456,
+      "interval_index": 12,
+      "output_max": 0.4337233901023865,
+      "output_mean": 0.2985979914665222,
+      "output_min": 0.06398725509643555,
+      "output_std": 0.10631858557462692,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017557820538058877,
+      "interval_index": 13,
+      "output_max": 0.4285117983818054,
+      "output_mean": 0.29864388704299927,
+      "output_min": 0.06492824852466583,
+      "output_std": 0.106261245906353,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0016380252782255411,
+      "interval_index": 14,
+      "output_max": 0.42697739601135254,
+      "output_mean": 0.29875651001930237,
+      "output_min": 0.058743759989738464,
+      "output_std": 0.10612570494413376,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015667491825297475,
+      "interval_index": 15,
+      "output_max": 0.42838069796562195,
+      "output_mean": 0.29894810914993286,
+      "output_min": 0.06151337921619415,
+      "output_std": 0.10591832548379898,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001377568580210209,
+      "interval_index": 16,
+      "output_max": 0.4277740716934204,
+      "output_mean": 0.299084335565567,
+      "output_min": 0.06326687335968018,
+      "output_std": 0.10576682537794113,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017984381411224604,
+      "interval_index": 17,
+      "output_max": 0.42668208479881287,
+      "output_mean": 0.2992837429046631,
+      "output_min": 0.06154819577932358,
+      "output_std": 0.10556063055992126,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0016205741558223963,
+      "interval_index": 18,
+      "output_max": 0.42515286803245544,
+      "output_mean": 0.29946014285087585,
+      "output_min": 0.06250366568565369,
+      "output_std": 0.10537450760602951,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001690146280452609,
+      "interval_index": 19,
+      "output_max": 0.42555370926856995,
+      "output_mean": 0.2995992600917816,
+      "output_min": 0.06407161056995392,
+      "output_std": 0.1052510067820549,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001628134516067803,
+      "interval_index": 20,
+      "output_max": 0.4247554838657379,
+      "output_mean": 0.2997167110443115,
+      "output_min": 0.06327520310878754,
+      "output_std": 0.1051153615117073,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0018069561338052154,
+      "interval_index": 21,
+      "output_max": 0.42596209049224854,
+      "output_mean": 0.2998315095901489,
+      "output_min": 0.0643310621380806,
+      "output_std": 0.10499478876590729,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014714162098243833,
+      "interval_index": 22,
+      "output_max": 0.4251111149787903,
+      "output_mean": 0.29992562532424927,
+      "output_min": 0.06461314111948013,
+      "output_std": 0.10491563379764557,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014041467802599072,
+      "interval_index": 23,
+      "output_max": 0.4277009069919586,
+      "output_mean": 0.3000586926937103,
+      "output_min": 0.06482221186161041,
+      "output_std": 0.10482765734195709,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017471341416239738,
+      "interval_index": 24,
+      "output_max": 0.42661604285240173,
+      "output_mean": 0.3002111315727234,
+      "output_min": 0.06295427680015564,
+      "output_std": 0.10469301789999008,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014978388790041208,
+      "interval_index": 25,
+      "output_max": 0.42617106437683105,
+      "output_mean": 0.30033040046691895,
+      "output_min": 0.06192865967750549,
+      "output_std": 0.10459032654762268,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002059032442048192,
+      "interval_index": 26,
+      "output_max": 0.42594221234321594,
+      "output_mean": 0.3004712164402008,
+      "output_min": 0.06059504300355911,
+      "output_std": 0.10448135435581207,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0016942864749580622,
+      "interval_index": 27,
+      "output_max": 0.42571184039115906,
+      "output_mean": 0.300591379404068,
+      "output_min": 0.06042052432894707,
+      "output_std": 0.10438453406095505,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015462671872228384,
+      "interval_index": 28,
+      "output_max": 0.4256131649017334,
+      "output_mean": 0.3007073700428009,
+      "output_min": 0.059705596417188644,
+      "output_std": 0.1042843759059906,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001322403782978654,
+      "interval_index": 29,
+      "output_max": 0.42653632164001465,
+      "output_mean": 0.30080193281173706,
+      "output_min": 0.058348458260297775,
+      "output_std": 0.10421928763389587,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010523824021220207,
+      "interval_index": 30,
+      "output_max": 0.4295894205570221,
+      "output_mean": 0.30083978176116943,
+      "output_min": 0.05866898223757744,
+      "output_std": 0.10417190194129944,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001068226178176701,
+      "interval_index": 31,
+      "output_max": 0.4324449896812439,
+      "output_mean": 0.3008839786052704,
+      "output_min": 0.058835383504629135,
+      "output_std": 0.10412999242544174,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001465970417484641,
+      "interval_index": 32,
+      "output_max": 0.435278981924057,
+      "output_mean": 0.30088672041893005,
+      "output_min": 0.05905818194150925,
+      "output_std": 0.10413966327905655,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010283606825396419,
+      "interval_index": 33,
+      "output_max": 0.4377829432487488,
+      "output_mean": 0.3008926808834076,
+      "output_min": 0.058415211737155914,
+      "output_std": 0.10414157062768936,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008892897167243063,
+      "interval_index": 34,
+      "output_max": 0.43991026282310486,
+      "output_mean": 0.30088740587234497,
+      "output_min": 0.05772128328680992,
+      "output_std": 0.10413914918899536,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008895340142771602,
+      "interval_index": 35,
+      "output_max": 0.4417153596878052,
+      "output_mean": 0.30088508129119873,
+      "output_min": 0.057202279567718506,
+      "output_std": 0.10413808375597,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009125629439949989,
+      "interval_index": 36,
+      "output_max": 0.44325026869773865,
+      "output_mean": 0.30089738965034485,
+      "output_min": 0.05714866891503334,
+      "output_std": 0.10413460433483124,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008669217932038009,
+      "interval_index": 37,
+      "output_max": 0.4444426894187927,
+      "output_mean": 0.30089375376701355,
+      "output_min": 0.05711613595485687,
+      "output_std": 0.1041259765625,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009116462315432727,
+      "interval_index": 38,
+      "output_max": 0.44512397050857544,
+      "output_mean": 0.30089783668518066,
+      "output_min": 0.057087041437625885,
+      "output_std": 0.10411342978477478,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011140384012833238,
+      "interval_index": 39,
+      "output_max": 0.4456292986869812,
+      "output_mean": 0.3008994460105896,
+      "output_min": 0.057057298719882965,
+      "output_std": 0.10411281138658524,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010986259439960122,
+      "interval_index": 40,
+      "output_max": 0.4460623860359192,
+      "output_mean": 0.30092594027519226,
+      "output_min": 0.05703660100698471,
+      "output_std": 0.10409070551395416,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010691764764487743,
+      "interval_index": 41,
+      "output_max": 0.44636064767837524,
+      "output_mean": 0.30092349648475647,
+      "output_min": 0.0571134127676487,
+      "output_std": 0.10408537089824677,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.000953850569203496,
+      "interval_index": 42,
+      "output_max": 0.4465412199497223,
+      "output_mean": 0.3009117841720581,
+      "output_min": 0.05733557045459747,
+      "output_std": 0.10408377647399902,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009870333597064018,
+      "interval_index": 43,
+      "output_max": 0.4466440677642822,
+      "output_mean": 0.30091121792793274,
+      "output_min": 0.0577123761177063,
+      "output_std": 0.10408474504947662,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009495342965237796,
+      "interval_index": 44,
+      "output_max": 0.44667673110961914,
+      "output_mean": 0.3009074926376343,
+      "output_min": 0.058430373668670654,
+      "output_std": 0.10407566279172897,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008191218366846442,
+      "interval_index": 45,
+      "output_max": 0.4466603100299835,
+      "output_mean": 0.3009141981601715,
+      "output_min": 0.05913427099585533,
+      "output_std": 0.10406661778688431,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0016116878250613809,
+      "interval_index": 46,
+      "output_max": 0.4465905725955963,
+      "output_mean": 0.3008905351161957,
+      "output_min": 0.05973095819354057,
+      "output_std": 0.10405635088682175,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013488760450854897,
+      "interval_index": 47,
+      "output_max": 0.4465051591396332,
+      "output_mean": 0.3008476495742798,
+      "output_min": 0.05970527604222298,
+      "output_std": 0.10407894104719162,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013635895447805524,
+      "interval_index": 48,
+      "output_max": 0.44635993242263794,
+      "output_mean": 0.3008132576942444,
+      "output_min": 0.05954180657863617,
+      "output_std": 0.1040896400809288,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011630951194092631,
+      "interval_index": 49,
+      "output_max": 0.44621390104293823,
+      "output_mean": 0.30081242322921753,
+      "output_min": 0.059818051755428314,
+      "output_std": 0.10409989953041077,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008847594144754112,
+      "interval_index": 50,
+      "output_max": 0.4460276663303375,
+      "output_mean": 0.3008027672767639,
+      "output_min": 0.05844511836767197,
+      "output_std": 0.104103684425354,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011465749703347683,
+      "interval_index": 51,
+      "output_max": 0.4457487463951111,
+      "output_mean": 0.30080875754356384,
+      "output_min": 0.05669227987527847,
+      "output_std": 0.10409340262413025,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010533329332247376,
+      "interval_index": 52,
+      "output_max": 0.4451524019241333,
+      "output_mean": 0.3008180856704712,
+      "output_min": 0.05864330753684044,
+      "output_std": 0.10409452766180038,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009399091941304505,
+      "interval_index": 53,
+      "output_max": 0.4445454180240631,
+      "output_mean": 0.3008164167404175,
+      "output_min": 0.0581054612994194,
+      "output_std": 0.10410486906766891,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008404068066738546,
+      "interval_index": 54,
+      "output_max": 0.4439738988876343,
+      "output_mean": 0.30081668496131897,
+      "output_min": 0.05760544538497925,
+      "output_std": 0.10410327464342117,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.000802436494268477,
+      "interval_index": 55,
+      "output_max": 0.44341105222702026,
+      "output_mean": 0.3008181154727936,
+      "output_min": 0.05717585235834122,
+      "output_std": 0.10410761088132858,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007087975391186774,
+      "interval_index": 56,
+      "output_max": 0.4428277015686035,
+      "output_mean": 0.3008066415786743,
+      "output_min": 0.056806109845638275,
+      "output_std": 0.10411585122346878,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006582775386050344,
+      "interval_index": 57,
+      "output_max": 0.44226449728012085,
+      "output_mean": 0.30081304907798767,
+      "output_min": 0.05648917704820633,
+      "output_std": 0.10412284731864929,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007640508119948208,
+      "interval_index": 58,
+      "output_max": 0.4417373239994049,
+      "output_mean": 0.30081433057785034,
+      "output_min": 0.05621921271085739,
+      "output_std": 0.10412877798080444,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008420022204518318,
+      "interval_index": 59,
+      "output_max": 0.4412408471107483,
+      "output_mean": 0.3008192777633667,
+      "output_min": 0.05599024146795273,
+      "output_std": 0.10413320362567902,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006776161608286202,
+      "interval_index": 60,
+      "output_max": 0.44074517488479614,
+      "output_mean": 0.30082249641418457,
+      "output_min": 0.05580669268965721,
+      "output_std": 0.1041271835565567,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009126801742240787,
+      "interval_index": 61,
+      "output_max": 0.4400874674320221,
+      "output_mean": 0.3008298873901367,
+      "output_min": 0.05566411092877388,
+      "output_std": 0.10410583764314651,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012471139198169112,
+      "interval_index": 62,
+      "output_max": 0.4395116865634918,
+      "output_mean": 0.3008732497692108,
+      "output_min": 0.05577782914042473,
+      "output_std": 0.10406845062971115,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009376725647598505,
+      "interval_index": 63,
+      "output_max": 0.43904009461402893,
+      "output_mean": 0.3008817732334137,
+      "output_min": 0.055866874754428864,
+      "output_std": 0.10407630354166031,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015412761131301522,
+      "interval_index": 64,
+      "output_max": 0.43891775608062744,
+      "output_mean": 0.30089467763900757,
+      "output_min": 0.05627106502652168,
+      "output_std": 0.10406595468521118,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015563471242785454,
+      "interval_index": 65,
+      "output_max": 0.4386558532714844,
+      "output_mean": 0.3008827567100525,
+      "output_min": 0.05666119605302811,
+      "output_std": 0.10407060384750366,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015926515916362405,
+      "interval_index": 66,
+      "output_max": 0.43864187598228455,
+      "output_mean": 0.30085110664367676,
+      "output_min": 0.0570652149617672,
+      "output_std": 0.10406513512134552,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001741059240885079,
+      "interval_index": 67,
+      "output_max": 0.4381469488143921,
+      "output_mean": 0.3007804751396179,
+      "output_min": 0.05749567225575447,
+      "output_std": 0.10404728353023529,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002088815439492464,
+      "interval_index": 68,
+      "output_max": 0.4380737841129303,
+      "output_mean": 0.30065295100212097,
+      "output_min": 0.05887513607740402,
+      "output_std": 0.10407382249832153,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002303431276232004,
+      "interval_index": 69,
+      "output_max": 0.4383767545223236,
+      "output_mean": 0.30061858892440796,
+      "output_min": 0.06001739948987961,
+      "output_std": 0.10403107106685638,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015569647075608373,
+      "interval_index": 70,
+      "output_max": 0.4384426474571228,
+      "output_mean": 0.30061429738998413,
+      "output_min": 0.06087617203593254,
+      "output_std": 0.10401066392660141,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015682794619351625,
+      "interval_index": 71,
+      "output_max": 0.43874356150627136,
+      "output_mean": 0.3005547821521759,
+      "output_min": 0.06163763999938965,
+      "output_std": 0.10404013842344284,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012928586220368743,
+      "interval_index": 72,
+      "output_max": 0.4389186203479767,
+      "output_mean": 0.30064669251441956,
+      "output_min": 0.062407221645116806,
+      "output_std": 0.10397520661354065,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012609857367351651,
+      "interval_index": 73,
+      "output_max": 0.439224511384964,
+      "output_mean": 0.3007441461086273,
+      "output_min": 0.06317164748907089,
+      "output_std": 0.10389965772628784,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013521024957299232,
+      "interval_index": 74,
+      "output_max": 0.43915438652038574,
+      "output_mean": 0.3008638918399811,
+      "output_min": 0.06396355479955673,
+      "output_std": 0.1037980318069458,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0025702500715851784,
+      "interval_index": 75,
+      "output_max": 0.4389721751213074,
+      "output_mean": 0.3010004758834839,
+      "output_min": 0.06396488845348358,
+      "output_std": 0.10365178436040878,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002109942026436329,
+      "interval_index": 76,
+      "output_max": 0.43903183937072754,
+      "output_mean": 0.3010864555835724,
+      "output_min": 0.06394274532794952,
+      "output_std": 0.10355318337678909,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013233611825853586,
+      "interval_index": 77,
+      "output_max": 0.4392041265964508,
+      "output_mean": 0.30108699202537537,
+      "output_min": 0.06392648071050644,
+      "output_std": 0.10352151840925217,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002859179861843586,
+      "interval_index": 78,
+      "output_max": 0.438908189535141,
+      "output_mean": 0.30096375942230225,
+      "output_min": 0.06390049308538437,
+      "output_std": 0.1035909503698349,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0021106963977217674,
+      "interval_index": 79,
+      "output_max": 0.4385935068130493,
+      "output_mean": 0.30085489153862,
+      "output_min": 0.06388384103775024,
+      "output_std": 0.1036737933754921,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011871899478137493,
+      "interval_index": 80,
+      "output_max": 0.4382508397102356,
+      "output_mean": 0.30080175399780273,
+      "output_min": 0.06385286897420883,
+      "output_std": 0.10371164977550507,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013625439023599029,
+      "interval_index": 81,
+      "output_max": 0.4383019506931305,
+      "output_mean": 0.30079010128974915,
+      "output_min": 0.06380824744701385,
+      "output_std": 0.10369320958852768,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0021133357658982277,
+      "interval_index": 82,
+      "output_max": 0.4380645751953125,
+      "output_mean": 0.30080461502075195,
+      "output_min": 0.06374545395374298,
+      "output_std": 0.10368547588586807,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014546659076586366,
+      "interval_index": 83,
+      "output_max": 0.43787136673927307,
+      "output_mean": 0.30082646012306213,
+      "output_min": 0.0636620968580246,
+      "output_std": 0.10367419570684433,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001143148634582758,
+      "interval_index": 84,
+      "output_max": 0.43776366114616394,
+      "output_mean": 0.30081886053085327,
+      "output_min": 0.06357470899820328,
+      "output_std": 0.1036812961101532,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009205367532558739,
+      "interval_index": 85,
+      "output_max": 0.4375346601009369,
+      "output_mean": 0.3008139431476593,
+      "output_min": 0.06348934769630432,
+      "output_std": 0.10367458313703537,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009297594660893083,
+      "interval_index": 86,
+      "output_max": 0.4372675120830536,
+      "output_mean": 0.30081501603126526,
+      "output_min": 0.06341249495744705,
+      "output_std": 0.10368000715970993,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008774622110649943,
+      "interval_index": 87,
+      "output_max": 0.437182754278183,
+      "output_mean": 0.30082863569259644,
+      "output_min": 0.06332994252443314,
+      "output_std": 0.10368175059556961,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012646244140341878,
+      "interval_index": 88,
+      "output_max": 0.43698951601982117,
+      "output_mean": 0.3007812798023224,
+      "output_min": 0.06323752552270889,
+      "output_std": 0.10369345545768738,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011727896053344011,
+      "interval_index": 89,
+      "output_max": 0.4368557333946228,
+      "output_mean": 0.3008052408695221,
+      "output_min": 0.06314130127429962,
+      "output_std": 0.10369577258825302,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0020840789657086134,
+      "interval_index": 90,
+      "output_max": 0.43610456585884094,
+      "output_mean": 0.30079978704452515,
+      "output_min": 0.062443189322948456,
+      "output_std": 0.10371001809835434,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0016063738148659468,
+      "interval_index": 91,
+      "output_max": 0.4353077709674835,
+      "output_mean": 0.3008127510547638,
+      "output_min": 0.0619695670902729,
+      "output_std": 0.10371751338243484,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.00160431198310107,
+      "interval_index": 92,
+      "output_max": 0.43494245409965515,
+      "output_mean": 0.3008306622505188,
+      "output_min": 0.061131034046411514,
+      "output_std": 0.10374315083026886,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009750029421411455,
+      "interval_index": 93,
+      "output_max": 0.4347172975540161,
+      "output_mean": 0.3008216321468353,
+      "output_min": 0.06029979884624481,
+      "output_std": 0.10378453880548477,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009702029637992382,
+      "interval_index": 94,
+      "output_max": 0.4347549080848694,
+      "output_mean": 0.30083391070365906,
+      "output_min": 0.059538427740335464,
+      "output_std": 0.10381143540143967,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008528157486580312,
+      "interval_index": 95,
+      "output_max": 0.43466880917549133,
+      "output_mean": 0.3008202314376831,
+      "output_min": 0.05885467678308487,
+      "output_std": 0.10385695099830627,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008592334925197065,
+      "interval_index": 96,
+      "output_max": 0.43458256125450134,
+      "output_mean": 0.3008301258087158,
+      "output_min": 0.05850713700056076,
+      "output_std": 0.10386265814304352,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006810151389800012,
+      "interval_index": 97,
+      "output_max": 0.4345250427722931,
+      "output_mean": 0.3008614480495453,
+      "output_min": 0.05820213630795479,
+      "output_std": 0.10383781045675278,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006810295162722468,
+      "interval_index": 98,
+      "output_max": 0.43445223569869995,
+      "output_mean": 0.3008595407009125,
+      "output_min": 0.05864124000072479,
+      "output_std": 0.10383975505828857,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007274211966432631,
+      "interval_index": 99,
+      "output_max": 0.43438905477523804,
+      "output_mean": 0.30085211992263794,
+      "output_min": 0.05899694934487343,
+      "output_std": 0.1038370281457901,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008029070449993014,
+      "interval_index": 100,
+      "output_max": 0.43325603008270264,
+      "output_mean": 0.3008773624897003,
+      "output_min": 0.05883470177650452,
+      "output_std": 0.10381549596786499,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009020278812386096,
+      "interval_index": 101,
+      "output_max": 0.43269866704940796,
+      "output_mean": 0.30091771483421326,
+      "output_min": 0.058676257729530334,
+      "output_std": 0.10379545390605927,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014136022655293345,
+      "interval_index": 102,
+      "output_max": 0.4326364994049072,
+      "output_mean": 0.30100709199905396,
+      "output_min": 0.05851059406995773,
+      "output_std": 0.10374338924884796,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013097133487462997,
+      "interval_index": 103,
+      "output_max": 0.43276941776275635,
+      "output_mean": 0.301077663898468,
+      "output_min": 0.058356449007987976,
+      "output_std": 0.10373103618621826,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002333775395527482,
+      "interval_index": 104,
+      "output_max": 0.43297678232192993,
+      "output_mean": 0.30118075013160706,
+      "output_min": 0.05819925293326378,
+      "output_std": 0.10374350845813751,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010229871841147542,
+      "interval_index": 105,
+      "output_max": 0.43321675062179565,
+      "output_mean": 0.30122408270835876,
+      "output_min": 0.05805838480591774,
+      "output_std": 0.10375954955816269,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010123371612280607,
+      "interval_index": 106,
+      "output_max": 0.43346232175827026,
+      "output_mean": 0.3012755215167999,
+      "output_min": 0.05794699862599373,
+      "output_std": 0.10373548418283463,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007798144943080842,
+      "interval_index": 107,
+      "output_max": 0.43370112776756287,
+      "output_mean": 0.30131274461746216,
+      "output_min": 0.05783839151263237,
+      "output_std": 0.10373929888010025,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006993768620304763,
+      "interval_index": 108,
+      "output_max": 0.43389588594436646,
+      "output_mean": 0.30133265256881714,
+      "output_min": 0.05776350200176239,
+      "output_std": 0.10375969111919403,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009606173844076693,
+      "interval_index": 109,
+      "output_max": 0.43406328558921814,
+      "output_mean": 0.3013390004634857,
+      "output_min": 0.05768701061606407,
+      "output_std": 0.10374027490615845,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008678167941980064,
+      "interval_index": 110,
+      "output_max": 0.43419989943504333,
+      "output_mean": 0.3013191819190979,
+      "output_min": 0.05759294331073761,
+      "output_std": 0.10373148322105408,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007822155603207648,
+      "interval_index": 111,
+      "output_max": 0.434302419424057,
+      "output_mean": 0.30132487416267395,
+      "output_min": 0.05749741569161415,
+      "output_std": 0.10371601581573486,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008934599463827908,
+      "interval_index": 112,
+      "output_max": 0.43440672755241394,
+      "output_mean": 0.3013194501399994,
+      "output_min": 0.057400207966566086,
+      "output_std": 0.10370071232318878,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007900705677457154,
+      "interval_index": 113,
+      "output_max": 0.4344971776008606,
+      "output_mean": 0.30129918456077576,
+      "output_min": 0.057309042662382126,
+      "output_std": 0.10371783375740051,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007066800026223063,
+      "interval_index": 114,
+      "output_max": 0.4345964789390564,
+      "output_mean": 0.30129051208496094,
+      "output_min": 0.05723792687058449,
+      "output_std": 0.10372523218393326,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001037517678923905,
+      "interval_index": 115,
+      "output_max": 0.43469375371932983,
+      "output_mean": 0.3012514114379883,
+      "output_min": 0.057294853031635284,
+      "output_std": 0.10375580191612244,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008303301292471588,
+      "interval_index": 116,
+      "output_max": 0.4347827434539795,
+      "output_mean": 0.30119597911834717,
+      "output_min": 0.05733870342373848,
+      "output_std": 0.10380847007036209,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009118192829191685,
+      "interval_index": 117,
+      "output_max": 0.43487218022346497,
+      "output_mean": 0.30113154649734497,
+      "output_min": 0.05748533084988594,
+      "output_std": 0.10383518040180206,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009280283702537417,
+      "interval_index": 118,
+      "output_max": 0.43499553203582764,
+      "output_mean": 0.3010603189468384,
+      "output_min": 0.05762059986591339,
+      "output_std": 0.10387961566448212,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008469843887723982,
+      "interval_index": 119,
+      "output_max": 0.4350990056991577,
+      "output_mean": 0.3010108768939972,
+      "output_min": 0.05774061754345894,
+      "output_std": 0.10391441732645035,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0005883652484044433,
+      "interval_index": 120,
+      "output_max": 0.4352107644081116,
+      "output_mean": 0.3009917736053467,
+      "output_min": 0.05632378160953522,
+      "output_std": 0.10393548756837845,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006738492520526052,
+      "interval_index": 121,
+      "output_max": 0.43533721566200256,
+      "output_mean": 0.3009524643421173,
+      "output_min": 0.05795564129948616,
+      "output_std": 0.10396330803632736,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001310816965997219,
+      "interval_index": 122,
+      "output_max": 0.43547388911247253,
+      "output_mean": 0.30088549852371216,
+      "output_min": 0.058050330728292465,
+      "output_std": 0.10398849099874496,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009302395046688616,
+      "interval_index": 123,
+      "output_max": 0.43561023473739624,
+      "output_mean": 0.30084171891212463,
+      "output_min": 0.046880144625902176,
+      "output_std": 0.10399263352155685,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0005924481665715575,
+      "interval_index": 124,
+      "output_max": 0.43575480580329895,
+      "output_mean": 0.3008338212966919,
+      "output_min": 0.044929325580596924,
+      "output_std": 0.10398674011230469,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0005853344919160008,
+      "interval_index": 125,
+      "output_max": 0.4359050691127777,
+      "output_mean": 0.3008395731449127,
+      "output_min": 0.045808255672454834,
+      "output_std": 0.10397791862487793,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009758133091963828,
+      "interval_index": 126,
+      "output_max": 0.4360887408256531,
+      "output_mean": 0.3008705973625183,
+      "output_min": 0.046990301460027695,
+      "output_std": 0.1039552241563797,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009349840111099184,
+      "interval_index": 127,
+      "output_max": 0.4361708164215088,
+      "output_mean": 0.300850510597229,
+      "output_min": 0.04789835587143898,
+      "output_std": 0.10397745668888092,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009817227255553007,
+      "interval_index": 128,
+      "output_max": 0.43627214431762695,
+      "output_mean": 0.30084049701690674,
+      "output_min": 0.048942942172288895,
+      "output_std": 0.1039881482720375,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008551038336008787,
+      "interval_index": 129,
+      "output_max": 0.4363952875137329,
+      "output_mean": 0.30081048607826233,
+      "output_min": 0.049949198961257935,
+      "output_std": 0.104010209441185,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012463032035157084,
+      "interval_index": 130,
+      "output_max": 0.43650227785110474,
+      "output_mean": 0.30076706409454346,
+      "output_min": 0.05082345008850098,
+      "output_std": 0.10402090102434158,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.000854311918374151,
+      "interval_index": 131,
+      "output_max": 0.43665382266044617,
+      "output_mean": 0.3007580637931824,
+      "output_min": 0.051581524312496185,
+      "output_std": 0.10401838272809982,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0008124352898448706,
+      "interval_index": 132,
+      "output_max": 0.43683889508247375,
+      "output_mean": 0.30074694752693176,
+      "output_min": 0.05222722515463829,
+      "output_std": 0.10401705652475357,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007950757280923426,
+      "interval_index": 133,
+      "output_max": 0.43712499737739563,
+      "output_mean": 0.3007482886314392,
+      "output_min": 0.05276459455490112,
+      "output_std": 0.1040111780166626,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0006929384544491768,
+      "interval_index": 134,
+      "output_max": 0.4373146593570709,
+      "output_mean": 0.30075889825820923,
+      "output_min": 0.05318261310458183,
+      "output_std": 0.10400620847940445,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007289681234396994,
+      "interval_index": 135,
+      "output_max": 0.4374430775642395,
+      "output_mean": 0.3007778823375702,
+      "output_min": 0.05351128429174423,
+      "output_std": 0.1039840504527092,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009092084364965558,
+      "interval_index": 136,
+      "output_max": 0.4375627338886261,
+      "output_mean": 0.3008075952529907,
+      "output_min": 0.05376880243420601,
+      "output_std": 0.10396236926317215,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0007774533587507904,
+      "interval_index": 137,
+      "output_max": 0.4376818537712097,
+      "output_mean": 0.3008219301700592,
+      "output_min": 0.05397368222475052,
+      "output_std": 0.10397119075059891,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009092880645766854,
+      "interval_index": 138,
+      "output_max": 0.4378350079059601,
+      "output_mean": 0.30085721611976624,
+      "output_min": 0.05413790047168732,
+      "output_std": 0.10394492000341415,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009815172525122762,
+      "interval_index": 139,
+      "output_max": 0.43800345063209534,
+      "output_mean": 0.3009159564971924,
+      "output_min": 0.05366571247577667,
+      "output_std": 0.1038932129740715,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010481294011697173,
+      "interval_index": 140,
+      "output_max": 0.4381634593009949,
+      "output_mean": 0.3009618818759918,
+      "output_min": 0.05367032811045647,
+      "output_std": 0.10385327786207199,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010854655411094427,
+      "interval_index": 141,
+      "output_max": 0.43831688165664673,
+      "output_mean": 0.30100956559181213,
+      "output_min": 0.05388518050312996,
+      "output_std": 0.10381809622049332,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011288522509858012,
+      "interval_index": 142,
+      "output_max": 0.43846526741981506,
+      "output_mean": 0.3010186553001404,
+      "output_min": 0.05411168932914734,
+      "output_std": 0.10378953069448471,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010030698031187057,
+      "interval_index": 143,
+      "output_max": 0.4386235773563385,
+      "output_mean": 0.3010421693325043,
+      "output_min": 0.05376241356134415,
+      "output_std": 0.10374974459409714,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012341836700215936,
+      "interval_index": 144,
+      "output_max": 0.4388342499732971,
+      "output_mean": 0.30102744698524475,
+      "output_min": 0.05388952046632767,
+      "output_std": 0.10373863577842712,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010514974128454924,
+      "interval_index": 145,
+      "output_max": 0.43936923146247864,
+      "output_mean": 0.30099576711654663,
+      "output_min": 0.05410183221101761,
+      "output_std": 0.1037372350692749,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012645997339859605,
+      "interval_index": 146,
+      "output_max": 0.43976709246635437,
+      "output_mean": 0.3009067475795746,
+      "output_min": 0.05428158491849899,
+      "output_std": 0.10378061980009079,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017404993996024132,
+      "interval_index": 147,
+      "output_max": 0.44014430046081543,
+      "output_mean": 0.30088815093040466,
+      "output_min": 0.05446301028132439,
+      "output_std": 0.1037905290722847,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0015120384050533175,
+      "interval_index": 148,
+      "output_max": 0.44051676988601685,
+      "output_mean": 0.30085882544517517,
+      "output_min": 0.054657675325870514,
+      "output_std": 0.10379040241241455,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001379881170578301,
+      "interval_index": 149,
+      "output_max": 0.4408814311027527,
+      "output_mean": 0.3008483946323395,
+      "output_min": 0.05486861616373062,
+      "output_std": 0.10380306094884872,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009941505268216133,
+      "interval_index": 150,
+      "output_max": 0.44123750925064087,
+      "output_mean": 0.3008824288845062,
+      "output_min": 0.055083759129047394,
+      "output_std": 0.10376518219709396,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009056510752998292,
+      "interval_index": 151,
+      "output_max": 0.4415854215621948,
+      "output_mean": 0.3009168207645416,
+      "output_min": 0.05530484393239021,
+      "output_std": 0.1037369966506958,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001081429305486381,
+      "interval_index": 152,
+      "output_max": 0.4419271647930145,
+      "output_mean": 0.30092746019363403,
+      "output_min": 0.05552490055561066,
+      "output_std": 0.10372865945100784,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010247635655105114,
+      "interval_index": 153,
+      "output_max": 0.4422077238559723,
+      "output_mean": 0.30097800493240356,
+      "output_min": 0.055741555988788605,
+      "output_std": 0.10367150604724884,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013388276565819979,
+      "interval_index": 154,
+      "output_max": 0.44243550300598145,
+      "output_mean": 0.30104225873947144,
+      "output_min": 0.055954452604055405,
+      "output_std": 0.1036282405257225,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012487450148910284,
+      "interval_index": 155,
+      "output_max": 0.44265276193618774,
+      "output_mean": 0.30105072259902954,
+      "output_min": 0.05616137012839317,
+      "output_std": 0.10364468395709991,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012356673832982779,
+      "interval_index": 156,
+      "output_max": 0.44397735595703125,
+      "output_mean": 0.3010804355144501,
+      "output_min": 0.06034129485487938,
+      "output_std": 0.10363805294036865,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013994413893669844,
+      "interval_index": 157,
+      "output_max": 0.44442519545555115,
+      "output_mean": 0.3011961579322815,
+      "output_min": 0.05952174589037895,
+      "output_std": 0.10358333587646484,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011103006545454264,
+      "interval_index": 158,
+      "output_max": 0.444608211517334,
+      "output_mean": 0.30128100514411926,
+      "output_min": 0.05905463919043541,
+      "output_std": 0.1035156324505806,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011379496427252889,
+      "interval_index": 159,
+      "output_max": 0.4447416663169861,
+      "output_mean": 0.3013054430484772,
+      "output_min": 0.058870844542980194,
+      "output_std": 0.10348795354366302,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001029345439746976,
+      "interval_index": 160,
+      "output_max": 0.4448508322238922,
+      "output_mean": 0.3013474643230438,
+      "output_min": 0.05883108824491501,
+      "output_std": 0.10346440225839615,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010430804686620831,
+      "interval_index": 161,
+      "output_max": 0.444958359003067,
+      "output_mean": 0.30136436223983765,
+      "output_min": 0.05890321731567383,
+      "output_std": 0.10343853384256363,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0019696045201271772,
+      "interval_index": 162,
+      "output_max": 0.4450685679912567,
+      "output_mean": 0.30147507786750793,
+      "output_min": 0.05904621258378029,
+      "output_std": 0.10334733128547668,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0019133349414914846,
+      "interval_index": 163,
+      "output_max": 0.44518014788627625,
+      "output_mean": 0.30166321992874146,
+      "output_min": 0.05922611802816391,
+      "output_std": 0.10322539508342743,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002730822889134288,
+      "interval_index": 164,
+      "output_max": 0.44511058926582336,
+      "output_mean": 0.30190610885620117,
+      "output_min": 0.059298720210790634,
+      "output_std": 0.10309790819883347,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001462563406676054,
+      "interval_index": 165,
+      "output_max": 0.4450485408306122,
+      "output_mean": 0.30197879672050476,
+      "output_min": 0.05893827974796295,
+      "output_std": 0.10306481271982193,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012642743531614542,
+      "interval_index": 166,
+      "output_max": 0.4450697898864746,
+      "output_mean": 0.3020128607749939,
+      "output_min": 0.058954738080501556,
+      "output_std": 0.10303418338298798,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013822850305587053,
+      "interval_index": 167,
+      "output_max": 0.44508814811706543,
+      "output_mean": 0.3019963204860687,
+      "output_min": 0.05906940996646881,
+      "output_std": 0.1030229702591896,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0032520988024771214,
+      "interval_index": 168,
+      "output_max": 0.44508713483810425,
+      "output_mean": 0.3018307387828827,
+      "output_min": 0.05920366570353508,
+      "output_std": 0.10312418639659882,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0030500302091240883,
+      "interval_index": 169,
+      "output_max": 0.4450813829898834,
+      "output_mean": 0.3016631007194519,
+      "output_min": 0.05931476131081581,
+      "output_std": 0.10326972603797913,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0018159453757107258,
+      "interval_index": 170,
+      "output_max": 0.44583383202552795,
+      "output_mean": 0.30157479643821716,
+      "output_min": 0.05939256399869919,
+      "output_std": 0.10334271192550659,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0019558367785066366,
+      "interval_index": 171,
+      "output_max": 0.4463580250740051,
+      "output_mean": 0.3013889789581299,
+      "output_min": 0.05944668874144554,
+      "output_std": 0.10342320799827576,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0022436014842242002,
+      "interval_index": 172,
+      "output_max": 0.44622504711151123,
+      "output_mean": 0.301151305437088,
+      "output_min": 0.059484682977199554,
+      "output_std": 0.10351715981960297,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0020014990586787462,
+      "interval_index": 173,
+      "output_max": 0.4461600184440613,
+      "output_mean": 0.3009931147098541,
+      "output_min": 0.059508588165044785,
+      "output_std": 0.10361698269844055,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002293845172971487,
+      "interval_index": 174,
+      "output_max": 0.4461311101913452,
+      "output_mean": 0.3008037507534027,
+      "output_min": 0.05952005833387375,
+      "output_std": 0.1037372574210167,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014440593076869845,
+      "interval_index": 175,
+      "output_max": 0.44614377617836,
+      "output_mean": 0.300685852766037,
+      "output_min": 0.0595211535692215,
+      "output_std": 0.10381896793842316,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011831439333036542,
+      "interval_index": 176,
+      "output_max": 0.4461636245250702,
+      "output_mean": 0.3006432056427002,
+      "output_min": 0.059514306485652924,
+      "output_std": 0.10385352373123169,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012270869920030236,
+      "interval_index": 177,
+      "output_max": 0.44617488980293274,
+      "output_mean": 0.300588995218277,
+      "output_min": 0.059502918273210526,
+      "output_std": 0.10387543588876724,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0016514635644853115,
+      "interval_index": 178,
+      "output_max": 0.44617125391960144,
+      "output_mean": 0.30054932832717896,
+      "output_min": 0.059491418302059174,
+      "output_std": 0.10389482975006104,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0014215575065463781,
+      "interval_index": 179,
+      "output_max": 0.44615092873573303,
+      "output_mean": 0.30052539706230164,
+      "output_min": 0.05948008969426155,
+      "output_std": 0.10390591621398926,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012335244100540876,
+      "interval_index": 180,
+      "output_max": 0.4461144804954529,
+      "output_mean": 0.3005549907684326,
+      "output_min": 0.05946767330169678,
+      "output_std": 0.10388588905334473,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010768441716209054,
+      "interval_index": 181,
+      "output_max": 0.44606271386146545,
+      "output_mean": 0.30057185888290405,
+      "output_min": 0.059454772621393204,
+      "output_std": 0.10385412722826004,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0010342355817556381,
+      "interval_index": 182,
+      "output_max": 0.44599834084510803,
+      "output_mean": 0.3005382716655731,
+      "output_min": 0.0594412200152874,
+      "output_std": 0.10387130826711655,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012551168911159039,
+      "interval_index": 183,
+      "output_max": 0.4459230601787567,
+      "output_mean": 0.30052635073661804,
+      "output_min": 0.05943504720926285,
+      "output_std": 0.10388806462287903,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0009882192825898528,
+      "interval_index": 184,
+      "output_max": 0.44581931829452515,
+      "output_mean": 0.30051857233047485,
+      "output_min": 0.05942836403846741,
+      "output_std": 0.10389652103185654,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001497987424954772,
+      "interval_index": 185,
+      "output_max": 0.4457261562347412,
+      "output_mean": 0.3004840314388275,
+      "output_min": 0.05917763337492943,
+      "output_std": 0.10392867773771286,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.00144422915764153,
+      "interval_index": 186,
+      "output_max": 0.445634663105011,
+      "output_mean": 0.30053043365478516,
+      "output_min": 0.05905930697917938,
+      "output_std": 0.10393471270799637,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0012048393255099654,
+      "interval_index": 187,
+      "output_max": 0.44553670287132263,
+      "output_mean": 0.30055853724479675,
+      "output_min": 0.05903313681483269,
+      "output_std": 0.10392285138368607,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011938578682020307,
+      "interval_index": 188,
+      "output_max": 0.44542381167411804,
+      "output_mean": 0.3005613088607788,
+      "output_min": 0.0590391531586647,
+      "output_std": 0.10392884165048599,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017149068880826235,
+      "interval_index": 189,
+      "output_max": 0.44529929757118225,
+      "output_mean": 0.3006001114845276,
+      "output_min": 0.05906134098768234,
+      "output_std": 0.10389120131731033,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017955570947378874,
+      "interval_index": 190,
+      "output_max": 0.44516900181770325,
+      "output_mean": 0.30059927701950073,
+      "output_min": 0.059088803827762604,
+      "output_std": 0.10385288298130035,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0018513924442231655,
+      "interval_index": 191,
+      "output_max": 0.4450276792049408,
+      "output_mean": 0.3005584180355072,
+      "output_min": 0.05912013724446297,
+      "output_std": 0.10386629402637482,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013049915432929993,
+      "interval_index": 192,
+      "output_max": 0.4447530210018158,
+      "output_mean": 0.30052945017814636,
+      "output_min": 0.05915079638361931,
+      "output_std": 0.1038854643702507,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.00160953588783741,
+      "interval_index": 193,
+      "output_max": 0.44446951150894165,
+      "output_mean": 0.30052778124809265,
+      "output_min": 0.05918153375387192,
+      "output_std": 0.1038963571190834,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0011992350919172168,
+      "interval_index": 194,
+      "output_max": 0.44417238235473633,
+      "output_mean": 0.30046892166137695,
+      "output_min": 0.05921206250786781,
+      "output_std": 0.10397863388061523,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.001583530567586422,
+      "interval_index": 195,
+      "output_max": 0.44386377930641174,
+      "output_mean": 0.30044320225715637,
+      "output_min": 0.05875271558761597,
+      "output_std": 0.10397495329380035,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013853323180228472,
+      "interval_index": 196,
+      "output_max": 0.4435388445854187,
+      "output_mean": 0.300448477268219,
+      "output_min": 0.05862967297434807,
+      "output_std": 0.10394320636987686,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.002908027498051524,
+      "interval_index": 197,
+      "output_max": 0.443196177482605,
+      "output_mean": 0.3004627525806427,
+      "output_min": 0.05870834365487099,
+      "output_std": 0.10387181490659714,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0028685752768069506,
+      "interval_index": 198,
+      "output_max": 0.4428522288799286,
+      "output_mean": 0.3003782629966736,
+      "output_min": 0.05883375555276871,
+      "output_std": 0.10393159091472626,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0017517318483442068,
+      "interval_index": 199,
+      "output_max": 0.4425050914287567,
+      "output_mean": 0.3004193603992462,
+      "output_min": 0.05896032974123955,
+      "output_std": 0.10392321646213531,
+      "state_tensor_count": 6
+    },
+    {
+      "consecutive_output_delta_rms": 0.0013251951895654202,
+      "interval_index": 200,
+      "output_max": 0.44215723872184753,
+      "output_mean": 0.300414502620697,
+      "output_min": 0.05907505750656128,
+      "output_std": 0.10393720120191574,
+      "state_tensor_count": 6
+    }
+  ],
+  "pinned_sources": {
+    "EVREAL": {
+      "bytes_verified": 3749310,
+      "commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+      "files_verified": 480,
+      "repository": "EVREAL",
+      "tree_sha256": "584e7f85ff3002d3ceb9c1a2e6b79ab9e1cc6793f58f06ddb36ec7aeb58ed1f5",
+      "verification": "manifest_file_sha256_and_tree_sha256"
+    },
+    "event_cnn_minimal": {
+      "bytes_verified": 1365090,
+      "commit": "78aa471a66593f55e349303563997297fbc816e8",
+      "files_verified": 121,
+      "repository": "event_cnn_minimal",
+      "tree_sha256": "5933c2b155b20b2a2d39e70367017653f23cfbccb5d24bc079f3fa31f1b328c0",
+      "verification": "manifest_file_sha256_and_tree_sha256"
+    }
+  },
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "schema": "e2vid_long_synthetic_state_audit_v1",
+  "sequence": {
+    "event_voxel_nonzero_count_max": 9265,
+    "event_voxel_nonzero_count_median": 95.0,
+    "event_voxel_nonzero_count_min": 12,
+    "files": {
+      "dtypes": {
+        "events_p": "uint8",
+        "events_ts": "float64",
+        "events_xy": "int32",
+        "image_event_indices": "int64",
+        "images": "uint8",
+        "images_ts": "float64"
+      },
+      "events_timestamp_first_s": 0.00033619305503882233,
+      "events_timestamp_last_s": 1.9999721685868366,
+      "hashes": {
+        "events_p.npy": "8f53903ff5cb6fec0cfaf20174e31c494a5ad7389e999caa92b08bbbd41a0771",
+        "events_ts.npy": "64df9dc505407dadd5159ffd33634910dbd67d767e8ffdac2b101c9b072dfc22",
+        "events_xy.npy": "122e1919a9df4a31f3a09a222f2db2ae33a2ec38c471c82a3bf589bdf8237922",
+        "image_event_indices.npy": "df55f002c97f08185547fc33b3cdb4ec2421f860b4c68e813bf8e459dbfb950e",
+        "images.npy": "fa5ecf021bfc085862fe67ead5f6f94c5e0931d26f411f9572043516ef3813d9",
+        "images_ts.npy": "baaa003c74f5b7dd773fa6376ddb38f3bb91be58a5b98024ecf0147b3c6faaad",
+        "metadata.json": "88cfbe43730ec3d18e43e5a85abbd4f166377541978248cabce27da550dce734"
+      },
+      "images_timestamp_first_s": 0.0,
+      "images_timestamp_last_s": 2.0,
+      "metadata": {
+        "dataset_role": "synthetic_pipeline_fixture_only",
+        "event_interval": "sample 0 is the t0 recurrent boundary with an empty event interval; samples i>0 use (t[i-1],t[i]]",
+        "sensor_resolution": [
+          260,
+          346
+        ],
+        "target_image_mapping": "shared Rec.709 linear luminance, exposure 1, Reinhard, sRGB transfer, uint8 round-to-nearest"
+      },
+      "num_events": 28020,
+      "num_frames": 201,
+      "sensor_resolution_hw": [
+        260,
+        346
+      ],
+      "shapes": {
+        "events_p": [
+          28020
+        ],
+        "events_ts": [
+          28020
+        ],
+        "events_xy": [
+          28020,
+          2
+        ],
+        "image_event_indices": [
+          201
+        ],
+        "images": [
+          201,
+          260,
+          346,
+          1
+        ],
+        "images_ts": [
+          201
+        ]
+      }
+    },
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261021-stage5-recon-synth-fixture-eventgenesis-v2/fixture/eventgenesis/s5q_02_train_eventgenesis",
+    "source_loader_length_before_registered_extension": 200,
+    "window_count": 200
+  },
+  "status": "passed_200_window_eval_state_and_reset_replay_no_scoring",
+  "target_pixels_used_as_input_or_scored": false
+}

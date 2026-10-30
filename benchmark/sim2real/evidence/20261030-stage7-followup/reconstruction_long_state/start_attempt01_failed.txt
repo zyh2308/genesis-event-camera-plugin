@@ -1,0 +1,2 @@
+2026-10-30 local launcher attempt 01 stopped before opening SSH (exit 1).
+Cause: the launcher incorrectly tested the remote checkout path as a local WSL directory. The Windows OpenSSH executable path existed. No network connection or server-side command was made, and no remote files or processes were changed. The local-only check was removed; the remote launch now verifies the checkout on g1.
