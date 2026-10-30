@@ -25,6 +25,7 @@ from benchmark.robot_closed_loop.diagnostics.diagnose_r1_5_core_candidate_cuda_p
 )
 from benchmark.robot_closed_loop.diagnostics.validate_r1_5_core_candidate import (  # noqa: E402
     load_cached_episode,
+    strict_cached_replay,
 )
 from genesis_event_plugin.adaptive_sampler import AdaptiveSamplingConfig  # noqa: E402
 from genesis_event_plugin.physics_interpolator import PhysicsInterpolator  # noqa: E402
@@ -640,7 +641,56 @@ def main():
         episode["production_interpolator"] = run_production_interpolator_pair(
             src, K, left, right, objects0, objects1, width, event_rows, array_store, ep,
         )
+        strict_sample_check = strict_cached_replay(args.cache_root.resolve(), ep)
+        strict_sample_arrays = strict_sample_check.pop("event_arrays")
+        episode["strict_actual_intermediate_radiance"] = strict_sample_check
+        for key, value in strict_sample_arrays.items():
+            array_store[f"{ep}_strict_actual_{key}"] = value
         summary["episodes"].append(episode)
+
+    renderer_cost_path = ROOT / "benchmark/robot_closed_loop/results/r1_5_multiref_surface_cached_replay_20261021d/summary.json"
+    renderer_cost_summary = json.loads(renderer_cost_path.read_text(encoding="utf-8"))
+    summary["photometric_sampling_and_render_cost"] = {
+        "exact_cached_direct_hdr_samples": {
+            item["episode"]: {
+                "sample_times_s": item["timestamps_s"],
+                "exact_image_sequence_match": item["exact_image_sequence_match"],
+                "raw_events_exact_match": item["raw_events_exact_match"],
+                "maximum_anchor_gap_s": item["max_anchor_gap_s"],
+                "output_available_at_s": item["output_available_at_s"],
+                "default_motion_sampler_requests_beyond_one_midpoint": item["default_motion_sampler_midpoint_only_probe"]["required_additional_sample_count"],
+                "one_midpoint_5ms_event_count": item["one_midpoint_5ms_sampling_ablation"]["midpoint_sample_events"],
+                "one_midpoint_5ms_reference_event_count": item["one_midpoint_5ms_sampling_ablation"]["direct_reference_events_1ms"],
+                "one_midpoint_5ms_event_pixel_polarity_l1": item["one_midpoint_5ms_sampling_ablation"]["event_metrics_vs_dense_1ms_direct"]["pixel_polarity_count_l1"],
+                "one_midpoint_5ms_event_time_p95_error_s": item["one_midpoint_5ms_sampling_ablation"]["event_metrics_vs_dense_1ms_direct"]["matched_event_time_abs_error_p95_s"],
+                "cached_api_wall_s_cpu": item["strict_api_wall_s_cpu_using_cached_frames"],
+                "new_renderer_cost_measured": item["new_renderer_cost_measured"],
+            }
+            for item in summary["episodes"]
+        },
+        "measured_full_frame_fallback_reference": {
+            "source_summary_path": renderer_cost_path.relative_to(ROOT).as_posix(),
+            "source_summary_sha256": sha256(renderer_cost_path),
+            "source_code_commit": renderer_cost_summary["code_commit"],
+            "episodes": {
+                key: {
+                    "fallback_rendered_frames": value["candidate"]["full_frame_fallback_count"],
+                    "fallback_render_wall_s": value["candidate"]["fallback_render_wall_s"],
+                    "candidate_total_wall_s": value["candidate"]["total_production_wall_s_estimate"],
+                    "direct_render_wall_s_47_states": value["direct_render"]["wall_s_all_for_audit"],
+                    "direct_dvs_wall_s": value["direct_logged_state_comparator"]["dvs_wall_s"],
+                    "direct_render_plus_dvs_wall_s": value["direct_render"]["wall_s_all_for_audit"] + value["direct_logged_state_comparator"]["dvs_wall_s"],
+                    "candidate_over_direct_pipeline_ratio": value["candidate"]["total_production_wall_s_estimate"] / max(
+                        value["direct_render"]["wall_s_all_for_audit"] + value["direct_logged_state_comparator"]["dvs_wall_s"], 1e-12,
+                    ),
+                }
+                for key, value in renderer_cost_summary["episodes"].items()
+            },
+            "scope_note": "Historical actual Genesis rerender measurement of the multi-reference candidate on 42 intermediate states per 40 ms clip; it bounds the cost of full-frame fallback, not the exact cost of the current six-request 10 ms schedule.",
+        },
+        "current_strict_provider_cost_measured": False,
+        "freeze_recommendation": "do_not_freeze_default_core_until exact-time intermediate render-provider wall cost and online availability are measured; strict cached frames prove temporal fidelity but do not measure a live provider",
+    }
 
     summary["controls"] = run_minimal_controls()
     threshold_rows = run_threshold_probes()
