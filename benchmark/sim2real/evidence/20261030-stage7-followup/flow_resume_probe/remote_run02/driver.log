@@ -1,0 +1,181 @@
+run_id=20261030-stage7-flow-resume-cpu-200to201-g1-run02 host=g1 pid=1720353 started_utc=2026-10-30T09:35:45Z
+execution_base_commit=d0e36796f04826a14a0931878405abed943a49a3
+execution_worktree_status=?? benchmark/sim2real/scripts/resume_stage5_flow_fit_one_update.py ?? benchmark/sim2real/scripts/stage7_flow_resume_cpu_driver.sh ?? benchmark/sim2real/scripts/stage7_flow_resume_cpu_driver_run02.sh ?? benchmark/sim2real/scripts/stage7_flow_resume_cpu_start.sh ?? benchmark/sim2real/scripts/stage7_flow_resume_cpu_start_run02.sh ?? benchmark/sim2real/scripts/stage7_flow_resume_probe_driver.sh ?? benchmark/sim2real/scripts/stage7_flow_resume_start_probe.sh 
+probe_script_sha256=80c35a1d2963fab7d8d998b4d63d45022fe11f3d79bcbb51a60c58aab037697b
+config_sha256=ce7c7e6c7670f2514e75db821eb7ef93939ff6794bcb5af8bc90e024b4597665
+data_manifest_sha256=02f8eab65559a9b8442fe04b46ae202fe23a15116ae62fe7b3385e7e6c3cf50d
+eventgenesis_source_checkpoint_sha256=4da12339e52e29be1425287e3e4af5056cc3c7a125f7cc12f3ba326ad69f2a9b
+v2e_source_checkpoint_sha256=07bae17f1c1d5c635e863b73349a13ea04c635f1a079c31f466b254142bf143c
+cpu_count 128 load1 7.09 MemAvailable_GiB 481.7
+              total        used        free      shared  buff/cache   available
+Mem:          503Gi        18Gi       430Gi       109Mi        54Gi       481Gi
+Swap:            0B          0B          0B
+0, GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23, 2443 MiB, 79 %
+1, GPU-0262d545-e9bd-7fcb-66e5-2ef81465c460, 2443 MiB, 70 %
+2, GPU-a02affe0-7598-579e-ca39-f551f35ad6e9, 2519 MiB, 92 %
+3, GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd, 2493 MiB, 81 %
+4, GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3, 2493 MiB, 82 %
+5, GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885, 2337 MiB, 85 %
+python 3.11.15 (main, Jun 11 2026, 15:20:16) [GCC 14.3.0]
+torch 2.5.1+cu121 cuda 12.1 available True
+h5py 3.14.0 numpy 2.4.6 opencv 5.0.0
+/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py:10: ImportWarning: failed to load custom correlation modulewhich is needed for FlowNetC
+  warnings.warn("failed to load custom correlation module"
+{
+  "config_sha256": "ce7c7e6c7670f2514e75db821eb7ef93939ff6794bcb5af8bc90e024b4597665",
+  "created_utc": "2026-10-30T09:37:26.693963+00:00",
+  "data_manifest_flow_unit": "pixels per 30ms endpoint interval",
+  "data_manifest_sha256": "02f8eab65559a9b8442fe04b46ae202fe23a15116ae62fe7b3385e7e6c3cf50d",
+  "execution": {
+    "cpu_tensor_cuda_identity_shim": true,
+    "cpu_threads": 2,
+    "cuda_kernel_validation": false,
+    "device": "cpu"
+  },
+  "flow_unit": "px_per_30ms_interval",
+  "generator": "eventgenesis",
+  "new_checkpoint": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-flow-resume-cpu-200to201-g1-run02/eventgenesis/resume_update_201.pt",
+    "sha256": "a577dbc33cc96f6935590ccf337aa4b1656260e7dce01118eec681d4e0a04d6b",
+    "size_bytes": 580018554,
+    "updates": 201
+  },
+  "paired_labels_identical": true,
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "rollout_id": "s5q_02_train",
+  "sample_id": "s5q_02_train/dt1_000",
+  "schema": "stage7_flow_checkpoint_resume_one_update_v1",
+  "seed": 0,
+  "source_checkpoint": {
+    "model_state_sha256": "16f50b18a8353d48ff99423196786eb26975e16ffee13df60fd845ecf5d06c28",
+    "optimizer_step_values": [
+      200
+    ],
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/eventgenesis_last.pt",
+    "scheduler_present": false,
+    "sha256_after": "4da12339e52e29be1425287e3e4af5056cc3c7a125f7cc12f3ba326ad69f2a9b",
+    "sha256_before": "4da12339e52e29be1425287e3e4af5056cc3c7a125f7cc12f3ba326ad69f2a9b",
+    "size_bytes": 580024762,
+    "updates": 200
+  },
+  "source_commit": "d0e36796f04826a14a0931878405abed943a49a3",
+  "source_patch": {
+    "augmentation": "unchanged: pixel-center normalized grid with align_corners=False",
+    "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+    "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+    "upstream_hashes": {
+      "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785",
+      "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0"
+    }
+  },
+  "source_script_sha256": "80c35a1d2963fab7d8d998b4d63d45022fe11f3d79bcbb51a60c58aab037697b",
+  "status": "pass",
+  "strict_full_run_bitwise_equivalence_claimed": false,
+  "update": {
+    "from": 200,
+    "gradient_l2_norm": 1.845068097114563,
+    "gradient_tensor_count": 70,
+    "loss_before_step": 0.017472848296165466,
+    "model_state_sha256_after": "61725b1214feafb0ec64ab32cc7527ecb0ef52099e77dba09ff3ed2f8bb26aec",
+    "model_state_sha256_before": "16f50b18a8353d48ff99423196786eb26975e16ffee13df60fd845ecf5d06c28",
+    "optimizer_step_values_after": [
+      201
+    ],
+    "parameter_groups": [
+      41,
+      41
+    ],
+    "scale_losses_before_step": [
+      0.038218602538108826,
+      0.01783107779920101,
+      0.007044762372970581,
+      0.006796947214752436
+    ],
+    "scheduler_present": false,
+    "to": 201
+  },
+  "window_index": 0
+}
+/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py:10: ImportWarning: failed to load custom correlation modulewhich is needed for FlowNetC
+  warnings.warn("failed to load custom correlation module"
+{
+  "config_sha256": "ce7c7e6c7670f2514e75db821eb7ef93939ff6794bcb5af8bc90e024b4597665",
+  "created_utc": "2026-10-30T09:38:35.518868+00:00",
+  "data_manifest_flow_unit": "pixels per 30ms endpoint interval",
+  "data_manifest_sha256": "02f8eab65559a9b8442fe04b46ae202fe23a15116ae62fe7b3385e7e6c3cf50d",
+  "execution": {
+    "cpu_tensor_cuda_identity_shim": true,
+    "cpu_threads": 2,
+    "cuda_kernel_validation": false,
+    "device": "cpu"
+  },
+  "flow_unit": "px_per_30ms_interval",
+  "generator": "v2e",
+  "new_checkpoint": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-flow-resume-cpu-200to201-g1-run02/v2e/resume_update_201.pt",
+    "sha256": "a3a3dca3e8a41c90def96db395f097fb707083b2b6b1f258b8264a06085d6ac1",
+    "size_bytes": 580018554,
+    "updates": 201
+  },
+  "paired_labels_identical": true,
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "rollout_id": "s5q_02_train",
+  "sample_id": "s5q_02_train/dt1_000",
+  "schema": "stage7_flow_checkpoint_resume_one_update_v1",
+  "seed": 0,
+  "source_checkpoint": {
+    "model_state_sha256": "fc2a6b7f9a7920aa0d19919a30af2fd46f4f96ebaf1e1b7eb3d46809f52fe38c",
+    "optimizer_step_values": [
+      200
+    ],
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261029-stage5-hightexture-fixed-gtfit-g3-v2/fixed_sample_fit/v2e_last.pt",
+    "scheduler_present": false,
+    "sha256_after": "07bae17f1c1d5c635e863b73349a13ea04c635f1a079c31f466b254142bf143c",
+    "sha256_before": "07bae17f1c1d5c635e863b73349a13ea04c635f1a079c31f466b254142bf143c",
+    "size_bytes": 580022034,
+    "updates": 200
+  },
+  "source_commit": "d0e36796f04826a14a0931878405abed943a49a3",
+  "source_patch": {
+    "augmentation": "unchanged: pixel-center normalized grid with align_corners=False",
+    "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+    "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+    "upstream_hashes": {
+      "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785",
+      "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0"
+    }
+  },
+  "source_script_sha256": "80c35a1d2963fab7d8d998b4d63d45022fe11f3d79bcbb51a60c58aab037697b",
+  "status": "pass",
+  "strict_full_run_bitwise_equivalence_claimed": false,
+  "update": {
+    "from": 200,
+    "gradient_l2_norm": 1.630906343460083,
+    "gradient_tensor_count": 70,
+    "loss_before_step": 0.0036109136417508125,
+    "model_state_sha256_after": "573fbf1db106dbaaebfafa84e1647f7313aefb8056e9275f5d8290ba7fd20fcf",
+    "model_state_sha256_before": "fc2a6b7f9a7920aa0d19919a30af2fd46f4f96ebaf1e1b7eb3d46809f52fe38c",
+    "optimizer_step_values_after": [
+      201
+    ],
+    "parameter_groups": [
+      41,
+      41
+    ],
+    "scale_losses_before_step": [
+      0.007368557155132294,
+      0.003569039748981595,
+      0.0019906535744667053,
+      0.0015154043212532997
+    ],
+    "scheduler_present": false,
+    "to": 201
+  },
+  "window_index": 0
+}
+a577dbc33cc96f6935590ccf337aa4b1656260e7dce01118eec681d4e0a04d6b  /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-flow-resume-cpu-200to201-g1-run02/eventgenesis/resume_update_201.pt
+c79de631f502b2b1b5302d18ea0bcbe206f591ad2e7a3ca6b9382b012c4b8a4e  /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-flow-resume-cpu-200to201-g1-run02/eventgenesis/resume_probe.json
+a3a3dca3e8a41c90def96db395f097fb707083b2b6b1f258b8264a06085d6ac1  /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-flow-resume-cpu-200to201-g1-run02/v2e/resume_update_201.pt
+d87f7873bceece090ccee1cf47392947f451f12395457d7180cce4264f617ee4  /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-flow-resume-cpu-200to201-g1-run02/v2e/resume_probe.json
