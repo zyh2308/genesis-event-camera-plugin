@@ -1,0 +1,29 @@
+{
+  "run_id": "r1_5_strict_direct_rerender_20261031g",
+  "purpose": "Measure the actual Genesis renderer/readback cost for the real 1 ms scene-linear HDR observations required by the strict photometric path, using only exact archived states from episodes 004 and 005.",
+  "episodes": [4, 5],
+  "interval_s": [0.5805, 0.5905],
+  "observed_frame_spacing_s": 0.001,
+  "state_contract": "Every rendered timestamp must have an exact row in trace_window.jsonl; do not interpolate states or advance physics. Use source/cache timestamps and images from the archived Direct-HDR evidence.",
+  "channels": ["scene_linear_hdr", "depth", "segmentation"],
+  "dvs": {
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "sigma_threshold": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "response_mode": "physical_log",
+    "readout_model": "ideal_readout",
+    "seed": 42
+  },
+  "input_cache_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059",
+  "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+  "limits": {
+    "max_selected_state_timestamp_error_s": 0.0,
+    "physics_steps": 0,
+    "write_scope": "new run-id directory only"
+  },
+  "claim_boundary": "Offline exact-state renderer-cost replay, not a live closed-loop timing or causality test. Per-sample wall time and simulation-time availability are reported separately."
+}
