@@ -26,6 +26,8 @@ from benchmark.robot_closed_loop.diagnostics.diagnose_r1_5_core_candidate_cuda_p
 from benchmark.robot_closed_loop.diagnostics.validate_r1_5_core_candidate import (  # noqa: E402
     load_cached_episode,
 )
+from genesis_event_plugin.adaptive_sampler import AdaptiveSamplingConfig  # noqa: E402
+from genesis_event_plugin.physics_interpolator import PhysicsInterpolator  # noqa: E402
 from genesis_event_plugin.physics_warp import (  # noqa: E402
     _splat_projected_coverage_diagnostics,
     depth_aware_bidirectional_warp_projected_diagnostics,
@@ -140,6 +142,97 @@ def composite_numpy(frames, depths, segs, projections):
         depth_tie_abs_m=DEPTH_TIE_ABS, depth_tie_rtol=DEPTH_TIE_RTOL,
         surface_depth_abs_m=SURFACE_DEPTH_ABS, surface_depth_rtol=SURFACE_DEPTH_RTOL,
     )
+
+
+def run_production_interpolator_pair(src, K, left, right, objects0, objects1, width, event_rows, array_store, episode):
+    """Exercise the public PhysicsInterpolator CPU and CUDA paths end to end."""
+    common = {
+        "sampler_config": AdaptiveSamplingConfig(min_samples=2, max_samples=10),
+        "disocclusion_policy": "hold",
+        "composite": "same_surface_log_linear",
+        "strict_fidelity": False,
+        "max_photometric_interval_s": 0.005,
+    }
+    outputs, masks, times, wall_s, details = {}, {}, {}, {}, {}
+    t0, t1 = T0, T1
+    initial = src["radiance_luma"][left]
+    for name, backend, device in (("numpy", "numpy", "cpu"), ("cuda", "torch", "cuda:0")):
+        interpolator = PhysicsInterpolator(K, warp_backend=backend, device=device, **common)
+        if device.startswith("cuda"):
+            torch.cuda.synchronize()
+        started = time.perf_counter()
+        frames, frame_times = interpolator.interpolate(
+            src["radiance_luma"][left], src["depth"][left], src["segmentation"][left],
+            src["radiance_luma"][right], src["depth"][right], src["segmentation"][right],
+            src["camera_to_world_cv"][left], src["camera_to_world_cv"][right], None,
+            t0, t1, input_space="linear", object_world0=objects0, object_world1=objects1,
+        )
+        if device.startswith("cuda"):
+            torch.cuda.synchronize()
+        wall_s[name] = float(time.perf_counter() - started)
+        outputs[name] = np.stack([np.asarray(frame, dtype=np.float32) for frame in frames])
+        times[name] = np.asarray(frame_times, dtype=np.float64)
+        masks[name] = np.asarray(interpolator.last_visibility["intermediate_visibility"], dtype=bool)
+        details[name] = {
+            "sample_count": int(len(frame_times)),
+            "uncertainty": interpolator.last_uncertainty,
+            "unknown_fraction_by_frame": [float(value) for value in (~masks[name]).mean(axis=(1, 2))],
+        }
+
+    if not np.array_equal(times["numpy"], times["cuda"]):
+        raise RuntimeError("production CPU/CUDA PhysicsInterpolator timestamps differ")
+    if outputs["numpy"].shape != outputs["cuda"].shape or masks["numpy"].shape != masks["cuda"].shape:
+        raise RuntimeError("production CPU/CUDA PhysicsInterpolator output shapes differ")
+    common_support = masks["numpy"] & masks["cuda"]
+    log_delta = np.abs(
+        np.log(np.maximum(outputs["numpy"][common_support], 1e-6))
+        - np.log(np.maximum(outputs["cuda"][common_support], 1e-6))
+    ) if common_support.any() else np.asarray([])
+    mask_xor = int(np.count_nonzero(masks["numpy"] != masks["cuda"]))
+
+    events = {}
+    event_comparisons = []
+    for reconstruction in ("numpy", "cuda"):
+        for dvs_backend in ("cpu", "cuda:0"):
+            key = f"{reconstruction}_{dvs_backend.replace(':', '')}"
+            event_stream = run_dvs(
+                list(outputs[reconstruction]),
+                [float(value) for value in times[reconstruction]],
+                initial, t0, dvs_backend,
+            )
+            events[key] = event_stream
+            array_store[f"{episode}_production_{key}_events"] = event_stream
+            event_rows.append({
+                "episode": episode,
+                "projection": "public_PhysicsInterpolator",
+                "compositor": reconstruction,
+                "dvs_backend": dvs_backend.replace(":", ""),
+                "event_count": int(len(event_stream)),
+                "on_count": int(np.count_nonzero(event_stream[:, 3] > 0)),
+                "off_count": int(np.count_nonzero(event_stream[:, 3] < 0)),
+            })
+        pair = event_metrics(events[f"{reconstruction}_cpu"], events[f"{reconstruction}_cuda0"], width)
+        pair["event_count_relative_delta"] = abs(pair["candidate_event_count"] - pair["reference_event_count"]) / max(1, pair["reference_event_count"])
+        event_comparisons.append({"reconstruction": reconstruction, **pair})
+    cross_reconstruction = {
+        backend: event_metrics(events[f"numpy_{backend}"], events[f"cuda_{backend}"], width)
+        for backend in ("cpu", "cuda0")
+    }
+    return {
+        "sample_times_s": [float(value) for value in times["numpy"]],
+        "sample_count": int(len(times["numpy"])),
+        "numpy_unknown_fraction_by_frame": details["numpy"]["unknown_fraction_by_frame"],
+        "cuda_unknown_fraction_by_frame": details["cuda"]["unknown_fraction_by_frame"],
+        "timestamp_max_abs_delta_s": float(np.max(np.abs(times["numpy"] - times["cuda"]))),
+        "support_mask_xor_pixels_all_frames": mask_xor,
+        "common_supported_log_luma_abs_max_all_frames": float(log_delta.max()) if log_delta.size else None,
+        "wall_s": wall_s,
+        "dvs_backend_comparisons_per_reconstruction": event_comparisons,
+        "cpu_dvs_numpy_vs_cuda_reconstruction": cross_reconstruction["cpu"],
+        "cuda_dvs_numpy_vs_cuda_reconstruction": cross_reconstruction["cuda0"],
+        "event_arrays": events,
+        "path_details": details,
+    }
 
 
 def composite_cuda(frames, depths, segs, projections):
@@ -544,6 +637,9 @@ def main():
             "common_supported_log_luma_abs_max": float(native_delta.max()) if native_delta.size else None,
             "numpy_projection_numpy_compositor_cpu_dvs_vs_cuda_projection_cuda_compositor_cuda_dvs": native_event_pair,
         }
+        episode["production_interpolator"] = run_production_interpolator_pair(
+            src, K, left, right, objects0, objects1, width, event_rows, array_store, ep,
+        )
         summary["episodes"].append(episode)
 
     summary["controls"] = run_minimal_controls()
@@ -578,11 +674,25 @@ def main():
                 "supported_log_luma_max_within_limit": episode["native_end_to_end"]["common_supported_log_luma_abs_max"] is not None
                     and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"],
             },
+            "public_PhysicsInterpolator_end_to_end": {
+                "support_mask_exact_all_samples": episode["production_interpolator"]["support_mask_xor_pixels_all_frames"] == 0,
+                "supported_log_luma_max_within_limit_all_samples": episode["production_interpolator"]["common_supported_log_luma_abs_max_all_frames"] is not None
+                    and episode["production_interpolator"]["common_supported_log_luma_abs_max_all_frames"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"],
+                "cpu_cuda_dvs_event_counts_within_limit": all(
+                    row["event_count_relative_delta"] <= acceptance["cached_clip_event_count_relative_delta_max"]
+                    for row in episode["production_interpolator"]["dvs_backend_comparisons_per_reconstruction"]
+                ),
+            },
             "all_pass": all(all(gates.values()) for gates in shared_projection_gates.values())
                 and all(event_gates.values())
                 and episode["native_end_to_end"]["support_mask_xor_pixels"] == 0
                 and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] is not None
-                and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"],
+                and episode["native_end_to_end"]["common_supported_log_luma_abs_max"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"]
+                and episode["production_interpolator"]["support_mask_xor_pixels_all_frames"] == 0
+                and episode["production_interpolator"]["common_supported_log_luma_abs_max_all_frames"] is not None
+                and episode["production_interpolator"]["common_supported_log_luma_abs_max_all_frames"] <= acceptance["max_abs_log_luminance_delta_supported_pixels"]
+                and all(row["event_count_relative_delta"] <= acceptance["cached_clip_event_count_relative_delta_max"]
+                        for row in episode["production_interpolator"]["dvs_backend_comparisons_per_reconstruction"]),
         }
     control_gates = summary["controls"]["control_gates"]
     summary["acceptance_result"] = {

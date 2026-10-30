@@ -387,7 +387,11 @@ class PhysicsInterpolator:
                 "bound; a real Genesis subframe render is required",
                 self.last_render_requests,
             )
-        alphas = np.arange(1, sampling.samples + 1, dtype=np.float32) / float(sampling.samples)
+        # Keep the pose interpolation parameters in double precision. The
+        # NumPy geometry path evaluates k / samples as Python float; matching
+        # that here prevents the Torch caller from rounding alpha before its
+        # float64 projection kernel receives it.
+        alphas = np.arange(1, sampling.samples + 1, dtype=np.float64) / float(sampling.samples)
         timestamps = [float(t0 + float(a) * dt) for a in alphas]
 
         # The projected NumPy path is the numerical reference. The Torch path
@@ -401,24 +405,28 @@ class PhysicsInterpolator:
             )
 
             torch_device = torch.device(self.device or "cuda")
-            alphas_t = torch.as_tensor(alphas, dtype=torch.float32, device=torch_device)
-            T0_t = torch.as_tensor(camera_to_world0, dtype=torch.float32, device=torch_device)
-            T1_t = torch.as_tensor(camera_to_world1, dtype=torch.float32, device=torch_device)
-            K_t = torch.as_tensor(self.K, dtype=torch.float32, device=torch_device)
+            # Keep geometry inputs double precision until projection. The
+            # projected uv/z arrays are cast to float32 by the Torch kernel,
+            # matching the NumPy public contract without losing precision at
+            # the call boundary.
+            alphas_t = torch.as_tensor(alphas, dtype=torch.float64, device=torch_device)
+            T0_t = torch.as_tensor(camera_to_world0, dtype=torch.float64, device=torch_device)
+            T1_t = torch.as_tensor(camera_to_world1, dtype=torch.float64, device=torch_device)
+            K_t = torch.as_tensor(self.K, dtype=torch.float64, device=torch_device)
             d0_t = torch.as_tensor(depth0, dtype=torch.float32, device=torch_device)
             d1_t = torch.as_tensor(depth1, dtype=torch.float32, device=torch_device)
             seg0_t = torch.as_tensor(seg0, device=torch_device)
             seg1_t = torch.as_tensor(seg1, device=torch_device)
             object0_t = {
-                int(key): torch.as_tensor(value, dtype=torch.float32, device=torch_device)
+                int(key): torch.as_tensor(value, dtype=torch.float64, device=torch_device)
                 for key, value in (object_world0 or {}).items()
             }
             object1_t = {
-                int(key): torch.as_tensor(value, dtype=torch.float32, device=torch_device)
+                int(key): torch.as_tensor(value, dtype=torch.float64, device=torch_device)
                 for key, value in (object_world1 or {}).items()
             }
             delta_t = {
-                int(key): torch.as_tensor(value, dtype=torch.float32, device=torch_device)
+                int(key): torch.as_tensor(value, dtype=torch.float64, device=torch_device)
                 for key, value in (object_world_delta or {}).items()
             }
             uv0, z0, vv0 = project_endpoint_to_alpha_stack_torch(
