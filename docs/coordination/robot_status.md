@@ -1231,3 +1231,8 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **watcher：**WSL 脚本 `benchmark/robot_closed_loop/diagnostics/watch_r1_5_candidate_gpu.py` 按 60 s 检查 g1、g3。两次空闲观测、无进程/项目 UUID 锁、显存 ≤512 MiB、util ≤5%，并通过主机资源门槛后才原子预约并 tmux 启动；只部署一个任务，24 h 超时退出。运行入口和阈值见 [`R1.5 候选报告`](r1_5_core_candidate_20261030.md)。
 - **最近资源观察（均非当前快照）：**g1 `13:19:27Z`、`13:20:36Z` 与部署前复查通过 GPU/主机门槛，但缓存路径错误使其未预约；g3 当时未过主机负载门槛。`13:21:53Z` 只读核验缓存哈希成功。下一次 watcher 会重新检查两台服务器，不沿用这些快照。
 - **证据状态：**候选 CUDA 实验仍未运行。watcher 已调整为 C run 的唯一目录，并在本地完成 shell 语法和 Python 编译检查；配置 SHA256 `44c392479abbb27deac484c99ee6065e2ad9aa819bf14e133e5cbf99d38a8656`。代码变更提交并推送后才会启动监控；若 parity 不通过，保留 trace，不启动 renderer GPU 作业。
+
+#### R1.5 CUDA parity run `r1_5_core_cuda_parity_20261030c` (NVIDIA GeForce RTX 3090; False)
+
+- Source commit: `6e8edc57b4109c85b5566ba9b7f5496e46fc2e66`; device `NVIDIA GeForce RTX 3090`. Acceptance: `{"threshold_dvs_cpu_cuda_exact":true,"episodes":{"004":{"support_mask_exact":false,"supported_log_luma_max_within_limit":true,"cached_event_count_relative_delta_within_limit":true},"005":{"support_mask_exact":false,"supported_log_luma_max_within_limit":true,"cached_event_count_relative_delta_within_limit":true}},"all_gates_pass":false,"note":"backend parity only; this is not a renderer-fidelity or closed-loop acceptance decision"}`.
+- Detailed summary/arrays: [`r1_5_core_cuda_parity_20261030c`](../../benchmark/robot_closed_loop/results/r1_5_core_cuda_parity_20261030c/README.md); runtime log copy: `benchmark/robot_closed_loop/results/runtime_logs/r1_5_core_cuda_parity_20261030c/`.
