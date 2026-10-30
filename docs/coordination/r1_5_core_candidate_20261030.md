@@ -8,6 +8,7 @@
 - 改动只在隔离 worktree；正式工作目录 `exp/robot-closed-loop-v1`、冻结版本、HDR overlay、A/B/C 场景和共享环境均未修改。无新 renderer、物理推进、训练或事件排名。
 - 本次验证使用 CPU 和已存 episode 004/005 缓存、已有 g1 阴影 × MSAA 因子渲染。完整本地验证脚本耗时 12.19 s。结果目录仅 628 KB。
 - g1 于 `2026-10-30T11:05:55Z` 可连接；六张 GPU 均有活跃 compute 进程，利用率 81–91%，未启动 CUDA。g3 检查因 Windows OpenSSH 无权读取指定 `known_hosts`、主机校验失败而停止；没有重试或连接后执行远程命令。
+- 验收完成后的资源复查于 `2026-10-30T12:47:37Z` 通过 Windows OpenSSH 默认配置连接 g3 并保持主机校验。根因是向 Windows 客户端传入 WSL `/mnt/c/.../known_hosts` 路径；默认配置正确使用 `C:\Users\zhaoyuhan\.ssh\known_hosts`。g3 七张 RTX 4090 均有进程及约 2.4–10.4 GiB 显存占用；利用率虽约 0–13%，但不能作为空闲证明，未启动任何任务。
 
 ## 候选具体改动
 
