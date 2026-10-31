@@ -83,7 +83,7 @@ def read_cache(ep: str, cache_root: Path):
     return episode_dir, source_path, evidence_path, src, direct_times, direct, direct_rgb, archived_legacy, width, height, fov
 
 
-def make_candidate_frames(diag, src, times, direct_times, width, height, fov):
+def make_candidate_frames(diag, src, times, direct_times, archived_legacy, width, height, fov):
     left = int(np.flatnonzero(np.isclose(times, 0.5805, atol=1e-9, rtol=0))[0])
     right = int(np.flatnonzero(np.isclose(times, 0.5905, atol=1e-9, rtol=0))[0])
     if right != left + 1:
@@ -333,7 +333,7 @@ def build_episode(ep, cache_root, output, diag, config):
     (episode_dir, source_path, evidence_path, src, times, direct, direct_rgb,
      archived_legacy, width, height, fov) = read_cache(ep, cache_root)
     legacy, candidate, legacy_replay_delta = make_candidate_frames(
-        diag, src, src["timestamps_s"], times, width, height, fov)
+        diag, src, src["timestamps_s"], times, archived_legacy, width, height, fov)
     if legacy.shape != direct.shape or candidate.shape != direct.shape:
         raise RuntimeError(f"episode {ep}: frame arrays are not aligned")
 
