@@ -23,8 +23,8 @@ if [[ "$MODE" == smoke ]]; then
   CONFIG=benchmark/robot_closed_loop/configs/r1_5_strict_hdr_runtime_smoke_20261031h.json
   SESSION=r15hdrsmoke20261031h
 elif [[ "$MODE" == full ]]; then
-  CONFIG=benchmark/robot_closed_loop/configs/r1_5_strict_direct_rerender_20261031h.json
-  SESSION=r15hdrfull20261031h
+  CONFIG="benchmark/robot_closed_loop/configs/${RUN_ID}.json"
+  SESSION="r15hdrfull${RUN_ID##*_}"
 else
   echo "ABORT invalid mode=$MODE" >&2; exit 64
 fi

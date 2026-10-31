@@ -323,8 +323,11 @@ def main() -> int:
         # The caller supplies the right endpoint; only nine interior direct
         # observations are new strict samples for this 10 ms bracket.
         interior = data["times"] < t1 - 1e-9
+        interior_rows = [row for row, keep in zip(data["rows"], interior) if keep]
+        if len(interior_rows) != int(np.count_nonzero(interior)):
+            raise RuntimeError(f"episode {episode}: trace row count does not match archived frame schedule")
         for i, (stamp, row, ref_hdr, ref_seg) in enumerate(zip(
-            data["times"][interior], data["rows"][interior], data["hdr"][interior], data["seg"][interior],
+            data["times"][interior], interior_rows, data["hdr"][interior], data["seg"][interior],
         )):
             apply_started = time.perf_counter()
             exact_state(row, env)

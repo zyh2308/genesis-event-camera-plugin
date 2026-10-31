@@ -1,0 +1,46 @@
+{
+  "run_id": "r1_5_strict_direct_rerender_20261031i",
+  "purpose": "Retry bounded exact-state HDR rerender after fixing list-row selection in the measurement loop; same episodes, timestamps, thresholds, and acceptance criteria as run h.",
+  "episodes": [
+    4,
+    5
+  ],
+  "interval_s": [
+    0.5805,
+    0.5905
+  ],
+  "observed_frame_spacing_s": 0.001,
+  "state_contract": "Every rendered timestamp must have an exact row in trace_window.jsonl; do not interpolate states or advance physics. Use source/cache timestamps and images from the archived Direct-HDR evidence.",
+  "channels": [
+    "scene_linear_hdr",
+    "depth",
+    "segmentation"
+  ],
+  "dvs": {
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "sigma_threshold": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "response_mode": "physical_log",
+    "readout_model": "ideal_readout",
+    "seed": 42
+  },
+  "input_cache_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-diag-20261019/benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059",
+  "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+  "limits": {
+    "max_selected_state_timestamp_error_s": 0.0,
+    "physics_steps": 0,
+    "write_scope": "new run-id directory only; no existing output or cache modified"
+  },
+  "claim_boundary": "Offline exact-state renderer-cost replay, not a live closed-loop timing or causality test. Per-sample wall time and simulation-time availability are reported separately.",
+  "expected_input_sha256": {
+    "episode_004/same_state_source_cache.h5": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+    "episode_004/rendered_frame_evidence.h5": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321",
+    "episode_005/same_state_source_cache.h5": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+    "episode_005/rendered_frame_evidence.h5": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236"
+  },
+  "expected_scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a"
+}
