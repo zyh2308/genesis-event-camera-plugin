@@ -1,0 +1,180 @@
+{
+  "purpose": "visual same-trajectory before/after demonstration for the Genesis robot interception scene",
+  "execution": "offline replay of archived Genesis exact-state renders; no new renderer or physics rollout",
+  "repository_commit_at_demo_run": "54ecff4f05e029c029389dca7e01c1465d95bf3e",
+  "config": "benchmark/robot_closed_loop/configs/r1_5_genesis_scene_demo_20261101a.json",
+  "config_sha256": "7c71d0f8cff14d17027205cd5aab62c8d7c91ccb604e0a8ff82953552f5cc63c",
+  "frozen_core_modified": false,
+  "candidate_status": "diagnostic-only; not integrated into the frozen production core",
+  "episodes": {
+    "004": {
+      "episode": "004",
+      "label": "center trajectory",
+      "query_times_s": [
+        0.5815,
+        0.5825,
+        0.5835,
+        0.5845,
+        0.5855,
+        0.5865,
+        0.5875,
+        0.5885,
+        0.5895,
+        0.5905
+      ],
+      "legacy_replay_max_abs_delta_vs_archived": 0.0,
+      "legacy_log_error_median": 0.0,
+      "legacy_log_error_p95": 1.7705559002934024e-05,
+      "candidate_log_error_median": 0.0,
+      "candidate_log_error_p95": 6.578229658771306e-05,
+      "legacy_bad_pixel_times_over_0p2": 8555,
+      "candidate_bad_pixel_times_over_0p2": 665,
+      "resolved_bad_pixel_times": 7917,
+      "resolved_fraction": 0.9254237288135593,
+      "event_counts": {
+        "direct": 625,
+        "legacy": 6184,
+        "candidate": 407
+      },
+      "events_by_1ms_query": {
+        "direct": [
+          62,
+          93,
+          43,
+          54,
+          74,
+          70,
+          42,
+          85,
+          52,
+          50
+        ],
+        "legacy": [
+          3043,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3141
+        ],
+        "candidate": [
+          388,
+          0,
+          0,
+          0,
+          5,
+          0,
+          0,
+          0,
+          9,
+          5
+        ]
+      },
+      "source_cache_sha256": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+      "rendered_frame_evidence_sha256": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321",
+      "comparison_limit": "archived exact-state Direct-HDR frames; diagnostic reference, not hidden intermediate physical truth"
+    },
+    "005": {
+      "episode": "005",
+      "label": "+55 mm lateral trajectory",
+      "query_times_s": [
+        0.5815,
+        0.5825,
+        0.5835,
+        0.5845,
+        0.5855,
+        0.5865,
+        0.5875,
+        0.5885,
+        0.5895,
+        0.5905
+      ],
+      "legacy_replay_max_abs_delta_vs_archived": 0.0,
+      "legacy_log_error_median": 0.0,
+      "legacy_log_error_p95": 0.0004884004592895508,
+      "candidate_log_error_median": 0.0,
+      "candidate_log_error_p95": 0.0005753055447712541,
+      "legacy_bad_pixel_times_over_0p2": 7851,
+      "candidate_bad_pixel_times_over_0p2": 1377,
+      "resolved_bad_pixel_times": 6626,
+      "resolved_fraction": 0.8439689211565405,
+      "event_counts": {
+        "direct": 939,
+        "legacy": 4313,
+        "candidate": 682
+      },
+      "events_by_1ms_query": {
+        "direct": [
+          82,
+          99,
+          94,
+          81,
+          108,
+          69,
+          94,
+          103,
+          101,
+          108
+        ],
+        "legacy": [
+          2575,
+          1,
+          0,
+          27,
+          3,
+          1,
+          6,
+          3,
+          0,
+          1697
+        ],
+        "candidate": [
+          552,
+          17,
+          0,
+          10,
+          5,
+          14,
+          19,
+          13,
+          17,
+          35
+        ]
+      },
+      "source_cache_sha256": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+      "rendered_frame_evidence_sha256": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236",
+      "comparison_limit": "archived exact-state Direct-HDR frames; diagnostic reference, not hidden intermediate physical truth"
+    }
+  },
+  "runtime_modules": {
+    "physics_interpolator": {
+      "path": "/home/科研/Eventbased_WAM/repositories/genesis-event-camera-plugin/genesis_event_plugin/physics_interpolator.py",
+      "sha256": "3870f984b603c69c7dab2bc1a26a8d35218135af2ad139e50b115257777f09ef"
+    },
+    "physics_warp": {
+      "path": "/home/科研/Eventbased_WAM/repositories/genesis-event-camera-plugin/genesis_event_plugin/physics_warp.py",
+      "sha256": "a7efbbf1e339084ae9c92e5252257a059aaeac4ff1f8269c1c245330bd51b3b7"
+    },
+    "dvs_emulator": {
+      "path": "/home/科研/Eventbased_WAM/repositories/genesis-event-camera-plugin/genesis_event_plugin/dvs_emulator.py",
+      "sha256": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638"
+    },
+    "candidate_diagnostic": {
+      "path": "/home/科研/Eventbased_WAM/repositories/genesis-event-camera-plugin/benchmark/robot_closed_loop/diagnostics/diagnose_r1_5_pixel_rule_attribution.py",
+      "sha256": "a41661a7467d848095e644bde347bb0a2acaa392e063c0b6d01c5ce7048ea724"
+    }
+  },
+  "artifacts": {
+    "overview": "overview_before_after.png",
+    "spatial_error_overlay": "spatial_error_overlay.png",
+    "videos": {
+      "004": "episode_004_center.mp4",
+      "005": "episode_005_plus_55mm.mp4"
+    }
+  },
+  "interpretation": "The coverage/depth-competition candidate sharply reduces the old event burst and high-error pixel-times on these two cached clips. Residual error remains, especially from time-varying radiance; the video is not a claim of complete reconstruction or real-time behavior."
+}

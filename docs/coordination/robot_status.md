@@ -1212,3 +1212,10 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **g1 / 资源：**通过 Windows OpenSSH 成功连入并只读检查。两张 RTX 3090 有其他任务；其余卡未见明确项目分配，因此没有启动 CUDA。远端检查未修改代码或文件；本轮没有 renderer、物理推进、训练或 core 修改。
 - **复跑和哈希：**运行代码 commit `724b894f47cac40ee37fee9648fb344ff4591295`，验证脚本 SHA256 `c88388da22f2f96495864d08043c4ac4084d258a4e7b4db8c87c04445c27932b`；本地 WSL CPU，Python 3.14.6、NumPy 2.5.2、Torch 2.13.0+cu130。活动模块路径/哈希和两个缓存输入哈希详见 [`候选验证报告`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md) 与 `summary.json`。结果 manifest SHA256 `1938b2b0f86e006cffc646dea23ad17c0bad937139b4a854fcf6be886952528b`。
 - **后续：**候选通过了目前的合成连续表面、部分遮挡和双后端 CPU 检查，但剩余图像残差尚未全部归因。冻结版本继续保留；需要拿到明确 CUDA 资源分配后再验证 GPU 路径，并对稳定区域时间亮度变化做因果区分。Direct-HDR 仍只是已保存状态下的诊断参照，不以事件数量接近证明真实性。
+
+#### Genesis 场景修复前后演示（2026-11-01；离线回放）
+
+- **交付：**[`Genesis 场景演示与复跑入口`](../../benchmark/robot_closed_loop/results/r1_5_genesis_scene_demo_20261101a/README.md)，包含中心与 +55 mm 两条实际 Genesis 保存轨迹的 MP4、对照总览、误差热点图、逐查询表和 SHA256 清单。视频使用同一组相机、状态和 1 ms 查询，只切换旧版重建与 coverage-splat 诊断候选。
+- **直观结果：**中心窗口事件数为 Direct-HDR/旧版/候选 `625/6,184/407`，高误差像素时刻由 `8,555` 降至 `665`（92.5%）；+55 mm 为 `939/4,313/682`，由 `7,851` 降至 `1,377`（84.4%）。旧版对归档输出最大绝对差为 0。
+- **边界：**只复用既有 Genesis HDR/状态缓存，未新开物理 rollout、未连接服务器；候选仍为诊断实现，没有合入 frozen core。Direct-HDR 是已保存精确状态的参考，不代表未采样中间态；候选仍有动态光度残差。
+- **身份与复跑：**运行代码 commit `54ecff4f05e029c029389dca7e01c1465d95bf3e`；配置 `benchmark/robot_closed_loop/configs/r1_5_genesis_scene_demo_20261101a.json`；脚本 `benchmark/robot_closed_loop/diagnostics/create_r1_5_genesis_scene_before_after_demo.py`。完整代码/配置/输入哈希及复跑命令见结果 README 与 `demo_metrics.json`。
