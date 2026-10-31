@@ -882,8 +882,14 @@ def main():
         },
         "paired_shadow_msaa_existing_renderer_audit": factorial_source,
         "candidate_wall_s_cpu_total": float(time.perf_counter() - started),
-        "g1_cuda_status": "not run: live check at 2026-10-30T11:05:55Z found all six GPUs at 81-91% utilization with active compute processes",
-        "g3_cuda_status": "not checked: Windows OpenSSH could not read the configured known_hosts file (Permission denied); host-key verification failed, no retry or remote work was attempted",
+        "g1_cuda_status": os.environ.get(
+            "R1_5_G1_CUDA_STATUS",
+            "not rerun in this CPU-only validation; see the separately audited CUDA parity run F",
+        ),
+        "g3_cuda_status": os.environ.get(
+            "R1_5_G3_CUDA_STATUS",
+            "not exercised by this CPU-only candidate validation",
+        ),
         "cost_scope": "cached-frame API and warp CPU time measured here; direct Genesis render cost is inherited from existing 2026-10-29 g1 factorial and is not a fresh candidate timing",
     }
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
