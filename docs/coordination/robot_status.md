@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-31（Asia/Tokyo）
-**阶段：** R1.5 候选收尾验收已完成：run F 的 CUDA 数值一致性、run I 的真实 HDR 中间帧复渲染、run K 的真实物理因果顺序、run B 的 CPU 通用控制/阴影×MSAA/采样回归均有独立结果和哈希。建议冻结一个明确限定的 **strict sampled Genesis-linear-HDR** 版本；不把保留兼容性的 permissive/hold 默认路径称为严格保真，也不合并主分支。单个 5 ms 中点已证实不足，strict 路径会按采样器要求更密的真实 radiance；真实 HDR 单帧约 16.04 ms、在线 smoke 明显慢于仿真步长，因此不声称墙钟实时。尚未完成旧 checkpoint 恢复、抓取成功或现实相机标定；这些不属于本次图像层修复验收。最终证据和冻结边界见 [`R1.5 core candidate report`](r1_5_core_candidate_20261030.md) 及 [`run B`](../../benchmark/robot_closed_loop/results/r1_5_core_candidate_final_20261102b/README.md)。
+**阶段：** R1.5 strict sampled 候选通过收尾审计，可按限定范围登记冻结版本。run F 的 CUDA 数值一致性、run I 的真实 HDR 中间帧复渲染、run K 的真实物理因果顺序、run B 的 CPU 通用控制/阴影×MSAA/采样回归均有独立结果和哈希；新增 manifest 审计确认四组运行与当前分支的核心模块 SHA256 相同，95 项归档哈希及固定门槛通过。保留兼容性的 permissive/hold 默认路径不属于严格保真声明，主分支合并仍留待验收。单个 5 ms 中点已证实不足，strict 路径要求更密的真实 radiance；真实 HDR 单帧约 16.04 ms，因此不声称墙钟实时。尚未完成旧 checkpoint 恢复、抓取成功或现实相机标定；这些不属于本次图像层修复验收。最终证据和冻结边界见 [`R1.5 core candidate report`](r1_5_core_candidate_20261030.md)、[`R1.5 closeout audit`](r1_5_core_freeze_closeout_20261031.md) 及 [`run B`](../../benchmark/robot_closed_loop/results/r1_5_core_candidate_final_20261102b/README.md)。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1.5 core candidate acceptance（2026-10-30）
@@ -12,7 +12,7 @@
 - 单个中点不满足 1 ms 参考；默认运动采样器在 episode 004 同 10 ms 窗口另请求六个时间点。候选可在当前 CPU 表示中表达真实样本和可用时刻，但实时闭环延迟尚未通过。
 - 本轮 g1 资源检查时间 `2026-10-30T11:05:55Z`；GPU0–5 均有活跃任务，利用率 81–91%，未启动 CUDA。g3 只读检查因 Windows OpenSSH 无法读取已配置 `known_hosts` 而主机校验失败，已按规则停止，没有执行远端命令。
 - **后续 g3 复查（`2026-10-30T12:47:37Z`）：** 使用 Windows OpenSSH 默认 Windows 配置/known_hosts 后成功连接并通过主机校验；之前的失败由把 WSL `/mnt/c/...` 路径传给 Windows `ssh.exe` 引起。七张 RTX 4090 都有活跃进程和约 2.4–10.4 GiB 显存占用，GPU 利用率约 0–13%；系统 load average 429–513。低利用率不代表资源空闲，本轮没有分配 GPU 或启动候选 CUDA/renderer。
-- **冻结建议：暂不冻结。** 先取得可分配 GPU 并核对 CUDA parity/阈值附近事件和候选 renderer 成本；研究侧需在“动态区近 direct 采样”与“收窄 warp 支持范围并显式 unknown”之间决定精度/延迟边界。冻结 core 与 A/B/C 场景均未更改。
+- **当时冻结建议：暂不冻结（2026-10-30，已由下方 2026-10-31 收尾验收更新）。** 当时尚缺 CUDA parity 和实际 renderer 成本；后来 run F/I/K/B 完成后，不再适用这一旧结论。冻结 core 与 A/B/C 场景均未更改。
 
 **历史运行状态（截至 2026-10-25；后续结果见文末）：** 10/24 的 SSH 阻塞已解除。候选实现 `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已同步到 g1；当前实验分支与状态文档均在 `f8563d2fee7ec62881971c14489a219cb101795a`，较 d390 只有协调文档变化。两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最新 GPU 复查六张卡都有运行进程，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
 
@@ -1268,7 +1268,7 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - A fresh owner/status check found no matching renderer process or tmux session and no GPU compute process. The stale global GPU1 reservation still named this exact run with `pid=null`; it was released at `2026-10-31T01:28:08Z` after checking the lock owner and GPU state. Its allocation record was copied to the failed run's `logs/stale_reservation_released_allocation.json`. No cache or shared environment was changed.
 - The issue was selecting the wrong Python environment. The existing HDR environment `/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python` was directly inspected: Genesis `1.2.2`, Torch `2.8.0+cpu`, `Camera.render` has `radiance`, and installed `camera.py` SHA256 is `78c18ffada07a98657ddf11326e833fc928431ecead674434aadb25dc023b714`, matching the repository overlay camera source.
 
-#### Corrected strict HDR rerender closeout (new run IDs; in progress)
+#### Corrected strict HDR rerender closeout (completed; runs G/H preserved as failed attempts, I passed)
 
 - The runner checks the HDR API before loading caches or building Genesis, rejects non-rasterizer backends, records renderer module paths/hashes, separates camera/readback and array-materialization costs, and preserves reference/rerender HDR sequences and raw events. It uses only exact archived states, advances no physics, and does not claim online prediction.
 - The one-frame smoke passed on g1 using the verified `.venv-robot` environment and GPU1 EGL rasterizer. It produced a finite `float32` HDR image of shape `240×320×3`; all smoke artifact hashes verified. Smoke cost was scene build 58.119 s, camera render/readback 0.597 s, array materialization 0.0004 s, process total 69.986 s; no physics steps. This verifies the HDR API/runtime, not event or full-episode fidelity.

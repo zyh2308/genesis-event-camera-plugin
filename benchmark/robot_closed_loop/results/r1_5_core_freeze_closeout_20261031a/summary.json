@@ -1,0 +1,57 @@
+{
+  "audit_script_sha256": "2490b10cdf296ce94239168c2d694ce2a326ff831ac8cb77c3f91424ec621ac1",
+  "audit_status": "PASS",
+  "audited_at_utc": "2026-10-31T05:01:05Z",
+  "branch": "exp/r1_5-core-candidate-20261030",
+  "candidate_core_module_sha256": {
+    "physics_interpolator.py": "0ac9174f5e3a0635de0dc8cb7a28c51f4d6ac0eb690bfeb1ae8486bf44a5941d",
+    "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+    "physics_warp.py": "8c23c601677cf25c1df445ea65235b154f5895353ba9bc67f37da40a3ae3fe41",
+    "torch_physics.py": "8a409765268746fefedb15a805c4d95db857bf6a4359c899cd65e6ac4dfe5955"
+  },
+  "claim_limits": [
+    "strict sampled linear-HDR behavior only; changes faster than observed anchors remain unsupported",
+    "offline render cost exceeds the 1 ms simulated sample interval; no wall-clock real-time claim",
+    "localized floor appearance in causal K is not uniquely attributed to shadow without a matched live shadow-off run",
+    "no EVK4 absolute radiometric calibration, old-checkpoint recovery, or grasp-success claim"
+  ],
+  "current_source_commit": "90f792d166f000ef4f9e072a97633cc4ad39c8b7",
+  "module_hashes_identical_across": [
+    "current_HEAD",
+    "cuda_F",
+    "hdr_I",
+    "causal_K",
+    "cpu_B"
+  ],
+  "runs": {
+    "causal_K": {
+      "causal_order_gate": true,
+      "checksummed_files": 31,
+      "episodes": 2,
+      "physics_steps": 1200,
+      "source_commit": "7559893ea4168b979679ee32eac03806050a9b03"
+    },
+    "cpu_B": {
+      "cached_replays": 2,
+      "checksummed_files": 29,
+      "ramp_events": 48,
+      "source_commit": "e71f2b7b7369994d714f540ff498f3902b90081c"
+    },
+    "cuda_F": {
+      "all_gates_pass": true,
+      "checksummed_files": 8,
+      "source_commit": "9e6b5d7e2689d541087a56ff1fbf0fc904571b69"
+    },
+    "hdr_I": {
+      "checksummed_files": 27,
+      "episodes": {
+        "4": 625,
+        "5": 939
+      },
+      "render_plus_readback_wall_s": 0.2886939321178943,
+      "source_commit": "26de5e410ecc550a9dc7f61b25aa2926d6399e0a",
+      "strict_extra_render_count": 18
+    }
+  },
+  "strict_profile_sha256": "3525cad9e84982a2b835b1b7d32428b94be24508fe28faf9f0d79002dfb10818"
+}
