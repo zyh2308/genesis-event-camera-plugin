@@ -235,6 +235,7 @@ def main() -> int:
 
     interval_rows: list[dict[str, Any]] = []
     frame_rows: list[dict[str, Any]] = []
+    target_state_rows: list[dict[str, Any]] = []
     event_archives: dict[str, np.ndarray] = {}
     episode_summaries: dict[str, Any] = {}
     overall_step_count = 0
@@ -251,11 +252,24 @@ def main() -> int:
         keyframe_hdr, keyframe_times = [], []
         render_times, capture_times = [], []
         target_pixel_counts, floor_change_p95, floor_change_over = [], [], []
+        target_position_trace: list[np.ndarray] = []
+        target_velocity_trace: list[np.ndarray] = []
         plugin.start_episode()
 
         first_obs_started = time.perf_counter()
         first_frame = render_native(env.camera)
         first_t = round(current_sim_time(env.scene), 9)
+        initial_target_position = as_numpy(env.target.get_pos(relative=False), np.float64).reshape(-1)[:3]
+        initial_target_velocity = as_numpy(env.target.get_dofs_velocity(), np.float64).reshape(-1)[:3]
+        target_position_trace.append(initial_target_position.copy())
+        target_velocity_trace.append(initial_target_velocity.copy())
+        target_state_rows.append({
+            "episode": name, "step": 0, "timestamp_s": first_t,
+            "x_m": float(initial_target_position[0]), "y_m": float(initial_target_position[1]),
+            "z_m": float(initial_target_position[2]), "vx_m_s": float(initial_target_velocity[0]),
+            "vy_m_s": float(initial_target_velocity[1]), "vz_m_s": float(initial_target_velocity[2]),
+            "measurement_boundary": "evaluator-only Genesis target state; never passed to controller",
+        })
         current_payload.update({"t": first_t, "frame": first_frame})
         observed[first_t] = {"t": first_t, "frame": first_frame,
                              "captured_wall_s": time.monotonic(),
@@ -308,6 +322,17 @@ def main() -> int:
             render_wall = time.perf_counter() - render_started
             render_times.append(render_wall)
             latest_frame_wall = time.monotonic()
+            target_position = as_numpy(env.target.get_pos(relative=False), np.float64).reshape(-1)[:3]
+            target_velocity = as_numpy(env.target.get_dofs_velocity(), np.float64).reshape(-1)[:3]
+            target_position_trace.append(target_position.copy())
+            target_velocity_trace.append(target_velocity.copy())
+            target_state_rows.append({
+                "episode": name, "step": step, "timestamp_s": sim_t,
+                "x_m": float(target_position[0]), "y_m": float(target_position[1]),
+                "z_m": float(target_position[2]), "vx_m_s": float(target_velocity[0]),
+                "vy_m_s": float(target_velocity[1]), "vz_m_s": float(target_velocity[2]),
+                "measurement_boundary": "evaluator-only Genesis target state; never passed to controller",
+            })
             current_payload.update({"t": sim_t, "frame": frame})
             observed[sim_t] = {"t": sim_t, "frame": frame, "captured_wall_s": latest_frame_wall,
                                "provenance": f"Genesis native HDR render at actual scene.cur_t={sim_t:.9f}"}
@@ -327,6 +352,10 @@ def main() -> int:
                                "common_static_floor_pixels": int(np.count_nonzero(common_floor)),
                                "floor_log_luma_abs_p95_vs_initial": floor_p95,
                                "floor_pixels_log_luma_change_over_0p2": floor_over,
+                               "target_x_m_evaluator_only": float(target_position[0]),
+                               "target_y_m_evaluator_only": float(target_position[1]),
+                               "target_vx_m_s_evaluator_only": float(target_velocity[0]),
+                               "target_vy_m_s_evaluator_only": float(target_velocity[1]),
                                "jaw_opening_m": env.jaw_opening_m()})
 
             if step in {step_count // 2, step_count}:
@@ -413,6 +442,17 @@ def main() -> int:
             overall_step_count += 1
             tail_action_step = 1
             effective_t = round(current_sim_time(env.scene), 9)
+            tail_position = as_numpy(env.target.get_pos(relative=False), np.float64).reshape(-1)[:3]
+            tail_velocity = as_numpy(env.target.get_dofs_velocity(), np.float64).reshape(-1)[:3]
+            target_position_trace.append(tail_position.copy())
+            target_velocity_trace.append(tail_velocity.copy())
+            target_state_rows.append({
+                "episode": name, "step": step_count + 1, "timestamp_s": effective_t,
+                "x_m": float(tail_position[0]), "y_m": float(tail_position[1]),
+                "z_m": float(tail_position[2]), "vx_m_s": float(tail_velocity[0]),
+                "vy_m_s": float(tail_velocity[1]), "vz_m_s": float(tail_velocity[2]),
+                "measurement_boundary": "evaluator-only Genesis target state; never passed to controller",
+            })
             row_index = int(pending_action["interval_row_index"])
             interval_rows[row_index]["command_effective_at_sim_s"] = effective_t
             interval_rows[row_index]["command_effective_after_issued_s"] = (
@@ -429,6 +469,16 @@ def main() -> int:
         target_array = np.asarray(target_pixel_counts, dtype=np.int64)
         floor_p95_values = np.asarray([x for x in floor_change_p95 if x is not None], dtype=np.float64)
         floor_over_array = np.asarray(floor_change_over, dtype=np.int64)
+        position_array = np.stack(target_position_trace)
+        velocity_array = np.stack(target_velocity_trace)
+        y_displacement = float(position_array[-1, 1] - position_array[0, 1])
+        y_path_length = float(np.abs(np.diff(position_array[:, 1])).sum())
+        expected_y_sign = float(np.sign(float(ep["initial_velocity_m_s"][1])))
+        if expected_y_sign == 0 or expected_y_sign * y_displacement <= 0 or y_path_length < 0.015:
+            raise RuntimeError(
+                f"episode {name} did not show the configured lateral physical motion: "
+                f"y_displacement={y_displacement:.6f} m, path={y_path_length:.6f} m"
+            )
         episode_summaries[name] = {
             "physics_steps": step_count + tail_action_step,
             "tail_physics_steps_for_action_application": tail_action_step,
@@ -447,6 +497,14 @@ def main() -> int:
             "event_time_max_s": float(joined_events[:, 0].max()) if len(joined_events) else None,
             "target_visible_pixel_min": int(target_array.min()) if target_array.size else None,
             "target_visible_pixel_max": int(target_array.max()) if target_array.size else None,
+            "target_physics_trace_rows": int(len(target_position_trace)),
+            "target_y_start_m_evaluator_only": float(position_array[0, 1]),
+            "target_y_end_m_evaluator_only": float(position_array[-1, 1]),
+            "target_y_displacement_m_evaluator_only": y_displacement,
+            "target_y_path_length_m_evaluator_only": y_path_length,
+            "target_speed_xy_p50_m_s_evaluator_only": float(np.percentile(np.linalg.norm(velocity_array[:, :2], axis=1), 50)),
+            "target_speed_xy_p95_m_s_evaluator_only": float(np.percentile(np.linalg.norm(velocity_array[:, :2], axis=1), 95)),
+            "target_direction_gate_pass": True,
             "common_floor_log_luma_abs_change_p95_max": float(floor_p95_values.max()) if floor_p95_values.size else None,
             "common_floor_pixels_change_over_0p2_max": int(floor_over_array.max()) if floor_over_array.size else None,
             "latch_command": command_latched,
@@ -482,6 +540,11 @@ def main() -> int:
         writer = csv.DictWriter(stream, fieldnames=columns)
         writer.writeheader()
         writer.writerows(frame_rows)
+    with (args.output / "target_physics_trace.csv").open("w", newline="", encoding="utf-8") as stream:
+        columns = list(target_state_rows[0]) if target_state_rows else []
+        writer = csv.DictWriter(stream, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(target_state_rows)
 
     all_commands_causal = all(
         row["strict_output_available_at_sim_s"] <= row["controller_read_sim_s"] + 1e-9

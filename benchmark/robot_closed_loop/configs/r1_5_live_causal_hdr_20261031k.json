@@ -1,0 +1,68 @@
+{
+  "schema": "r1_5_live_causal_hdr_v1",
+  "run_id": "r1_5_live_causal_hdr_20261031k",
+  "purpose": "Short actual-physics integration check for Genesis step -> native HDR frame observation -> strict sample assembly -> DVS event packet -> event-only gripper action. Reproduction variant also records evaluator-only target state per ordinary physics step.",
+  "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+  "expected_scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "episodes": [
+    {
+      "name": "lateral_crossing_left_to_right",
+      "start_position_m": [
+        0.8,
+        -0.04,
+        0.02
+      ],
+      "initial_velocity_m_s": [
+        0.0,
+        0.15,
+        0.0
+      ]
+    },
+    {
+      "name": "lateral_crossing_right_to_left",
+      "start_position_m": [
+        0.8,
+        0.04,
+        0.02
+      ],
+      "initial_velocity_m_s": [
+        0.0,
+        -0.15,
+        0.0
+      ]
+    }
+  ],
+  "physics_dt_s": 0.0005,
+  "duration_s": 0.3,
+  "plugin_capture_interval_s": 0.002,
+  "max_photometric_interval_s": 0.0005,
+  "renderer": "Genesis Camera.render(radiance=True, depth=True, segmentation=True), native EGL rasterizer",
+  "sensor": {
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "threshold_mismatch_std": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "response_mode": "physical_log",
+    "readout_model": "ideal_readout",
+    "seed": 42
+  },
+  "controller": {
+    "input": "only returned event packet",
+    "policy": "latch gripper-close command on first non-empty packet; otherwise keep gripper open",
+    "command_effective": "next Genesis physics step after packet return"
+  },
+  "limits": {
+    "physics_state_overwrite_during_episode": false,
+    "future_oracle_state_used": false,
+    "gt_segmentation_or_depth_fed_to_controller": false,
+    "max_remote_wall_s": 1800,
+    "output_scope": "new run-id directory only"
+  },
+  "claim_boundary": "Causal plugin call-order smoke in two short Genesis physics rollouts; not a grasp-success test, full task evaluation, or real-time performance claim. Evaluator-only segmentation statistics may describe visibility/shadow changes.",
+  "diagnostics": {
+    "target_kinematics": "Saved only for post-run motion verification; never passed to event policy."
+  }
+}
