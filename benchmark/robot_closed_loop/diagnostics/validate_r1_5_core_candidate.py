@@ -11,6 +11,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -852,8 +853,12 @@ def main():
     summary = {
         "purpose": "acceptance candidate validation using synthetic controls, archived exact states, and existing shadow x MSAA direct renders",
         "scope": "CPU only; no renderer, CUDA, physics advancement, training, ranking, or frozen-core modification",
-        "candidate_branch": subprocess.check_output(["git", "-C", str(ROOT), "branch", "--show-current"], text=True).strip(),
-        "candidate_base_commit": subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip(),
+        "candidate_branch": os.environ.get("R1_5_CANDIDATE_BRANCH") or subprocess.check_output(
+            ["git", "-C", str(ROOT), "branch", "--show-current"], text=True
+        ).strip(),
+        "candidate_base_commit": os.environ.get("R1_5_CANDIDATE_COMMIT") or subprocess.check_output(
+            ["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True
+        ).strip(),
         "source_module_sha256": {p.name: sha256(p) for p in candidate_core_files},
         "script_sha256": sha256(Path(__file__).resolve()),
         "config_sha256": sha256(args.config.resolve()),
