@@ -234,7 +234,7 @@ def panel(frame, x, title, image, font, subline=""):
 
 def save_video(ep, label, times, direct_rgb, legacy, candidate, event_cumulative,
                event_counts, metrics, output, fps=30, frames_per_sample=3):
-    width, height = 1280, 720
+    width, height = 1280, 800
     path = output / f"episode_{ep}_{label.replace(' ', '_').replace('+', 'plus')}.mp4"
     writer = cv2.VideoWriter(str(path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
     if not writer.isOpened():
@@ -260,7 +260,7 @@ def save_video(ep, label, times, direct_rgb, legacy, candidate, event_cumulative
             local = panel(local, 0, title, img, small, sub)
             canvas[top:top + local.shape[0], x:x + 384] = local
 
-        bottom = 406
+        bottom = 400
         event_titles = ["Direct-HDR 事件", "修复前事件", "修复候选事件"]
         event_sub = [f"累积 {sum(event_counts[0][:qi + 1]):,} 个",
                      f"累积 {sum(event_counts[1][:qi + 1]):,} 个",
@@ -275,8 +275,8 @@ def save_video(ep, label, times, direct_rgb, legacy, candidate, event_cumulative
             f"10 ms窗口累计事件：Direct {metrics['event_counts']['direct']:,}  |  "
             f"旧版 {metrics['event_counts']['legacy']:,}  |  候选 {metrics['event_counts']['candidate']:,}"
         )
-        canvas = draw_label(canvas, 32, 660, footer, small, (226, 232, 240))
-        canvas = draw_label(canvas, 32, 686,
+        canvas = draw_label(canvas, 32, 728, footer, small, (226, 232, 240))
+        canvas = draw_label(canvas, 32, 758,
             "1 ms采样逐帧回放（约100倍慢放）  ·  候选仍有光度残差  ·  不是正式核心切换", small,
             (148, 163, 184))
         for _ in range(frames_per_sample):
