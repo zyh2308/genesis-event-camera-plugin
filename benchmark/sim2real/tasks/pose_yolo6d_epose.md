@@ -1,6 +1,6 @@
 # Object-pose route: SingleShotPose / YOLO-6D → E-POSE
 
-Status: the pose-window bug is fixed and a corrected, paired event-only synthetic pilot completed. The E-POSE sample/CAD contract remains blocked by the publisher's current WAF responses. The generic Genesis cuboid is not an E-POSE class match.
+Status (updated 2026-11-01): the pose-window bug is fixed, the matched E-POSE block MAT/raw HDF5/CAD are present on g1, and a fresh paired 31-epoch generic-cuboid short training completed on CPU with normal eval, train-only BN calibration, PnP attempts, and checkpoint restoration. The remaining synthetic bank still renders a generic cube, so it is not an E-POSE CAD-matched result. Real pose scoring remains closed.
 
 ## Model and event-only input contract
 
@@ -26,19 +26,30 @@ An independent fixture recounts the raw timestamps without using the adapter sel
 
 ## E-POSE sample and CAD access
 
-- DataCite resolved DOI `10.6084/m9.figshare.28106717` to the official [Springer Nature Figshare record](https://springernature.figshare.com/articles/dataset/E-POSE_A_Large_Scale_Event_Camera_Dataset_for_Object_Pose_Estimation/28106717), with a listed total of 29,759,153,475 bytes and CC-BY 4.0 metadata.
-- At `2026-10-16T06:53:22Z`, the official landing page returned HTTP 202 with an AWS WAF challenge and an empty body. The public Figshare article API returned HTTP 403. DataCite did not provide file-level IDs. No raw sample, matching CAD, class record, K, or pose annotation was obtained; therefore no E-POSE inference ran.
-- Raw timestamp unit/order/polarity, camera K convention, transform direction/axes/units, event/pose synchronization, CAD scale and object-class mapping remain unverified. Do not substitute a generic cuboid for the missing matched sample.
+The 2026-10-16 web-access failures below are historical; they no longer describe the current local/g1 data state. The raw sample and matching CAD were later transferred and verified. No new E-POSE download probe was made for the 2026-11-01 follow-up.
 
-## Research review gate
+- Verified MAT: `/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/block/block/r_01_gl/0001_data.mat`, 6,017 bytes, SHA256 `bd369f867e671a194b067ba03cf11664adb6b389b1762203aba3b2ed1b6edb0c`.
+- Verified raw event HDF5: `/home/zhaoyuhan/Eventbased_WAM/data/real/epose/figshare_28106717_v1/extracted/original_data/original_data/block/r_01_gl/data.h5`, 46,199,720 bytes, SHA256 `a589e204be51970f128a39315954bdb814157945be90d6c63f56d739566f863a`.
+- Verified matched PLY: `/home/zhaoyuhan/Eventbased_WAM/external/sim2real_assets/epose_wood_block_20261024/nontextured.ply`, 983,765 bytes, SHA256 `8c653731426cf73b5b5d4ffbfa3bdd4ebb14cb82d413da82559bce1b5ee3ab37`. Registered CAD extent is approximately `[0.103917, 0.103464, 0.206003]` m; see [`epose_wood_block_cad_asset_manifest_20261024.json`](../manifests/epose_wood_block_cad_asset_manifest_20261024.json).
+- A corrected projection-domain sidecar exists for `block/r_01_gl/0001_data.mat`; the original MAT remains unchanged. A forward/inverse distortion round trip on that sample was about `6.36e-14 px`. This is a one-sample geometry check only.
+- Earlier inspection confirmed the MAT `events` field matches raw event frames; undistorted event images are stored separately. Remaining audit scope includes sequence-specific time calibration, object pose fields, full CAD object frame/origin, and symmetry-aware scoring. No GT crop/mask/box may be passed to inference.
 
-Minimum data request: obtain one original E-POSE event/pose sample and its matched CAD through an authorized publisher route, author mirror, or direct sample handoff. Then run the raw event/K/pose/CAD contract audit before integration. Separately, the research session should decide whether the pinned SingleShotPose confidence/BatchNorm inference behavior can be addressed within the frozen model/training definition or whether a mature event-compatible full-frame pose model is required. Do not scale the current generic pilot; this gate does not block reconstruction or optical flow.
+Historical access attempt: at `2026-10-16T06:53:22Z`, the official landing page returned HTTP 202 with an AWS WAF challenge and an empty body; the public Figshare article API returned HTTP 403. Those responses explain the initial delay, not the present data state.
+
+## Current engineering blockers
+
+- The available shared synthetic bank is the original `0.16 m` generic cube. It does not render the verified wood-block PLY. Therefore the completed short training exercises model plumbing and paired event inputs, but not E-POSE-object appearance or CAD-frame keypoints.
+- The new CPU run completed 31 epochs / 248 updates per arm, with 128 confidence-supervised updates and train-only BN calibration. Standard eval keypoint EPE over four held-out generic windows was `31.58 px` for EventGenesis and `23.18 px` for V2E. Confidence argmax selected the GT centroid cell on `0/4` and `2/4` windows respectively. PnP returned success on all windows, but that is not an accuracy result.
+- A CAD-specific short pilot now needs: a Genesis bank rendered from the exact PLY, keypoints computed in the CAD's verified object frame, multiple held-out synthetic rollouts, ordinary confidence-argmax inference, PnP, and a frozen symmetry-aware metric. Real-data score remains disabled.
+
+The old confidence/BN concerns must be kept distinct. Train-only BN calibration is included in the current pilot, so ordinary eval no longer depends on train-mode inference. Confidence-cell selection is still visibly unreliable and needs an audit of the pinned RegionLoss confidence targets before anyone changes the model or objective.
 
 ## Evidence and reproduction
 
 - Stage 3 paired pilot and one-sample diagnostic commands, environments, outputs, checkpoint hashes and failures: [`evidence/S3/20261016-stage3/`](../evidence/S3/20261016-stage3/).
 - Independent raw-window recount and confidence decoder fixture: `evidence/S3/20261016-stage3/controlled_checks/pose_window_audit_latest.json`.
 - Config: [`../configs/pose_stage3_paired_16epoch.json`](../configs/pose_stage3_paired_16epoch.json); candidate program: [`../scripts/run_pose_stage2_pilot.py`](../scripts/run_pose_stage2_pilot.py).
+- Latest short-run report and evidence: [`METRIC_AND_POSE_PROGRESS_20261101.md`](../reviews/stage8_20261101/METRIC_AND_POSE_PROGRESS_20261101.md), with compact logs, exact hashes, and remote-only checkpoint paths under [`evidence/20261101-stage8-pose-short/`](../evidence/20261101-stage8-pose-short/).
 - Stage 2 keypoint values `158,581 / 59,141 px` are historical and invalid because the selected event windows were time-misaligned. The Stage 2 training/checkpoint logs remain archived.
 
 No E-POSE sample, matched CAD, real inference, real score, or real-data tuning is claimed.

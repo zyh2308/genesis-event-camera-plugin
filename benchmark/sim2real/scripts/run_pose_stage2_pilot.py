@@ -468,13 +468,19 @@ def predict_normalized_keypoints(model, image: np.ndarray, device: torch.device,
     return (*decoded, (int(output.shape[-2]), int(output.shape[-1])))
 
 
+def synchronize_if_cuda(device: torch.device) -> None:
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+
+
 def train_generator(generator: str, train_samples: list[dict], val_samples: list[dict],
                     args, device: torch.device, official_build_targets) -> dict:
     from darknet import Darknet
     from region_loss import RegionLoss
 
     torch.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
+    if device.type == "cuda":
+        torch.cuda.manual_seed_all(args.seed)
     model = Darknet(str(POSE_SOURCE / "cfg" / "yolo-pose.cfg")).to(device)
     init_hash = state_sha256(model.state_dict())
     loss_layer = RegionLoss(
@@ -488,8 +494,9 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
     )
     records = []
     bn_initial_snapshot = batchnorm_state_snapshot(model)
-    torch.cuda.reset_peak_memory_stats(device)
-    torch.cuda.synchronize(device)
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
+    synchronize_if_cuda(device)
     started = time.perf_counter()
     model.train()
     for epoch in range(1, args.epochs + 1):
@@ -534,13 +541,16 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
                 "gradient_norm": float(grad_norm.detach().cpu()),
                 **losses,
             })
-    torch.cuda.synchronize(device)
+    synchronize_if_cuda(device)
     train_seconds = time.perf_counter() - started
-    peak_memory_mib = torch.cuda.max_memory_allocated(device) / (1024.0 ** 2)
+    peak_memory_mib = (
+        torch.cuda.max_memory_allocated(device) / (1024.0 ** 2)
+        if device.type == "cuda" else None
+    )
     bn_before_calibration_snapshot = batchnorm_state_snapshot(model)
     calibration_started = time.perf_counter()
     bn_calibration = recalibrate_batchnorm_from_synthetic_train(model, train_samples, device)
-    torch.cuda.synchronize(device)
+    synchronize_if_cuda(device)
     bn_calibration_seconds = time.perf_counter() - calibration_started
     final_hash = state_sha256(model.state_dict())
     bn_after_calibration_snapshot = batchnorm_state_snapshot(model)
@@ -676,6 +686,7 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
         "train_rollouts": sorted({row["episode_id"] for row in train_samples}),
         "validation_rollouts": sorted({row["episode_id"] for row in val_samples}),
         "train_wall_seconds": train_seconds,
+        "device": str(device),
         "peak_allocated_gpu_mib": peak_memory_mib,
         "batchnorm_initial_state": bn_initial_snapshot,
         "batchnorm_before_train_only_calibration": bn_before_calibration_snapshot,
@@ -700,15 +711,20 @@ def train_generator(generator: str, train_samples: list[dict], val_samples: list
 
 
 def main() -> None:
+    global POSE_SOURCE
     parser = argparse.ArgumentParser()
     parser.add_argument("--shared-h5", required=True, type=Path)
     parser.add_argument("--v2e-root", required=True, type=Path)
     parser.add_argument("--data-config", required=True, type=Path)
     parser.add_argument("--pilot-config", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
+    parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
+    parser.add_argument("--pose-source", type=Path, default=POSE_SOURCE)
+    parser.add_argument("--cpu-threads", type=int, default=1)
     parser.add_argument("--seed", type=int)
     parser.add_argument("--epochs", type=int)
     args = parser.parse_args()
+    POSE_SOURCE = args.pose_source.resolve()
     if not POSE_SOURCE.is_dir():
         raise FileNotFoundError(f"pinned SingleShotPose source missing: {POSE_SOURCE}")
     args.output_root.mkdir(parents=True, exist_ok=False)
@@ -719,9 +735,15 @@ def main() -> None:
     sys.path.insert(0, str(POSE_SOURCE))
     from region_loss import build_targets
 
-    if not torch.cuda.is_available():
-        raise RuntimeError("pose pilot requires the assigned CUDA GPU")
-    device = torch.device("cuda:0")
+    if args.device == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("pose pilot requested CUDA but CUDA is unavailable")
+        device = torch.device("cuda:0")
+    else:
+        if args.cpu_threads < 1:
+            raise ValueError("--cpu-threads must be positive")
+        torch.set_num_threads(args.cpu_threads)
+        device = torch.device("cpu")
     data_config = json.loads(args.data_config.read_text())
     pilot_config = json.loads(args.pilot_config.read_text())
     training_config = pilot_config["training"]
@@ -808,6 +830,8 @@ def main() -> None:
         "pilot_config_sha256": sha256_file(args.pilot_config),
         "seed": args.seed,
         "epochs": args.epochs,
+        "device": str(device),
+        "cpu_threads": torch.get_num_threads() if device.type == "cpu" else None,
         "confidence_pretrain_epochs": args.confidence_pretrain_epochs,
         "planned_confidence_supervised_updates": planned_confidence_updates,
         "minimum_required_confidence_supervised_updates": args.min_confidence_supervised_updates,
