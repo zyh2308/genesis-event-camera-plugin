@@ -206,6 +206,8 @@ def event_image(counts):
     pos, neg = counts
     scale = np.maximum(np.log1p(pos.astype(np.float32) + neg.astype(np.float32)) / np.log(9.0), 0.0)
     scale = np.clip(scale, 0.0, 1.0)
+    active = (pos + neg) > 0
+    scale[active] = np.maximum(scale[active], 0.72)
     pos_scale = scale * (pos > 0)
     neg_scale = scale * (neg > 0)
     rgb = np.zeros((*pos.shape, 3), dtype=np.uint8)
@@ -232,7 +234,7 @@ def panel(frame, x, title, image, font, subline=""):
     return frame
 
 
-def save_video(ep, label, times, direct_rgb, legacy, candidate, event_cumulative,
+def save_video(ep, label, times, direct_luma, legacy, candidate, event_cumulative,
                event_counts, metrics, output, fps=30, frames_per_sample=3):
     width, height = 1280, 800
     path = output / f"episode_{ep}_{label.replace(' ', '_').replace('+', 'plus')}.mp4"
@@ -252,9 +254,9 @@ def save_video(ep, label, times, direct_rgb, legacy, candidate, event_cumulative
         # Panel titles above imagery: Genesis HDR reference / old / candidate.
         for x, title, sub, img in zip(
             x_positions,
-            ["Genesis HDR 直接渲染", "修复前：原始重建", "修复候选：覆盖率合成"],
-            ["saved exact state", "legacy next-primary + splat", "diagnostic-only candidate"],
-            [to_bgr_visual(direct_rgb[qi]), to_bgr_visual(legacy[qi]), to_bgr_visual(candidate[qi])],
+            ["Genesis HDR 强度参考", "修复前：原始重建", "修复候选：覆盖率合成"],
+            ["同一显示映射", "旧版 endpoint warp", "diagnostic-only candidate"],
+            [to_bgr_visual(direct_luma[qi]), to_bgr_visual(legacy[qi]), to_bgr_visual(candidate[qi])],
         ):
             local = np.full((316, 384, 3), (24, 34, 52), dtype=np.uint8)
             local = panel(local, 0, title, img, small, sub)
@@ -303,10 +305,14 @@ def save_overview(episode_data, output):
     titles = ["Genesis HDR 参考", "修复前：旧规则", "修复候选：新覆盖规则"]
     for row, ep in enumerate(("004", "005")):
         item = episode_data[ep]
+        frame_errors = np.abs(np.log(np.maximum(item["legacy"], LOG_EPS)) -
+                              np.log(np.maximum(item["direct"], LOG_EPS)))
+        per_frame_bad = (frame_errors > 0.2).sum(axis=(1, 2))
+        qi = int(np.argmax(per_frame_bad))
         canvas = draw_label(canvas, 60, row_y[row] - 42,
-                            f"{item['label']}  ·  0.5815–0.5905 s", sub)
-        qi = -1
-        imgs = [to_bgr_visual(item["direct_rgb"][qi]),
+                            f"{item['label']}  ·  0.5815–0.5905 s  ·  展示旧版误差最多帧 t={item['times'][qi]:.4f} s",
+                            sub)
+        imgs = [to_bgr_visual(item["direct"][qi]),
                 to_bgr_visual(item["legacy"][qi]),
                 to_bgr_visual(item["candidate"][qi])]
         for col, (x, title, img) in enumerate(zip(cols, titles, imgs)):
@@ -376,7 +382,7 @@ def build_episode(ep, cache_root, output, diag, config):
     }
 
     label = "center" if ep == "004" else "plus_55mm"
-    video = save_video(ep, label, times, direct_rgb, legacy, candidate,
+    video = save_video(ep, label, times, direct, legacy, candidate,
                        [direct_events, legacy_events, cand_events],
                        [direct_per, legacy_per, cand_per], metrics, output,
                        fps=int(config["visualization"]["fps"]),
