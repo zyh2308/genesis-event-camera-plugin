@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
 **更新时间：** 2026-10-31（Asia/Tokyo）
-**阶段：** R1.5 strict sampled 候选通过收尾审计，可按限定范围登记冻结版本。run F 的 CUDA 数值一致性、run I 的真实 HDR 中间帧复渲染、run K 的真实物理因果顺序、run B 的 CPU 通用控制/阴影×MSAA/采样回归均有独立结果和哈希；新增 manifest 审计确认四组运行与当前分支的核心模块 SHA256 相同，95 项归档哈希及固定门槛通过。保留兼容性的 permissive/hold 默认路径不属于严格保真声明，主分支合并仍留待验收。单个 5 ms 中点已证实不足，strict 路径要求更密的真实 radiance；真实 HDR 单帧约 16.04 ms，因此不声称墙钟实时。尚未完成旧 checkpoint 恢复、抓取成功或现实相机标定；这些不属于本次图像层修复验收。最终证据和冻结边界见 [`R1.5 core candidate report`](r1_5_core_candidate_20261030.md)、[`R1.5 closeout audit`](r1_5_core_freeze_closeout_20261031.md) 及 [`run B`](../../benchmark/robot_closed_loop/results/r1_5_core_candidate_final_20261102b/README.md)。
+**阶段：** R1.5 strict sampled 候选通过收尾审计，并已登记 closeout 标签 `r1.5-core-closeout-20261031`（目标提交 `1fcf8a83d2cfaa549968ece6b7c94ea0225264b9`）。run F 的 CUDA 数值一致性、run I 的真实 HDR 中间帧复渲染、run K 的真实物理因果顺序、run B 的 CPU 通用控制/阴影×MSAA/采样回归均有独立结果和哈希；新增 manifest 审计确认四组运行与当前分支的核心模块 SHA256 相同，95 项归档哈希及固定门槛通过。保留兼容性的 permissive/hold 默认路径不属于严格保真声明，主分支合并仍留待验收。单个 5 ms 中点已证实不足，strict 路径要求更密的真实 radiance；真实 HDR 单帧约 16.04 ms，因此不声称墙钟实时。尚未完成旧 checkpoint 恢复、抓取成功或现实相机标定；这些不属于本次图像层修复验收。最终证据和冻结边界见 [`R1.5 core candidate report`](r1_5_core_candidate_20261030.md)、[`R1.5 closeout audit`](r1_5_core_freeze_closeout_20261031.md) 及 [`run B`](../../benchmark/robot_closed_loop/results/r1_5_core_candidate_final_20261102b/README.md)。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 ## R1.5 core candidate acceptance（2026-10-30）
