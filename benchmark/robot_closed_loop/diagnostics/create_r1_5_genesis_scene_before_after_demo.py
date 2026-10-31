@@ -301,7 +301,7 @@ def save_overview(episode_data, output):
     canvas = draw_label(canvas, 50, 24, "Genesis Event Camera｜重建修复前后", font)
     canvas = draw_label(canvas, 50, 74, "同一机器人拦截场景、同一相机与真实保存轨迹；只替换中间图像的覆盖率/深度竞争规则。", sub, (148, 163, 184))
     cols = [60, 680, 1300]
-    row_y = [155, 620]
+    row_y = [155, 650]
     titles = ["Genesis HDR 参考", "修复前：旧规则", "修复候选：新覆盖规则"]
     for row, ep in enumerate(("004", "005")):
         item = episode_data[ep]
@@ -327,10 +327,63 @@ def save_overview(episode_data, output):
                 f">0.2 log误差点：{met['legacy_bad_pixel_times_over_0p2']:,} → "
                 f"{met['candidate_bad_pixel_times_over_0p2']:,}   ·   修复比例 {met['resolved_fraction']:.1%}")
         canvas = draw_label(canvas, 60, ytext, line, small, (226, 232, 240))
-    canvas = draw_label(canvas, 60, 1060,
+    canvas = draw_label(canvas, 60, 1090,
         "范围：覆盖率/深度竞争诊断候选；动态亮度未完全解决。Direct-HDR 是已保存状态参考，不能代表所有未采样中间时刻。",
         small, (148, 163, 184))
     path = output / "overview_before_after.png"
+    cv2.imwrite(str(path), canvas)
+    return path
+
+
+def save_spatial_error_overlay(episode_data, output):
+    width, height = 1920, 1200
+    canvas = np.full((height, width, 3), (17, 24, 39), dtype=np.uint8)
+    title_font = ImageFont.truetype(str(FONT_PATH), 36)
+    label_font = ImageFont.truetype(str(FONT_PATH), 22)
+    small = ImageFont.truetype(str(FONT_PATH), 19)
+    canvas = draw_label(canvas, 50, 24, "误差热点：修复前后", title_font)
+    canvas = draw_label(canvas, 50, 74,
+        "每行合并 10 个 1 ms 查询时刻；红色像素表示相对 Direct-HDR 的 |Δlog L| > 0.2。",
+        label_font, (148, 163, 184))
+    xs = [60, 680, 1300]
+    row_y = [145, 680]
+    headers = ["Genesis Direct-HDR 强度参考", "修复前：旧版超限区域", "修复候选：剩余超限区域"]
+    for row, ep in enumerate(("004", "005")):
+        item = episode_data[ep]
+        legacy_error = np.abs(np.log(np.maximum(item["legacy"], LOG_EPS)) -
+                              np.log(np.maximum(item["direct"], LOG_EPS)))
+        candidate_error = np.abs(np.log(np.maximum(item["candidate"], LOG_EPS)) -
+                                 np.log(np.maximum(item["direct"], LOG_EPS)))
+        qi = int(np.argmax((legacy_error > 0.2).sum(axis=(1, 2))))
+        old_union = np.any(legacy_error > 0.2, axis=0)
+        candidate_union = np.any(candidate_error > 0.2, axis=0)
+        reference = to_bgr_visual(item["direct"][qi])
+
+        def overlay(mask):
+            out = reference.copy()
+            red = np.zeros_like(out)
+            red[..., 2] = 255
+            out[mask] = (0.28 * out[mask] + 0.72 * red[mask]).astype(np.uint8)
+            return out
+
+        images = [reference, overlay(old_union), overlay(candidate_union)]
+        canvas = draw_label(canvas, 60, row_y[row] - 38,
+                            f"{item['label']}  ·  Genesis frame at t={item['times'][qi]:.4f} s",
+                            label_font)
+        for x, head, image in zip(xs, headers, images):
+            canvas = draw_label(canvas, x, row_y[row], head, small)
+            resized = cv2.resize(image, (560, 420), interpolation=cv2.INTER_CUBIC)
+            canvas[row_y[row] + 32:row_y[row] + 452, x:x + 560] = resized
+        old_pixels, new_pixels = int(old_union.sum()), int(candidate_union.sum())
+        m = item["metrics"]
+        line = (f"10 ms内任一采样帧超限的不同像素：{old_pixels:,} → {new_pixels:,}；"
+                f"逐帧像素时刻：{m['legacy_bad_pixel_times_over_0p2']:,} → "
+                f"{m['candidate_bad_pixel_times_over_0p2']:,}；候选事件 {m['event_counts']['candidate']:,} 个")
+        canvas = draw_label(canvas, 60, row_y[row] + 458, line, small, (226, 232, 240))
+    canvas = draw_label(canvas, 60, 1168,
+        "红色仅用于离线评价可视化，不进入重建或事件生成。剩余热点未被隐藏；它们可能来自动态光度，也可能仍含重建误差。",
+        small, (148, 163, 184))
+    path = output / "spatial_error_overlay.png"
     cv2.imwrite(str(path), canvas)
     return path
 
@@ -419,6 +472,7 @@ def main():
     diag = load_diagnostic()
     episodes = {ep: build_episode(ep, cache_root, output, diag, config) for ep in config["episodes"]}
     overview = save_overview(episodes, output)
+    error_overlay = save_spatial_error_overlay(episodes, output)
 
     repo_head = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
     module_paths = {
@@ -441,6 +495,7 @@ def main():
         "episodes": {ep: item["metrics"] for ep, item in episodes.items()},
         "runtime_modules": {name: {"path": str(path), "sha256": sha256(path)} for name, path in module_paths.items()},
         "artifacts": {"overview": str(overview.name),
+                      "spatial_error_overlay": str(error_overlay.name),
                       "videos": {ep: str(item["video"].name) for ep, item in episodes.items()}},
         "interpretation": "The coverage/depth-competition candidate sharply reduces the old event burst and high-error pixel-times on these two cached clips. Residual error remains, especially from time-varying radiance; the video is not a claim of complete reconstruction or real-time behavior.",
     }
