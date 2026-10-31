@@ -1,0 +1,3177 @@
+{
+  "purpose": "acceptance candidate validation using synthetic controls, archived exact states, and existing shadow x MSAA direct renders",
+  "scope": "CPU only; no renderer, CUDA, physics advancement, training, ranking, or frozen-core modification",
+  "candidate_branch": "exp/r1_5-core-candidate-20261030",
+  "candidate_base_commit": "e71f2b7b7369994d714f540ff498f3902b90081c",
+  "source_module_sha256": {
+    "physics_warp.py": "8c23c601677cf25c1df445ea65235b154f5895353ba9bc67f37da40a3ae3fe41",
+    "torch_physics.py": "8a409765268746fefedb15a805c4d95db857bf6a4359c899cd65e6ac4dfe5955",
+    "physics_interpolator.py": "0ac9174f5e3a0635de0dc8cb7a28c51f4d6ac0eb690bfeb1ae8486bf44a5941d",
+    "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba"
+  },
+  "script_sha256": "b127a168d690bd21df78999aa67237571486261d590be437c0c4206883810af8",
+  "config_sha256": "bde0882f0a70e14dfea4d70f94557579bcb089aaa78bfca85a5c18d6bdc0b7b4",
+  "runtime": {
+    "python": "3.11.15",
+    "numpy": "2.4.6",
+    "torch": "2.8.0+cpu",
+    "torch_device": "CPU",
+    "platform": "Linux-5.4.0-216-generic-x86_64-with-glibc2.31"
+  },
+  "fixed_acceptance_criteria": {
+    "exact_endpoint_max_abs_radiance": 0.0,
+    "numpy_torch_cpu_max_abs_radiance": 0.0001,
+    "numpy_torch_cpu_support_mismatch_pixels": 0,
+    "continuous_surface_plus_minus_1e-6_px_interior_max_abs_radiance_change": 0.0001,
+    "single_1e-6_coverage_neighbor_support": false,
+    "foreground_interior_max_abs_radiance_error": 0.001,
+    "known_ramp_event_count": 48,
+    "known_ramp_event_time_max_abs_error_s": 0.001,
+    "cached_factorial_unknown_fraction_ceiling_for_freeze": 0.15,
+    "cached_factorial_supported_interior_log_error_p95_ceiling_for_freeze": 0.2,
+    "cached_factorial_added_render_policy": "at most one required midpoint per 10 ms interval unless the existing motion sampler requests more",
+    "production_cuda_required_for_freeze": true,
+    "renderer_cost_required_for_freeze": true
+  },
+  "approximation_contract": {
+    "strict_fidelity_default": false,
+    "max_real_anchor_gap_s": 0.005,
+    "temporal_model_between_observed_anchors": "piecewise log-linear radiance approximation",
+    "required_output_available_at": "right endpoint of the state bracket",
+    "sample_input": "scene-linear radiance at an exact requested timestamp with declared render/cache provenance",
+    "geometry_gt_required_for_radiance_only_sample": false,
+    "max_render_anchors_per_bracket": 128,
+    "unobserved_sub_5ms_variation_claim": "unsupported; no accuracy claim for changes between real anchors"
+  },
+  "unit_controls": {
+    "moving_continuous_surface": [
+      {
+        "shift_px": -1e-06,
+        "visible_fraction": 1.0,
+        "supported_fraction": 1.0,
+        "center_luma": 0.2719999849796295,
+        "max_interior_abs_delta_from_zero": 2.9802322387695312e-08
+      },
+      {
+        "shift_px": 0.0,
+        "visible_fraction": 1.0,
+        "supported_fraction": 1.0,
+        "center_luma": 0.2719999849796295,
+        "max_interior_abs_delta_from_zero": 0.0
+      },
+      {
+        "shift_px": 1e-06,
+        "visible_fraction": 1.0,
+        "supported_fraction": 1.0,
+        "center_luma": 0.2720000147819519,
+        "max_interior_abs_delta_from_zero": 2.9802322387695312e-08
+      }
+    ],
+    "tiny_support": {
+      "neighbor_luma": 1.0,
+      "neighbor_coverage": 9.5367431640625e-07,
+      "neighbor_visible": true,
+      "neighbor_supported": false
+    },
+    "depth_tie_band_continuity": [
+      {
+        "depth_gap_m": 8.583068620282575e-07,
+        "configured_tie_tolerance_m_at_z1": 9.5367431640625e-07,
+        "target_luma": 0.4099999964237213,
+        "target_coverage": 1.0,
+        "target_support": true,
+        "target_surface_consistent": false,
+        "torch_target_luma": 0.4099999964237213,
+        "numpy_torch_target_abs_delta": 0.0,
+        "torch_target_coverage": 1.0
+      },
+      {
+        "depth_gap_m": 1.0490417707842425e-06,
+        "configured_tie_tolerance_m_at_z1": 9.5367431640625e-07,
+        "target_luma": 0.4099999964237213,
+        "target_coverage": 1.0,
+        "target_support": true,
+        "target_surface_consistent": true,
+        "torch_target_luma": 0.4099999964237213,
+        "numpy_torch_target_abs_delta": 0.0,
+        "torch_target_coverage": 1.0
+      }
+    ],
+    "front_to_back_occlusion": {
+      "foreground_interior_luma": 0.800000011920929,
+      "background_interior_luma": 0.019999999552965164,
+      "mixed_edge_luma_x8": 0.6050000190734863,
+      "mixed_edge_luma_x18": 0.2150000035762787,
+      "expected_edge_high": 0.6050000000000001,
+      "expected_edge_low": 0.21500000000000002,
+      "supported_fraction": 0.96875
+    },
+    "numpy_torch_cpu_parity": {
+      "max_abs_luma_delta": 0.0,
+      "max_abs_coverage_delta": 0.0,
+      "support_mismatch_pixels": 0,
+      "visibility_mismatch_pixels": 0
+    },
+    "exact_endpoint_identity": {
+      "max_abs_radiance_delta": 0.0,
+      "finite_direct_pixel_still_known_with_invalid_depth": true,
+      "torch_max_abs_radiance_delta": 0.0,
+      "torch_finite_direct_pixel_still_known_with_invalid_depth": true
+    }
+  },
+  "known_log_linear_ramp": {
+    "strict_missing_sample_requests": [
+      {
+        "t": 0.005,
+        "alpha": 0.5,
+        "reason": "strict_real_radiance_sample",
+        "invalid_fraction": 0.0,
+        "radiance_residual_p99": 0.0,
+        "recommend_render": true,
+        "available_at": 0.01,
+        "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+      }
+    ],
+    "strict_output_times_s": [
+      0.005,
+      0.01
+    ],
+    "strict_uncertainty": {
+      "invalid_fraction": 0.0,
+      "high_gradient_invalid_fraction": 0.0,
+      "endpoint_radiance_residual_max": 0.6931471824645996,
+      "endpoint_radiance_residual_p99": 0.6931471824645996,
+      "constant_twist_endpoint_assumption": true,
+      "recommend_render": false,
+      "radiometric_calibration_status": "provided_by_caller",
+      "disocclusion_domain": "projected_target_image",
+      "depth_correspondence_method": "source_material_point",
+      "strict_sampling_status": "actual_state_samples",
+      "photometric_request_resolved": true,
+      "strict_sample_output": "direct_radiance_frames_at_observed_states",
+      "photometric_temporal_model": "piecewise_log_radiance_between_actual_samples",
+      "photometric_anchor_count": 3,
+      "photometric_max_anchor_gap_s": 0.005,
+      "max_photometric_interval_s": 0.005,
+      "adaptive_sample_count": 2,
+      "extra_render_count": 1,
+      "direct_sample_frame_count": 1,
+      "render_provider_wall_s": 1.2047006748616695e-05,
+      "anchor_provenance": [
+        "caller_endpoint",
+        "analytic_log_linear_ramp_control",
+        "caller_endpoint"
+      ],
+      "anchor_available_at_s": [
+        0.0,
+        0.005,
+        0.01
+      ],
+      "output_available_at_s": 0.01,
+      "output_ready_after_right_endpoint_wall_s": 0.0062714480445720255,
+      "future_state_used": false,
+      "geometry_warp_used_for_strict_output": false,
+      "causal_input_contract": "timestamp_match_plus_explicit_sample_provenance; output_available_no_earlier_than_right_endpoint"
+    },
+    "provider_request_count": 1,
+    "provider_requests": [
+      {
+        "t": 0.005,
+        "alpha": 0.5,
+        "reason": "strict_real_radiance_sample",
+        "invalid_fraction": 0.0,
+        "radiance_residual_p99": 0.0,
+        "recommend_render": true,
+        "available_at": 0.01,
+        "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+      }
+    ],
+    "candidate_event_count": 48,
+    "reference_event_count": 48,
+    "pixel_1_1_candidate_event_times_s": [
+      0.002885389821982809,
+      0.005770779782764756,
+      0.008656170124337847
+    ],
+    "analytic_expected_event_times_s": [
+      0.002885390081777927,
+      0.005770780163555854,
+      0.008656170245333782
+    ],
+    "max_abs_timing_error_s": 3.8079109830613245e-10,
+    "candidate_vs_reference_raw_events_exact": false,
+    "candidate_vs_reference_event_metrics": {
+      "reference_event_count": 48,
+      "candidate_event_count": 48,
+      "reference_on_count": 48,
+      "candidate_on_count": 48,
+      "reference_off_count": 0,
+      "candidate_off_count": 0,
+      "pixel_polarity_count_l1": 0,
+      "matched_event_slots": 48,
+      "matched_event_time_abs_error_median_s": 1.5086847396372782e-10,
+      "matched_event_time_abs_error_p95_s": 2.0158082538260236e-10,
+      "matched_event_time_abs_error_max_s": 2.0158082538260236e-10,
+      "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+    },
+    "static_scene_event_count": 0,
+    "cached_state_api_wall_s_cpu": 0.0063140660058707,
+    "actual_renderer_cost_measured": false,
+    "claim_boundary": "known analytic log-linear ramp only; changes between 5 ms real anchors remain unobserved"
+  },
+  "strict_cached_direct_hdr_replays": [
+    {
+      "episode": "004",
+      "input_sha256": {
+        "state_cache": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+        "direct_hdr_evidence": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321"
+      },
+      "timestamp_count": 10,
+      "timestamps_s": [
+        0.5815,
+        0.5825,
+        0.5835,
+        0.5845,
+        0.5855,
+        0.5865,
+        0.5875,
+        0.5885,
+        0.5895,
+        0.5905
+      ],
+      "max_abs_luma_delta_from_archived_direct_frames": 0.0,
+      "exact_image_sequence_match": true,
+      "raw_events": {
+        "reference_event_count": 625,
+        "candidate_event_count": 625,
+        "reference_on_count": 354,
+        "candidate_on_count": 354,
+        "reference_off_count": 271,
+        "candidate_off_count": 271,
+        "pixel_polarity_count_l1": 0,
+        "matched_event_slots": 625,
+        "matched_event_time_abs_error_median_s": 0.0,
+        "matched_event_time_abs_error_p95_s": 0.0,
+        "matched_event_time_abs_error_max_s": 0.0,
+        "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+      },
+      "raw_events_exact_match": true,
+      "one_midpoint_5ms_sampling_ablation": {
+        "status": "forced_photometric_minimum; adaptive max_samples=2 to isolate one midpoint",
+        "direct_reference_events_1ms": 625,
+        "midpoint_sample_events": 413,
+        "event_metrics_vs_dense_1ms_direct": {
+          "reference_event_count": 625,
+          "candidate_event_count": 413,
+          "reference_on_count": 354,
+          "candidate_on_count": 251,
+          "reference_off_count": 271,
+          "candidate_off_count": 162,
+          "pixel_polarity_count_l1": 212,
+          "matched_event_slots": 413,
+          "matched_event_time_abs_error_median_s": 0.0012736850081846995,
+          "matched_event_time_abs_error_p95_s": 0.004012950355988886,
+          "matched_event_time_abs_error_max_s": 0.008127609492208587,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "strict_extra_render_count_with_cached_midpoint": 0,
+        "max_anchor_gap_s": 0.0050000000000000044,
+        "output_ready_after_right_endpoint_wall_s_cpu": 0.3097453590016812,
+        "claim_boundary": "5ms piecewise log-radiance contract; does not meet tighter motion-derived sampling if the default sampler requests more"
+      },
+      "default_motion_sampler_midpoint_only_probe": {
+        "status": "additional_real_samples_required_by_default_sampler",
+        "adaptive_sample_count": 7,
+        "required_additional_sample_count": 6,
+        "requests": [
+          {
+            "t": 0.58175,
+            "alpha": 0.12499999999999722,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.583,
+            "alpha": 0.24999999999999445,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.58425,
+            "alpha": 0.3750000000000028,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.58675,
+            "alpha": 0.6249999999999972,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.5880000000000001,
+            "alpha": 0.7500000000000056,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.58925,
+            "alpha": 0.8750000000000028,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          }
+        ]
+      },
+      "extra_render_count": 0,
+      "photometric_anchor_count": 11,
+      "max_anchor_gap_s": 0.0010000000000000009,
+      "output_available_at_s": 0.5905,
+      "anchor_provenance": [
+        "caller_endpoint",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "caller_endpoint"
+      ],
+      "strict_api_wall_s_cpu_using_cached_frames": 1.1368196589755826,
+      "new_renderer_cost_measured": false
+    },
+    {
+      "episode": "005",
+      "input_sha256": {
+        "state_cache": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+        "direct_hdr_evidence": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236"
+      },
+      "timestamp_count": 10,
+      "timestamps_s": [
+        0.5815,
+        0.5825,
+        0.5835,
+        0.5845,
+        0.5855,
+        0.5865,
+        0.5875,
+        0.5885,
+        0.5895,
+        0.5905
+      ],
+      "max_abs_luma_delta_from_archived_direct_frames": 0.0,
+      "exact_image_sequence_match": true,
+      "raw_events": {
+        "reference_event_count": 939,
+        "candidate_event_count": 939,
+        "reference_on_count": 536,
+        "candidate_on_count": 536,
+        "reference_off_count": 403,
+        "candidate_off_count": 403,
+        "pixel_polarity_count_l1": 0,
+        "matched_event_slots": 939,
+        "matched_event_time_abs_error_median_s": 0.0,
+        "matched_event_time_abs_error_p95_s": 0.0,
+        "matched_event_time_abs_error_max_s": 0.0,
+        "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+      },
+      "raw_events_exact_match": true,
+      "one_midpoint_5ms_sampling_ablation": {
+        "status": "forced_photometric_minimum; adaptive max_samples=2 to isolate one midpoint",
+        "direct_reference_events_1ms": 939,
+        "midpoint_sample_events": 615,
+        "event_metrics_vs_dense_1ms_direct": {
+          "reference_event_count": 939,
+          "candidate_event_count": 615,
+          "reference_on_count": 536,
+          "candidate_on_count": 375,
+          "reference_off_count": 403,
+          "candidate_off_count": 240,
+          "pixel_polarity_count_l1": 324,
+          "matched_event_slots": 615,
+          "matched_event_time_abs_error_median_s": 0.0011430970222879866,
+          "matched_event_time_abs_error_p95_s": 0.004274979139070915,
+          "matched_event_time_abs_error_max_s": 0.009484743833428788,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "strict_extra_render_count_with_cached_midpoint": 0,
+        "max_anchor_gap_s": 0.0050000000000000044,
+        "output_ready_after_right_endpoint_wall_s_cpu": 0.319045684998855,
+        "claim_boundary": "5ms piecewise log-radiance contract; does not meet tighter motion-derived sampling if the default sampler requests more"
+      },
+      "default_motion_sampler_midpoint_only_probe": {
+        "status": "additional_real_samples_required_by_default_sampler",
+        "adaptive_sample_count": 7,
+        "required_additional_sample_count": 6,
+        "requests": [
+          {
+            "t": 0.58175,
+            "alpha": 0.12499999999999722,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.583,
+            "alpha": 0.24999999999999445,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.58425,
+            "alpha": 0.3750000000000028,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.58675,
+            "alpha": 0.6249999999999972,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.5880000000000001,
+            "alpha": 0.7500000000000056,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          },
+          {
+            "t": 0.58925,
+            "alpha": 0.8750000000000028,
+            "reason": "strict_real_radiance_sample",
+            "invalid_fraction": 0.0,
+            "radiance_residual_p99": 0.0,
+            "recommend_render": true,
+            "available_at": 0.5905,
+            "available_at_semantics": "simulation_state_observable_time; excludes wall-clock render/processing latency"
+          }
+        ]
+      },
+      "extra_render_count": 0,
+      "photometric_anchor_count": 11,
+      "max_anchor_gap_s": 0.0010000000000000009,
+      "output_available_at_s": 0.5905,
+      "anchor_provenance": [
+        "caller_endpoint",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "archived_exact_direct_hdr_frame",
+        "caller_endpoint"
+      ],
+      "strict_api_wall_s_cpu_using_cached_frames": 1.1123217159765773,
+      "new_renderer_cost_measured": false
+    }
+  ],
+  "paired_shadow_msaa_candidate_replays": [
+    {
+      "episode": "004",
+      "factorial_npz_sha256": "799a8610aab10bc2b2352a00bcd8b14b3a507bc5b0f48ecda7f9698cd67b0339",
+      "state_cache_sha256": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+      "direct_hdr_evidence_sha256": "b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321",
+      "times_s": [
+        0.5805,
+        0.5855,
+        0.5905
+      ],
+      "conditions": {
+        "shadow_on_multisample_on": {
+          "episode": "004",
+          "condition": "shadow_on_multisample_on",
+          "shadow": true,
+          "multisample": true,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 413,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 413,
+          "candidate_dvs_event_count_from_warped_midpoint": 397,
+          "sparse_event_comparison": {
+            "reference_event_count": 413,
+            "candidate_event_count": 397,
+            "reference_on_count": 251,
+            "candidate_on_count": 243,
+            "reference_off_count": 162,
+            "candidate_off_count": 154,
+            "pixel_polarity_count_l1": 16,
+            "matched_event_slots": 397,
+            "matched_event_time_abs_error_median_s": 0.002051526506819279,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.007244736018559794,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 413,
+            "candidate_event_count": 413,
+            "reference_on_count": 251,
+            "candidate_on_count": 251,
+            "reference_off_count": 162,
+            "candidate_off_count": 162,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 413,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.23173566500190645,
+          "midpoint_supported_fraction": 0.9562890625,
+          "midpoint_unknown_fraction": 0.0437109375,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 3.743171691894531e-05,
+          "supported_log_error_max": 0.7075684070587158,
+          "supported_pixels_over_0p2_log_error": 46,
+          "supported_interior_log_error_p95": 1.6759335267124698e-05,
+          "supported_interior_pixels": 71899,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.4836120401337793,
+          "candidate_warp_cpu_wall_s": 0.23388958896975964,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        },
+        "shadow_on_multisample_off": {
+          "episode": "004",
+          "condition": "shadow_on_multisample_off",
+          "shadow": true,
+          "multisample": false,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 513,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 513,
+          "candidate_dvs_event_count_from_warped_midpoint": 490,
+          "sparse_event_comparison": {
+            "reference_event_count": 513,
+            "candidate_event_count": 490,
+            "reference_on_count": 302,
+            "candidate_on_count": 294,
+            "reference_off_count": 211,
+            "candidate_off_count": 196,
+            "pixel_polarity_count_l1": 29,
+            "matched_event_slots": 487,
+            "matched_event_time_abs_error_median_s": 0.0021940943122277234,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.007244736018559794,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 513,
+            "candidate_event_count": 513,
+            "reference_on_count": 302,
+            "candidate_on_count": 302,
+            "reference_off_count": 211,
+            "candidate_off_count": 211,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 513,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.2282850409974344,
+          "midpoint_supported_fraction": 0.9557942708333333,
+          "midpoint_unknown_fraction": 0.044205729166666666,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 3.9601327443961054e-05,
+          "supported_log_error_max": 1.1243269443511963,
+          "supported_pixels_over_0p2_log_error": 60,
+          "supported_interior_log_error_p95": 1.668594813963864e-05,
+          "supported_interior_pixels": 71862,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.48394648829431436,
+          "candidate_warp_cpu_wall_s": 0.2284440950024873,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        },
+        "shadow_off_multisample_on": {
+          "episode": "004",
+          "condition": "shadow_off_multisample_on",
+          "shadow": false,
+          "multisample": true,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 40,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 40,
+          "candidate_dvs_event_count_from_warped_midpoint": 40,
+          "sparse_event_comparison": {
+            "reference_event_count": 40,
+            "candidate_event_count": 40,
+            "reference_on_count": 4,
+            "candidate_on_count": 4,
+            "reference_off_count": 36,
+            "candidate_off_count": 36,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 40,
+            "matched_event_time_abs_error_median_s": 0.004964974618426488,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.0050000000000000044,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 40,
+            "candidate_event_count": 40,
+            "reference_on_count": 4,
+            "candidate_on_count": 4,
+            "reference_off_count": 36,
+            "candidate_off_count": 36,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 40,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.2325044089811854,
+          "midpoint_supported_fraction": 0.9562890625,
+          "midpoint_unknown_fraction": 0.0437109375,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 2.638176010805182e-05,
+          "supported_log_error_max": 0.13964438438415527,
+          "supported_pixels_over_0p2_log_error": 0,
+          "supported_interior_log_error_p95": 1.0195374670729507e-05,
+          "supported_interior_pixels": 71899,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.4836120401337793,
+          "candidate_warp_cpu_wall_s": 0.23140412900829688,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        },
+        "shadow_off_multisample_off": {
+          "episode": "004",
+          "condition": "shadow_off_multisample_off",
+          "shadow": false,
+          "multisample": false,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 97,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 97,
+          "candidate_dvs_event_count_from_warped_midpoint": 97,
+          "sparse_event_comparison": {
+            "reference_event_count": 97,
+            "candidate_event_count": 97,
+            "reference_on_count": 48,
+            "candidate_on_count": 48,
+            "reference_off_count": 49,
+            "candidate_off_count": 49,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 97,
+            "matched_event_time_abs_error_median_s": 0.001893697549937623,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.0050000000000000044,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 97,
+            "candidate_event_count": 97,
+            "reference_on_count": 48,
+            "candidate_on_count": 48,
+            "reference_off_count": 49,
+            "candidate_off_count": 49,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 97,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.23001073795603588,
+          "midpoint_supported_fraction": 0.9557942708333333,
+          "midpoint_unknown_fraction": 0.044205729166666666,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 2.4974346160888672e-05,
+          "supported_log_error_max": 1.1243269443511963,
+          "supported_pixels_over_0p2_log_error": 3,
+          "supported_interior_log_error_p95": 7.271021786436904e-06,
+          "supported_interior_pixels": 71862,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.48394648829431436,
+          "candidate_warp_cpu_wall_s": 0.22954277001554146,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        }
+      }
+    },
+    {
+      "episode": "005",
+      "factorial_npz_sha256": "14acba7cdd13b37999858c03cf16f68189d254195b0c6eb4f336f8942152ac0b",
+      "state_cache_sha256": "91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434",
+      "direct_hdr_evidence_sha256": "f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236",
+      "times_s": [
+        0.5805,
+        0.5855,
+        0.5905
+      ],
+      "conditions": {
+        "shadow_on_multisample_on": {
+          "episode": "005",
+          "condition": "shadow_on_multisample_on",
+          "shadow": true,
+          "multisample": true,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 615,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 615,
+          "candidate_dvs_event_count_from_warped_midpoint": 582,
+          "sparse_event_comparison": {
+            "reference_event_count": 615,
+            "candidate_event_count": 582,
+            "reference_on_count": 375,
+            "candidate_on_count": 361,
+            "reference_off_count": 240,
+            "candidate_off_count": 221,
+            "pixel_polarity_count_l1": 59,
+            "matched_event_slots": 569,
+            "matched_event_time_abs_error_median_s": 0.0021177504046661078,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.006605933697465205,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 615,
+            "candidate_event_count": 615,
+            "reference_on_count": 375,
+            "candidate_on_count": 375,
+            "reference_off_count": 240,
+            "candidate_off_count": 240,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 615,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.23928348498884588,
+          "midpoint_supported_fraction": 0.954453125,
+          "midpoint_unknown_fraction": 0.045546875,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 0.00027744247927330434,
+          "supported_log_error_max": 0.7088229656219482,
+          "supported_pixels_over_0p2_log_error": 84,
+          "supported_interior_log_error_p95": 0.0002247825323138386,
+          "supported_interior_pixels": 71707,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.4960505529225908,
+          "candidate_warp_cpu_wall_s": 0.24157106300117448,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        },
+        "shadow_on_multisample_off": {
+          "episode": "005",
+          "condition": "shadow_on_multisample_off",
+          "shadow": true,
+          "multisample": false,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 927,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 927,
+          "candidate_dvs_event_count_from_warped_midpoint": 941,
+          "sparse_event_comparison": {
+            "reference_event_count": 927,
+            "candidate_event_count": 941,
+            "reference_on_count": 546,
+            "candidate_on_count": 558,
+            "reference_off_count": 381,
+            "candidate_off_count": 383,
+            "pixel_polarity_count_l1": 118,
+            "matched_event_slots": 875,
+            "matched_event_time_abs_error_median_s": 0.0015468444054922426,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.007063128270332397,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 927,
+            "candidate_event_count": 927,
+            "reference_on_count": 546,
+            "candidate_on_count": 546,
+            "reference_off_count": 381,
+            "candidate_off_count": 381,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 927,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.23917123500723392,
+          "midpoint_supported_fraction": 0.9533333333333334,
+          "midpoint_unknown_fraction": 0.04666666666666667,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 0.00031765177845954895,
+          "supported_log_error_max": 2.154115915298462,
+          "supported_pixels_over_0p2_log_error": 120,
+          "supported_interior_log_error_p95": 0.00024411827325820923,
+          "supported_interior_pixels": 71631,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.49921011058451814,
+          "candidate_warp_cpu_wall_s": 0.239925766014494,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        },
+        "shadow_off_multisample_on": {
+          "episode": "005",
+          "condition": "shadow_off_multisample_on",
+          "shadow": false,
+          "multisample": true,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 252,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 252,
+          "candidate_dvs_event_count_from_warped_midpoint": 252,
+          "sparse_event_comparison": {
+            "reference_event_count": 252,
+            "candidate_event_count": 252,
+            "reference_on_count": 152,
+            "candidate_on_count": 153,
+            "reference_off_count": 100,
+            "candidate_off_count": 99,
+            "pixel_polarity_count_l1": 16,
+            "matched_event_slots": 244,
+            "matched_event_time_abs_error_median_s": 0.0037792636317494077,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.00546024881763707,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 252,
+            "candidate_event_count": 252,
+            "reference_on_count": 152,
+            "candidate_on_count": 152,
+            "reference_off_count": 100,
+            "candidate_off_count": 100,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 252,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.24002134904731065,
+          "midpoint_supported_fraction": 0.954453125,
+          "midpoint_unknown_fraction": 0.045546875,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 0.00024171620316337794,
+          "supported_log_error_max": 0.39484333992004395,
+          "supported_pixels_over_0p2_log_error": 11,
+          "supported_interior_log_error_p95": 0.000174725049873814,
+          "supported_interior_pixels": 71707,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.4960505529225908,
+          "candidate_warp_cpu_wall_s": 0.24460731400176883,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        },
+        "shadow_off_multisample_off": {
+          "episode": "005",
+          "condition": "shadow_off_multisample_off",
+          "shadow": false,
+          "multisample": false,
+          "actual_captured_direct_sparse_event_count_from_existing_npz": 613,
+          "direct_dvs_event_count_replayed_from_three_cached_frames": 613,
+          "candidate_dvs_event_count_from_warped_midpoint": 631,
+          "sparse_event_comparison": {
+            "reference_event_count": 613,
+            "candidate_event_count": 631,
+            "reference_on_count": 340,
+            "candidate_on_count": 350,
+            "reference_off_count": 273,
+            "candidate_off_count": 281,
+            "pixel_polarity_count_l1": 42,
+            "matched_event_slots": 601,
+            "matched_event_time_abs_error_median_s": 0.0015468444054922426,
+            "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+            "matched_event_time_abs_error_max_s": 0.007081480598383094,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_event_comparison": {
+            "reference_event_count": 613,
+            "candidate_event_count": 613,
+            "reference_on_count": 340,
+            "candidate_on_count": 340,
+            "reference_off_count": 273,
+            "candidate_off_count": 273,
+            "pixel_polarity_count_l1": 0,
+            "matched_event_slots": 613,
+            "matched_event_time_abs_error_median_s": 0.0,
+            "matched_event_time_abs_error_p95_s": 0.0,
+            "matched_event_time_abs_error_max_s": 0.0,
+            "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+          },
+          "strict_cached_sample_raw_event_exact_match": true,
+          "strict_cached_sample_extra_render_count": 0,
+          "strict_cached_sample_max_anchor_gap_s": 0.0050000000000000044,
+          "strict_cached_sample_output_ready_wall_s": 0.23826923500746489,
+          "midpoint_supported_fraction": 0.9533333333333334,
+          "midpoint_unknown_fraction": 0.04666666666666667,
+          "supported_log_error_p50": 0.0,
+          "supported_log_error_p95": 0.0002535991370677948,
+          "supported_log_error_max": 2.156129837036133,
+          "supported_pixels_over_0p2_log_error": 47,
+          "supported_interior_log_error_p95": 0.0001566372811794281,
+          "supported_interior_pixels": 71631,
+          "direct_mid_log_luma_range_p95_over_supported": 0.0,
+          "unknown_fraction_of_pixels_near_silhouette": 0.49921011058451814,
+          "candidate_warp_cpu_wall_s": 0.2376178849954158,
+          "endpoint_max_abs_delta_from_direct": 0.0
+        }
+      }
+    }
+  ],
+  "simple_moving_contour_candidate_replay": {
+    "source_npz_sha256": "1e7a05b941c3413d8a82192f833f857c4a370b5e7984d917da36690533f61e2c",
+    "source_cache_sha256_for_camera_and_intrinsics": "0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7",
+    "experiment_config_sha256": "ced55b5d57953107b7c0ba91d36b06e5a8e23736b15d666ab177dae3ebcb32af",
+    "times_s": [
+      0.5805,
+      0.5855,
+      0.5905
+    ],
+    "state_positions_m": [
+      [
+        0.55,
+        -0.0015,
+        0.02
+      ],
+      [
+        0.55,
+        0.0,
+        0.02
+      ],
+      [
+        0.55,
+        0.0015,
+        0.02
+      ]
+    ],
+    "conditions": {
+      "shadow_on_multisample_on": {
+        "shadow": true,
+        "multisample": true,
+        "supported_fraction": 0.9978645833333334,
+        "supported_log_error_p95": 1.1920928955078125e-07,
+        "supported_log_error_max": 0.7083854675292969,
+        "supported_errors_over_0p2": 38,
+        "floor_supported_fraction": 0.9988909426987062,
+        "floor_log_error_p95": 1.1920928955078125e-07,
+        "moving_box_supported_fraction": 0.9245283018867925,
+        "direct_sparse_event_count": 531,
+        "stored_factorial_event_count": 531,
+        "candidate_sparse_event_count": 529,
+        "candidate_sparse_event_metrics": {
+          "reference_event_count": 531,
+          "candidate_event_count": 529,
+          "reference_on_count": 258,
+          "candidate_on_count": 257,
+          "reference_off_count": 273,
+          "candidate_off_count": 272,
+          "pixel_polarity_count_l1": 2,
+          "matched_event_slots": 529,
+          "matched_event_time_abs_error_median_s": 0.0022159464575004506,
+          "matched_event_time_abs_error_p95_s": 0.004981315067928737,
+          "matched_event_time_abs_error_max_s": 0.0050000000000000044,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "strict_cached_event_exact_match": true,
+        "strict_cached_extra_render_count": 0,
+        "approximate_warp_cpu_wall_s": 0.17379771795822307,
+        "interpretation": "render-only translated box; moving shadow/occlusion control, not a physics trajectory"
+      },
+      "shadow_on_multisample_off": {
+        "shadow": true,
+        "multisample": false,
+        "supported_fraction": 0.998125,
+        "supported_log_error_p95": 1.1920928955078125e-07,
+        "supported_log_error_max": 0.7083854675292969,
+        "supported_errors_over_0p2": 38,
+        "floor_supported_fraction": 0.9989173488249273,
+        "floor_log_error_p95": 1.1920928955078125e-07,
+        "moving_box_supported_fraction": 0.9415094339622642,
+        "direct_sparse_event_count": 660,
+        "stored_factorial_event_count": 660,
+        "candidate_sparse_event_count": 643,
+        "candidate_sparse_event_metrics": {
+          "reference_event_count": 660,
+          "candidate_event_count": 643,
+          "reference_on_count": 279,
+          "candidate_on_count": 272,
+          "reference_off_count": 381,
+          "candidate_off_count": 371,
+          "pixel_polarity_count_l1": 17,
+          "matched_event_slots": 643,
+          "matched_event_time_abs_error_median_s": 0.0007519153257362632,
+          "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+          "matched_event_time_abs_error_max_s": 0.0050000000000001155,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "strict_cached_event_exact_match": true,
+        "strict_cached_extra_render_count": 0,
+        "approximate_warp_cpu_wall_s": 0.16517265001311898,
+        "interpretation": "render-only translated box; moving shadow/occlusion control, not a physics trajectory"
+      },
+      "shadow_off_multisample_on": {
+        "shadow": false,
+        "multisample": true,
+        "supported_fraction": 0.9978645833333334,
+        "supported_log_error_p95": 1.1920928955078125e-07,
+        "supported_log_error_max": 0.044524431228637695,
+        "supported_errors_over_0p2": 0,
+        "floor_supported_fraction": 0.9988909426987062,
+        "floor_log_error_p95": 1.1920928955078125e-07,
+        "moving_box_supported_fraction": 0.9245283018867925,
+        "direct_sparse_event_count": 15,
+        "stored_factorial_event_count": 15,
+        "candidate_sparse_event_count": 15,
+        "candidate_sparse_event_metrics": {
+          "reference_event_count": 15,
+          "candidate_event_count": 15,
+          "reference_on_count": 15,
+          "candidate_on_count": 15,
+          "reference_off_count": 0,
+          "candidate_off_count": 0,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 15,
+          "matched_event_time_abs_error_median_s": 0.004926825569558813,
+          "matched_event_time_abs_error_p95_s": 0.004987823109331257,
+          "matched_event_time_abs_error_max_s": 0.0050000000000000044,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "strict_cached_event_exact_match": true,
+        "strict_cached_extra_render_count": 0,
+        "approximate_warp_cpu_wall_s": 0.16627548297401518,
+        "interpretation": "render-only translated box; moving shadow/occlusion control, not a physics trajectory"
+      },
+      "shadow_off_multisample_off": {
+        "shadow": false,
+        "multisample": false,
+        "supported_fraction": 0.998125,
+        "supported_log_error_p95": 1.1920928955078125e-07,
+        "supported_log_error_max": 0.00031697750091552734,
+        "supported_errors_over_0p2": 0,
+        "floor_supported_fraction": 0.9989173488249273,
+        "floor_log_error_p95": 1.1920928955078125e-07,
+        "moving_box_supported_fraction": 0.9415094339622642,
+        "direct_sparse_event_count": 31,
+        "stored_factorial_event_count": 31,
+        "candidate_sparse_event_count": 31,
+        "candidate_sparse_event_metrics": {
+          "reference_event_count": 31,
+          "candidate_event_count": 31,
+          "reference_on_count": 31,
+          "candidate_on_count": 31,
+          "reference_off_count": 0,
+          "candidate_off_count": 0,
+          "pixel_polarity_count_l1": 0,
+          "matched_event_slots": 31,
+          "matched_event_time_abs_error_median_s": 0.0050000000000000044,
+          "matched_event_time_abs_error_p95_s": 0.0050000000000000044,
+          "matched_event_time_abs_error_max_s": 0.0050000000000000044,
+          "coordinate_convention": "raw [t,x,y,p], polarity {-1,+1}"
+        },
+        "strict_cached_event_exact_match": true,
+        "strict_cached_extra_render_count": 0,
+        "approximate_warp_cpu_wall_s": 0.16688874003011733,
+        "interpretation": "render-only translated box; moving shadow/occlusion control, not a physics trajectory"
+      }
+    }
+  },
+  "paired_shadow_msaa_existing_renderer_audit": {
+    "existing_execution_commit": "855b4b0bc7de96170b4bfee8d7002b370782f346",
+    "existing_summary_sha256": "060c991de176e2129f4c6f284b6ac76b85f03e9ee02d1cb9374ac81728f03200",
+    "existing_factorial_npz_sha256": {
+      "004": "799a8610aab10bc2b2352a00bcd8b14b3a507bc5b0f48ecda7f9698cd67b0339",
+      "005": "14acba7cdd13b37999858c03cf16f68189d254195b0c6eb4f336f8942152ac0b"
+    },
+    "existing_renderer_provenance": {
+      "genesis_package_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis",
+      "source_files_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis/__init__.py": "474b663bd3f0012f156ebb1701a0032baa9d11304b75978d879a536a5bdb8f9a",
+        "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis/ext/pyrender/offscreen.py": "c57ddea7fee83c7a754c88afbfd65ca4b7c7bc8734d31136cd90d54daaa18c5e",
+        "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis/ext/pyrender/renderer.py": "0c7fe474b49bbcc88e747090629174fb97f7f0ceb0d2693f74c721be40dccd9d",
+        "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis/options/vis.py": "1868995d6cab90407e2741b7a89d79c985cfcf3b433d7e5e0604562cd248efb2",
+        "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis/vis/camera.py": "78c18ffada07a98657ddf11326e833fc928431ecead674434aadb25dc023b714",
+        "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/lib/python3.11/site-packages/genesis/vis/rasterizer.py": "16ad98c2392cc86d07b230c3fa2a20c720679223bfd4213110efe570d71026e3"
+      }
+    },
+    "existing_factorial_measurements": {
+      "004": {
+        "shadow_off_multisample_off": {
+          "shadow": false,
+          "requested_msaa": false,
+          "actual_gl_msaa_per_pass": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.05079788601142354,
+          "scene_build_wall_s": 48.38094424600422,
+          "condition_wall_s": 49.96477260599204,
+          "full_frame_events": 97,
+          "fixed_floor_events": 0,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.8865979381443299,
+            "events_in_region": 86,
+            "events_total": 97
+          }
+        },
+        "shadow_off_multisample_on": {
+          "shadow": false,
+          "requested_msaa": true,
+          "actual_gl_msaa_per_pass": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.05608401198696811,
+          "scene_build_wall_s": 48.37628244899679,
+          "condition_wall_s": 49.35328021099849,
+          "full_frame_events": 40,
+          "fixed_floor_events": 0,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.9,
+            "events_in_region": 36,
+            "events_total": 40
+          }
+        },
+        "shadow_on_multisample_off": {
+          "shadow": true,
+          "requested_msaa": false,
+          "actual_gl_msaa_per_pass": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.07763696199981496,
+          "scene_build_wall_s": 47.05328784500307,
+          "condition_wall_s": 48.91208697100228,
+          "full_frame_events": 513,
+          "fixed_floor_events": 200,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.5419103313840156,
+            "events_in_region": 278,
+            "events_total": 513
+          }
+        },
+        "shadow_on_multisample_on": {
+          "shadow": true,
+          "requested_msaa": true,
+          "actual_gl_msaa_per_pass": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.09497856297821272,
+          "scene_build_wall_s": 48.30967680600588,
+          "condition_wall_s": 49.195769233992905,
+          "full_frame_events": 413,
+          "fixed_floor_events": 200,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.46973365617433416,
+            "events_in_region": 194,
+            "events_total": 413
+          }
+        }
+      },
+      "005": {
+        "shadow_off_multisample_off": {
+          "shadow": false,
+          "requested_msaa": false,
+          "actual_gl_msaa_per_pass": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.053070163005031645,
+          "scene_build_wall_s": 47.64743939699838,
+          "condition_wall_s": 49.107463997992454,
+          "full_frame_events": 613,
+          "fixed_floor_events": 0,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.5791190864600326,
+            "events_in_region": 355,
+            "events_total": 613
+          }
+        },
+        "shadow_off_multisample_on": {
+          "shadow": false,
+          "requested_msaa": true,
+          "actual_gl_msaa_per_pass": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.05760896699212026,
+          "scene_build_wall_s": 47.04413874199963,
+          "condition_wall_s": 47.855312576008146,
+          "full_frame_events": 252,
+          "fixed_floor_events": 0,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.7222222222222222,
+            "events_in_region": 182,
+            "events_total": 252
+          }
+        },
+        "shadow_on_multisample_off": {
+          "shadow": true,
+          "requested_msaa": false,
+          "actual_gl_msaa_per_pass": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.06739914999343455,
+          "scene_build_wall_s": 45.85897010700137,
+          "condition_wall_s": 46.69717035299982,
+          "full_frame_events": 927,
+          "fixed_floor_events": 236,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.459546925566343,
+            "events_in_region": 426,
+            "events_total": 927
+          }
+        },
+        "shadow_on_multisample_on": {
+          "shadow": true,
+          "requested_msaa": true,
+          "actual_gl_msaa_per_pass": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sample_buffers_per_pass": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "radiance_readback_passes": 7,
+          "framebuffer_blits": 14,
+          "render_calls": 6,
+          "captured_render_wall_s": 0.09323763899737969,
+          "scene_build_wall_s": 46.57446166400041,
+          "condition_wall_s": 47.43396406900138,
+          "full_frame_events": 615,
+          "fixed_floor_events": 236,
+          "silhouette_contour_events": {
+            "event_fraction_in_region": 0.4504065040650406,
+            "events_in_region": 277,
+            "events_total": 615
+          }
+        }
+      }
+    },
+    "existing_simple_moving_contour_control": {
+      "purpose": "synthetic render-only high-contrast box contour shifted by approximately one image pixel per 5 ms interval; no physics is advanced",
+      "physics_advanced": false,
+      "state_times_s": [
+        0.5805,
+        0.5855,
+        0.5905
+      ],
+      "state_positions_m": [
+        [
+          0.55,
+          -0.0015,
+          0.02
+        ],
+        [
+          0.55,
+          0.0,
+          0.02
+        ],
+        [
+          0.55,
+          0.0015,
+          0.02
+        ]
+      ],
+      "conditions": {
+        "shadow_off_multisample_off": {
+          "shadow": false,
+          "requested_msaa": false,
+          "actual_gl_msaa_per_pass": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "full_frame_events": 31,
+          "captured_render_wall_s": 0.036811344005400315,
+          "render_calls": 0
+        },
+        "shadow_off_multisample_on": {
+          "shadow": false,
+          "requested_msaa": true,
+          "actual_gl_msaa_per_pass": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "full_frame_events": 15,
+          "captured_render_wall_s": 0.041896351001923904,
+          "render_calls": 0
+        },
+        "shadow_on_multisample_off": {
+          "shadow": true,
+          "requested_msaa": false,
+          "actual_gl_msaa_per_pass": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "full_frame_events": 660,
+          "captured_render_wall_s": 0.06678700700285845,
+          "render_calls": 0
+        },
+        "shadow_on_multisample_on": {
+          "shadow": true,
+          "requested_msaa": true,
+          "actual_gl_msaa_per_pass": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sample_count_per_pass": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "sample_positions_per_pass": [
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ],
+            [
+              [
+                0.375,
+                0.125
+              ],
+              [
+                0.875,
+                0.375
+              ],
+              [
+                0.125,
+                0.625
+              ],
+              [
+                0.625,
+                0.875
+              ]
+            ]
+          ],
+          "full_frame_events": 531,
+          "captured_render_wall_s": 0.06769635902310256,
+          "render_calls": 0
+        }
+      }
+    },
+    "existing_experiment_wall_s": 489.0805774400069,
+    "limitations": [
+      "Three actual cached times are an endpoint/midpoint radiometry control, not a full 1 kHz trace.",
+      "This first factorial rerenders Direct-HDR states; candidate-versus-reference reconstruction comparisons must use the same factor settings and retain the official default reference unchanged.",
+      "The archival renderer binary is not reconstructed; this is a matched rerender with the pinned g1 overlay.",
+      "Only the two cached development episodes are used; no independent test or downstream learning result is implied."
+    ]
+  },
+  "candidate_wall_s_cpu_total": 13.29064154700609,
+  "g1_cuda_status": "not rerun in this CPU-only validation; separate CUDA parity run F was independently audited",
+  "g3_cuda_status": "not exercised by this CPU-only candidate validation",
+  "cost_scope": "cached-frame API and warp CPU time measured here; direct Genesis render cost is inherited from existing 2026-10-29 g1 factorial and is not a fresh candidate timing"
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "r1_5_strict_sampled_core_profile_v1",
+  "profile": "scientific_strict_sampled_reference",
+  "scope": "current Genesis robot benchmark and tested native scene-linear HDR path",
+  "candidate_branch": "exp/r1_5-core-candidate-20261030",
+  "candidate_source_commit": "e71f2b7b7369994d714f540ff498f3902b90081c",
+  "core": {
+    "strict_fidelity": true,
+    "input_space": "linear",
+    "disocclusion_policy": "hold",
+    "warp_composite": "same_surface_log_linear",
+    "warp_backend": "auto",
+    "min_coverage_fraction": 0.995,
+    "max_photometric_interval_s": 0.0005,
+    "max_render_anchors": 128
+  },
+  "provider_contract": {
+    "source": "actual Genesis native scene-linear HDR render or exact timestamped render-cache observation",
+    "timestamp_must_match_request": true,
+    "provenance_required": true,
+    "sample_must_be_observed_before_request": true,
+    "future_state_allowed": false,
+    "output_available_no_earlier_than": "right endpoint of requested bracket",
+    "wall_clock_render_and_processing_latency_reported_separately": true,
+    "unobserved_sub_0p5ms_variation_claim": "unsupported"
+  },
+  "compatibility_boundary": {
+    "constructor_strict_fidelity_default": false,
+    "legacy_permissive_mode": "retained for compatibility; explicitly approximate and outside strict fidelity claim",
+    "scientific_use": "must pass strict_fidelity=true and a causal real-radiance provider"
+  },
+  "evidence": {
+    "cuda_parity_run": "r1_5_cuda_support_forensics_20261031f",
+    "actual_hdr_rerender_run": "r1_5_strict_direct_rerender_20261031i",
+    "actual_physics_causal_run": "r1_5_live_causal_hdr_20261031k",
+    "unified_cpu_candidate_run": "r1_5_core_candidate_final_20261102b"
+  }
+}

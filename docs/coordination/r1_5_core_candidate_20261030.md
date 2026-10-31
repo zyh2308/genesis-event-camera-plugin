@@ -1,6 +1,8 @@
 # R1.5 核心修复候选：验收记录
 
-**结论：候选通过 CPU 数值控制与缓存回放，但暂不建议冻结或切换正式默认 core。** 覆盖率 splat、端点恒等、未知支持和真实光度锚点接口均有可复核实现。严格 1 ms 缓存回放准确；单个 5 ms 中点不足以重现机器人片段的事件时间与数量，默认运动采样器在该 10 ms 窗口还要求额外 6 个真实状态。CUDA 未能验证，候选 warp 的 CPU 成本也远高于 10 ms 控制周期。
+**当前结论（2026-10-31 closeout）：建议冻结有明确适用边界的 strict sampled R1.5 版本。** 下文较早记录中的“CUDA/renderer/call-order 未完成、暂不冻结”是历史阶段结论，已分别由 run F、I、K 和统一 CPU run B 补齐。新版本只对 strict sampled linear-HDR 路径作保真声明；保留的 permissive/hold 兼容模式仍是近似路径，不纳入严格保真声明。单个 5 ms 中点在两个机器人短片段中不足以重现事件时间/数量；strict 路径会按运动采样器要求更多真实观测，运行成本慢于仿真时钟。
+
+本页末尾的“最终验收与冻结建议”是当前权威结论；前文保留各阶段历史与曾经未通过的结果，不能将这些历史状态与最终复验混读。
 
 ## 运行范围和隔离
 
@@ -114,3 +116,27 @@ OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH="$PWD" "$r15_py" \
 - episode 004 state cache / direct evidence：`0525c18c8d89f5831ef0cb71ac9e3b6b130d60579daf374f06d5cfcee5b879d7` / `b3afe5b5badee3d2606d343bb750aa970887928c41b8001a5fc4e9ff32b9c321`。
 - episode 005 state cache / direct evidence：`91c1397642e317d6bb51150b4107c518b52e4fa9fcf5f1caf6a2a91315c7d434` / `f161079a24c1bf9fee838a6fbb2a0fa5d785435b116f0ea5628e6efbba497236`。
 - 因子渲染输入源提交 `855b4b0bc7de96170b4bfee8d7002b370782f346`；原 summary SHA256 `060c991de176e2129f4c6f284b6ac76b85f03e9ee02d1cb9374ac81728f03200`。
+
+## 最终验收与冻结建议（2026-10-31）
+
+最终证据由四个互补部分组成，覆盖率/CUDA 数值差异不再重复扫描：
+
+1. **GPU 一致性 run F：**106 个旧分歧位置在 CPU/CUDA 的 projector+compositor 决策一致，69 支持、37 明确未知；两集 native mask XOR 均为 0；四种 warp/DVS 组合和 12 个阈值邻近探针逐像素/极性一致。来源提交 `9e6b5d7e2689d541087a56ff1fbf0fc904571b69`，细节见 [`run F`](../../benchmark/robot_closed_loop/results/r1_5_cuda_support_forensics_20261031f/README.md)。
+2. **实际 Direct-HDR rerender run I：**在已保存状态对两个片段新渲染 18 个 1 ms 中间时刻，scene-linear HDR 逐像素与既有帧一致、分割差为 0，DVS raw events 精确匹配 625/939 个。成本：18 次 GL render+readback 289 ms，均值 16.04 ms/帧；完整进程 wall 76.08 s（含场景构建等）。这证明已知状态/渲染路径的可复现性，不证明未采样光度，也不是实时采集。见 [`run I`](../../benchmark/robot_closed_loop/results/r1_5_strict_direct_rerender_20261031i/README.md)。
+3. **真实物理因果 run K：**两段 0.3 s 侧向运动，Genesis 以 0.5 ms 正常推进；每集 601 个 HDR 观测、150 个插件包；采样来自已发生的真实物理时刻，包在 2 ms 右端可用，event-only close 命令下一个物理步生效。没有 GT/segmentation/depth 泄漏或姿态重设。总计 1,200 物理步、85,701/88,118 事件。总墙钟 189.84 s；plugin capture 均值约 361 ms/2 ms 仿真区间，非实时且不是抓取成功测试。代码 commit `7559893ea4168b979679ee32eac03806050a9b03`，config SHA256 `1d16466f56875168d7851a8aed76cfb5aef9a45218d3beaa16a7ad4bb8c12156`，场景 SHA256 `aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a`。运行保存了逐事件、时间戳、逐包因果轨迹、目标审计轨迹和关键 HDR 帧，见 [`run K`](../../benchmark/robot_closed_loop/results/r1_5_live_causal_hdr_20261031k/README.md)。
+4. **CPU 通用控制与同片段 run B：**新的一体化验证在 g1 CPU 完成，runner exit 0，18.90 s wall。静态 0 事件；连续表面 ±1e−6 px 亮度变化 `2.98e−8`；微小支持可见但标未知；前后景遮挡预期通过；端点 NumPy/Torch 精确；CPU 支持掩码一致；已知 10 ms log-linear ramp 48/48 事件且时序最大误差 `3.81e−10 s`；strict 缺少真实中间样本会发出可用时刻明确的 render request 并报 `RenderRequiredError`。缓存两集的 1 ms HDR 序列和 raw events 精确回放。完整结果/哈希见 [`run B`](../../benchmark/robot_closed_loop/results/r1_5_core_candidate_final_20261102b/README.md)。
+
+### 剩余差异和成本边界
+
+- 单个 5 ms 中点不够：对 1 ms Direct-HDR 参考，episode 004/005 仅产生 413/625 与 615/939 个事件；pixel-polarity L1 差 212/324，事件时间 P95 差 4.013/4.275 ms。默认运动采样器还要求这个 10 ms 区间内额外 6 个真实样本；窗口按需采样比单个 5 ms midpoint 密。
+- shadow×MSAA 中点候选的未知比例为 4.37–4.67%，内部 log 误差 P95 最大 `2.45e−4`，达到预先固定门槛；但每格仍有 0–120 个高尾支持像素误差超过 0.2，最大 2.156。移动轮廓开阴影时 38 个支持像素误差超过 0.2，关阴影为 0。阴影是该控制中的因果来源，但不能外推为所有场景残差的唯一解释。MSAA 会改变事件数，必须锁定并记录 resolve 状态。
+- Rerender 单帧约 16 ms 墙钟，K 的逐 0.5 ms 真实采样使完整调用更慢。项目不要求现实实时，但不能将这些数值宣传为在线低延迟。5 ms 间隔内未被采样的光度瞬态仍不支持精度主张。
+- 旧网络没有重训/恢复，R2 抓取成功和现实相机物理标定也未验证；这些不否定图像层修复，但必须从本版结论中排除。
+
+### 冻结范围
+
+建议将候选分支当前实现登记为新版本 **R1.5 strict sampled Genesis-linear-HDR**，仅声明：float64 投影、0.995 双线性足迹近似门槛、精确端点、CPU/CUDA 一致决策、未知支持显式保留，以及 strict 模式下只使用有 provenance 的真实辐亮度样本、事件最早在 bracket 右端可用。当前机器人参考 profile 固定 0.5 ms 最大光度锚点间隔；一般区间可能由运动采样器要求更密。小于采样间距的动态亮度变化不在保证范围内。
+
+为保持旧调用者兼容，Python 构造器的 `strict_fidelity` 默认值仍为 `false`；那条 permissive/hold 路径被明确标为近似，不得作为 strict 科学产物。科学参考配置见 [`r1_5_core_strict_sampled_20261102.json`](../../benchmark/robot_closed_loop/configs/r1_5_core_strict_sampled_20261102.json)，调用方必须显式启用 strict 并接入当前时刻已捕获的真实 HDR provider。旧冻结 baseline 不覆盖，主分支不合并。本版不主张旧 checkpoint 定位恢复、真实光度绝对标定或实时闭环抓取。
+
+最终 CPU run B 的源 commit 是 `e71f2b7b7369994d714f540ff498f3902b90081c`。该提交后没有 core module 改动，新增提交仅归档验收结果、profile 与状态报告。提交和标签记录见仓库 Git 历史。
