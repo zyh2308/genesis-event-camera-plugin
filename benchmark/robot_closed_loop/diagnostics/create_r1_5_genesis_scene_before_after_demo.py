@@ -318,8 +318,8 @@ def save_overview(episode_data, output):
         ytext = row_y[row] + 408
         line = (f"事件（Direct / 旧版 / 候选）：{met['event_counts']['direct']:,} / "
                 f"{met['event_counts']['legacy']:,} / {met['event_counts']['candidate']:,}   ·   "
-                f">0.2 log误差点：{met['legacy_bad_pixel_times']:,} → "
-                f"{met['candidate_bad_pixel_times']:,}   ·   修复比例 {met['resolved_fraction']:.1%}")
+                f">0.2 log误差点：{met['legacy_bad_pixel_times_over_0p2']:,} → "
+                f"{met['candidate_bad_pixel_times_over_0p2']:,}   ·   修复比例 {met['resolved_fraction']:.1%}")
         canvas = draw_label(canvas, 60, ytext, line, small, (226, 232, 240))
     canvas = draw_label(canvas, 60, 1060,
         "范围：覆盖率/深度竞争诊断候选；动态亮度未完全解决。Direct-HDR 是已保存状态参考，不能代表所有未采样中间时刻。",
