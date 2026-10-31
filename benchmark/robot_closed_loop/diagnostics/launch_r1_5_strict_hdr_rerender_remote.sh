@@ -46,7 +46,7 @@ trap cleanup_unlaunched EXIT
 [[ "$(hostname -s)" == "$HOST" ]] || preflight_fail "host identity expected=$HOST actual=$(hostname -s)"
 [[ "$(findmnt -T "$HOME_ROOT" -no FSTYPE)" == nfs ]] || preflight_fail "project home is not the verified NFS mount"
 [[ -x "$PYTHON" && -x "$WORKER" ]] || preflight_fail "HDR Python or worker unavailable"
-[[ -f "$ROOT/source_provenance.json" && -f "$ROOT/$CONFIG" && -f "$ROOT/$WORKER" ]] || preflight_fail "staged source/config/worker missing"
+[[ -f "$ROOT/source_provenance.json" && -f "$ROOT/$CONFIG" && -f "$WORKER" ]] || preflight_fail "staged source/config/worker missing"
 grep -Fq "$SOURCE_COMMIT" "$ROOT/source_provenance.json" || preflight_fail "staged source commit mismatch"
 [[ ! -e "$OUT" && ! -e "$LOGDIR" ]] || preflight_fail "refusing to overwrite run output/log directory"
 [[ -r "$ROOT/benchmark/robot_closed_loop/diagnostics/measure_r1_5_strict_direct_rerender.py" ]] || preflight_fail "runner missing"
