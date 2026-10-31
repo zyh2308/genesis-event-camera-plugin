@@ -1,0 +1,40 @@
+{
+  "name": "r1_5_genesis_scene_before_after_demo_20261101a",
+  "purpose": "Visualize the diagnostic coverage-splat candidate against the frozen legacy interpolation on identical saved Genesis robot-scene trajectories.",
+  "episodes": ["004", "005"],
+  "episode_labels": {
+    "004": "center trajectory",
+    "005": "+55 mm lateral trajectory"
+  },
+  "cache_root": "benchmark/robot_closed_loop/results/r1_failure_chain_diagnosis_20261019a/native_hdr_cutoff059",
+  "source_endpoint_times_s": [0.5805, 0.5905],
+  "query_times_s": "the ten archived Direct-HDR exact-state samples from 0.5815 s through 0.5905 s at 1 ms intervals",
+  "input_space": "scene-linear HDR luminance",
+  "candidate": "diagnostic-only front-to-back bilinear footprint coverage splat; existing 1e-5 m depth tie band",
+  "direct_reference": "archived Genesis Direct-HDR render at each saved query state; diagnostic reference, not hidden intermediate physical ground truth",
+  "dvs": {
+    "response_mode": "physical_log",
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "threshold_noise": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "radiometric_floor": 1e-6,
+    "seed": 42
+  },
+  "visualization": {
+    "fps": 30,
+    "video_frames_per_1ms_sample": 3,
+    "linear_radiance_display_transform": "fixed Reinhard compression followed by sRGB-like gamma; visualization only",
+    "event_colors": {"on": "orange-red", "off": "cyan"},
+    "note": "Video is slowed for visibility. Source frames and timestamps are unchanged."
+  },
+  "limitations": [
+    "Uses archived Genesis renders and logged states; it does not launch a new physical rollout.",
+    "Coverage candidate is diagnostic-only and is not the frozen production core.",
+    "The candidate reduces the coverage/depth-competition artifact but does not eliminate dynamic-photometry residuals.",
+    "Direct-HDR samples are exact renders at logged states, not ground truth for every unobserved intermediate time."
+  ]
+}
