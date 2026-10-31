@@ -36,7 +36,7 @@ trap cleanup_unlaunched EXIT
 
 [[ "$(hostname -s)" == "$HOST" ]] || preflight_fail "host identity expected=$HOST actual=$(hostname -s)"
 [[ "$(findmnt -T "$HOME_ROOT" -no FSTYPE)" == nfs ]] || preflight_fail "project home is not the verified NFS mount"
-[[ -x "$PYTHON" && -x "$WORKER" && -r "$ROOT/$SCRIPT" ]] || preflight_fail "HDR Python/worker/runner unavailable"
+[[ -x "$PYTHON" && -r "$WORKER" && -r "$ROOT/$SCRIPT" ]] || preflight_fail "HDR Python/worker/runner unavailable"
 [[ -f "$ROOT/source_provenance.json" && -f "$ROOT/$CONFIG" && -f "$ROOT/$SCENE_CONFIG" ]] || preflight_fail "staged source/config missing"
 grep -Fq "$SOURCE_COMMIT" "$ROOT/source_provenance.json" || preflight_fail "source commit mismatch"
 [[ ! -e "$OUT" && ! -e "$LOGDIR" ]] || preflight_fail "refusing to overwrite run output/log directory"
