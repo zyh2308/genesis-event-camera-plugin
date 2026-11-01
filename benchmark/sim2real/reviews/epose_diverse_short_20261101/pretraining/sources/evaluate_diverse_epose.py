@@ -2,6 +2,7 @@
 import os,sys,json,time,hashlib,gc
 from pathlib import Path
 import numpy as np,torch,cv2
+torch.set_num_interop_threads(1);cv2.setNumThreads(1)
 from scipy.io import loadmat
 from scipy.spatial import cKDTree,ConvexHull
 from scipy.spatial.distance import pdist

@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-import numpy as np,h5py
+import numpy as np,h5py,cv2
+cv2.setNumThreads(1)
 def collect_diverse(pose,R,arm,split):
  cfg=json.loads((R/'bank_protocol.json').read_text());keys=np.load(R/'cad_keypoints.npy');rows=[]
  with h5py.File(R/'bank/shared_trajectory.h5','r') as h:

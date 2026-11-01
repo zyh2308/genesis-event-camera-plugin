@@ -2,6 +2,7 @@
 import os,sys,json,time,hashlib,ast,gzip,copy,argparse
 from pathlib import Path
 import numpy as np,torch,cv2
+torch.set_num_interop_threads(1);cv2.setNumThreads(1)
 P=Path('/home/zhaoyuhan/Eventbased_WAM');R=Path(os.environ['EPOSE_REPAIR_RUN']);OLD=P/'runs/sim2real/20261101-epose-wood-short-research-v1';cfg=json.loads((R/'protocol.json').read_text())
 sys.path[:0]=[str(OLD/'sources/benchmark/sim2real/scripts'),str(R/'sources')]
 import run_pose_stage2_pilot as pose
@@ -11,6 +12,7 @@ from pose_center_decoder import decode_classified_pose
 from region_loss import RegionLoss,build_targets
 torch.set_num_threads(8);torch.manual_seed(0);torch.use_deterministic_algorithms(True)
 arm=sys.argv[1];assert arm in ['eventgenesis','v2e'];out=R/'training';out.mkdir(exist_ok=True)
+(out/f'{arm}_environment.json').write_text(json.dumps({'device':'cpu','torch_threads':torch.get_num_threads(),'torch_interop_threads':torch.get_num_interop_threads(),'opencv_threads':cv2.getNumThreads(),'CUDA_VISIBLE_DEVICES':os.environ.get('CUDA_VISIBLE_DEVICES'),'torch_version':torch.__version__},indent=2))
 parsed=ast.parse((R/'sources/repair_training.py').read_text(encoding='utf-8-sig'));defs=[n for n in parsed.body if isinstance(n,ast.FunctionDef) and n.name=='loss_fn'];exec(compile(ast.Module(body=defs,type_ignores=[]),'verified_coordinate_loss','exec'),globals());coordinate_loss=loss_fn
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def evaluate(model,samples):

@@ -4,7 +4,7 @@ P=Path('/home/zhaoyuhan/Eventbased_WAM');R=Path(os.environ['EPOSE_REPAIR_RUN']);
 def add(src,dst):
  if src.is_file():
   target=E/dst;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,target);files[str(dst)]={'bytes':target.stat().st_size,'sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
-for pattern in ['*.json','*.txt','*.stdout','*.stderr','sources/*.py','training/*result.json','training/*samples.json','training/*updates.jsonl.gz','real_eval/*.json','real_eval/raw_undistorted/*.png','input_previews/*.png','bank/preview/*.png']:
+for pattern in ['*.json','*.txt','*.stdout','*.stderr','sources/*.py','training/*.json','training/*updates.jsonl.gz','training/*updates_live.jsonl','real_eval/*.json','real_eval/raw_undistorted/*.png','input_previews/*.png','bank/preview/*.png']:
  for p in R.glob(pattern):add(p,Path('final')/p.relative_to(R))
 for n in ['manifest.json','config.json','v2e_manifest.json']:add(R/'bank'/n,Path('final/bank')/n)
 attempts={'v2':'20261101-epose-localization-repair-v2','v3':'20261101-epose-localization-repair-v3','v4':'20261101-epose-localization-full-v4','v5':'20261101-epose-center-classifier-v5','v6':'20261101-epose-center-full-v6','v7':'20261101-epose-center-selected-v7'}
