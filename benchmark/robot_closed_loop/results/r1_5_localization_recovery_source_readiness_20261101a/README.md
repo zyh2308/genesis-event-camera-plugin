@@ -14,7 +14,7 @@ A bounded software-renderer probe was attempted because g1 had ample host RAM an
 
 ## Runner correction before first render
 
-The strict/direct runner initially placed the frozen tag before the selected benchmark-support snapshot on `sys.path`. The frozen tag also contains an older `benchmark/robot_closed_loop`, so that order would have imported the wrong `robot_env` and failed its provenance guard. The runner now imports and pins the frozen `genesis_event_plugin` package first, then prioritizes the isolated benchmark-support snapshot. This is a benchmark-layer fix; no frozen-core file changed. The corrected runner has passed `py_compile` and `git diff --check`; it has not yet rendered.
+The strict/direct runner initially placed the frozen tag before the selected benchmark-support snapshot on `sys.path`. The frozen tag also contains an older `benchmark/robot_closed_loop`, so that order would have imported the wrong `robot_env` and failed its provenance guard. The runner now imports and pins the frozen `genesis_event_plugin` package first, then prioritizes the isolated benchmark-support snapshot. A subsequent import-only check exposed another deployment mismatch: that support snapshot omits `diagnostics/run_paired_generator_smoke.py`, which supplied only pose and segmentation-ID helpers. Those helpers are now local to the diagnostic runner, so it no longer depends on the omitted module. This is a benchmark-layer fix; no frozen-core file changed. The updated runner passed local `py_compile` and `git diff --check`; the isolated g1 recheck and first render remain pending.
 
 ## Next exact step
 

@@ -96,6 +96,75 @@ def _state_from_cache(handle: h5py.File, index: int = 0) -> dict[str, Any]:
     }
 
 
+def _pose(body: Any, as_numpy, quaternion_matrix_wxyz) -> np.ndarray:
+    position = as_numpy(body.get_pos(relative=False)).reshape(-1)[:3]
+    quaternion = as_numpy(body.get_quat(relative=False)).reshape(-1)[:4]
+    matrix = np.eye(4, dtype=np.float64)
+    matrix[:3, :3] = quaternion_matrix_wxyz(quaternion)
+    matrix[:3, 3] = position
+    return matrix
+
+
+def _descriptor_indices(value: Any) -> set[int]:
+    found: set[int] = set()
+    for name in ("entity_idx", "link_idx", "idx"):
+        if hasattr(value, name):
+            try:
+                found.add(int(getattr(value, name)))
+            except (TypeError, ValueError):
+                pass
+    if isinstance(value, dict):
+        for child in value.values():
+            found.update(_descriptor_indices(child))
+    elif isinstance(value, (tuple, list, set)):
+        for child in value:
+            found.update(_descriptor_indices(child))
+    elif isinstance(value, (int, np.integer)):
+        found.add(int(value))
+    return found
+
+
+def _resolve_motion_bodies(env) -> dict[int, Any]:
+    """Resolve link-level segmentation IDs to their rigid world pose bodies."""
+    seg_map = getattr(env.scene, "segmentation_idx_dict", None)
+    if not seg_map:
+        raise RuntimeError("Genesis has no segmentation_idx_dict")
+    robot_links = {int(link.idx): link for link in env.robot.links}
+    target_ids = {int(env.target.idx)}
+    target_ids.update(int(link.idx) for link in getattr(env.target, "links", []))
+    mapping: dict[int, Any] = {}
+    resolved_robot_links: set[int] = set()
+    target_seg_ids: set[int] = set()
+    for raw_seg_id, descriptor in seg_map.items():
+        # Genesis 1.2.2 link descriptors are [entity_idx, link_idx]. Keep
+        # their positions distinct: entity indices can overlap link indices.
+        entity_idx = link_idx = None
+        if isinstance(descriptor, (tuple, list)) and len(descriptor) >= 2:
+            try:
+                entity_idx, link_idx = int(descriptor[0]), int(descriptor[1])
+            except (TypeError, ValueError):
+                entity_idx = link_idx = None
+        if entity_idx == int(env.robot.idx) and link_idx in robot_links:
+            mapping[int(raw_seg_id)] = robot_links[link_idx]
+            resolved_robot_links.add(link_idx)
+        elif entity_idx in target_ids:
+            mapping[int(raw_seg_id)] = env.target
+            target_seg_ids.add(int(raw_seg_id))
+        elif _descriptor_indices(descriptor).intersection(target_ids):
+            mapping[int(raw_seg_id)] = env.target
+            target_seg_ids.add(int(raw_seg_id))
+
+    missing_links = sorted(set(robot_links) - resolved_robot_links)
+    if missing_links:
+        raise RuntimeError(
+            "link-level segmentation must resolve every Panda link for articulated motion; "
+            f"missing_link_indices={missing_links}, segmentation_level=link"
+        )
+    if not target_seg_ids:
+        raise RuntimeError("moving target has no segmentation ID mapped to its object pose")
+    return mapping
+
+
 def _render_exact(env, row: dict[str, Any], pose_bodies: dict[int, Any], pose_fn) -> dict[str, Any]:
     env.robot.set_qpos(np.asarray(row["robot_qpos"], dtype=np.float32), zero_velocity=True)
     obj = row["object"]
@@ -171,18 +240,16 @@ def main() -> int:
         sys.path.remove(source_path)
     sys.path.insert(0, source_path)
 
-    from benchmark.robot_closed_loop.robot_env import build_robot_scene
-    from benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke import (
-        _pose, _resolve_motion_bodies,
+    from benchmark.robot_closed_loop.robot_env import (
+        as_numpy, build_robot_scene, quaternion_matrix_wxyz,
     )
     from benchmark.robot_closed_loop.event_state_model import five_bin_tensor
     import benchmark.robot_closed_loop.robot_env as robot_env_module
     import benchmark.robot_closed_loop.run as robot_run_module
-    import benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke as replay_helper_module
     import benchmark.robot_closed_loop.event_state_model as event_model_module
 
     support_module_hashes = {}
-    for module in (robot_env_module, robot_run_module, replay_helper_module, event_model_module):
+    for module in (robot_env_module, robot_run_module, event_model_module):
         module_path = Path(module.__file__).resolve()
         if not module_path.is_relative_to(source_root):
             raise RuntimeError(f"benchmark support import escaped requested snapshot: {module_path}")
@@ -324,7 +391,10 @@ def main() -> int:
         # exact row in the verified 0.5 ms physical trace.
         initial_started = time.perf_counter()
         env.scene.cur_t = 0.0
-        initial = _render_exact(env, initial_row, pose_bodies, _pose)
+        initial = _render_exact(
+            env, initial_row, pose_bodies,
+            lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
+        )
         render_wall_s += time.perf_counter() - initial_started
         rendered += 1
         with h5py.File(cache_path, "r") as handle:
@@ -351,7 +421,10 @@ def main() -> int:
         for row_index, row in enumerate(trace, start=1):
             before = time.perf_counter()
             env.scene.cur_t = float(row["time_s"])
-            frame = _render_exact(env, row, pose_bodies, _pose)
+            frame = _render_exact(
+                env, row, pose_bodies,
+                lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
+            )
             render_wall_s += time.perf_counter() - before
             rendered += 1
             t = float(frame["time_s"])
