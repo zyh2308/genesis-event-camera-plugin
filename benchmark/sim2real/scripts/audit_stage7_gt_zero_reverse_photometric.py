@@ -117,8 +117,18 @@ def main() -> None:
         model_root, "STE-FlowNet", config["model"]["source_commit"],
         repo / "benchmark/sim2real/manifests/downstream_source_bundle.json",
     )
+    # The external source bundle is intentionally not installed as a package.
+    # Put its verified root first so imports cannot resolve to a stale checkout
+    # elsewhere on PYTHONPATH.
+    sys.path.insert(0, str(model_root))
     import models
     import multiscaleloss
+    if Path(models.__file__).resolve().parent != (model_root / "models").resolve():
+        raise RuntimeError(f"STE-FlowNet models imported from unexpected path: {models.__file__}")
+    if Path(multiscaleloss.__file__).resolve() != (model_root / "multiscaleloss.py").resolve():
+        raise RuntimeError(
+            f"STE-FlowNet multiscaleloss imported from unexpected path: {multiscaleloss.__file__}"
+        )
     patch_record = patch_ste(models, multiscaleloss, model_root)
 
     # A single actual model forward identifies the four exact scales expected by
