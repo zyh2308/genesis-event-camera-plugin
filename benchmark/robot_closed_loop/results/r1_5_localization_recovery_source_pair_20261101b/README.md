@@ -37,4 +37,18 @@ Key checksums:
 
 ## Next decision needed
 
-For a valid paired comparison, first determine whether Genesis can expose actual solver states at the requested sub-step times while preserving the existing 0.5 ms physical trajectory. If not, the alternative is to generate a new matched physical rollout with a finer integration clock and regenerate both sources and labels; that is a new trajectory and cannot be called an exact replay of episodes 004/005. Do not substitute pose interpolation and call it strict actual-state sampling. After this input contract is resolved, rerun the two short episodes, compare raw events and five-bin inputs, then evaluate the frozen checkpoints. No training decision is supported by this partial run.
+Read-only source inspection resolved whether the current integrator has hidden substeps: the scene builder passes `SimOptions(dt=0.0005, ...)` without a `substeps` override; Genesis `SimOptions.substeps` defaults to `1`, and `Simulator.step()` advances exactly that configured count. There are no 0.167 ms solver states to expose from this rollout.
+
+Relevant runtime source hashes on g1:
+
+- `genesis/options/solvers.py`: `ccea060d5769b02776954cd5f6b6c7a07922c234cecf19a3473e013139263090`
+- `genesis/engine/simulator.py`: `b385b363dfb56512ae189d3ad86fd9bd75acc7209e2cf4b9c934ec76e98073da`
+- `genesis/engine/scene.py`: `ec1e062c8e59a6fa973bcca7cc75618514a6b672ebb69cb7a30f62430139a48c`
+- benchmark `robot_env.py`: `8a941724f9041a5281a3e989f9374e94308c2551e21ff54a247c8fd453722cb4`
+
+For a valid full strict comparison, the remaining choices are:
+
+1. Keep the current strict profile and physics clock, but accept that exact strict samples cannot be produced from these episodes. This leaves only a non-strict 0.5 ms development comparison, which is not the frozen-profile acceptance run.
+2. Generate a new matched physical rollout with a `1/6000 s` step (or finer), then render both event sources and regenerate labels from that same new rollout. This preserves source fairness but changes the numerical physics clock and is not an exact replay of episodes 004/005.
+
+Do not substitute pose interpolation and call it strict actual-state sampling. After the sampling contract and clock choice are resolved, render both short episodes, compare raw events and five-bin inputs, then evaluate the frozen checkpoints. No training decision is supported by this partial run.
