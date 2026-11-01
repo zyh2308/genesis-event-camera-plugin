@@ -13,6 +13,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -28,6 +29,7 @@ if str(ROOT) not in sys.path:
 from benchmark.robot_closed_loop.diagnostics.replay_event_state import _camera_to_world_cv
 from benchmark.robot_closed_loop.event_state import LearnedEventStateEstimator
 from benchmark.robot_closed_loop.predictor import FixedDecelerationPredictor, MotionState
+from benchmark.robot_closed_loop.pixel_metrics import project_world_to_pixel, summarize_pixel_failures
 
 
 def _sha256(path: Path) -> str:
@@ -36,6 +38,13 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _code_commit() -> str:
+    value = os.environ.get("ROBOT_EXECUTION_CODE_COMMIT")
+    if value:
+        return value
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
 
 
 def _reference_hashes(reference: Path) -> Dict[str, str]:
@@ -80,12 +89,17 @@ def _summarize(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
                 "arrival_signed_error_s", "arrival_abs_error_s", "state_age_ms",
             )
         }
+        selected_metrics["pixel_euclidean_error_px"] = _stats(
+            row["pixel_euclidean_error_px"] for row in selected
+            if row.get("pixel_euclidean_error_px") is not None
+        )
         selected_metrics = {key: value for key, value in selected_metrics.items() if value["n"] or key in (
             "position_xy_error_m", "velocity_xy_error_m_s", "intercept_xy_error_m",
-            "intercept_y_signed_error_m", "arrival_signed_error_s", "arrival_abs_error_s", "state_age_ms")}
+            "intercept_y_signed_error_m", "arrival_signed_error_s", "arrival_abs_error_s", "state_age_ms", "pixel_euclidean_error_px")}
         unreachable = [row for row in selected if not row["reference_reachable"]]
         summary[source] = {
             "poll_count": len(selected),
+            "pixel_localization_failures": summarize_pixel_failures(selected),
             "state_available_count": len(state_rows),
             "state_available_fraction_all_polls": len(state_rows) / len(selected) if selected else None,
             "state_status_counts": {
@@ -202,6 +216,9 @@ def main() -> int:
             # Ground truth is queried only after both event-only estimators ran.
             true_position = np.asarray([np.interp(cutoff_s, times, positions[:, k]) for k in range(3)])
             true_velocity = np.asarray([np.interp(cutoff_s, times, velocities[:, k]) for k in range(3)])
+            true_pixel = project_world_to_pixel(
+                true_position, camera_pose, (focal, focal, width / 2., height / 2.)
+            )
             gt_prediction = predictor.predict(MotionState(cutoff_s, true_position, true_velocity), args.latency)
             for source, observation in observations.items():
                 row: Dict[str, Any] = {
@@ -215,6 +232,9 @@ def main() -> int:
                     "state_available": observation.state is not None,
                     "reference_reachable": bool(gt_prediction.reachable),
                     "prediction_reachable": None,
+                    "gt_u_px": float(true_pixel[0]), "gt_v_px": float(true_pixel[1]),
+                    "pred_u_px": None, "pred_v_px": None,
+                    "pixel_euclidean_error_px": None,
                     "position_xy_error_m": None, "velocity_xy_error_m_s": None,
                     "intercept_xy_error_m": None, "intercept_y_signed_error_m": None,
                     "arrival_signed_error_s": None, "arrival_abs_error_s": None,
@@ -225,6 +245,13 @@ def main() -> int:
                     velocity_error = observation.state.velocity_m_s - true_velocity
                     row["position_xy_error_m"] = float(np.linalg.norm(position_error[:2]))
                     row["velocity_xy_error_m_s"] = float(np.linalg.norm(velocity_error[:2]))
+                    predicted_pixel = project_world_to_pixel(
+                        observation.state.position_m, camera_pose,
+                        (focal, focal, width / 2., height / 2.),
+                    )
+                    row["pred_u_px"] = float(predicted_pixel[0])
+                    row["pred_v_px"] = float(predicted_pixel[1])
+                    row["pixel_euclidean_error_px"] = float(np.linalg.norm(predicted_pixel - true_pixel))
                     prediction = predictor.predict(observation.state, args.latency)
                     row["prediction_reachable"] = bool(prediction.reachable)
                     if prediction.reachable and gt_prediction.reachable:
@@ -238,7 +265,7 @@ def main() -> int:
     overall = _summarize(rows)
     summary = {
         "purpose": "R1 common Direct-HDR reference development evaluation; paired training is not a ranking",
-        "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "code_commit": _code_commit(),
         "scene_config_sha256": _sha256(scene_path), "control_config_sha256": _sha256(control_path),
         "checkpoint_sha256": {"ours": _sha256(args.ours_checkpoint.resolve()), "v2e": _sha256(args.v2e_checkpoint.resolve())},
         "reference_root": str(reference), "reference_manifest_sha256": _sha256(reference / "SHA256SUMS"),
@@ -247,6 +274,17 @@ def main() -> int:
         "deceleration_m_s2": args.deceleration,
         "arrival_and_intercept_reference": "the same frozen predictor applied to evaluation GT state at the causal cutoff; not measured plane-crossing ground truth",
         "reference_events_are_common_to_both_models": True,
+        "pixel_metric": {
+            "name": "Euclidean error of target centre in original image pixels",
+            "resolution_wh": [width, height],
+            "label_time": "causal observation cutoff, not poll time or future contact",
+            "prediction": "project the event-only runtime position with the fixed calibrated camera",
+            "reference": "project physical target centre; GT is accessed only after inference",
+            "intrinsics_fx_fy_cx_cy": [focal, focal, width / 2., height / 2.],
+            "camera_to_world_cv": camera_pose.tolist(),
+            "thresholds_are_diagnostic_not_grasp_success": True,
+            "missing_predictions_count_as_failures": True,
+        },
         "provenance": provenance,
         "overall": overall,
         "last_100ms_before_contact": _summarize([row for row in rows if row["last_100ms_before_contact"]]),

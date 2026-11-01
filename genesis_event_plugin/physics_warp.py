@@ -506,7 +506,7 @@ def depth_aware_bidirectional_warp_projected(
     The second return value is the intermediate target-domain visibility mask,
     not either endpoint's source-valid mask.
     """
-    if composite == "same_surface_log_linear":
+    if composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
         out, valid, _ = depth_aware_bidirectional_warp_projected_diagnostics(
             frame0, depth0, uv0, z0, valid0,
             frame1, depth1, uv1, z1, valid1,
@@ -571,6 +571,58 @@ def depth_aware_bidirectional_warp_projected_diagnostics(
     """
     if not 0.0 <= float(alpha) <= 1.0:
         raise ValueError("alpha must be in [0,1]")
+    if composite == "coverage_time_log_linear":
+        if alpha is None or not 0.0 <= float(alpha) <= 1.0:
+            raise ValueError("coverage_time_log_linear requires alpha in [0,1]")
+        # Do not forward-splat an already observed endpoint through a rounded
+        # identity projection. Only genuine intermediate times use geometry.
+        if float(alpha) <= 1e-10 or float(alpha) >= 1.0 - 1e-10:
+            exact = frame0 if float(alpha) <= 1e-10 else frame1
+            valid = np.isfinite(exact) if np.asarray(exact).ndim == 2 else np.isfinite(exact).all(axis=-1)
+            return np.asarray(exact, dtype=np.float32).copy(), valid, {
+                "intermediate_visibility": valid, "intermediate_unknown": ~valid,
+                "intermediate_coverage": valid.astype(np.float32),
+                "conditional_radiance_available": valid, "disocclusion": ~valid,
+            }
+        a0, d0 = _splat_projected_coverage_diagnostics(
+            frame0, depth0, uv0, z0, valid0, surface_id0,
+            min_coverage_fraction, depth_tie_abs_m, depth_tie_rtol,
+        )
+        a1, d1 = _splat_projected_coverage_diagnostics(
+            frame1, depth1, uv1, z1, valid1, surface_id1,
+            min_coverage_fraction, depth_tie_abs_m, depth_tie_rtol,
+        )
+        # The old next-primary rule imported the future endpoint's complete
+        # brightness change at the first subframe. Weight reconstructed
+        # observations by both time and their actual footprint contribution.
+        w0 = (1.0 - float(alpha)) * d0["coverage"]
+        w1 = float(alpha) * d1["coverage"]
+        denom = w0 + w1
+        available = denom > 1e-8
+        if np.asarray(a0).ndim == 3:
+            w0, w1, denom = w0[..., None], w1[..., None], denom[..., None]
+        numer = w0 * np.log(np.maximum(a0, 1e-6)) + w1 * np.log(np.maximum(a1, 1e-6))
+        mixed = np.divide(numer, denom, out=np.zeros_like(numer), where=denom > 1e-8)
+        out = np.full_like(a0, np.nan, dtype=np.float32)
+        out[available] = np.exp(mixed[available]).astype(np.float32)
+        with np.errstate(invalid="ignore"):
+            zmatch = np.abs(d0["z_buffer"] - d1["z_buffer"]) <= np.maximum(
+                float(surface_depth_abs_m),
+                float(surface_depth_rtol) * np.maximum(np.abs(d0["z_buffer"]), np.abs(d1["z_buffer"])),
+            )
+        trusted = (d0["support"] & d1["support"]
+                   & d0["surface_consistent"] & d1["surface_consistent"]
+                   & (d0["surface_id"] == d1["surface_id"]) & zmatch)
+        return out, trusted, {
+            "occupancy0": d0["occupancy"], "occupancy1": d1["occupancy"],
+            "visibility0": d0["visibility"], "visibility1": d1["visibility"],
+            "support0": d0["support"], "support1": d1["support"],
+            "coverage0": d0["coverage"], "coverage1": d1["coverage"],
+            "surface_match": trusted, "intermediate_visibility": trusted,
+            "intermediate_unknown": ~trusted,
+            "intermediate_coverage": np.minimum(d0["coverage"], d1["coverage"]),
+            "conditional_radiance_available": available, "disocclusion": ~trusted,
+        }
     if composite == "same_surface_log_linear":
         exact_frame, exact_valid, exact_endpoint = None, None, None
         if alpha == 0.0:

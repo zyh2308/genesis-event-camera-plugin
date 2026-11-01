@@ -95,7 +95,7 @@ class PhysicsInterpolator:
             raise ValueError("K must have shape (3,3)")
         if disocclusion_policy not in {"hold", "nan", "raise", "request_render"}:
             raise ValueError("disocclusion_policy must be hold, nan, raise, or request_render")
-        if composite not in {"weighted", "next_primary", "same_surface_log_linear"}:
+        if composite not in {"weighted", "next_primary", "same_surface_log_linear", "coverage_time_log_linear"}:
             raise ValueError("unknown warp composite")
         if warp_backend not in {"auto", "numpy", "torch"}:
             raise ValueError("warp_backend must be 'auto', 'numpy', or 'torch'")
@@ -107,6 +107,8 @@ class PhysicsInterpolator:
             self.warp_backend = "torch" if device and str(device).startswith("cuda") else "numpy"
         else:
             self.warp_backend = warp_backend
+        if composite == "coverage_time_log_linear" and self.warp_backend != "numpy":
+            raise ValueError("coverage_time_log_linear is currently validated only on the NumPy backend")
         self.strict_fidelity = bool(strict_fidelity)
         if not 0.0 < min_coverage_fraction <= 1.0:
             raise ValueError("min_coverage_fraction must be in (0,1]")
@@ -228,8 +230,23 @@ class PhysicsInterpolator:
                     self.last_render_requests,
                 )
             if self.disocclusion_policy == "hold":
-                fallback = self._current_I0 if alpha < 0.5 else self._current_I1
-                warped[invalid] = fallback[invalid]
+                if self.composite == "coverage_time_log_linear":
+                    # Finite conditional geometry is an approximation, not a
+                    # fully supported observation. Preserve the unknown mask.
+                    # Only holes with no endpoint projection use a continuous
+                    # endpoint fallback; never switch images at alpha=0.5.
+                    finite = np.isfinite(warped)
+                    if warped.ndim == 3:
+                        finite = finite.all(axis=-1)
+                    holes = invalid & ~finite
+                    fallback = np.exp(
+                        (1.0 - float(alpha)) * np.log(np.maximum(self._current_I0, 1e-6))
+                        + float(alpha) * np.log(np.maximum(self._current_I1, 1e-6))
+                    )
+                    warped[holes] = fallback[holes]
+                else:
+                    fallback = self._current_I0 if alpha < 0.5 else self._current_I1
+                    warped[invalid] = fallback[invalid]
         return warped.astype(np.float32, copy=False), invalid
 
     def _interpolate_pair(
