@@ -426,7 +426,10 @@ def main() -> int:
                 "radiance": current["frame"]["radiance"],
                 "depth": current["frame"]["depth"], "seg": current["frame"]["seg"],
             },
-            intermediate_state_provider=lambda request: _actual_sample(request, by_time),
+            intermediate_state_provider=(
+                None if args.probe_sampler_counts
+                else lambda request: _actual_sample(request, by_time)
+            ),
         )
         plugin.attach(replay_scene, env.camera)
 
