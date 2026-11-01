@@ -7,6 +7,7 @@ ASSET_ROOT=$PROJECT/external/sim2real_assets/replicacad_interactive_v1_5/extract
 GENESIS_ROOT=$PROJECT/runtime/sim2real/genesis_hdr_v2
 MODEL_ROOT=$PROJECT/external/sources/downstream/STE-FlowNet
 RUN_ROOT=$PROJECT/runs/sim2real/20261101-stage8-replicad-dynamic-v1
+TMP_ROOT=/tmp/sim2real-stage8-replicad-dynamic-v1
 CONFIG=$EXEC/benchmark/sim2real/configs/stage8_replicad_dynamic_gtfit_v1.json
 GENERATOR=$EXEC/benchmark/sim2real/scripts/generate_stage8_replicad_dynamic_flow_pilot.py
 V2E=$EXEC/benchmark/sim2real/scripts/run_stage8_v2e_same_radiance.py
@@ -33,9 +34,11 @@ test ! -e "$RUN_ROOT/stage8_finished_utc.txt"
 for spec in 'stage8-sc0-dynamic-pilot-v1 v3_sc0_staging_00' 'stage8-sc2-dynamic-pilot-v1 v3_sc2_staging_00'; do
   read -r episode scene <<< "$spec"
   EROOT=$RUN_ROOT/$episode
-  OUT=$EROOT
-  CACHE=$EROOT/cache
+  TMP=$TMP_ROOT/$episode
+  OUT=$TMP/scene
+  CACHE=$TMP/cache
   mkdir -p "$EROOT" "$CACHE"
+  test ! -e "$TMP/scene"
   test ! -e "$EROOT/scene_exit_code.txt"
   date -u +%Y-%m-%dT%H:%M:%SZ > "$EROOT/scene_started_utc.txt"
   set +e
@@ -47,10 +50,11 @@ for spec in 'stage8-sc0-dynamic-pilot-v1 v3_sc0_staging_00' 'stage8-sc2-dynamic-
   printf '%s\n' "$RC" > "$EROOT/scene_exit_code.txt"
   date -u +%Y-%m-%dT%H:%M:%SZ > "$EROOT/scene_finished_utc.txt"
   if [[ "$RC" -ne 0 ]]; then printf '%s\n' "$RC" > "$RUN_ROOT/exit_code.txt"; exit "$RC"; fi
-  # The run directory contains the scene output; put its motion artifacts at the registered path.
-  mkdir -p "$EROOT/camera_motion_30ms"
-  cp -a "$EROOT/scene/camera_motion_30ms/." "$EROOT/camera_motion_30ms/"
-  sha256sum "$EROOT/scene/result.json" "$EROOT/camera_motion_30ms/radiance_frames.npy" "$EROOT/camera_motion_30ms/gt_flow_px_t0_to_t30ms.npy" > "$EROOT/scene_artifacts.sha256"
+  # Keep only reproducibility artifacts on shared NFS; scene parser overlays and caches stay in this run-local /tmp.
+  cp -a "$OUT/camera_motion_30ms" "$EROOT/camera_motion_30ms"
+  cp "$OUT/result.json" "$EROOT/genesis_result.json"
+  cp "$OUT/layout_rgb.png" "$OUT/layout_depth.npy" "$OUT/layout_segmentation.npy" "$OUT/layout_radiance.npy" "$EROOT/"
+  sha256sum "$EROOT/genesis_result.json" "$EROOT/layout_rgb.png" "$EROOT/layout_depth.npy" "$EROOT/layout_segmentation.npy" "$EROOT/layout_radiance.npy" "$EROOT/camera_motion_30ms/radiance_frames.npy" "$EROOT/camera_motion_30ms/gt_flow_px_t0_to_t30ms.npy" > "$EROOT/scene_artifacts.sha256"
   date -u +%Y-%m-%dT%H:%M:%SZ > "$EROOT/v2e_started_utc.txt"
   set +e
   CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 PYTHONPATH="$EXEC:$PROJECT" \
@@ -63,6 +67,7 @@ for spec in 'stage8-sc0-dynamic-pilot-v1 v3_sc0_staging_00' 'stage8-sc2-dynamic-
   printf '%s\n' "$RC" > "$EROOT/v2e_exit_code.txt"
   date -u +%Y-%m-%dT%H:%M:%SZ > "$EROOT/v2e_finished_utc.txt"
   if [[ "$RC" -ne 0 ]]; then printf '%s\n' "$RC" > "$RUN_ROOT/exit_code.txt"; exit "$RC"; fi
+  rm -rf -- "$TMP"
 done
 
 FLOW_BANK=$RUN_ROOT/flow_bank
