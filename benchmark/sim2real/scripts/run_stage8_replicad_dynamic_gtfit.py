@@ -148,6 +148,7 @@ def main() -> None:
         SOURCE_COMMIT, model_output_to_flow_hw, model_source,
         multiscale_supervised_epe, sha256 as helper_sha256, state_sha256,
     )
+    from steflow_device_placement import install_cpu_cuda_placement_compat
     from verify_pinned_source import verify_pinned_source
 
     config_path = args.config.resolve()
@@ -162,6 +163,7 @@ def main() -> None:
         if not torch.cuda.is_available():
             raise RuntimeError("CUDA was requested but is unavailable")
         torch.cuda.set_device(device)
+    device_placement_compat = install_cpu_cuda_placement_compat(device)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -218,6 +220,7 @@ def main() -> None:
         "common_active_pixels": {key: int(value.sum()) for key, value in masks.items()},
         "real_data_used": False, "formal_checkpoint_selection": False,
         "device": str(device),
+        "device_placement_compatibility": device_placement_compat,
         "gpu_name": (torch.cuda.get_device_name(device) if device.type == "cuda" else None),
         "gpu_uuid": (str(torch.cuda.get_device_properties(device).uuid)
                      if device.type == "cuda" and hasattr(torch.cuda.get_device_properties(device), "uuid") else None),
