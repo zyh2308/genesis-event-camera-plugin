@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT=/home/zhaoyuhan/Eventbased_WAM
-RUN_ID=20261101-stage8-flow-photo-oracle-run05-v1
+RUN_ID=20261101-stage8-flow-photo-oracle-run06-v1
 RUN=$PROJECT/runs/sim2real/$RUN_ID
 REPO=$PROJECT/execution_checkouts/sim2real-flow-photo-oracle-20261101
 MODEL=$PROJECT/external/sources/downstream/STE-FlowNet
