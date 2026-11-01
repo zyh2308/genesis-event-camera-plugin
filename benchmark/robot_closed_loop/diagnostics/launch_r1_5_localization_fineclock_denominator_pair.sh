@@ -40,6 +40,8 @@ echo "code_commit=$(git -C "$ROOT" rev-parse HEAD)"
 echo "gpu_uuid=$GPU_UUID"
 echo "physics_dt_s=$DT"
 echo "capture_horizon_after_launch_s=$END_S"
+echo "genesis_physics_backend=cpu"
+echo "render_backend=EGL on assigned visible GPU"
 
 finish_reservation() {
   local exit_code=$?
@@ -101,7 +103,7 @@ for EP in 4 5; do
     --experiment-config "$EXPERIMENT_CONFIG" \
     --episode-id "$EP" \
     --output "$RENDER_ROOT" \
-    --genesis-backend gpu > "$RUN_ROOT/logs/render_episode_${EP}.log" 2>&1
+    --genesis-backend cpu > "$RUN_ROOT/logs/render_episode_${EP}.log" 2>&1
   echo "phase=render_episode_end episode=$EP utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 done
 

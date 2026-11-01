@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if [[ $# -ne 6 ]]; then
-  echo "usage: $0 RUN_ROOT GPU_UUID RESERVATION_JSON TRACE_ROOT SCENE_CONFIG EXPERIMENT_CONFIG" >&2
+if [[ $# -lt 6 || $# -gt 7 ]]; then
+  echo "usage: $0 RUN_ROOT GPU_UUID RESERVATION_JSON TRACE_ROOT SCENE_CONFIG EXPERIMENT_CONFIG [EPISODE_IDS]" >&2
   exit 64
 fi
 
@@ -12,6 +12,18 @@ RESERVATION_JSON=$(realpath -m "$3")
 TRACE_ROOT=$(realpath -e "$4")
 SCENE_CONFIG=$(realpath -e "$5")
 EXPERIMENT_CONFIG=$(realpath -e "$6")
+EPISODE_IDS=${7:-4,5}
+IFS=, read -r -a EPISODES <<< "$EPISODE_IDS"
+if [[ ${#EPISODES[@]} -lt 1 || ${#EPISODES[@]} -gt 2 ]]; then
+  echo "EPISODE_IDS must contain 4, 5, or 4,5" >&2
+  exit 64
+fi
+for EP in "${EPISODES[@]}"; do
+  if [[ "$EP" != 4 && "$EP" != 5 ]]; then
+    echo "sampler probe only supports episode 4 or 5" >&2
+    exit 64
+  fi
+done
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 RUN_ID=$(basename "$RUN_ROOT")
 CORE_ROOT=/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-914ffff/frozen_core
@@ -36,6 +48,7 @@ echo "code_commit=$(git -C "$ROOT" rev-parse HEAD)"
 echo "gpu_uuid=$GPU_UUID"
 echo "probe_only=true"
 echo "trace_root=$TRACE_ROOT"
+echo "episode_ids=$EPISODE_IDS"
 
 finish_reservation() {
   local exit_code=$?
@@ -60,7 +73,7 @@ trap finish_reservation EXIT
 
 export OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 PYTHONDONTWRITEBYTECODE=1
 export ROBOT_EXECUTION_CODE_COMMIT=$(git -C "$ROOT" rev-parse HEAD)
-for EP in 4 5; do
+for EP in "${EPISODES[@]}"; do
   current=$(nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader,nounits | awk -F, -v u="$GPU_UUID" 'BEGIN{n=0} {gsub(/^[ \t]+|[ \t]+$/, "", $1); if($1==u){print; n++}} END{if(n) exit 1}') || {
     echo "assigned GPU already has a compute process; refusing probe episode $EP"
     exit 90

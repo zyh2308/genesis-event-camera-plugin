@@ -400,6 +400,8 @@ def main() -> int:
         raise RuntimeError("render scene camera pose does not match the cached rollout")
     render_wall_s = 0.0
     rendered = 0
+    direct_endpoint_frame_count = 0
+    strict_requested_sample_render_count = 0
     cache_image_checks: list[dict[str, Any]] = []
     try:
         camera_probe = env.camera.render(rgb=True, depth=True, segmentation=True, radiance=True, force_render=True)
@@ -424,6 +426,48 @@ def main() -> int:
         current = {"frame": None}
         replay_scene = _ReplayClockScene(env.scene)
         by_time: dict[float, dict[str, Any]] = {}
+        trace_by_time = {round(float(row["time_s"]), 9): row for row in trace}
+        rendered_radiance_sha_by_time: dict[float, str] = {}
+
+        def render_trace_row(row: dict[str, Any]) -> dict[str, Any]:
+            """Render one exact saved physics state and cache its real HDR frame."""
+            nonlocal render_wall_s, rendered
+            t_row = float(row["time_s"])
+            key = round(t_row, 9)
+            if key in by_time:
+                return by_time[key]
+            replay_scene.cur_t = t_row
+            before = time.perf_counter()
+            frame = _render_exact(
+                env, row, pose_bodies,
+                lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
+            )
+            render_wall_s += time.perf_counter() - before
+            rendered += 1
+            frame["time_s"] = t_row
+            by_time[key] = frame
+            current["frame"] = frame
+            rendered_radiance_sha_by_time[key] = _array_sha(frame["radiance"])
+            return frame
+
+        def render_requested_actual_state(request):
+            """Serve strict samples only from exact, saved physical states."""
+            nonlocal strict_requested_sample_render_count
+            key = round(float(request.t), 9)
+            row = trace_by_time.get(key)
+            if row is None:
+                nearest = sorted(trace_by_time, key=lambda value: abs(value - key))[:4]
+                raise KeyError(
+                    f"strict requested t={key:.9f}; no exact physical row; nearest={nearest}"
+                )
+            was_cached = key in by_time
+            frame = render_trace_row(row)
+            if not was_cached:
+                strict_requested_sample_render_count += 1
+            if abs(float(frame["time_s"]) - float(request.t)) > 1e-8:
+                raise KeyError("strict request did not match the timestamp of an actual physical state")
+            return _actual_sample(request, by_time)
+
         direct = DvsEmulator(res=(int(env.camera.res[1]), int(env.camera.res[0])), config=sensor, device="cpu")
         plugin = GenesisPhysicsEventPlugin(
             preset="clean", noise_config=sensor, input_space="linear",
@@ -444,7 +488,7 @@ def main() -> int:
             },
             intermediate_state_provider=(
                 None if args.probe_sampler_counts
-                else lambda request: _actual_sample(request, by_time)
+                else render_requested_actual_state
             ),
         )
         plugin.attach(replay_scene, env.camera)
@@ -456,18 +500,15 @@ def main() -> int:
         interval_rows: list[dict[str, Any]] = []
         direct_wall_s = 0.0
         strict_wall_s = 0.0
-        render_hash = hashlib.sha256()
-        # The old t=0 HDR observation is retained as the common real DVS
-        # initialization frame, then every later frame is rendered from an
-        # exact row in the verified 0.5 ms physical trace.
-        initial_started = time.perf_counter()
+        # The old t=0 HDR observation is retained as the common DVS
+        # initialization frame. Paired rollouts use 1 ms direct endpoints;
+        # strict intermediate observations are rendered on demand from exact
+        # rows of the finer saved physics trace.
         replay_scene.cur_t = initial_time
-        initial = _render_exact(
-            env, initial_row, pose_bodies,
-            lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
-        )
-        render_wall_s += time.perf_counter() - initial_started
-        rendered += 1
+        initial = render_trace_row(initial_row)
+        # A sampler-only window may begin from a cached trace row that is not
+        # part of the selected trace slice. It is still rendered from the
+        # exact supplied state and remains the continuous DVS initialization.
         with h5py.File(cache_path, "r") as handle:
             cached_hdr = np.asarray(handle["radiance"][int(t0_indices[0])], dtype=np.float32)
         initial_max_error = (
@@ -486,31 +527,27 @@ def main() -> int:
             })
         current["frame"] = initial
         by_time[round(initial_time, 9)] = initial
-        render_hash.update(np.ascontiguousarray(initial["radiance"]).tobytes())
         direct.initialize(linear_luminance(initial["radiance"]), t=initial_time)
         plugin.start_episode()
         plugin.capture()
 
         missing_sample = None
+        endpoint_only = (
+            args.probe_sampler_counts
+            or args.trajectory_mode == "paired-new-physics"
+        )
         for row_index, row in enumerate(trace, start=1):
-            if float(row["time_s"]) <= initial_time + 1e-10:
+            row_time = float(row["time_s"])
+            if row_time <= initial_time + 1e-10:
                 continue
-            if args.probe_sampler_counts and not np.isclose(
-                float(row["time_s"]) / 0.001,
-                round(float(row["time_s"]) / 0.001), atol=1e-7, rtol=0,
+            if endpoint_only and not np.isclose(
+                row_time / 0.001, round(row_time / 0.001), atol=1e-7, rtol=0,
             ):
                 continue
-            before = time.perf_counter()
-            replay_scene.cur_t = float(row["time_s"])
-            frame = _render_exact(
-                env, row, pose_bodies,
-                lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
-            )
-            render_wall_s += time.perf_counter() - before
-            rendered += 1
+            frame = render_trace_row(row)
             t = float(frame["time_s"])
             key = round(t, 9)
-            by_time[key] = frame
+            direct_endpoint_frame_count += 1
             if key in cache_validation:
                 reference = cache_validation[key]
                 cache_image_checks.append({
@@ -520,16 +557,18 @@ def main() -> int:
                     "segmentation_mismatch_pixels": int(np.count_nonzero(frame["seg"] != reference["seg"])),
                 })
             current["frame"] = frame
-            render_hash.update(np.ascontiguousarray(frame["radiance"]).tobytes())
             direct_started = time.perf_counter()
             direct_event = direct.generate_events(linear_luminance(frame["radiance"]), t)
             direct_wall_s += time.perf_counter() - direct_started
+            current["frame"] = frame
+            replay_scene.cur_t = t
             if len(direct_event):
                 direct_chunks.append(np.asarray(direct_event, dtype=np.float64))
                 direct_availability_chunks.append(np.full(len(direct_event), t, dtype=np.float64))
             replay_scene.cur_t = t
-            # Only call the strict wrapper on 1 ms brackets. Its actual
-            # midpoint provider returns the exact intervening 0.5 ms row.
+            # Only call the strict wrapper on 1 ms brackets. Its provider
+            # renders the exact adaptive sample times from the saved fine
+            # physics trace; it never interpolates physical states.
             if np.isclose(t / 0.001, round(t / 0.001), atol=1e-7, rtol=0):
                 strict_started = time.perf_counter()
                 try:
@@ -559,6 +598,11 @@ def main() -> int:
                     "strict_sample_output": plugin.interpolator.last_uncertainty.get("strict_sample_output"),
                     "strict_event_count": int(len(strict_event)),
                 })
+                # A real subframe render temporarily restores an earlier state.
+                # Put the replay clock and endpoint providers back at the
+                # observation that just completed before the next interval.
+                current["frame"] = frame
+                replay_scene.cur_t = t
             for old_time in [value for value in by_time if value < t - 0.0010001]:
                 del by_time[old_time]
         plugin.end_episode()
@@ -658,6 +702,10 @@ def main() -> int:
             else "GENERATED_COMPARE_READY"
         )
 
+        ordered_render_hash = hashlib.sha256()
+        for sample_time, radiance_sha in sorted(rendered_radiance_sha_by_time.items()):
+            ordered_render_hash.update(f"{sample_time:.9f} {radiance_sha}\n".encode("ascii"))
+
         summary = {
             "status": status,
             "sampler_probe_only": bool(args.probe_sampler_counts),
@@ -692,10 +740,14 @@ def main() -> int:
                 if args.trajectory_mode == "paired-new-physics" else "all exact overlapping cached frames"
             ),
             "physical_trace_interval_s": dt, "strict_capture_interval_s": 0.001,
-            "direct_actual_frame_interval_s": 0.001 if args.probe_sampler_counts else dt,
+            "direct_actual_frame_interval_s": 0.001 if endpoint_only else dt,
             "dvs_response": response, "initial_cached_vs_rerender_hdr_max_abs_error": initial_max_error,
-            "actual_rendered_frame_count": rendered, "actual_rendered_radiance_stream_sha256": render_hash.hexdigest(),
-            "actual_direct_frame_spacing_s": 0.001 if args.probe_sampler_counts else dt,
+            "actual_rendered_frame_count": rendered,
+            "actual_rendered_radiance_stream_sha256": ordered_render_hash.hexdigest(),
+            "actual_rendered_radiance_stream_hash_method": "SHA256 of sorted exact timestamps and per-frame radiance SHA256 values",
+            "actual_direct_frame_spacing_s": 0.001 if endpoint_only else dt,
+            "direct_endpoint_frame_count": direct_endpoint_frame_count,
+            "strict_requested_sample_render_count": strict_requested_sample_render_count,
             "strict_event_archive": "strict_sampled_events.npz[events,available_at_s]",
             "direct_event_archive": "direct_hdr_events_exact_trace.npz[events,available_at_s]",
             "direct_event_count": int(len(direct_events)), "strict_event_count": int(len(strict_events)),
