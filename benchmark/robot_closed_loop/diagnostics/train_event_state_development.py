@@ -12,6 +12,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -291,6 +292,10 @@ def _write_predictions(path: Path, metadata, labels, predictions) -> None:
 
 
 def _git_value(*args: str) -> str:
+    if args == ("rev-parse", "HEAD"):
+        execution_commit = os.environ.get("ROBOT_EXECUTION_CODE_COMMIT")
+        if execution_commit:
+            return execution_commit
     try:
         return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
     except Exception:

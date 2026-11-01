@@ -43,6 +43,13 @@ def _jsonl(path: Path):
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def _code_commit() -> str:
+    value = os.environ.get("ROBOT_EXECUTION_CODE_COMMIT")
+    if value:
+        return value
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -522,7 +529,7 @@ def main() -> int:
     if args.skip_fit:
         summary = {
             "status": "GENERATION_SMOKE_ONLY",
-            "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+            "code_commit": _code_commit(),
             "candidate_generator_sha256": _sha256(Path(__file__).with_name("r1_5_coverage_candidate.py")),
             "candidate_event_source_manifest_sha256": _sha256(candidate_root / "SHA256SUMS"),
             "episodes": episode_records,
@@ -585,7 +592,7 @@ def main() -> int:
         "status": "PASS",
         "experiment_id": experiment["experiment_id"],
         "purpose": "candidate-event development retrain on paired Genesis caches and same Direct-HDR reference replay; not ranking",
-        "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "code_commit": _code_commit(),
         "experiment_config_sha256": _sha256(config_path),
         "scene_config_sha256": _sha256(scene_config),
         "control_config_sha256": _sha256(control_config),
