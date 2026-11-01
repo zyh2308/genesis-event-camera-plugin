@@ -1,0 +1,53 @@
+{
+  "status": "development_precontact_pixel_accepted",
+  "plugin_entrypoint": "GenesisPhysicsEventPlugin.capture_observed",
+  "plugin_source_commit": "1c6ce68244063c08977d1be0123eb12e3d65389a",
+  "strict_fidelity": true,
+  "input_space": "linear",
+  "maximum_actual_hdr_interval_s": 0.0005,
+  "input_provenance": "actual Genesis renderer scene-linear floating HDR at exact physics timestamps",
+  "scene_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "control_sha256": "3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80",
+  "checkpoint_sha256": "a11df9aedc49c9cff29554993159e9dc695d2e7ab6555669ff3bd5277c5212ac",
+  "checkpoint_relative_path": "candidate_model/spatial_event_state.pt",
+  "architecture": "heatmap_v2",
+  "train_seed": 606,
+  "epoch_budget": 40,
+  "batch_size": 32,
+  "label_latency_s": 0.01,
+  "representation": "causal 25ms, five 5ms bins, two polarities, 64x64, log1p counts",
+  "inference_inputs": "events plus fixed camera calibration only",
+  "fixed_target_center_height_m": 0.02,
+  "sensor_profile": "explicit historical ideal development profile, not real_v2 default and not real-camera calibration",
+  "pos_thres": 0.2,
+  "neg_thres": 0.2,
+  "noise": false,
+  "bandwidth": "infinite",
+  "response_mode": "physical_log",
+  "primary_reference_manifest_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+  "secondary_registration": {
+    "secondary_episode_seeds": [
+      2026103900,
+      2026103901,
+      2026103902
+    ],
+    "training_or_primary_episode_overlap": [],
+    "checkpoint_sha256": {
+      "old_ours": "6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2",
+      "coverage_only": "eb671a19c70bb9f004cc4c630764f497d6c2ed9b4361ef7904665fddce3cd796",
+      "observed_candidate": "a11df9aedc49c9cff29554993159e9dc695d2e7ab6555669ff3bd5277c5212ac"
+    },
+    "v2e_checkpoint_sha256": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45",
+    "reference_manifest_sha256": "1262be435cb437ba1b1b9ec21993d1c9912e4faa36cc382ce4c816ff0d1b5aa4",
+    "scope": "archived episodes newly evaluated by these frozen checkpoints; historical development episodes, not a freshly collected formal test",
+    "checkpoint_selection": "fixed by training validation before secondary evaluation; no training, fitting, tuning or selection on this bank",
+    "decision": "confirm median/P95 and >10px failures improve over old Ours, with all-poll denominators",
+    "registered_utc": "2026-11-01T09:51:56.961983+00:00"
+  },
+  "acceptance_metric": "target-centre original-image Euclidean pixel error, not event similarity",
+  "not_established": [
+    "sparse reconstruction repaired",
+    "new closed-loop task success",
+    "formal simulator ranking"
+  ]
+}
