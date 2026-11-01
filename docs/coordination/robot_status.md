@@ -1240,11 +1240,21 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 
   ```bash
   tmux new-session -d -s r15_loc_trace_smoke \
-    'ROBOT_EXECUTION_CODE_COMMIT=b1c45ac bash /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/diagnostics/launch_r1_5_strict_training_trace_capture.sh \
+    'ROBOT_EXECUTION_CODE_COMMIT=75b2a3b bash /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/diagnostics/launch_r1_5_strict_training_trace_capture.sh \
       /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source \
       /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache \
       /home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_localization_recovery_20261101a/state_trace_smoke_20261101a \
       /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/configs/r1_5_localization_recovery_20261101a.json 4,5'
+  ```
+- **完整九集状态回放命令：**采用计时修正后的代码 commit `ad58544`，使用独立输出 `state_trace_full9_20261101a`；不能覆盖 smoke 结果。
+
+  ```bash
+  tmux new-session -d -s r15_loc_trace_full9 \
+    'ROBOT_EXECUTION_CODE_COMMIT=ad58544 bash /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/diagnostics/launch_r1_5_strict_training_trace_capture.sh \
+      /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source \
+      /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache \
+      /home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_localization_recovery_20261101a/state_trace_full9_20261101a \
+      /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/configs/r1_5_localization_recovery_20261101a.json 0,1,2,3,4,5,6,7,8'
   ```
 - **下一步顺序：**(1) 在独立来源快照上先回放 episode 004/005 或完整 9 集，要求新状态逐项匹配旧 1 kHz trace 与 100 Hz HDR 缓存后，才将其用作真实 0.5 ms 渲染状态；若不匹配先定位轨迹复现差异。(2) 等待明确 GPU 分配并再次核查进程所有权，再从同一实际状态逐物理时刻渲染 HDR/depth/seg；运行 tag 的 strict provider 与 Direct-HDR 两路各自连续 DVS 历史，比较 raw event 与五-bin 张量哈希，记录 causal availability 和成本。(3) 若 strict 与 Direct 输入完全一致，则只训练一次 Direct→Direct 阳性对照；如存在差异，先逐层定位首次分叉，再决定唯一重训。训练仍使用 train `[0,1,2,3,7,8]`、validation `[4,5,6]`，两组共同架构/seed/budget，不接触共同 581 轨迹训练集。
 - **仍未通过/未证实：**两集 exact state replay 已通过，完整九集仍待复跑；高频 HDR 渲染的可分配 GPU 与成本；完整 strict 与 Direct 的逐时刻 raw-event / five-bin 是否相同；新的 Direct→Direct episode 验证；候选 strict 模型的 581 开发回归。旧 coverage-only 模型表现变差已复核，但尚不能据此推断完整 frozen strict 版本无效或已恢复。
