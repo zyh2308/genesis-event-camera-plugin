@@ -200,6 +200,32 @@ def _canonical_events(events: np.ndarray) -> np.ndarray:
     return value[np.lexsort((value[:, 3], value[:, 2], value[:, 1], value[:, 0]))]
 
 
+class _ReplayClockScene:
+    """Expose saved-trace timestamps without advancing Genesis physics.
+
+    Genesis 1.2.2 makes ``Scene.cur_t`` read-only. This offline replay restores
+    exact robot/object states from a verified trace and does not step physics,
+    while the frozen event plugin reads ``scene.cur_t`` as its observation
+    timestamp. Delegate every other attribute to the real scene and override
+    only that clock at the benchmark boundary.
+    """
+
+    def __init__(self, scene: Any) -> None:
+        self._scene = scene
+        self._time_s = float(scene.cur_t)
+
+    @property
+    def cur_t(self) -> float:
+        return self._time_s
+
+    @cur_t.setter
+    def cur_t(self, value: float) -> None:
+        self._time_s = float(value)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._scene, name)
+
+
 def main() -> int:
     core_root, remaining = _bootstrap_core_path()
     args = _parse_args(core_root, remaining)
@@ -358,6 +384,7 @@ def main() -> int:
         }
 
         current = {"frame": None}
+        replay_scene = _ReplayClockScene(env.scene)
         by_time: dict[float, dict[str, Any]] = {}
         direct = DvsEmulator(res=(int(env.camera.res[1]), int(env.camera.res[0])), config=sensor, device="cpu")
         plugin = GenesisPhysicsEventPlugin(
@@ -379,7 +406,7 @@ def main() -> int:
             },
             intermediate_state_provider=lambda request: _actual_sample(request, by_time),
         )
-        plugin.attach(env.scene, env.camera)
+        plugin.attach(replay_scene, env.camera)
 
         direct_chunks: list[np.ndarray] = []
         direct_availability_chunks: list[np.ndarray] = []
@@ -393,7 +420,7 @@ def main() -> int:
         # initialization frame, then every later frame is rendered from an
         # exact row in the verified 0.5 ms physical trace.
         initial_started = time.perf_counter()
-        env.scene.cur_t = 0.0
+        replay_scene.cur_t = 0.0
         initial = _render_exact(
             env, initial_row, pose_bodies,
             lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
@@ -416,14 +443,13 @@ def main() -> int:
         by_time[0.0] = initial
         render_hash.update(np.ascontiguousarray(initial["radiance"]).tobytes())
         direct.initialize(linear_luminance(initial["radiance"]), t=0.0)
-        env.scene.cur_t = 0.0
         plugin.start_episode()
         plugin.capture()
 
         missing_sample = None
         for row_index, row in enumerate(trace, start=1):
             before = time.perf_counter()
-            env.scene.cur_t = float(row["time_s"])
+            replay_scene.cur_t = float(row["time_s"])
             frame = _render_exact(
                 env, row, pose_bodies,
                 lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
@@ -449,7 +475,7 @@ def main() -> int:
             if len(direct_event):
                 direct_chunks.append(np.asarray(direct_event, dtype=np.float64))
                 direct_availability_chunks.append(np.full(len(direct_event), t, dtype=np.float64))
-            env.scene.cur_t = t
+            replay_scene.cur_t = t
             # Only call the strict wrapper on 1 ms brackets. Its actual
             # midpoint provider returns the exact intervening 0.5 ms row.
             if np.isclose(t / 0.001, round(t / 0.001), atol=1e-7, rtol=0):
