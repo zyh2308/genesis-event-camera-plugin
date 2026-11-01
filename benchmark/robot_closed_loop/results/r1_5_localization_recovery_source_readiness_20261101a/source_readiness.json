@@ -2,6 +2,7 @@
   "baseline_execution_commit": "914ffff7a1f852f6a136661b96544035b26ca846",
   "branch": "exp/robot-closed-loop-v1",
   "corrected_runner": {
+    "code_commit": "b7ba943ef3d72c75315c1065141044bf5df47c72",
     "frozen_core_modified": false,
     "isolated_snapshot_followup": {
       "fix": "inline _pose, _descriptor_indices, and _resolve_motion_bodies in the diagnostic runner; keep robot_env as the source of the quaternion and array conversion primitives",
@@ -11,13 +12,27 @@
     },
     "path": "benchmark/robot_closed_loop/diagnostics/render_r1_5_strict_direct_episode.py",
     "reason": "frozen tag also includes benchmark/robot_closed_loop; frozen plugin package is now imported first, then the selected support snapshot takes precedence for benchmark modules",
+    "remote_import_probe": {
+      "environment": "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python",
+      "frozen_core_root": "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-914ffff/frozen_core",
+      "genesis_version": "1.2.2",
+      "genesis_warning": "environment reports torch<2.8.0 unsupported; imports succeeded, runtime rendering remains unverified",
+      "render_started": false,
+      "result": "IMPORT_ONLY_PASS",
+      "run_utc": "2026-11-01T07:35Z",
+      "runner_sha256": "82d11c694f35ec7e42d31a56a535f514950c8b139163fb5ca8b1c8c4ab2af62e",
+      "scene_initialized": false,
+      "support_snapshot_commit": "b7ba943ef3d72c75315c1065141044bf5df47c72",
+      "support_snapshot_root": "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-b7ba943/support",
+      "training_started": false
+    },
     "sha256": "82d11c694f35ec7e42d31a56a535f514950c8b139163fb5ca8b1c8c4ab2af62e",
     "strict_direct_run_started": false,
     "verification": [
       "python3 -m py_compile",
       "git diff --check",
       "IMPORT_PRECEDENCE_PASS: frozen plugin stays in the frozen tag while benchmark modules resolve from the selected support snapshot",
-      "removed undeployed run_paired_generator_smoke dependency by inlining its pose and segmentation-ID helpers; local syntax passed, remote import-only recheck pending"
+      "g1 Eventbased_WAM environment import-only probe passed; no Genesis scene initialization, rendering, or training"
     ]
   },
   "cpu_render_probe": {
@@ -46,51 +61,54 @@
     "gpu_reservations_present": false,
     "gpus": [
       {
-        "compute_owner": "cmy",
+        "compute_owner": "no compute process reported",
         "index": 0,
-        "memory_used_mib": 2563,
+        "memory_used_mib": 2,
         "model": "NVIDIA GeForce RTX 3090",
-        "utilization_percent": 64,
+        "utilization_percent": 0,
         "uuid": "GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23"
       },
       {
-        "compute_owner": "cmy",
+        "compute_owner": "no compute process reported",
         "index": 1,
-        "memory_used_mib": 2563,
+        "memory_used_mib": 2,
         "model": "NVIDIA GeForce RTX 3090",
-        "utilization_percent": 75,
+        "utilization_percent": 0,
         "uuid": "GPU-0262d545-e9bd-7fcb-66e5-2ef81465c460"
       },
       {
-        "compute_owner": "cmy",
+        "compute_owner": "no compute process reported",
         "index": 2,
-        "memory_used_mib": 2613,
+        "memory_used_mib": 1,
         "model": "Tesla V100S-PCIE-32GB",
-        "utilization_percent": 81,
+        "utilization_percent": 0,
         "uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9"
       },
       {
-        "compute_owner": "cmy",
+        "compute_owner": "active process; username not resolved",
+        "compute_pid": 2829582,
         "index": 3,
         "memory_used_mib": 2605,
         "model": "Tesla V100S-PCIE-32GB",
-        "utilization_percent": 92,
+        "utilization_percent": 91,
         "uuid": "GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd"
       },
       {
-        "compute_owner": "cmy",
+        "compute_owner": "active process; username not resolved",
+        "compute_pid": 2830439,
         "index": 4,
         "memory_used_mib": 2605,
         "model": "Tesla V100S-PCIE-32GB",
-        "utilization_percent": 92,
+        "utilization_percent": 91,
         "uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3"
       },
       {
-        "compute_owner": "cmy",
+        "compute_owner": "active process; username not resolved",
+        "compute_pid": 2829588,
         "index": 5,
         "memory_used_mib": 2450,
         "model": "NVIDIA TITAN RTX",
-        "utilization_percent": 93,
+        "utilization_percent": 91,
         "uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885"
       }
     ],
@@ -100,12 +118,13 @@
       8.83,
       8.71
     ],
+    "latest_snapshot_utc": "2026-11-01T07:32:56Z",
     "online_cpus": 128,
     "renderer_or_training_launched": false
   },
   "observed_utc": {
     "host_memory_and_disk": "2026-11-01T03:58:16Z",
-    "host_resources": "2026-11-01T04:02:00Z"
+    "host_resources": "2026-11-01T07:32:56Z"
   },
   "old_common_reference": {
     "data_separation": "same episode index does not imply same physical rollout: the spot-checked common-reference seeds differ from the training-source seeds",
