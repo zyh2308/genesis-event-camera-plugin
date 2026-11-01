@@ -63,6 +63,17 @@ def compact_state(row: dict) -> dict:
     }
 
 
+def nearest_sample_indices(samples: np.ndarray, queries: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Match float time grids robustly when an exact sample lands just below a query."""
+    samples = np.asarray(samples, dtype=np.float64)
+    queries = np.asarray(queries, dtype=np.float64)
+    right = np.clip(np.searchsorted(samples, queries, side="left"), 0, len(samples) - 1)
+    left = np.clip(right - 1, 0, len(samples) - 1)
+    choose_left = np.abs(samples[left] - queries) <= np.abs(samples[right] - queries)
+    indices = np.where(choose_left, left, right)
+    return indices, np.abs(samples[indices] - queries)
+
+
 def main() -> int:
     process_started = time.perf_counter()
     p = argparse.ArgumentParser()
@@ -174,21 +185,21 @@ def main() -> int:
                 x["object"].get("angular_velocity_rad_s", [0, 0, 0]) for x in old_rows
             ], dtype=np.float64)
             old_qpos = np.asarray([x["robot_qpos"] for x in old_rows], dtype=np.float64)
-            index = np.searchsorted(new_times, old_times)
-            valid = (index < len(new_times)) & np.isclose(new_times[np.minimum(index, len(new_times)-1)],
-                                                          old_times, rtol=0, atol=1e-9)
+            old_overlap = old_times <= new_times[-1] + 1e-9
+            overlap_old_times = old_times[old_overlap]
+            index, time_error = nearest_sample_indices(new_times, overlap_old_times)
+            valid = time_error <= 1e-9
             if not np.all(valid):
-                raise RuntimeError(f"rerun misses {int((~valid).sum())} legacy trace timestamps")
-            index = index[valid]
-            pos_delta = np.abs(new_pos[index] - old_pos[valid])
-            vel_delta = np.abs(new_vel[index] - old_vel[valid])
+                raise RuntimeError(f"rerun misses {int((~valid).sum())} overlapping legacy trace timestamps")
+            pos_delta = np.abs(new_pos[index] - old_pos[old_overlap])
+            vel_delta = np.abs(new_vel[index] - old_vel[old_overlap])
             new_quat = np.asarray([x["object"]["orientation_wxyz"] for x in trace], dtype=np.float64)
             new_angular = np.asarray([
                 x["object"].get("angular_velocity_rad_s", [0, 0, 0]) for x in trace
             ], dtype=np.float64)
-            quat_delta = np.abs(new_quat[index] - old_quat[valid])
-            angular_delta = np.abs(new_angular[index] - old_angular[valid])
-            qpos_delta = np.abs(new_qpos[index] - old_qpos[valid])
+            quat_delta = np.abs(new_quat[index] - old_quat[old_overlap])
+            angular_delta = np.abs(new_angular[index] - old_angular[old_overlap])
+            qpos_delta = np.abs(new_qpos[index] - old_qpos[old_overlap])
 
             with h5py.File(cache_path, "r") as h:
                 cache_times = np.asarray(h["timestamps_s"], dtype=np.float64)
@@ -197,15 +208,13 @@ def main() -> int:
                 cache_qpos = np.asarray(h["robot_qpos"], dtype=np.float64)
             # The old cache's forced t=0 frame precedes the first physics
             # step. Compare all subsequent exact 100 Hz timestamps.
-            cache_compare = cache_times > new_times[0] + 1e-10
+            cache_compare = (cache_times > new_times[0] + 1e-10) & (cache_times <= new_times[-1] + 1e-9)
             cache_times_compare = cache_times[cache_compare]
             cache_pos_compare = cache_pos[cache_compare]
             cache_vel_compare = cache_vel[cache_compare]
             cache_qpos_compare = cache_qpos[cache_compare]
-            cache_index = np.searchsorted(new_times, cache_times_compare)
-            cache_valid = (cache_index < len(new_times)) & np.isclose(
-                new_times[np.minimum(cache_index, len(new_times)-1)], cache_times_compare, rtol=0, atol=1e-9,
-            )
+            cache_index, cache_time_error = nearest_sample_indices(new_times, cache_times_compare)
+            cache_valid = cache_time_error <= 1e-9
             if not np.all(cache_valid):
                 raise RuntimeError(f"rerun misses {int((~cache_valid).sum())} post-launch 100 Hz HDR cache timestamps")
             cache_index = cache_index[cache_valid]
@@ -222,9 +231,13 @@ def main() -> int:
                 "physics_dt_s": dt, "trace_period_s": args.trace_period_s,
                 "trace_filename": trace_out.name,
                 "physics_clock_matches_legacy_cache": bool(np.isclose(dt, 0.0005, rtol=0, atol=1e-12)),
-                "new_state_rows": len(trace), "legacy_state_rows_matched": len(old_rows),
+                "new_state_rows": len(trace), "legacy_state_rows_matched": int(np.count_nonzero(valid)),
+                "legacy_state_rows_after_new_run_end": int(np.count_nonzero(~old_overlap)),
                 "legacy_100hz_cache_rows_matched": int(np.count_nonzero(cache_valid)),
                 "legacy_100hz_cache_rows_excluded_prelaunch": int(np.count_nonzero(~cache_compare)),
+                "legacy_100hz_cache_rows_after_new_run_end": int(np.count_nonzero(
+                    cache_times > new_times[-1] + 1e-9
+                )),
                 "max_abs_delta_vs_legacy_1khz": {
                     "target_position_m": float(pos_delta.max()),
                     "target_velocity_m_s": float(vel_delta.max()),
