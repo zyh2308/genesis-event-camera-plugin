@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Recapture exact robot physics states at the strict-sampled time cadence.
+"""Recapture exact robot physics states at a requested strict-sampled cadence.
 
 The existing paired training cache stores HDR at 100 Hz and a state trace at
-1 kHz. This CPU-only runner repeats those deterministic episodes and writes
-only kinematic states at every physics step (normally 0.5 ms). It does not
+1 kHz. This CPU-only runner repeats those episodes at the configured physics
+clock and writes only kinematic states at the requested cadence. It does not
 render images, generate events, train, or read any future state for control.
 The saved trace is later used only for offline exact-state HDR rendering.
 """
@@ -72,6 +72,9 @@ def main() -> int:
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--episode-ids", default="0,1,2,3,4,5,6,7,8")
     p.add_argument("--trace-period-s", type=float, default=0.0005)
+    p.add_argument("--trace-name", help="output filename; defaults to a cadence-derived name")
+    p.add_argument("--allow-physics-clock-change", action="store_true",
+                   help="record a new paired diagnostic rollout at a different Genesis integration dt")
     p.add_argument("--expected-cache-manifest", type=Path)
     p.add_argument("--experiment-config", type=Path)
     args = p.parse_args()
@@ -100,6 +103,9 @@ def main() -> int:
     env = build_robot_scene(config, segmentation_level="link")
     scene_build_wall_s = time.perf_counter() - scene_build_started
     dt = float(env.dt_s)
+    clock_changed = not np.isclose(dt, 0.0005, rtol=0, atol=1e-12)
+    if clock_changed and not args.allow_physics_clock_change:
+        raise ValueError("non-legacy physics dt requires --allow-physics-clock-change")
     if args.trace_period_s < dt or not np.isclose(args.trace_period_s / dt,
                                                    round(args.trace_period_s / dt), rtol=0, atol=1e-8):
         raise ValueError(f"trace period {args.trace_period_s} must be an integer multiple of physics dt {dt}")
@@ -138,7 +144,15 @@ def main() -> int:
 
             episode_out = out / f"episode_{episode_id:03d}"
             episode_out.mkdir()
-            trace_out = episode_out / "state_trace_0p5ms.jsonl"
+            trace_name = args.trace_name
+            if not trace_name:
+                if np.isclose(args.trace_period_s, 0.0005, rtol=0, atol=1e-12):
+                    trace_name = "state_trace_0p5ms.jsonl"
+                else:
+                    trace_name = f"state_trace_dt_{int(round(args.trace_period_s * 1e9))}ns.jsonl"
+            if Path(trace_name).name != trace_name or not trace_name.endswith(".jsonl"):
+                raise ValueError("--trace-name must be a plain .jsonl filename")
+            trace_out = episode_out / trace_name
             with trace_out.open("w", encoding="utf-8", newline="\n") as stream:
                 for row in trace:
                     stream.write(json.dumps(compact_state(row), separators=(",", ":"), allow_nan=False) + "\n")
@@ -206,6 +220,8 @@ def main() -> int:
                 "legacy_1khz_trace_sha256": sha256(old_trace_path),
                 "new_trace_sha256": sha256(trace_out),
                 "physics_dt_s": dt, "trace_period_s": args.trace_period_s,
+                "trace_filename": trace_out.name,
+                "physics_clock_matches_legacy_cache": bool(np.isclose(dt, 0.0005, rtol=0, atol=1e-12)),
                 "new_state_rows": len(trace), "legacy_state_rows_matched": len(old_rows),
                 "legacy_100hz_cache_rows_matched": int(np.count_nonzero(cache_valid)),
                 "legacy_100hz_cache_rows_excluded_prelaunch": int(np.count_nonzero(~cache_compare)),
@@ -231,8 +247,7 @@ def main() -> int:
     finally:
         gs.destroy()
 
-    run = {
-        "status": "PASS" if all(
+    exact_legacy_replay = all(
             max(r["max_abs_delta_vs_legacy_1khz"]["target_position_m"],
                 r["max_abs_delta_vs_legacy_1khz"]["target_velocity_m_s"],
                 r["max_abs_delta_vs_legacy_1khz"]["target_orientation_wxyz"],
@@ -241,8 +256,16 @@ def main() -> int:
                 r["max_abs_delta_vs_legacy_100hz_cache"]["target_position_m"],
                 r["max_abs_delta_vs_legacy_100hz_cache"]["target_velocity_m_s"],
                 r["max_abs_delta_vs_legacy_100hz_cache"]["robot_qpos"]) < 1e-5 for r in records
-        ) else "STATE_REPLAY_MISMATCH",
-        "purpose": "CPU-only deterministic physics trace recapture; no render, events, training or GPU",
+        )
+    run = {
+        "status": "CAPTURED_PAIRED_NEW_PHYSICS_TRAJECTORY" if clock_changed else (
+            "PASS" if exact_legacy_replay else "STATE_REPLAY_MISMATCH"
+        ),
+        "purpose": (
+            "CPU-only matched-seed paired diagnostic rollout at a finer Genesis physics clock; state deltas from legacy are recorded, not treated as replay errors"
+            if clock_changed else "CPU-only deterministic physics trace recapture; no render, events, training or GPU"
+        ),
+        "physics_clock_changed": clock_changed,
         "source_commit": os.environ.get("ROBOT_EXECUTION_CODE_COMMIT", "unknown"),
         "scene_config_sha256": sha256(scene_path), "control_config_sha256": sha256(control_path),
         "cache_root": str(cache_root), "episode_ids": episode_ids,
@@ -283,7 +306,7 @@ def main() -> int:
     print(json.dumps({"status": run["status"], "output": str(out),
                       "elapsed_wall_s_before_artifact_hashing": run["elapsed_wall_s_before_artifact_hashing"]},
                      indent=2), flush=True)
-    return 0 if run["status"] == "PASS" else 3
+    return 0 if run["status"] in {"PASS", "CAPTURED_PAIRED_NEW_PHYSICS_TRAJECTORY"} else 3
 
 
 if __name__ == "__main__":

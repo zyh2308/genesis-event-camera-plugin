@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Render one exact saved robot trajectory and compare frozen strict vs direct HDR.
 
-This is an offline visual replay of a previously verified Genesis physical
-trace. It does not advance physics while rendering, and it never passes GT,
-depth, segmentation, or robot state to the event-state network. Exact observed
-HDR samples are used by both continuous DVS histories. The frozen core is
-loaded from a separate checkout selected by --frozen-core-root.
+This is an offline visual replay of an exact Genesis physical trace. It does
+not advance physics while rendering, and it never passes GT, depth,
+segmentation, or robot state to the event-state network. Exact observed HDR
+samples are used by both continuous DVS histories. The frozen core is loaded
+from a separate checkout selected by --frozen-core-root.
 """
 from __future__ import annotations
 
@@ -66,6 +66,12 @@ def _parse_args(core_root: Path, remaining: list[str]) -> argparse.Namespace:
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--support-source-commit", default="unknown")
     parser.add_argument("--trace-root", type=Path, required=True)
+    parser.add_argument("--trace-filename", default="state_trace_0p5ms.jsonl")
+    parser.add_argument("--trace-end-s", type=float,
+                        help="optional inclusive end time for a short paired diagnostic replay")
+    parser.add_argument("--trajectory-mode", choices=("exact-cached", "paired-new-physics"),
+                        default="exact-cached",
+                        help="paired-new-physics means the state trace was regenerated at a finer physics clock")
     parser.add_argument("--legacy-cache-root", type=Path, required=True)
     parser.add_argument("--scene-config", type=Path, required=True)
     parser.add_argument("--control-config", type=Path, required=True)
@@ -309,7 +315,7 @@ def main() -> int:
     cache_dir = cache_root / f"episode_{args.episode_id:03d}"
     cache_path = cache_dir / "trajectory_cache.h5"
     episode_result_path = cache_dir / "episode_result.json"
-    trace_path = trace_dir / "state_trace_0p5ms.jsonl"
+    trace_path = trace_dir / args.trace_filename
     for required in (cache_path, episode_result_path, trace_path):
         if not required.is_file():
             raise FileNotFoundError(required)
@@ -320,7 +326,16 @@ def main() -> int:
     all_times = np.asarray([float(row["time_s"]) for row in trace], dtype=np.float64)
     dt = float(experiment["training_rollouts"]["strict_trace_recapture_cadence_s"])
     if not np.allclose(np.diff(all_times), dt, atol=1e-9, rtol=0):
-        raise RuntimeError("state trace is not uniformly sampled at the declared 0.5 ms")
+        raise RuntimeError(f"state trace is not uniformly sampled at declared {dt:.9g} s")
+    if args.trace_end_s is not None:
+        if not np.isfinite(args.trace_end_s) or args.trace_end_s <= 0:
+            raise ValueError("--trace-end-s must be finite and positive")
+        trace = [row for row in trace if float(row["time_s"]) <= args.trace_end_s + 1e-10]
+        if not trace or not np.isclose(float(trace[0]["time_s"]), dt, atol=dt * 0.51, rtol=0):
+            raise RuntimeError("short replay trace must retain the first exact state after the t=0 frame")
+        if not np.isclose(float(trace[-1]["time_s"]), args.trace_end_s, atol=dt * 0.51, rtol=0):
+            raise RuntimeError("--trace-end-s must land on a saved physical state")
+        all_times = np.asarray([float(row["time_s"]) for row in trace], dtype=np.float64)
     with h5py.File(cache_path, "r") as handle:
         cache_times = np.asarray(handle["timestamps_s"], dtype=np.float64)
         t0_indices = np.flatnonzero(np.isclose(cache_times, 0.0, atol=1e-9, rtol=0))
@@ -331,7 +346,7 @@ def main() -> int:
             raise RuntimeError("initial HDR cache frame is not at t=0")
         cache_camera_pose = np.asarray(handle["camera_to_world_cv"][int(t0_indices[0])], dtype=np.float64)
         cache_pose_ids = np.asarray(handle["segmentation_pose_ids"], dtype=np.int32)
-        cache_validation = {
+        cache_validation_all = {
             round(float(t), 9): {
                 "radiance": np.asarray(handle["radiance"][index], dtype=np.float32),
                 "depth": np.asarray(handle["depth"][index], dtype=np.float32),
@@ -339,10 +354,15 @@ def main() -> int:
             }
             for index, t in enumerate(cache_times)
         }
+        cache_validation = (
+            {0.0: cache_validation_all[0.0]}
+            if args.trajectory_mode == "paired-new-physics" else cache_validation_all
+        )
     trace_time_keys = {round(float(t), 9) for t in all_times}
     missing_cached_times = [float(t) for t in cache_times
-                            if t > 1e-9 and round(float(t), 9) not in trace_time_keys]
-    if missing_cached_times:
+                            if t > 1e-9 and t <= all_times[-1] + 1e-9
+                            and round(float(t), 9) not in trace_time_keys]
+    if args.trajectory_mode == "exact-cached" and missing_cached_times:
         raise RuntimeError(f"verified trace misses legacy HDR timestamps: {missing_cached_times[:8]}")
 
     output.mkdir(parents=True, exist_ok=True)
@@ -518,10 +538,10 @@ def main() -> int:
         strict_availability = np.concatenate(strict_availability_chunks) if strict_availability_chunks else np.empty(0, dtype=np.float64)
         if len(direct_availability) != len(direct_events) or len(strict_availability) != len(strict_events):
             raise RuntimeError("event timestamp/availability arrays lost alignment")
-        np.savez_compressed(ep_out / "direct_hdr_events_1khz_2khz.npz",
-                            events_2000hz=direct_events, available_at_s=direct_availability)
+        np.savez_compressed(ep_out / "direct_hdr_events_exact_trace.npz",
+                            events=direct_events, available_at_s=direct_availability)
         np.savez_compressed(ep_out / "strict_sampled_events.npz",
-                            events_2000hz=strict_events, available_at_s=strict_availability)
+                            events=strict_events, available_at_s=strict_availability)
         _write_json(ep_out / "episode_result.json", result)
         shutil.copy2(trace_path, ep_out / "state_control_trace.jsonl")
         fields = ["episode_id", "seed", "launch_speed_m_s", "start_y_m", "first_contact_s", "lift_start_s", "sim_duration_s"]
@@ -553,7 +573,7 @@ def main() -> int:
         cadence = 1.0 / float(scene_cfg["controller"]["high_level_hz"])
         latency_s = float(scene_cfg["controller"]["observation_latency_s"])
         burn_in_s = float(scene_cfg["controller"]["event_burn_in_s"])
-        duration_s = float(result.get("sim_duration_s", all_times[-1]))
+        duration_s = min(float(result.get("sim_duration_s", all_times[-1])), float(all_times[-1]))
         first_poll = np.ceil(burn_in_s / cadence - 1e-10) * cadence
         for now in np.arange(first_poll, duration_s + 1e-9, cadence):
             cutoff = float(now - latency_s)
@@ -578,15 +598,30 @@ def main() -> int:
                 "five_bin_abs_difference_sum": int(np.abs(dv.astype(np.int64) - sv.astype(np.int64)).sum()),
             })
 
-        image_consistency_pass = (
+        exact_cache_consistency_pass = (
             len(cache_image_checks) == len(cache_times)
             and max((r["radiance_max_abs_error"] for r in cache_image_checks), default=float("inf")) <= 1e-6
             and sum(r["depth_finite_mask_mismatch"] for r in cache_image_checks) == 0
             and sum(r["segmentation_mismatch_pixels"] for r in cache_image_checks) == 0
         )
+        initial_frame_match_pass = bool(
+            cache_image_checks
+            and cache_image_checks[0]["time_s"] == 0.0
+            and cache_image_checks[0]["radiance_max_abs_error"] <= 1e-6
+            and cache_image_checks[0]["depth_finite_mask_mismatch"] == 0
+            and cache_image_checks[0]["segmentation_mismatch_pixels"] == 0
+        )
+        image_consistency_pass = (
+            exact_cache_consistency_pass if args.trajectory_mode == "exact-cached" else None
+        )
         status = (
             "STRICT_PROVIDER_NEEDS_UNSAVED_ACTUAL_STATE" if missing_sample is not None
-            else "DIRECT_RENDER_CACHE_MISMATCH" if not image_consistency_pass
+            else "DIRECT_RENDER_CACHE_MISMATCH" if (
+                args.trajectory_mode == "exact-cached" and not exact_cache_consistency_pass
+            )
+            else "INITIAL_FRAME_MISMATCH" if (
+                args.trajectory_mode == "paired-new-physics" and not initial_frame_match_pass
+            )
             else "GENERATED_COMPARE_READY"
         )
 
@@ -606,10 +641,20 @@ def main() -> int:
             "control_config_sha256": _sha256(args.control_config.resolve()),
             "experiment_config_sha256": _sha256(args.experiment_config.resolve()),
             "source_trace_sha256": _sha256(trace_path), "legacy_cache_sha256": _sha256(cache_path),
+            "trajectory_mode": args.trajectory_mode,
+            "trace_filename": trace_path.name,
+            "trace_requested_end_s": args.trace_end_s,
+            "cached_frame_validation_scope": (
+                "initial frame only; subsequent states belong to a new paired physics rollout"
+                if args.trajectory_mode == "paired-new-physics" else "all exact overlapping cached frames"
+            ),
             "physical_trace_interval_s": dt, "strict_capture_interval_s": 0.001,
             "direct_actual_frame_interval_s": dt,
             "dvs_response": response, "initial_cached_vs_rerender_hdr_max_abs_error": initial_max_error,
             "actual_rendered_frame_count": rendered, "actual_rendered_radiance_stream_sha256": render_hash.hexdigest(),
+            "actual_direct_frame_spacing_s": dt,
+            "strict_event_archive": "strict_sampled_events.npz[events,available_at_s]",
+            "direct_event_archive": "direct_hdr_events_exact_trace.npz[events,available_at_s]",
             "direct_event_count": int(len(direct_events)), "strict_event_count": int(len(strict_events)),
             "direct_events_sha256": _array_sha(direct_events), "strict_events_sha256": _array_sha(strict_events),
             "canonical_direct_events_sha256": _array_sha(direct_canonical),
@@ -627,6 +672,7 @@ def main() -> int:
             "cache_image_consistency_depth_mask_mismatches": sum(r["depth_finite_mask_mismatch"] for r in cache_image_checks),
             "cache_image_consistency_segmentation_mismatches": sum(r["segmentation_mismatch_pixels"] for r in cache_image_checks),
             "cache_image_consistency_pass": image_consistency_pass,
+            "initial_frame_match_pass": initial_frame_match_pass,
             "cache_image_consistency_checks": cache_image_checks,
             "strict_interval_count": len(interval_rows), "strict_intervals": interval_rows,
             "strict_missing_actual_sample": missing_sample,
@@ -639,7 +685,11 @@ def main() -> int:
                 "direct_dvs_wall_s": direct_wall_s, "strict_plugin_wall_s": strict_wall_s,
                 "whole_episode_wall_s_before_manifest": time.perf_counter() - started,
             },
-            "offline_replay_boundary": "exact states and per-time native HDR are reconstructed offline from a verified trajectory; no new physics rollout and no model receives GT/depth/segmentation",
+            "offline_replay_boundary": (
+                "native HDR is rendered offline from exact saved states; the paired-new-physics trace came from a separate matched Genesis rollout at the finer declared physics clock; no model receives GT/depth/segmentation"
+                if args.trajectory_mode == "paired-new-physics" else
+                "exact states and per-time native HDR are reconstructed offline from a verified trajectory; no new physics rollout and no model receives GT/depth/segmentation"
+            ),
             "module_paths_and_sha256": plugin_module_hashes,
         }
         _write_json(ep_out / "summary.json", summary)
