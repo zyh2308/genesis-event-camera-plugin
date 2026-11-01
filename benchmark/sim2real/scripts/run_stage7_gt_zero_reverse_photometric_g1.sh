@@ -18,6 +18,12 @@ test -d "$RUN" && test -d "$REPO" && test -d "$MODEL" && test -x "$PY"
 test -f "$SCRIPT" && test -f "$CONFIG"
 test -f "$BANK/flow_bank_retry01/training_bank_manifest.json"
 test ! -e "$OUT" && test ! -e "$RUN/exit_code.txt"
+EXPECTED_LAUNCHER=$($PY -c 'import json,sys; print(json.load(open(sys.argv[1]))["code"]["launcher_sha256"])' "$CONFIG")
+EXPECTED_SCRIPT=$($PY -c 'import json,sys; print(json.load(open(sys.argv[1]))["code"]["script_sha256"])' "$CONFIG")
+ACTUAL_LAUNCHER=$(sha256sum "$0" | awk '{print $1}')
+ACTUAL_SCRIPT=$(sha256sum "$SCRIPT" | awk '{print $1}')
+test "$EXPECTED_LAUNCHER" = "$ACTUAL_LAUNCHER"
+test "$EXPECTED_SCRIPT" = "$ACTUAL_SCRIPT"
 
 date -u +%Y-%m-%dT%H:%M:%SZ > "$RUN/driver_started_utc.txt"
 {
