@@ -1,0 +1,69 @@
+from pathlib import Path
+import json,shutil,hashlib
+O=Path('/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/outputs/epose_diverse_short_20261101');L=Path('/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/artifacts/epose_short_server')
+R=Path('/home/科研/Eventbased_WAM/repositories/gec-sim2real/benchmark/sim2real/reviews/epose_diverse_short_20261101');D=R/'final_results';assert not D.exists()
+assert json.loads((O/'final_delivery_verification.json').read_text())['passed']
+assert json.loads((O/'staging_verification.json').read_text())['passed']
+shutil.copytree(O/'evidence',D/'evidence')
+for name in ['EPOSE_服务器短训_核验报告.md','EPOSE_真实初测_指标.csv','组会讲稿_EPOSE更新.txt','final_delivery_verification.json','staging_verification.json','posttest_domain_gap.json']:shutil.copy2(O/name,D/name)
+(D/'analysis_tools').mkdir();(D/'figures').mkdir()
+for name in ['build_diverse_deliverables.py','update_epose_deck.mjs','publish_verified_deliverables.py','stage_final_evidence.py','audit_synthetic_pose_geometry.py','archive_final_review.py','analyze_posttest_domain_gap.py','restore_imported_chart_workbooks.py','finalize_epose_restored.mjs','render_final_slide.mjs']:shutil.copy2(L/name,D/'analysis_tools'/name)
+for name in ['合成场景_扩充后.png','合成事件_配对样例.png','合成定位_新留出集.png','真实位姿初测_主指标.png','真实预测_固定第51窗.png','EPOSE_真实预测_配对短训.mp4']:shutil.copy2(O/name,D/'figures'/name)
+shutil.copy2(L/'ppt_build/final_validation.json',D/'presentation_validation.json')
+shutil.copy2(L/'ppt_build/candidate_epose_workbooks_restored.workbook_restoration.json',D/'workbook_restoration.json')
+F=D/'evidence/final';S=json.loads((F/'real_eval/summary.json').read_text());T=json.loads((F/'training/result.json').read_text());cfg=json.loads((F/'protocol.json').read_text());manifest=json.loads((D/'evidence/manifest.json').read_text())
+def number(v,scale=1):return '—' if v is None else f'{v*scale:.2f}'
+real='\n'.join(f"| {a} | {number(r['centroid_epe_all_samples_px'])} | {number(r['corner_epe_all_samples_px'])} | {number(r['adds_mean_over_valid_pnp_m'],100)} | {r['adds_success_0_1_d_count']}/200 | {r['pnp_valid_count']}/200 |" for a,r in S['results'].items() if a in S['eligible_new_arms'])
+syn='\n'.join(f"| {r['generator']} | {r['selected_update']} | {r['validation']['mean_centroid_epe_px']:.3f} | {r['validation']['mean_corner_epe_px']:.3f} | {r['validation']['correct_cell_count']}/{r['validation']['count']} |" for r in T['results'])
+readme=f'''# E-POSE 服务器配对短训与真实初测（2026-11-01）
+
+两组均完成追加2,400次全网络更新，达到事先登记的合成定位条件，随后冻结权重，在真实 `block/r_05_gl` 的固定200窗上完成初测。两组训练进程退出码为0，独立合成/真实复算、恢复、数据与代码哈希及展示数值核验通过。它是已知单物体、单片段、seed0的短训初测，不能作为完整E-POSE benchmark或普遍生成器优势的证明。
+
+**真实位姿精度仍不足，尚未证明生成器优势。** EventGenesis的平均ADD-S较低，V2E的角点误差与严格成功数更好；两组成功率仅0%/1%。后验只读诊断发现53%的真实中心超出实际增强训练范围，45%的真实窗口存在投影框超出画面；这些支持数据覆盖不足的解释，但不证明唯一根因。没有据本轮真实分数继续训练或修改模型。
+
+## 真实结果
+
+| 生成器 | 中心误差 px ↓ | 角点误差 px ↓ | ADD-S cm ↓ | ADD-S成功数 ↑ | 有效PnP |
+|---|---:|---:|---:|---:|---:|
+{real}
+
+像素误差在原生346×260理想去畸变域，ADD-S均值只对有效PnP求平均；成功数分母固定200，求解失败计为失败。ADD-S阈值为CAD直径的10%（2.3737cm）。原始ADD、平移和未处理对称性的旋转误差亦已保留。旧v1权重在同一片段的参照分数见完整报告，不能把改善唯一归因于某一项修改。
+
+## 合成留出验证
+
+| 生成器 | 所选追加更新 | 中心误差 px ↓ | 角点误差 px ↓ | 中心网格正确数 |
+|---|---:|---:|---:|---:|
+{syn}
+
+这里误差在416×416网络域；16窗来自4条独立轨迹，窗口相互相关。固定猜画面中心的误差24.703px、网格正确比例25%。门槛为中心误差<25px且网格正确率≥75%，不是完整6DoF认证。实际网络角点经固定PnP后的合成3D诊断另见报告。
+
+## 本轮改动与实验边界
+
+初期开发bank仅有16个训练窗且无纹理。R8/R9虽扩展视角，但相机持续朝向木块，256窗中的中心位移中位数仅0.03756px/10ms。R10改用固定朝向的对角平移，完整64窗的位移中位数2.838px、最小2.028px/10ms，两组事件图都能清楚显示木块轮廓。R9两组固定2400步已保留，其真实自动评分被主动关闭；没有根据新真实分数重新生成数据。
+
+R10为12条训练/4条验证轨迹、每条80ms、40ms预热后取原生10ms事件窗（48/16窗）。两组共享CAD、纹理、物理端点、标签与划分，没有按生成器单独筛选。公开YCB纹理的随附几何SHA与E-POSE CAD完全一致。数据规模/种子等也发生变化，它不是等规模单变量数据消融。
+
+EventGenesis frozen core仍为`e79e656ac00f7847b98db9e12bf43b093f3afff1`，27个文件哈希复查通过。V2E是锁定官方EventEmulator：同一1000Hz物理端点的8位亮度作线性DN插值，以25us更新传感器，不使用SuperSlomo；这是明确登记的高帧率端点变体，不混称此前100Hz+SuperSlomo设置，也不作生成效率对比。
+
+完整SingleShotPose架构，CPU float32；两组从各自R6合成专用模型出发、重置Adam并追加同样2400步。共同目标是原坐标损失加中心分类交叉熵，属于共同训练适配，不是原版完整训练复现，也不是从随机初始化只训练了2400步。BN只在合成训练更新，真实输入为完整事件图；不使用GT裁剪、mask、box、网格或GT解法选择。已知CAD和相机内参用于固定EPNP，GT位姿只用于评价。
+
+物理/训练协议和代码在新真实测试前分别提交（`653768e`、实际启动核验快照`f1aed8b`）。`motion_training/`保留初次登记；`launched_motion/`记录训练前修正旧合并数量断言后的实际源文件与早期证据；最终独立复核确认运行源文件与该启动快照一致。
+
+## 查看入口
+
+- [完整报告](final_results/EPOSE_服务器短训_核验报告.md)
+- [真实指标CSV](final_results/EPOSE_真实初测_指标.csv)
+- [实际预测视频](final_results/figures/EPOSE_真实预测_配对短训.mp4)
+- [真实结果表](final_results/figures/真实位姿初测_主指标.png)
+- [合成定位表](final_results/figures/合成定位_新留出集.png)
+- [最终源文件、逐窗结果和核验](final_results/evidence/final/)
+- [展示制作与独立核对代码](final_results/analysis_tools/)
+
+服务器run：`{manifest['server_run']}`。大checkpoint与原始物理bank保留g1，路径/哈希在协议、数据清单与训练结果中。实际设备为服务器CPU（每组8线程），没有占用他人GPU。Windows桌面另有更新PPT与素材目录，报告和元数据保留其确切路径。
+
+后续：扩充独立合成轨迹、对象、视角和背景，以固定协议做多seed确认。`r_01_gl`与本轮`r_05_gl`都登记为已见；不能继续依其排名调参并称作最终测试。更大范围的生成器结论需预留真实序列与完整训练，不能用本轮的合成定位或单片段分数替代。
+'''
+(R/'README.md').write_text(readme,encoding='utf-8')
+index={str(p.relative_to(D)):{'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in D.rglob('*') if p.is_file()}
+(D/'artifact_index.json').write_text(json.dumps({'files':index,'server_run':manifest['server_run'],'large_artifacts_retained_on_server':True},ensure_ascii=False,indent=2))
+print(json.dumps({'review':str(R),'indexed_files':len(index),'results':{a:r for a,r in S['results'].items() if a in S['eligible_new_arms']}},ensure_ascii=False,indent=2))

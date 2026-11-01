@@ -1,5 +1,9 @@
 # Stage 4 three-line training and evaluation status
 
+## 2026-11-01 E-POSE completion update
+
+The Stage 4 records below are historical snapshots, not current process status. Current three-line state is maintained in [sim2real_status.md](sim2real_status.md). The [matched-CAD E-POSE pilot](reviews/epose_diverse_short_20261101/README.md) completed 2,400 additional updates per arm and a fixed 200-window real test; strict ADD-S success was 0% / 1%, so real pose quality remains insufficient. Frozen core unchanged; CPU leases released.
+
 **Latest direct g1 snapshot:** 2026-10-18 17:43:00 UTC / 2026-10-19 02:43:00 JST. Earlier Stage 3 and Stage 4 snapshots remain historical. Training jobs stay detached on g1; this page records the actual observation below, not an inferred completion estimate.
 
 | Line | Latest verified state | Status | Next checkpoint / delivery |

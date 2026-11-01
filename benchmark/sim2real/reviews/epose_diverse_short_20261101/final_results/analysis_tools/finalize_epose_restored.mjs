@@ -1,0 +1,13 @@
+import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+const workspace='C:/Users/zhaoyuhan/Documents/ChatGPT/New project';
+process.env.RUNTIME_NODE_MODULES='C:/Users/zhaoyuhan/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules';
+const source='C:/Users/zhaoyuhan/Desktop/EventGenesis_组会汇报_标题预留版.pptx';
+const skill='C:/Users/zhaoyuhan/.codex/plugins/cache/openai-primary-runtime/presentations/26.1025.11240/skills/presentations';
+const build=workspace+'/artifacts/epose_short_server/ppt_build';
+const sourceSha=crypto.createHash('sha256').update(await fs.readFile(source)).digest('hex');
+const {finalizePresentation}=await import(pathToFileURL(skill+'/container_tools/artifact_tool_utils.mjs').href);
+const final=workspace+'/outputs/epose_diverse_short_20261101/EventGenesis_组会汇报_EPOSE初测更新版.pptx';
+const receipt=await finalizePresentation({workspaceDir:workspace,candidatePath:build+'/candidate_epose_workbooks_restored.pptx',finalPath:final,pythonExecutable:'C:/Users/zhaoyuhan/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe',integrityValidatorPath:skill+'/container_tools/inspect_presentation_package_integrity.py',layoutValidatorPath:skill+'/container_tools/inspect_presentation_layout_geometry.py',layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit','--require-native-table-slide','8'],explicitTotalSlideCount:9,requiredNativeTableOwnerSlides:[8],requiredNativeChartOwnerSlides:[4,6,8],requiredEmbeddedWorkbookChartOwnerSlides:[4,6,8],materializeLiteralChartWorkbooks:false,fontPolicy:{basis:'reference',families:['微软雅黑','Calibri'],referencePath:source,referenceSha256:sourceSha},verifyArtifactToolImport:true,receiptPath:build+'/final_validation.json'});
+console.log(JSON.stringify({final,receipt}));
