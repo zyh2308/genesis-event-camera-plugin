@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import sys
 from datetime import datetime, timezone
@@ -79,7 +80,7 @@ def main() -> None:
     if output_root.exists():
         raise FileExistsError(f"refusing to overwrite diagnostic output: {output_root}")
     sys.path[:0] = [str(repo / "benchmark/sim2real/scripts"), str(repo / "benchmark/sim2real/compat")]
-    from run_steflow_stage2_pilot import objective_dt1
+    from run_steflow_stage2_pilot import objective_dt1, pure_torch_spatial_correlation, verify_correlation
     from steflow_align_corners import patch_ste
     from train_stage7_replicad_selfsup_diagnostic import load_bank, padded_tensors
     from verify_pinned_source import verify_pinned_source
@@ -129,6 +130,9 @@ def main() -> None:
         raise RuntimeError(
             f"STE-FlowNet multiscaleloss imported from unexpected path: {multiscaleloss.__file__}"
         )
+    corr_module = importlib.import_module("models.corr")
+    corr_module.spatial_correlation_sample = pure_torch_spatial_correlation
+    correlation_check = verify_correlation(device)
     patch_record = patch_ste(models, multiscaleloss, model_root)
 
     # A single actual model forward identifies the four exact scales expected by
@@ -271,6 +275,7 @@ def main() -> None:
         "config_sha256": sha256(config_path),
         "manifest_sha256": manifest_hash,
         "model_source_verification": source,
+        "correlation_operator_verification": correlation_check,
         "warp_patch": patch_record,
         "gpu": {"name": torch.cuda.get_device_name(device), "index_visible_to_process": 0},
         "real_data_used": False,
