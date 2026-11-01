@@ -26,13 +26,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from benchmark.robot_closed_loop.diagnostics.r1_5_coverage_candidate import candidate_frame
-from benchmark.robot_closed_loop.diagnostics.run_r1_native_hdr_retrain import (
-    _manifest,
-    _run_fit,
-    _sha256,
-    _write_hash_manifest,
-    _write_source_contract,
-)
 from genesis_event_plugin.adaptive_sampler import AdaptiveSamplingConfig
 from genesis_event_plugin.dvs_emulator import DvsEmulator
 from genesis_event_plugin.noise_model import DvsNoiseConfig
@@ -48,6 +41,75 @@ from genesis_event_plugin.radiometry import prepare_linear_radiance
 
 def _jsonl(path: Path):
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _manifest(path: Path) -> Dict[str, str]:
+    result: Dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        digest, name = line.split("  ", 1)
+        result[name] = digest
+    return result
+
+
+def _write_hash_manifest(root: Path):
+    entries = []
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and path.name != "SHA256SUMS":
+            entries.append(f"{_sha256(path)}  {path.relative_to(root).as_posix()}\n")
+    manifest = root / "SHA256SUMS"
+    manifest.write_text("".join(entries), encoding="utf-8")
+    return manifest
+
+
+def _write_source_contract(path: Path, contract: Dict[str, Any]) -> None:
+    path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+
+def _run_fit(*, runner_python: Path, scene_config: Path, source_root: Path,
+             out: Path, train_ids, validation_ids, training: Dict[str, Any],
+             source_label: str, log_path: Path):
+    command = [
+        str(runner_python), "-m", "benchmark.robot_closed_loop.diagnostics.train_event_state_development",
+        "--config", str(scene_config), "--source-results", str(source_root), "--out", str(out),
+        "--train-episodes", ",".join(map(str, train_ids)),
+        "--validation-episodes", ",".join(map(str, validation_ids)),
+        "--epochs", str(int(training["max_epochs"])),
+        "--patience", str(int(training["patience"])),
+        "--batch-size", str(int(training["batch_size"])),
+        "--seed", str(int(training["seed"])),
+        "--threads", str(int(training["threads"])),
+        "--architecture", str(training["network"]),
+        "--source-label", source_label,
+    ]
+    env = {
+        **os.environ,
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": str(training["threads"]),
+        "MKL_NUM_THREADS": str(training["threads"]),
+        "OPENBLAS_NUM_THREADS": str(training["threads"]),
+        "PYTHONPATH": str(ROOT),
+    }
+    process = subprocess.run(command, cwd=ROOT, env=env, text=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
+    log_path.write_text(process.stdout, encoding="utf-8")
+    if process.returncode:
+        raise RuntimeError(f"candidate model fit failed: {process.stdout[-3000:]}")
+    summary_path = out / "development_summary.json"
+    checkpoint_path = out / "spatial_event_state.pt"
+    return {
+        "checkpoint_sha256": _sha256(checkpoint_path),
+        "summary_sha256": _sha256(summary_path),
+        "source_manifest_sha256": _sha256(source_root / "SHA256SUMS"),
+        "validation_metrics": json.loads(summary_path.read_text(encoding="utf-8"))["validation_metrics"],
+    }
 
 
 def _timestamp_hash(cache_path: Path) -> str:
