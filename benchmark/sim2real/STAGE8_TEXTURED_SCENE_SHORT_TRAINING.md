@@ -1,6 +1,6 @@
 # Stage 8: textured dynamic scene paired short training
 
-**Status snapshot:** 2026-11-01 12:50 JST (03:50 UTC). The 100-update paired synthetic diagnostic is running in the isolated g1 checkout. This is a progress record, not a completed training report or a Sim-to-Real result.
+**Status snapshot:** 2026-11-01 12:56 JST (03:56 UTC). The 100-update paired synthetic diagnostic is running in the isolated g1 checkout. This is a progress record, not a completed training report or a Sim-to-Real result.
 
 ## What ran
 
@@ -29,7 +29,8 @@ The renderer and object-flow result labels record only one 30 ms camera-plus-kin
 - The first attempt (`.../20261101-stage8-replicad-dynamic-v2`) reached model evaluation but failed before optimizer update 1. The pinned STE-FlowNet source has legacy no-argument `.cuda()` calls in its forward path, which prevented the configured CPU fallback from running. The failure and traceback remain at the g1 run root.
 - Added a narrow process-local CPU placement shim. When CUDA is unavailable, a no-argument `.cuda()` call on an already-CPU tensor returns that tensor; the shim leaves model parameters, operations, network code, and all CUDA behavior unchanged. The pinned model source was not modified. The CPU tensor placement probe passed, and ordinary model evaluation and backward now run.
 - The corrected run is `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-replicad-dynamic-v3-cpucompat`, on g1, exact code commit `da019d2f85650267ca5ba50460cb14ca5b10b2bb`, execution worktree `/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-stage8-da019d2-20261101`.
-- At the latest live check (2026-11-01 12:51 JST / 03:51 UTC), EventGenesis had completed 15/100 optimizer updates; V2E had not begun because this runner executes the two arms sequentially. The latest recorded loss was 2.38 with finite aggregate gradient norm 8.21. This is training-rollout fit only. Synthetic validation will next be recorded at update 20; no checkpoint has been written yet.
+- At the latest live check (2026-11-01 12:56 JST / 03:56 UTC), EventGenesis had completed 20/100 optimizer updates; V2E had not begun because this runner executes the two arms sequentially. Update 20 had finite four-scale objective 1.76 and aggregate gradient norm 5.94.
+- At update 20 on the independent sc2 layout, full-valid EPE was 2.32 px per 30 ms versus zero-flow 3.50. On the fixed common event-active region it was 2.75 versus zero-flow 2.72, about 1.3% worse; mean direction cosine was 0.815 and predicted active-region flow magnitude was 4.64 px versus GT mean magnitude 3.50 px. This is one synthetic validation rollout at one intermediate update: it suggests a directionally aligned but somewhat oversized prediction, while the event-active EPE has not yet beaten zero flow. The train-layout active EPE was 2.57 versus zero-flow 5.73, so sample fit and independent validation remain clearly distinct. No checkpoint has been written yet.
 - At run start the six g1 GPUs all had active workloads. The launcher completed its five one-minute GPU checks, then used the registered CPU fallback: 128 logical CPUs, load1 6.46, about 436 GiB available memory, and two PyTorch/OpenMP threads. No other job was stopped or altered. The measured pace is about 50 seconds per update, so the fixed 100-update-per-arm run is CPU-bound and will take a while.
 
 ## Reproduction and artifacts
