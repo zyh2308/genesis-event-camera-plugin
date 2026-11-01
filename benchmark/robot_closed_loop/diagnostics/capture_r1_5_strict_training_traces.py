@@ -86,6 +86,8 @@ def main() -> int:
     p.add_argument("--trace-name", help="output filename; defaults to a cadence-derived name")
     p.add_argument("--allow-physics-clock-change", action="store_true",
                    help="record a new paired diagnostic rollout at a different Genesis integration dt")
+    p.add_argument("--stop-after-s", type=float,
+                   help="capture only this many seconds after launch; labels episode result as truncated")
     p.add_argument("--expected-cache-manifest", type=Path)
     p.add_argument("--experiment-config", type=Path)
     args = p.parse_args()
@@ -149,6 +151,7 @@ def main() -> int:
             result, trace, _ = run_oracle_trial(
                 env, episode_id, seed, speed, deceleration,
                 initial_y_m=start_y, capture=False, trace_period_s=args.trace_period_s,
+                stop_after_s=args.stop_after_s,
             )
             if int(result["seed"]) != seed:
                 raise RuntimeError(f"rerun seed mismatch for episode {episode_id}")

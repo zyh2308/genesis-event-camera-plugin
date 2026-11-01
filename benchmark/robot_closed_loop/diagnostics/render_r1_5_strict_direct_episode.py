@@ -79,6 +79,8 @@ def _parse_args(core_root: Path, remaining: list[str]) -> argparse.Namespace:
     parser.add_argument("--episode-id", type=int, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--genesis-backend", choices=("cpu", "gpu"), default="cpu")
+    parser.add_argument("--probe-sampler-counts", action="store_true",
+                        help="diagnostic only: render 1 ms endpoints and record adaptive sample counts without strict intermediate-state enforcement")
     return parser.parse_args(remaining)
 
 
@@ -413,7 +415,7 @@ def main() -> int:
             radiometric_offset=0.0, radiometric_floor=1e-6,
             radiometric_calibration_status="uncalibrated",
             disocclusion_policy="hold", warp_composite="same_surface_log_linear",
-            warp_backend="auto", strict_fidelity=True,
+            warp_backend="auto", strict_fidelity=not args.probe_sampler_counts,
             max_photometric_interval_s=0.0005, min_coverage_fraction=0.995,
             motion_state_provider=lambda _scene, _camera: {
                 "camera_to_world": camera_pose,
@@ -468,6 +470,11 @@ def main() -> int:
 
         missing_sample = None
         for row_index, row in enumerate(trace, start=1):
+            if args.probe_sampler_counts and not np.isclose(
+                float(row["time_s"]) / 0.001,
+                round(float(row["time_s"]) / 0.001), atol=1e-7, rtol=0,
+            ):
+                continue
             before = time.perf_counter()
             replay_scene.cur_t = float(row["time_s"])
             frame = _render_exact(
@@ -615,7 +622,8 @@ def main() -> int:
             exact_cache_consistency_pass if args.trajectory_mode == "exact-cached" else None
         )
         status = (
-            "STRICT_PROVIDER_NEEDS_UNSAVED_ACTUAL_STATE" if missing_sample is not None
+            "SAMPLER_COUNT_PROBE_ONLY" if args.probe_sampler_counts
+            else "STRICT_PROVIDER_NEEDS_UNSAVED_ACTUAL_STATE" if missing_sample is not None
             else "DIRECT_RENDER_CACHE_MISMATCH" if (
                 args.trajectory_mode == "exact-cached" and not exact_cache_consistency_pass
             )
@@ -627,6 +635,15 @@ def main() -> int:
 
         summary = {
             "status": status,
+            "sampler_probe_only": bool(args.probe_sampler_counts),
+            "sampler_probe_warning": (
+                "Adaptive sample counts are measured from exact rendered endpoints; emitted events use non-strict warp output and are not valid strict-reference events."
+                if args.probe_sampler_counts else None
+            ),
+            "sampler_count_histogram": {
+                str(count): sum(int(row["adaptive_sample_count"]) == count for row in interval_rows)
+                for count in sorted({int(row["adaptive_sample_count"]) for row in interval_rows})
+            },
             "episode_id": args.episode_id, "seed": int(result["seed"]),
             "speed_m_s": float(result.get("launch_speed_m_s", result.get("speed_m_s"))),
             "start_y_m": float(result.get("start_y_m", result.get("initial_y_m"))),
@@ -649,10 +666,10 @@ def main() -> int:
                 if args.trajectory_mode == "paired-new-physics" else "all exact overlapping cached frames"
             ),
             "physical_trace_interval_s": dt, "strict_capture_interval_s": 0.001,
-            "direct_actual_frame_interval_s": dt,
+            "direct_actual_frame_interval_s": 0.001 if args.probe_sampler_counts else dt,
             "dvs_response": response, "initial_cached_vs_rerender_hdr_max_abs_error": initial_max_error,
             "actual_rendered_frame_count": rendered, "actual_rendered_radiance_stream_sha256": render_hash.hexdigest(),
-            "actual_direct_frame_spacing_s": dt,
+            "actual_direct_frame_spacing_s": 0.001 if args.probe_sampler_counts else dt,
             "strict_event_archive": "strict_sampled_events.npz[events,available_at_s]",
             "direct_event_archive": "direct_hdr_events_exact_trace.npz[events,available_at_s]",
             "direct_event_count": int(len(direct_events)), "strict_event_count": int(len(strict_events)),
@@ -705,7 +722,7 @@ def main() -> int:
                           "raw_equal_on_common_support": identical,
                           "five_bin_exact": summary["five_bin_exact_query_count"],
                           "queries": len(query_rows), "missing_sample": missing_sample}, indent=2), flush=True)
-        return 0 if status == "GENERATED_COMPARE_READY" else 2
+        return 0 if status in {"GENERATED_COMPARE_READY", "SAMPLER_COUNT_PROBE_ONLY"} else 2
     finally:
         gs.destroy()
 

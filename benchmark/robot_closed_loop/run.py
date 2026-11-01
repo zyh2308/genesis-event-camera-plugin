@@ -438,6 +438,7 @@ def run_oracle_trial(
     use_event_observation: bool = True,
     trajectory_cache: Optional[Any] = None,
     trace_period_s: float = 0.001,
+    stop_after_s: Optional[float] = None,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
@@ -541,10 +542,16 @@ def run_oracle_trial(
     tcp_velocity = np.zeros(3, dtype=np.float64)
     prev_obj = None
     timeout_s = float(cfg["success"].get("episode_timeout_s", 3.0))
+    if stop_after_s is not None and (not np.isfinite(stop_after_s) or stop_after_s <= 0):
+        raise ValueError("stop_after_s must be finite and positive when provided")
     post_contact_window_s = float(
         cfg.get("shared_control", {}).get("diagnostic_windows", {}).get("after_first_contact_s", 1.5)
     )
-    max_steps = int(round(timeout_s / env.dt_s))
+    rollout_horizon_s = timeout_s if stop_after_s is None else min(timeout_s, float(stop_after_s))
+    horizon_steps_float = rollout_horizon_s / env.dt_s
+    if not np.isclose(horizon_steps_float, round(horizon_steps_float), rtol=0, atol=1e-8):
+        raise ValueError("stop_after_s must be an integer multiple of the physics dt")
+    max_steps = int(round(horizon_steps_float))
     close_schedule = cfg["shared_control"].get(
         "closure_lead_speed_schedule", controller_cfg["closure_lead_speed_schedule"],
     )
@@ -1044,6 +1051,8 @@ def run_oracle_trial(
         "failure_primary": primary, "final_object_position_m": final_state["position_m"].tolist(),
         "final_object_velocity_m_s": final_state["velocity_m_s"].tolist(),
         "sim_duration_s": get_sim_time(env) - launch_t,
+        "capture_only_truncated": stop_after_s is not None and rollout_horizon_s < timeout_s,
+        "capture_horizon_after_launch_s": None if stop_after_s is None else rollout_horizon_s,
     }
     return result, trace, frames
 
