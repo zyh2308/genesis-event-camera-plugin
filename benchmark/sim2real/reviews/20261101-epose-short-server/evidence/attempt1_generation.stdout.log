@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-epose-wood-short-research-v1/sources/generate_matched_bank.py", line 32, in <module>
+    entity=scene.add_entity(gs.morphs.Mesh(file=str(cad),pos=tuple(base),quat=tuple(q),scale=1.,fixed=True,collision=False,decimate=False,file_meshes_are_zup=True),surface=gs.surfaces.Default(color=(.63-.025*i,.42+.015*i,.24+.012*i,1)))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/utils/misc.py", line 134, in wrapper
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/scene.py", line 499, in add_entity
+    entity = self._sim._add_entity(morph, material, surface, visualize_contact, name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/simulator.py", line 166, in _add_entity
+    entity = self.rigid_solver.add_entity(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/solvers/rigid/rigid_solver.py", line 302, in add_entity
+    entity = EntityClass(
+             ^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/entities/rigid_entity/rigid_entity.py", line 2366, in __init__
+    super().__init__(
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/entities/rigid_entity/rigid_entity.py", line 136, in __init__
+    self._load_model()
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/entities/rigid_entity/rigid_entity.py", line 2477, in _load_model
+    super()._load_model()
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/entities/rigid_entity/rigid_entity.py", line 373, in _load_model
+    self._load_morph(self._morph)
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/entities/rigid_entity/rigid_entity.py", line 158, in _load_morph
+    self._load_mesh(morph, self._surface)
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/entities/rigid_entity/rigid_entity.py", line 475, in _load_mesh
+    meshes = gs.Mesh.from_morph_surface(morph, surface)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/engine/mesh.py", line 535, in from_morph_surface
+    gs.raise_exception(f"File type not supported: {morph.file}")
+  File "/home/zhaoyuhan/Eventbased_WAM/runtime/sim2real/genesis_hdr_v2/genesis/utils/misc.py", line 37, in raise_exception
+    raise gs.GenesisException(msg)
+genesis.GenesisException: File type not supported: /home/zhaoyuhan/Eventbased_WAM/external/sim2real_assets/epose_wood_block_20261024/nontextured.ply
+
+[38;5;9m[Genesis] [09:06:15] [ERROR] GenesisException: File type not supported: /home/zhaoyuhan/Eventbased_WAM/external/sim2real_assets/epose_wood_block_20261024/nontextured.ply[0m
