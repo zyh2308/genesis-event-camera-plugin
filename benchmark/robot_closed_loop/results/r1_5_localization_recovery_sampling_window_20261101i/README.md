@@ -69,5 +69,6 @@ For U=6 and U=7 strict timestamps, the next exact physical-state grid is
 fractions land on integer physics steps. The paired renderer now renders
 1 ms Direct-HDR endpoints and renders strict intermediate images on demand
 from exact saved states. It does not synthesize poses. This code change has
-passed syntax and grid-arithmetic checks; a new allocated GPU run is still
-needed to verify the complete strict/Direct event and localization path.
+been committed as `241124048ca0ce93dbecfb6c319f96704bcb4b2b`; it passed syntax,
+shell, and grid-arithmetic checks. A newly allocated GPU run is still needed
+to verify the complete strict/Direct event and localization path.

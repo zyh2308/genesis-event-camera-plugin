@@ -1276,3 +1276,20 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **正确性/成本边界：**episode 只检查了 t=0 的缓存图像，`cache_image_consistency_pass=false` 是因为严格检查尚未覆盖其余缓存时刻，不表示渲染器已经与 HDR 缓存不一致。场景构建 50.474 s，3 帧 HDR 渲染 0.0524 s，Direct DVS 0.0298 s，strict 首次尝试 0.7485 s，总进程 53.432 s；这些是首个缺采样点之前的部分运行成本，不可外推全程。GPU 0 在 `2026-11-01T08:03:00Z` 释放时为 0%/2 MiB。
 - **结果包：**[`strict/Direct 预检和失败证据`](../../benchmark/robot_closed_loop/results/r1_5_localization_recovery_source_pair_20261101b/README.md)；逐集摘要及原始短事件、trace、尝试日志在同目录结果包。最终归档 SHA256 `a19c3a30c1d85692e88cc380f51448a36aeb5f65b45144c89e4c20a8d7bc5e0c`。预约记录 `/home/zhaoyuhan/Eventbased_WAM/.gpu_reservations/r1_5_localization_recovery_20261101b_gpu0_20261101T073805Z.json` 已标记 `released_incomplete_sampling_gap`。
 - **阻塞与建议：**只读检查确认没有隐藏的精细物理状态：robot scene builder 调用 `SimOptions(dt=0.0005, ...)` 而未指定 `substeps`；Genesis `SimOptions.substeps` 默认是 1，`Simulator.step()` 只推进这一个子步。源文件 SHA256 为 `solvers.py` `ccea060d5769b02776954cd5f6b6c7a07922c234cecf19a3473e013139263090`、`simulator.py` `b385b363dfb56512ae189d3ad86fd9bd75acc7209e2cf4b9c934ec76e98073da`、`scene.py` `ec1e062c8e59a6fa973bcca7cc75618514a6b672ebb69cb7a30f62430139a48c`、`robot_env.py` `8a941724f9041a5281a3e989f9374e94308c2551e21ff54a247c8fd453722cb4`。因此在保留 strict profile 的情况下，精确回放 episode 004/005 缺少可满足请求的状态。方案 A 是保留 strict core/profile 与物理时钟，并承认旧 episode 不能做完整 strict 对照；方案 B 是以 `1/6000 s` 或更细的步长生成新的匹配物理轨迹，同时重生成 Direct-HDR、strict 事件与标签——这不是旧 episode 精确重放，并改变数值物理时钟。建议研究侧明确接受哪一种协议；在此之前不使用插值姿态冒充实际采样，不做定位结论或训练。
+
+#### R1.5 定位恢复：严格采样网格已查明，按需真实渲染候选已提交（2026-11-01；等待新资源时段）
+
+- **新证据把上一轮失败定位到采样网格：**episode 004（seed `2026104134`，0.30 m/s，起始横向 `+55 mm`）的 `[0.574,0.602] s` 28 个连续 1 ms 区间全部要求 `U=7`。旧物理 trace 为 `1/6000 s`，不能在 `1/7000 s` 的严格采样时刻提供精确状态。此探针关闭 strict-fidelity 输出，只能说明采样器要求；其中 `strict_sampled_events.npz` 是非严格近似，**不能用于事件定位结论**。没有模型推理，也没有恢复定位的分数。
+- **候选路径：**代码 commit `241124048ca0ce93dbecfb6c319f96704bcb4b2b` 将配对渲染改为 Direct-HDR 只渲染 1 ms 端点，严格路径收到请求时才对保存的真实物理状态行补渲染；不存在状态时继续 fail closed，不插值位姿。`1/42000 s` 网格精确表示 1 ms 内的 `1/6` 和 `1/7` 采样点。算术核对覆盖 625 个端点区间、共 8,125 个采样时刻；Python 语法、bash 语法和 diff 检查通过。仍待 g1 完整严格/Direct 事件生成、四组 checkpoint 定位对照，故这只是已提交候选，尚未实测通过。
+- **已归档的采样证据与成本：**[`episode 004 sampler-count probe`](../../benchmark/robot_closed_loop/results/r1_5_localization_recovery_sampling_window_20261101i/README.md)。来源代码为 `cef79612405180e1a560fb289b5fe136623c52ff`；探针 29 帧，场景构建 `53.04 s`、渲染 `0.52 s`、采样器/插件 `25.27 s`、Direct DVS `0.35 s`、总计 `80.99 s`。逐集事件、trace、配置和校验清单保存在结果目录；episode 004 原始状态 trace 为 7.2 MB。
+- **episode 005 未产生探针结果：**它在 Genesis 初始化阶段遇到共享 Quadrants 编译缓存锁，并在本次分配时段到期时退出；没有清理缓存或干预他人进程。本次 GPU0 使用于 `08:55:59–08:57:50 UTC` 后释放。g1 `09:04 UTC` 的只读快照显示 GPU0 空闲，但 GPU1、GPU2 有其他项目预约，GPU5 有活动任务；GPU0 的旧分配已过期，未继续开跑。
+- **下一步命令：**取得新的 GPU0 短时预约后，使用下列 42 kHz 物理时钟配置，在 episode 004/005 各自的同一新轨迹上生成 1 kHz Direct-HDR 与严格事件，再运行同一组旧 checkpoint 的四路评估。Direct 与严格事件共用同一真实状态序列；该新轨迹不是旧缓存的逐位复现。
+
+  ```bash
+  bash benchmark/robot_closed_loop/diagnostics/launch_r1_5_localization_fineclock_denominator_pair.sh \
+    /home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/<new-run-id> \
+    GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23 \
+    /home/zhaoyuhan/Eventbased_WAM/.gpu_reservations/<matching-reservation>.json
+  ```
+
+- **仍需解决的研究问题：**上面的采样缺口解释了为什么 strict/direct 对照没有跑到定位，但不能解释也不能修复“我们的定位弱于 V2E”。定位根因仍未判定；只有这次按需真实采样的配对事件和逐查询模型结果出来后，才能区分图像/事件源差异与 checkpoint 训练分布差异。冻结 core 仍保持 `90f792d166f000ef4f9e072a97633cc4ad39c8b7`。
