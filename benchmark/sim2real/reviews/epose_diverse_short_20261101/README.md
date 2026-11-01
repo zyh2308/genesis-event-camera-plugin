@@ -38,3 +38,13 @@ tmux：`research_epose_r8_20261101`。CPU预算16线程，无GPU预留。生成�
 `pretraining/` 为训练前协议、代码与预检证据快照；`protocol.json`、协议哈希和 `source_snapshot_before_training.json` 是核对入口。实际批量生成代码为 `generate_diverse_bank_workers.py`，原 `generate_diverse_bank.py` 是保留的初期单轨迹探针。大bank和checkpoint留在服务器，不纳入Git。
 
 公开资产：[YCB](https://ycb-benchmarks.s3.amazonaws.com/index.html)。数据说明：[E-POSE论文](https://www.nature.com/articles/s41597-025-04536-5)。下游：[SingleShotPose](https://github.com/microsoft/singleshotpose)。
+
+## 12:07 UTC 更新：窗内运动可观察性纠正
+
+R8 的实际增强样本在 update0 被过严的绝对损失容差拦截。独立复算表明差异只有 FP32 求和顺序，相对差最大约2.14e-7，梯度完全相同；R9 仅修正 oracle 容差。早期 update400/500 checkpoint 的模型、Adam计数及 RNG 恢复检查通过。
+
+完整256个合成窗口的检查发现，R8/R9相机始终看向物体，中心位移中位数仅0.03756px/10ms（最大0.28091）。跨轨迹视角和位置变化不能替代窗内运动检查。诊断框内事件数上界中位数为EventGenesis83、V2E14；框内可能有背景，不能全部解释成物体事件。R9固定2400步训练继续保留，真实自动评分已主动关闭，r_05_gl仍未读取。
+
+R10改用固定相机朝向的对角平移，生成前统一检查可见性及中心位移>1px/10ms。两组共享公开纹理、精确CAD、物理端点和标签；frozen core、模型、R6初始化、损失、2400步预算及定位门槛保持原登记。剩余时间采用12条训练、4条验证轨迹，每条80ms，前40ms预热，得到48/16个窗口。这与R8不是等规模控制消融。先生成、检查完整事件图，再启动训练；R10不使用R9中途权重。
+
+当前g1 run：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-epose-fixed-view-motion-v10`。8个CPU进程生成，后续每组8线程训练，无GPU预留。训练前协议及24个源文件在`motion_training/`；归档及内部源文件SHA256已在WSL独立核验。
