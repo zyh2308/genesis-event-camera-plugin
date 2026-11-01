@@ -1,0 +1,123 @@
+{
+  "schema": "stage8_replicad_dynamic_gtfit_v1",
+  "registered_utc": "2026-11-01T03:00:00Z",
+  "purpose": "bounded paired synthetic GT-supervised STE-FlowNet diagnostic on one pre-registered textured indoor training layout and one independent validation layout; not formal training or generator ranking",
+  "real_data_used": false,
+  "real_scoring_enabled": false,
+  "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "model": {
+    "name": "STE-FlowNet",
+    "source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "event_only_inference": true,
+    "input": "official five equal-event-count Gaussian-count temporal bins per polarity, 320x240 raster, symmetric zero padding to 352x352"
+  },
+  "scene_design": {
+    "source": "ReplicaCAD Interactive v1.5 apartment layouts instantiated and rendered in Genesis; not RGB-video reuse",
+    "training_scene": "v3_sc0_staging_00",
+    "validation_scene": "v3_sc2_staging_00",
+    "fixed_before_events_or_model_scores": true,
+    "camera_delta_habitat_xyz_m_over_30ms": [
+      0.06,
+      0.0,
+      0.0
+    ],
+    "moving_object_template_rule": "the sole ReplicaCAD rigid object whose object-template basename ends with 'sofa'",
+    "moving_sofa_delta_habitat_xyz_m_over_30ms": [
+      0.12,
+      0.0,
+      0.0
+    ],
+    "renderer_segmentation": "link-level renderer IDs remapped through Genesis entity/link table to physical link IDs",
+    "flow_label": "per-link SE3 projection with target depth visibility test, pixel displacement from t=0 to 30ms"
+  },
+  "data": {
+    "episodes": [
+      {
+        "rollout_id": "stage8_sc0_camera_xplus_sofa_xplus",
+        "run_id": "stage8-sc0-dynamic-pilot-v1",
+        "scene_id": "v3_sc0_staging_00",
+        "scene_config": "v3_sc0_staging_00.scene_instance.json",
+        "split": "train",
+        "motion_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-replicad-dynamic-v1/stage8-sc0-dynamic-pilot-v1/camera_motion_30ms",
+        "v2e_h5": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-replicad-dynamic-v1/stage8-sc0-dynamic-pilot-v1/v2e/v2e_events.h5"
+      },
+      {
+        "rollout_id": "stage8_sc2_camera_xplus_sofa_xplus",
+        "run_id": "stage8-sc2-dynamic-pilot-v1",
+        "scene_id": "v3_sc2_staging_00",
+        "scene_config": "v3_sc2_staging_00.scene_instance.json",
+        "split": "validation",
+        "motion_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-replicad-dynamic-v1/stage8-sc2-dynamic-pilot-v1/camera_motion_30ms",
+        "v2e_h5": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-replicad-dynamic-v1/stage8-sc2-dynamic-pilot-v1/v2e/v2e_events.h5"
+      }
+    ],
+    "split_unit": "complete registered ReplicaCAD layout; no adjacent-window split",
+    "shared_physical_trajectory_and_labels": true,
+    "real_data_used": false
+  },
+  "pairing": {
+    "arms": [
+      "eventgenesis",
+      "v2e"
+    ],
+    "same_initialization_seed": 0,
+    "same_rollout_order_and_update_budget": true,
+    "sampler_seed": 20261101,
+    "same_model_optimizer_representation_and_preprocessing": true,
+    "random_augmentation": false,
+    "batch_size": 1,
+    "optimizer": "Adam",
+    "learning_rate": 0.0004,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay_weights": 0.0004,
+    "weight_decay_biases": 0.0
+  },
+  "objective": {
+    "type": "existing four-scale robust endpoint error from Stage 5 synthetic GT pilot",
+    "scale_weights": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "validity_downsampling": "area coverage >= 0.999 at each scale",
+    "formal_checkpoint_selection": false
+  },
+  "diagnostic_budget": {
+    "updates_per_arm": 100,
+    "evaluation_updates": [
+      0,
+      20,
+      40,
+      60,
+      80,
+      100
+    ],
+    "stop_on": [
+      "nonfinite objective",
+      "nonfinite or zero aggregate gradient",
+      "optimizer step not advancing",
+      "paired initialization mismatch"
+    ],
+    "interpretation": "one registered rollout is repeated for the bounded training fit; validation uses a different pre-registered layout. Fit is not independent-layout generalization or evidence of generator superiority."
+  },
+  "evaluation_masks": {
+    "primary_diagnostic": "common union of normal-input EventGenesis and V2E active pixels intersected with shared GT validity, frozen before training",
+    "full_valid_diagnostic": "shared visibility-checked GT validity",
+    "same_mask_for_both_arms": true,
+    "empty_active_mask": "retain rollout and report null active-region EPE"
+  },
+  "sensor": {
+    "profile": "uncalibrated Stage-5 pilot values, fixed and identical for paired EventGenesis comparison; V2E consumes the same Genesis radiance endpoints",
+    "sensor_thresholds_changed_to_match_event_count": false
+  },
+  "limits": [
+    "one training and one independent validation layout, one 30ms camera-plus-sofa trajectory per layout",
+    "sofa trajectory is a scripted kinematic probe, not a calibrated natural-object motion distribution",
+    "diagnostic uses synthetic flow labels and does not replace the existing self-supervised formal objective",
+    "real datasets and real scores are excluded"
+  ]
+}
