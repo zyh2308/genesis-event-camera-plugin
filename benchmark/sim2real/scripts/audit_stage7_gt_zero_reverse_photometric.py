@@ -209,8 +209,13 @@ def main() -> None:
                     pyramid, gray0, gray1, event, multiscaleloss
                 )
                 one_scale_photo = []
-                gray0_cpu = gray0[:, 0].detach().cpu().contiguous()
-                gray1_cpu = gray1[:, 0].detach().cpu().contiguous()
+                if gray0.shape != (1, 352, 352) or gray1.shape != (1, 352, 352):
+                    raise RuntimeError(
+                        f"pinned photometric adapter expects [B,H,W] padded grayscale, got "
+                        f"{tuple(gray0.shape)}/{tuple(gray1.shape)}"
+                    )
+                gray0_cpu = gray0.detach().cpu().contiguous()
+                gray1_cpu = gray1.detach().cpu().contiguous()
                 event_image = torch.sum(event, dim=4)
                 for flow_scale in pyramid:
                     one_scale_photo.append(float(multiscaleloss.compute_photometric_loss(
