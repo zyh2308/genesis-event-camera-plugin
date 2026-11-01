@@ -1,6 +1,6 @@
 {
   "schema": "stage8_replicad_dynamic_gtfit_v2",
-  "registered_utc": "2026-11-01T03:08:00Z",
+  "registered_utc": "2026-11-01T03:10:26Z",
   "purpose": "bounded paired synthetic GT-supervised STE-FlowNet diagnostic on one pre-registered textured indoor training layout and one independent validation layout; corrected launcher output paths; not formal training or generator ranking",
   "real_data_used": false,
   "real_scoring_enabled": false,
@@ -21,14 +21,37 @@
       0.0,
       0.0
     ],
-    "moving_object_template_rule": "the sole ReplicaCAD rigid object whose object-template basename ends with 'sofa'",
-    "moving_sofa_delta_habitat_xyz_m_over_30ms": [
-      0.12,
+    "moving_object_template_rule": "the sole ReplicaCAD object with exact basename 'frl_apartment_tvstand'; selected by initial renderer segmentation presence before EventGenesis or V2E generation",
+    "renderer_segmentation": "link-level renderer IDs remapped through Genesis entity/link table to physical link IDs",
+    "flow_label": "per-link SE3 projection with target depth visibility test, pixel displacement from t=0 to 30ms",
+    "moving_object_delta_habitat_xyz_m_over_30ms": [
+      0.08,
       0.0,
       0.0
     ],
-    "renderer_segmentation": "link-level renderer IDs remapped through Genesis entity/link table to physical link IDs",
-    "flow_label": "per-link SE3 projection with target depth visibility test, pixel displacement from t=0 to 30ms"
+    "initial_visibility_gate": "selected link must have >100 source segmentation pixels on shared geometry before motion; no generator event count used",
+    "initial_visibility_preflight": {
+      "selection_basis": "initial geometry renderer segmentation from pre-existing Genesis camera-motion runs, inspected before EventGenesis/V2E generation or model diagnostics",
+      "generator_event_counts_used": false,
+      "renderer_id_to_physical_link_id": "current Stage8 sc0 runtime mapping observed renderer ID 4 -> physical link ID 3 for the third registered rigid object; both scene configs use the same frl_apartment_tvstand at object index 2",
+      "minimum_initial_pixels": 100,
+      "training_scene": {
+        "scene_id": "v3_sc0_staging_00",
+        "source_run": "20261030-stage7-replicad-v3_sc0_staging_00-fast-run14",
+        "renderer_id": 4,
+        "first_endpoint_pixels": 1000,
+        "source_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-replicad-v3_sc0_staging_00-fast-run14/camera_motion_30ms/renderer_segmentation_raw.npy",
+        "sha256": "914df9e781898bf858af0c08475da4d191f91db2031945ad60c0b2079ca1c959"
+      },
+      "validation_scene": {
+        "scene_id": "v3_sc2_staging_00",
+        "source_run": "20261030-stage7-replicad-v3_sc2_staging_00-fast-run16",
+        "renderer_id": 4,
+        "first_endpoint_pixels": 464,
+        "source_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261030-stage7-replicad-v3_sc2_staging_00-fast-run16/camera_motion_30ms/renderer_segmentation_raw.npy",
+        "sha256": "5fed62e6b041cc5923d3b91cb32d7ca88bee70166e69754e83ccb6558c031783"
+      }
+    }
   },
   "data": {
     "episodes": [
@@ -121,8 +144,8 @@
     "sensor_thresholds_changed_to_match_event_count": false
   },
   "limits": [
-    "one training and one independent validation layout, one 30ms camera-plus-sofa trajectory per layout",
-    "sofa trajectory is a scripted kinematic probe, not a calibrated natural-object motion distribution",
+    "one training and one independent validation layout, one 30ms camera-plus-selected object trajectory per layout",
+    "selected object trajectory is a scripted kinematic probe, not a calibrated natural-object motion distribution",
     "diagnostic uses synthetic flow labels and does not replace the existing self-supervised formal objective",
     "real datasets and real scores are excluded"
   ],

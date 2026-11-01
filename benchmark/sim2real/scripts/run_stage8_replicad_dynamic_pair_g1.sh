@@ -49,7 +49,8 @@ for spec in 'stage8-sc0-dynamic-pilot-v2 v3_sc0_staging_00' 'stage8-sc2-dynamic-
       && -f "$PREV_OUT/camera_motion_30ms/gt_flow_px_t0_to_t30ms.npy" \
       && -f "$PREV_OUT/camera_motion_30ms/eventgenesis_events_seconds_xy_p.npy" \
       && -f "$PREV_OUT/layout_rgb.png" && -f "$PREV_OUT/layout_depth.npy" \
-      && -f "$PREV_OUT/layout_segmentation.npy" && -f "$PREV_OUT/layout_radiance.npy" \
+      && -f "$PREV_OUT/layout_segmentation.npy" && -f "$PREV_OUT/layout_segmentation_physical_link_ids.npy" \
+      && -f "$PREV_OUT/layout_renderer_id_to_link_id.json" && -f "$PREV_OUT/layout_radiance.npy" \
       && "$(grep -F '"status": "passed_replica_scene_camera_and_sofa_motion_probe"' "$PREV_OUT/result.json" >/dev/null && echo yes || echo no)" = yes \
       && "$(grep -F '"scene_id": "'"$scene"'"' "$PREV_OUT/result.json" >/dev/null && echo yes || echo no)" = yes \
       && "$(grep -F "$GENERATOR_SHA  " "$PREV_RUN/preflight.txt" >/dev/null && echo yes || echo no)" = yes ]]; then
@@ -59,13 +60,15 @@ for spec in 'stage8-sc0-dynamic-pilot-v2 v3_sc0_staging_00' 'stage8-sc2-dynamic-
   if [[ "$REUSE_PREVIOUS" = true ]]; then
     cp -a "$PREV_OUT/camera_motion_30ms" "$EROOT/camera_motion_30ms"
     cp "$PREV_OUT/result.json" "$EROOT/genesis_result.json"
-    cp "$PREV_OUT/layout_rgb.png" "$PREV_OUT/layout_depth.npy" "$PREV_OUT/layout_segmentation.npy" "$PREV_OUT/layout_radiance.npy" "$EROOT/"
+    cp "$PREV_OUT/layout_rgb.png" "$PREV_OUT/layout_depth.npy" "$PREV_OUT/layout_segmentation.npy" \
+      "$PREV_OUT/layout_segmentation_physical_link_ids.npy" "$PREV_OUT/layout_renderer_id_to_link_id.json" \
+      "$PREV_OUT/layout_radiance.npy" "$EROOT/"
     printf '{"schema":"stage8_scene_artifact_reuse_v1","status":"reused_verified_genesis_scene_output","previous_run":"%s","previous_output":"%s","generator_sha256":"%s","reason":"previous driver had an output-archive path defect after successful scene rendering; preserve and reuse only hash-matched scene output"}\n' "$PREV_EPISODE" "$PREV_OUT" "$GENERATOR_SHA" > "$EROOT/scene_reuse.json"
     printf '0\n' > "$EROOT/scene_exit_code.txt"
   else
     set +e
     timeout 1200s env CUDA_VISIBLE_DEVICES= LIBGL_ALWAYS_SOFTWARE=1 MESA_LOADER_DRIVER_OVERRIDE=llvmpipe PYOPENGL_PLATFORM=egl EGL_PLATFORM=surfaceless QD_OFFLINE_CACHE=1 QD_OFFLINE_CACHE_FILE_PATH="$CACHE/quadrants" QD_OFFLINE_CACHE_CLEANING_POLICY=never QD_NUM_THREADS=2 GS_CACHE_FILE_PATH="$CACHE/genesis" OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 PYTHONPATH="$GENESIS_ROOT:$EXEC:$PROJECT" \
-      "$PY" -u "$GENERATOR" --asset-root "$ASSET_ROOT" --scene-config "${scene}.scene_instance.json" --output-dir "$OUT" \
+      "$PY" -u "$GENERATOR" --asset-root "$ASSET_ROOT" --scene-config "${scene}.scene_instance.json" --output-dir "$OUT" --translation-habitat-xyz 0.06 0.0 0.0 --object-delta-habitat-xyz 0.08 0.0 0.0 --moving-object-template frl_apartment_tvstand \
       > "$EROOT/genesis.stdout.log" 2> "$EROOT/genesis.stderr.log"
     RC=$?
     set -e
@@ -73,10 +76,12 @@ for spec in 'stage8-sc0-dynamic-pilot-v2 v3_sc0_staging_00' 'stage8-sc2-dynamic-
     if [[ "$RC" -ne 0 ]]; then printf '%s\n' "$RC" > "$RUN_ROOT/exit_code.txt"; exit "$RC"; fi
     cp -a "$OUT/camera_motion_30ms" "$EROOT/camera_motion_30ms"
     cp "$OUT/result.json" "$EROOT/genesis_result.json"
-    cp "$OUT/layout_rgb.png" "$OUT/layout_depth.npy" "$OUT/layout_segmentation.npy" "$OUT/layout_radiance.npy" "$EROOT/"
+    cp "$OUT/layout_rgb.png" "$OUT/layout_depth.npy" "$OUT/layout_segmentation.npy" \
+      "$OUT/layout_segmentation_physical_link_ids.npy" "$OUT/layout_renderer_id_to_link_id.json" \
+      "$OUT/layout_radiance.npy" "$EROOT/"
   fi
   date -u +%Y-%m-%dT%H:%M:%SZ > "$EROOT/scene_finished_utc.txt"
-  sha256sum "$EROOT/genesis_result.json" "$EROOT/layout_rgb.png" "$EROOT/layout_depth.npy" "$EROOT/layout_segmentation.npy" "$EROOT/layout_radiance.npy" "$EROOT/camera_motion_30ms/radiance_frames.npy" "$EROOT/camera_motion_30ms/gt_flow_px_t0_to_t30ms.npy" > "$EROOT/scene_artifacts.sha256"
+  sha256sum "$EROOT/genesis_result.json" "$EROOT/layout_rgb.png" "$EROOT/layout_depth.npy" "$EROOT/layout_segmentation.npy" "$EROOT/layout_segmentation_physical_link_ids.npy" "$EROOT/layout_renderer_id_to_link_id.json" "$EROOT/layout_radiance.npy" "$EROOT/camera_motion_30ms/radiance_frames.npy" "$EROOT/camera_motion_30ms/gt_flow_px_t0_to_t30ms.npy" > "$EROOT/scene_artifacts.sha256"
   date -u +%Y-%m-%dT%H:%M:%SZ > "$EROOT/v2e_started_utc.txt"
   set +e
   CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 PYTHONPATH="$EXEC:$PROJECT" \

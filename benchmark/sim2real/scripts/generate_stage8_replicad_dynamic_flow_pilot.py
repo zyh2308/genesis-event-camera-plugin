@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import a registered ReplicaCAD layout into Genesis and render a camera-motion pilot."""
+"""Import a registered ReplicaCAD layout into Genesis with camera and visible-object motion."""
 from __future__ import annotations
 
 import hashlib
@@ -331,7 +331,7 @@ def capture_dynamic_motion_probe(
     scene, camera, output_dir: Path, translation_h, object_delta_h,
     moving_entity, moving_link_id: int, links_by_id: dict[int, object], moving_base_g,
 ) -> dict:
-    """Generate four shared radiance/depth/segmentation endpoints with camera and sofa motion."""
+    """Generate four shared radiance/depth/segmentation endpoints with camera and object motion."""
     motion_dir = output_dir / "camera_motion_30ms"
     motion_dir.mkdir()
     width, height, endpoints, steps_per_endpoint = 320, 240, 3, 10
@@ -491,10 +491,10 @@ def capture_dynamic_motion_probe(
     Image.fromarray(event_img, mode="RGB").save(motion_dir / "eventgenesis_support.png")
     moving_pixels = [int((seg == moving_link_id).sum()) for seg in seg_frames]
     if max(moving_pixels) < 100:
-        raise RuntimeError(f"moving ReplicaCAD sofa is not visibly represented: {moving_pixels}")
+        raise RuntimeError(f"registered moving object is not visibly represented: {moving_pixels}")
     mag = np.hypot(flow30[0], flow30[1])
     return {
-        "schema": "stage8_replicad_camera_and_moving_object_pilot_v1",
+        "schema": "stage8_replicad_camera_and_moving_object_pilot_v2",
         "status": "passed_camera_object_flow_event_capture",
         "endpoint_times_s": times.tolist(),
         "camera_translation_habitat_xyz_m": translation_h.tolist(),
@@ -514,7 +514,7 @@ def capture_dynamic_motion_probe(
         "depth_finite_positive_fraction": {"finite": float(np.isfinite(depth_frames).mean()), "positive": float((depth_frames > 0).mean())},
         "segmentation_contract": "renderer idxc remapped through pinned Camera._visualizer.segmentation_idx_dict (entity,link) -> physical link ID",
         "gt_flow_contract": "per-link SE3 projection, target-depth visibility max(2cm,2% projected z)",
-        "trajectory_kind": "pre-registered scripted kinematic camera + ReplicaCAD sofa motion",
+        "trajectory_kind": "pre-registered scripted kinematic camera + visible ReplicaCAD TV stand motion",
         "radiometric_calibration_status": "uncalibrated",
         "real_data_used": False,
     }
@@ -597,9 +597,13 @@ def main() -> None:
         help="registered 30 ms camera translation in Habitat xyz meters; camera and lookat move together",
     )
     parser.add_argument(
-        "--object-delta-habitat-xyz", type=float, nargs=3, default=[0.12, 0.0, 0.0],
+        "--object-delta-habitat-xyz", type=float, nargs=3, default=[0.08, 0.0, 0.0],
         metavar=("DX", "DY", "DZ"),
-        help="registered 30 ms kinematic translation of the ReplicaCAD sofa, in Habitat xyz meters",
+        help="registered 30 ms kinematic translation of the selected visible ReplicaCAD object, in Habitat xyz meters",
+    )
+    parser.add_argument(
+        "--moving-object-template", default="frl_apartment_tvstand",
+        help="exact ReplicaCAD object template basename selected before event generation",
     )
     args = parser.parse_args()
     scene_id = args.scene_config.removesuffix(".scene_instance.json")
@@ -638,9 +642,9 @@ def main() -> None:
             }
         )
 
-    moving_matches = [s for s in rigid_specs if s["template_name"].rsplit("/", 1)[-1].lower().endswith("sofa")]
+    moving_matches = [s for s in rigid_specs if s["template_name"].rsplit("/", 1)[-1].lower() == args.moving_object_template.lower()]
     if len(moving_matches) != 1:
-        raise RuntimeError(f"expected exactly one registered sofa to animate, found {[s['template_name'] for s in moving_matches]}")
+        raise RuntimeError(f"expected exactly one registered moving object {args.moving_object_template!r}, found {[s['template_name'] for s in moving_matches]}")
     moving_spec = moving_matches[0]
     moving_spec["is_scripted_moving_object"] = True
 
@@ -782,7 +786,7 @@ def main() -> None:
             if spec.get("is_scripted_moving_object", False):
                 moving_entity = entity
         if moving_entity is None:
-            raise RuntimeError("registered moving ReplicaCAD sofa was not instantiated")
+            raise RuntimeError("registered moving ReplicaCAD object was not instantiated")
         for spec in art_specs:
             scene.add_entity(
                 gs.morphs.URDF(
@@ -832,6 +836,19 @@ def main() -> None:
             raise RuntimeError(f"invalid depth output shape/values: {depth.shape}")
         if segmentation.shape != (240, 320):
             raise RuntimeError(f"invalid segmentation shape: {segmentation.shape}")
+        layout_renderer_map = renderer_segmentation_link_map(camera)
+        layout_seg_link = remap_segmentation_to_links(np.rint(segmentation).astype(np.int32), layout_renderer_map)
+        links_by_id = {int(link.idx): link for link in scene.rigid_solver.links}
+        moving_link_id = int(moving_entity.links[0].idx)
+        if moving_link_id not in links_by_id:
+            raise RuntimeError(f"moving object link {moving_link_id} is absent from the Genesis rigid solver")
+        initial_moving_pixels = int((layout_seg_link == moving_link_id).sum())
+        moving_renderer_ids = [rid for rid, link_id in layout_renderer_map.items() if link_id == moving_link_id]
+        if len(moving_renderer_ids) != 1 or initial_moving_pixels < 100:
+            raise RuntimeError(
+                "pre-event scene geometry visibility gate failed for the registered moving object: "
+                f"link_id={moving_link_id}, renderer_ids={moving_renderer_ids}, pixels={initial_moving_pixels}"
+            )
         if rgb.dtype == np.uint8 or float(rgb.max()) > 1.5:
             rgb_u8 = np.rint(np.clip(rgb, 0, 255)).astype(np.uint8)
         else:
@@ -840,18 +857,18 @@ def main() -> None:
         np.save(args.output_dir / "layout_radiance.npy", radiance.astype(np.float32, copy=False))
         np.save(args.output_dir / "layout_depth.npy", depth)
         np.save(args.output_dir / "layout_segmentation.npy", segmentation)
-        links_by_id = {int(link.idx): link for link in scene.rigid_solver.links}
-        moving_link_id = int(moving_entity.links[0].idx)
-        if moving_link_id not in links_by_id:
-            raise RuntimeError(f"moving sofa link {moving_link_id} is absent from the Genesis rigid solver")
+        np.save(args.output_dir / "layout_segmentation_physical_link_ids.npy", layout_seg_link)
+        (args.output_dir / "layout_renderer_id_to_link_id.json").write_text(
+            json.dumps({str(k): int(v) for k, v in sorted(layout_renderer_map.items())}, indent=2) + "\n"
+        )
         motion_result = capture_dynamic_motion_probe(
             scene, camera, args.output_dir,
             tuple(args.translation_habitat_xyz), tuple(args.object_delta_habitat_xyz),
             moving_entity, moving_link_id, links_by_id, np.asarray(moving_spec["position_g"], dtype=np.float64),
         )
         result = {
-            "schema": "stage8_replicad_camera_and_moving_object_pilot_v1",
-            "status": "passed_replica_scene_camera_and_sofa_motion_probe",
+            "schema": "stage8_replicad_camera_and_moving_object_pilot_v2",
+            "status": "passed_replica_scene_camera_and_visible_object_motion_probe",
             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "genesis_version": gs.__version__,
             "backend": str(gs.backend),
@@ -908,11 +925,17 @@ def main() -> None:
                 "segmentation_ids": np.unique(segmentation).tolist(),
             },
             "camera_motion_probe": motion_result,
+            "initial_visibility_gate": {
+                "passed": True, "renderer_id": int(moving_renderer_ids[0]),
+                "physical_link_id": moving_link_id, "visible_pixels": initial_moving_pixels,
+                "minimum_pixels": 100, "evaluated_before_event_generation": True,
+            },
             "moving_object": {
                 "template_name": moving_spec["template_name"],
                 "physical_link_id": moving_link_id,
                 "initial_genesis_position_m": moving_spec["position_g"],
                 "kinematic_delta_habitat_xyz_m": args.object_delta_habitat_xyz,
+                "selection_rule": "exact pre-registered ReplicaCAD template basename",
                 "no_collisions_or_gravity_for_controlled_probe": True,
             },
             "articulated_instances": [
@@ -926,8 +949,8 @@ def main() -> None:
             ],
             "elapsed_seconds": time.monotonic() - started,
             "limitations": [
-                "one 30 ms registered camera-plus-sofa trajectory per layout; not a long physical rollout",
-                "sofa motion is a scripted kinematic probe, not a calibrated natural-object motion model",
+                "one 30 ms registered camera-plus-visible-object trajectory per layout; not a long physical rollout",
+                "selected object motion is a scripted kinematic probe, not a calibrated natural-object motion model",
                 "V2E must be run on the exact saved radiance frames before the paired training bank is valid",
                 "radiometric calibration remains unverified; no real data or scores used",
                 "articulated URDF joint state is its importer default and was not animated",
