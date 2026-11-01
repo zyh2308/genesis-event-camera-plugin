@@ -1,0 +1,37 @@
+{
+  "status": "PASS_sparse_CPU_localization_acceptance",
+  "code_commit": "32567603c6d2dff01993b8ba89befb46f43a00ac",
+  "checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896",
+  "input": "original 100Hz endpoint HDR + depth/segmentation/poses",
+  "composite": "coverage_time_log_linear",
+  "backend": "numpy",
+  "strict_fidelity": false,
+  "dense_HDR_used_in_generation_or_training": false,
+  "reference_input": "fixed common Direct-HDR, evaluation only",
+  "acceptance": {
+    "primary": {
+      "p50": true,
+      "p95": true,
+      "fewer_over_10px_or_missing": true
+    },
+    "secondary": {
+      "p50": true,
+      "p95": true,
+      "fewer_over_10px_or_missing": true
+    }
+  },
+  "training": {
+    "device": "cpu",
+    "threads": 2,
+    "seed": 606,
+    "max_epochs": 40,
+    "best_epoch": 36,
+    "patience": 40,
+    "batch_size": 32,
+    "training_wall_s": 578.6819713519653,
+    "best_validation_phase_balanced_objective": 0.4653674066066742,
+    "phase_reweighting": "equal aggregate weight per episode-phase group within each split"
+  },
+  "closed_loop_retested": false,
+  "CUDA_new_mode_implemented": false
+}
