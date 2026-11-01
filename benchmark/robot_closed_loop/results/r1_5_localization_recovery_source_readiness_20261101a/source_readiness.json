@@ -1,0 +1,120 @@
+{
+  "schema": "r1_5_localization_source_readiness_v1",
+  "observed_utc": {
+    "host_resources": "2026-11-01T04:02:00Z",
+    "host_memory_and_disk": "2026-11-01T03:58:16Z"
+  },
+  "branch": "exp/robot-closed-loop-v1",
+  "baseline_execution_commit": "914ffff7a1f852f6a136661b96544035b26ca846",
+  "frozen_core": {
+    "tag": "r1.5-strict-sampled-20261031",
+    "commit": "90f792d166f000ef4f9e072a97633cc4ad39c8b7",
+    "profile": "scientific_strict_sampled_reference",
+    "profile_sha256": "3525cad9e84982a2b835b1b7d32428b94be24508fe28faf9f0d79002dfb10818"
+  },
+  "training_rollouts": {
+    "source_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache",
+    "legacy_cache_cadence_s": 0.01,
+    "verified_state_trace_cadence_s": 0.0005,
+    "trace_replay": "9/9 exact replay matched old physical trace and post-launch 100 Hz HDR cache; no rendering or events",
+    "spot_checks": [
+      {
+        "episode": 0,
+        "seed": 2026104130,
+        "speed_m_s": 0.4,
+        "start_y_m": -0.055,
+        "cache_frames": 212,
+        "trace_rows": 4225,
+        "cache_h5_sha256": "d72a0c86bdf1c4491b4c2ece68c500c10f23b9ccee1102919ae8c4d319124357"
+      },
+      {
+        "episode": 4,
+        "seed": 2026104134,
+        "speed_m_s": 0.3,
+        "start_y_m": 0.055,
+        "cache_frames": 207,
+        "trace_rows": 4122,
+        "cache_h5_sha256": "297fcb56c03edfb0ff15980c4b7d550ab32ee7f455edd94067f916b63d1f6753"
+      },
+      {
+        "episode": 5,
+        "seed": 2026104135,
+        "speed_m_s": 0.4,
+        "start_y_m": 0.0,
+        "cache_frames": 174,
+        "trace_rows": 3477,
+        "cache_h5_sha256": "a8b56611bf79da7d2d2440d941c5260be65b2affe48fa8d14676e672fb254e06"
+      }
+    ],
+    "direct_training_events_available": false,
+    "meaning": "the shared training cache has 100 Hz actual HDR observations plus 0.5 ms exact states; dense Direct-HDR events for these train episodes have not yet been rendered"
+  },
+  "old_common_reference": {
+    "root": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016",
+    "role": "previously inspected development evaluation only; not eligible for training or checkpoint selection",
+    "spot_checks": [
+      {
+        "episode": 0,
+        "seed": 2026103420,
+        "speed_m_s": 0.3,
+        "start_y_m": -0.055,
+        "npz_key": "events_1000hz",
+        "event_count": 589145,
+        "npz_sha256": "1427e38cea39dde2baa581dd8b2809abe7b5c6e99422ad38ab48c0ce2074ca54"
+      },
+      {
+        "episode": 4,
+        "seed": 2026103424,
+        "speed_m_s": 0.4,
+        "start_y_m": 0.0,
+        "npz_key": "events_1000hz",
+        "event_count": 399701,
+        "npz_sha256": "354b13c1b13c1ca9e085ae2768a53fecb606ad410d9cc5d9b529393ab93132a6"
+      },
+      {
+        "episode": 5,
+        "seed": 2026103425,
+        "speed_m_s": 0.4,
+        "start_y_m": 0.055,
+        "npz_key": "events_1000hz",
+        "event_count": 609830,
+        "npz_sha256": "b698817a8347ca48ad75015f0cb81c3bfc711958a60d3387d468c70456a7b2b6"
+      }
+    ],
+    "data_separation": "same episode index does not imply same physical rollout: the spot-checked common-reference seeds differ from the training-source seeds"
+  },
+  "host_resources": {
+    "gpu_reservations_directory": "/home/zhaoyuhan/Eventbased_WAM/.gpu_reservations",
+    "gpu_reservations_present": false,
+    "gpus": [
+      {"index": 0, "uuid": "GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23", "model": "NVIDIA GeForce RTX 3090", "utilization_percent": 64, "memory_used_mib": 2563, "compute_owner": "cmy"},
+      {"index": 1, "uuid": "GPU-0262d545-e9bd-7fcb-66e5-2ef81465c460", "model": "NVIDIA GeForce RTX 3090", "utilization_percent": 75, "memory_used_mib": 2563, "compute_owner": "cmy"},
+      {"index": 2, "uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9", "model": "Tesla V100S-PCIE-32GB", "utilization_percent": 81, "memory_used_mib": 2613, "compute_owner": "cmy"},
+      {"index": 3, "uuid": "GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd", "model": "Tesla V100S-PCIE-32GB", "utilization_percent": 92, "memory_used_mib": 2605, "compute_owner": "cmy"},
+      {"index": 4, "uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3", "model": "Tesla V100S-PCIE-32GB", "utilization_percent": 92, "memory_used_mib": 2605, "compute_owner": "cmy"},
+      {"index": 5, "uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885", "model": "NVIDIA TITAN RTX", "utilization_percent": 93, "memory_used_mib": 2450, "compute_owner": "cmy"}
+    ],
+    "host_load_average": [9.11, 8.83, 8.71],
+    "online_cpus": 128,
+    "available_ram_gib": 422,
+    "home_filesystem_available_tib": 7.1,
+    "renderer_or_training_launched": false
+  },
+  "cpu_render_probe": {
+    "software_environment": ["LIBGL_ALWAYS_SOFTWARE=1", "GALLIUM_DRIVER=llvmpipe", "EGL_PLATFORM=surfaceless", "CUDA_VISIBLE_DEVICES="],
+    "reported_gl_renderer": "NVIDIA GeForce RTX 3090/PCIe/SSE2",
+    "scene_render_count": 0,
+    "process_exited": true,
+    "fresh_process_check": "only the six prior cmy-owned compute processes remained",
+    "osmesa_library_advertised_by_ldconfig": false,
+    "quadrants_cache_lock_warning": "observed during Genesis CPU init; lock left untouched"
+  },
+  "corrected_runner": {
+    "path": "benchmark/robot_closed_loop/diagnostics/render_r1_5_strict_direct_episode.py",
+    "sha256": "03df88c93bcaaeea3658728eeda6e9f94d61cf9e866b746ba8d0b112e37147dc",
+    "reason": "frozen tag also includes benchmark/robot_closed_loop; frozen plugin package is now imported first, then the selected support snapshot takes precedence for benchmark modules",
+    "frozen_core_modified": false,
+    "verification": ["python3 -m py_compile", "git diff --check", "IMPORT_PRECEDENCE_PASS: benchmark robot_env resolves to the selected support tree while plugin physics_interpolator resolves to the extracted frozen tag"],
+    "strict_direct_run_started": false
+  }
+}

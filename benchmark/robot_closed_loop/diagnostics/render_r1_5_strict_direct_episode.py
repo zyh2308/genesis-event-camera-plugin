@@ -132,8 +132,6 @@ def main() -> int:
     core_root, remaining = _bootstrap_core_path()
     args = _parse_args(core_root, remaining)
     source_root = args.source_root.resolve()
-    if str(source_root) not in sys.path:
-        sys.path.insert(1, str(source_root))
     output = args.output.resolve()
 
     profile_path = (args.profile_config.resolve() if args.profile_config else
@@ -159,6 +157,20 @@ def main() -> int:
     from genesis_event_plugin.noise_model import DvsNoiseConfig
     from genesis_event_plugin.radiometry import linear_luminance
     from genesis_event_plugin.physics_interpolator import RenderRequiredError
+
+    # The frozen tag also contains an older benchmark/robot_closed_loop tree.
+    # Import and pin the frozen plugin package first, then put the selected
+    # execution snapshot ahead of the tag for benchmark support modules. The
+    # plugin package's __path__ remains rooted at core_root, so later plugin
+    # submodule imports cannot silently switch to the mutable support snapshot.
+    plugin_package = sys.modules.get("genesis_event_plugin")
+    if plugin_package is None or not Path(plugin_package.__file__).resolve().is_relative_to(core_root):
+        raise RuntimeError("frozen plugin package was not imported from the requested core root")
+    source_path = str(source_root)
+    if source_path in sys.path:
+        sys.path.remove(source_path)
+    sys.path.insert(0, source_path)
+
     from benchmark.robot_closed_loop.robot_env import build_robot_scene
     from benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke import (
         _pose, _resolve_motion_bodies,
