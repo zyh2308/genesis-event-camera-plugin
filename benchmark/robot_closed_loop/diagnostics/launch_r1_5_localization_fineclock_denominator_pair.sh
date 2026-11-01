@@ -24,7 +24,7 @@ OURS_CHECKPOINT="$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_
 V2E_CHECKPOINT="$ROOT/benchmark/robot_closed_loop/results/r1_native_hdr_small9_retrain_20261019a/v2e_fit/spatial_event_state.pt"
 TRACE_NAME=state_trace_dt_23810ns.jsonl
 DT=0.00002380952380952381
-END_S=0.625
+END_S=0.602
 
 if [[ -e "$RUN_ROOT" ]]; then
   echo "refusing to overwrite run root: $RUN_ROOT" >&2
