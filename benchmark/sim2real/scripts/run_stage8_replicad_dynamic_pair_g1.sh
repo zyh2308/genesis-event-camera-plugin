@@ -102,10 +102,11 @@ set -e
 printf '%s\n' "$RC" > "$RUN_ROOT/bank_builder_exit_code.txt"
 if [[ "$RC" -ne 0 ]]; then printf '%s\n' "$RC" > "$RUN_ROOT/exit_code.txt"; exit "$RC"; fi
 
-# Queue politely if other jobs currently use all cards; reserve atomically and verify again.
+# Queue politely if other jobs currently use all cards; after five checks use a bounded CPU fallback only if host load permits.
+RUN_ID=20261101-stage8-replicad-dynamic-v2
 mkdir -p "$RESERVATIONS"
 GPU_INDEX= GPU_UUID= GPU_NAME= LOCK=
-for attempt in $(seq 1 60); do
+for attempt in $(seq 1 5); do
   APPS=$(nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader 2>&1 || true)
   while IFS=',' read -r idx name uuid util used total; do
     idx=${idx//[[:space:]]/}; name=${name# }; name=${name% }; uuid=${uuid//[[:space:]]/}
@@ -118,26 +119,55 @@ for attempt in $(seq 1 60); do
   printf 'attempt=%s utc=%s state=waiting_no_idle_unowned_gpu\n' "$attempt" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RUN_ROOT/gpu_wait_log.txt"
   sleep 60
 done
-if [[ -z "$GPU_INDEX" ]]; then echo 'GPU gate timed out after 60 one-minute checks; no idle unowned GPU' > "$RUN_ROOT/gpu_gate.txt"; printf '5\n' > "$RUN_ROOT/exit_code.txt"; exit 5; fi
-RUN_ID=20261101-stage8-replicad-dynamic-v2
-printf '%s\n' "$RUN_ID" > "$LOCK/run_id.txt"
-date -u +%Y-%m-%dT%H:%M:%SZ > "$LOCK/acquired_utc.txt"
-printf '{"schema":"sim2real_gpu_reservation_v1","status":"reserved","host":"%s","gpu_uuid":"%s","run_id":"%s","run_path":"%s","purpose":"paired 100-update synthetic-only dynamic ReplicaCAD GT-flow diagnostic","cuda_visible_devices":"%s"}\n' "$(hostname -f)" "$GPU_UUID" "$RUN_ID" "$RUN_ROOT" "$GPU_INDEX" > "$LOCK/resource_reservation.json"
-cp "$LOCK/resource_reservation.json" "$RUN_ROOT/resource_reservation.json"
-printf 'gpu_index=%s\ngpu_name=%s\ngpu_uuid=%s\nlock=%s\n' "$GPU_INDEX" "$GPU_NAME" "$GPU_UUID" "$LOCK" > "$RUN_ROOT/gpu_reservation.txt"
-release_lock() { local rc=$?; if [[ -n "${LOCK:-}" && -f "$LOCK/run_id.txt" && "$(cat "$LOCK/run_id.txt")" = "$RUN_ID" ]]; then date -u +%Y-%m-%dT%H:%M:%SZ > "$RUN_ROOT/reservation_released_utc.txt"; rm -f "$LOCK/run_id.txt" "$LOCK/acquired_utc.txt" "$LOCK/resource_reservation.json"; rmdir "$LOCK"; fi; [[ -e "$RUN_ROOT/exit_code.txt" ]] || printf '%s\n' "$rc" > "$RUN_ROOT/exit_code.txt"; return 0; }
+DEVICE=cuda:0
+CUDA_DEVICE="$GPU_INDEX"
+CPU_FALLBACK=false
+if [[ -z "$GPU_INDEX" ]]; then
+  CPU_COUNT=$(getconf _NPROCESSORS_ONLN)
+  LOAD1=$(awk '{print $1}' /proc/loadavg)
+  MEM_AVAILABLE_KB=$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)
+  if python3 -c 'import sys; n=int(sys.argv[1]); load=float(sys.argv[2]); mem=int(sys.argv[3]); sys.exit(0 if n >= 16 and load <= n * 0.7 and mem >= 40000000 else 1)' "$CPU_COUNT" "$LOAD1" "$MEM_AVAILABLE_KB"; then
+    CPU_FALLBACK=true; DEVICE=cpu; CUDA_DEVICE=
+    printf '{"status":"cpu_fallback","cpu_count":%s,"load1":%s,"mem_available_kb":%s,"threads":2,"reason":"no idle unowned GPU after five one-minute checks"}\n' "$CPU_COUNT" "$LOAD1" "$MEM_AVAILABLE_KB" > "$RUN_ROOT/device_fallback.json"
+  else
+    printf 'no idle GPU; CPU fallback denied (cpus=%s load1=%s MemAvailable_kB=%s)\n' "$CPU_COUNT" "$LOAD1" "$MEM_AVAILABLE_KB" > "$RUN_ROOT/gpu_gate.txt"
+    printf '5\n' > "$RUN_ROOT/exit_code.txt"; exit 5
+  fi
+else
+  printf '%s\n' "$RUN_ID" > "$LOCK/run_id.txt"
+  date -u +%Y-%m-%dT%H:%M:%SZ > "$LOCK/acquired_utc.txt"
+  printf '{"schema":"sim2real_gpu_reservation_v1","status":"reserved","host":"%s","gpu_uuid":"%s","run_id":"%s","run_path":"%s","purpose":"paired 100-update synthetic-only dynamic ReplicaCAD GT-flow diagnostic","cuda_visible_devices":"%s"}\n' "$(hostname -f)" "$GPU_UUID" "$RUN_ID" "$RUN_ROOT" "$GPU_INDEX" > "$LOCK/resource_reservation.json"
+  cp "$LOCK/resource_reservation.json" "$RUN_ROOT/resource_reservation.json"
+  printf 'gpu_index=%s\ngpu_name=%s\ngpu_uuid=%s\nlock=%s\n' "$GPU_INDEX" "$GPU_NAME" "$GPU_UUID" "$LOCK" > "$RUN_ROOT/gpu_reservation.txt"
+fi
+release_lock() {
+  local rc=$?
+  if [[ -n "${LOCK:-}" && -f "$LOCK/run_id.txt" && "$(cat "$LOCK/run_id.txt")" = "$RUN_ID" ]]; then
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$RUN_ROOT/reservation_released_utc.txt"
+    rm -f "$LOCK/run_id.txt" "$LOCK/acquired_utc.txt" "$LOCK/resource_reservation.json"
+    rmdir "$LOCK"
+  fi
+  [[ -e "$RUN_ROOT/exit_code.txt" ]] || printf '%s\n' "$rc" > "$RUN_ROOT/exit_code.txt"
+  return 0
+}
 trap release_lock EXIT
-UTIL2=$(nvidia-smi -i "$GPU_INDEX" --query-gpu=utilization.gpu --format=csv,noheader,nounits | tr -d ' %')
-USED2=$(nvidia-smi -i "$GPU_INDEX" --query-gpu=memory.used --format=csv,noheader,nounits | tr -d ' MiB')
-APPS2=$(nvidia-smi --query-compute-apps=gpu_uuid --format=csv,noheader 2>&1 || true)
-printf 'index=%s\nuuid=%s\nutil=%s\nmemory_mib=%s\ncompute_apps=%s\n' "$GPU_INDEX" "$GPU_UUID" "$UTIL2" "$USED2" "$APPS2" > "$RUN_ROOT/post_reservation_check.txt"
-if [[ "$UTIL2" != 0 || ! "$USED2" =~ ^[0-9]+$ || "$USED2" -gt 64 ]] || grep -Fq "$GPU_UUID" <<< "$APPS2"; then echo 'GPU became busy after reservation; refusing training' >> "$RUN_ROOT/post_reservation_check.txt"; printf '5\n' > "$RUN_ROOT/exit_code.txt"; exit 5; fi
-nvidia-smi --query-gpu=index,name,uuid,utilization.gpu,memory.used,memory.total --format=csv,noheader >> "$RUN_ROOT/post_reservation_check.txt"
+if [[ "$CPU_FALLBACK" != true ]]; then
+  UTIL2=$(nvidia-smi -i "$GPU_INDEX" --query-gpu=utilization.gpu --format=csv,noheader,nounits | tr -d ' %')
+  USED2=$(nvidia-smi -i "$GPU_INDEX" --query-gpu=memory.used --format=csv,noheader,nounits | tr -d ' MiB')
+  APPS2=$(nvidia-smi --query-compute-apps=gpu_uuid --format=csv,noheader 2>&1 || true)
+  printf 'index=%s\nuuid=%s\nutil=%s\nmemory_mib=%s\ncompute_apps=%s\n' "$GPU_INDEX" "$GPU_UUID" "$UTIL2" "$USED2" "$APPS2" > "$RUN_ROOT/post_reservation_check.txt"
+  if [[ "$UTIL2" != 0 || ! "$USED2" =~ ^[0-9]+$ || "$USED2" -gt 64 ]] || grep -Fq "$GPU_UUID" <<< "$APPS2"; then
+    echo 'GPU became busy after reservation; refusing training' >> "$RUN_ROOT/post_reservation_check.txt"
+    printf '5\n' > "$RUN_ROOT/exit_code.txt"; exit 5
+  fi
+  nvidia-smi --query-gpu=index,name,uuid,utilization.gpu,memory.used,memory.total --format=csv,noheader >> "$RUN_ROOT/post_reservation_check.txt"
+fi
+printf 'device=%s\ncuda_visible_devices=%s\n' "$DEVICE" "${CUDA_DEVICE:-}" > "$RUN_ROOT/execution_device.txt"
 date -u +%Y-%m-%dT%H:%M:%SZ > "$RUN_ROOT/training_started_utc.txt"
 set +e
-CUDA_VISIBLE_DEVICES="$GPU_INDEX" OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 PYTHONPATH="$EXEC:$PROJECT" \
+CUDA_VISIBLE_DEVICES="${CUDA_DEVICE:-}" OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 PYTHONPATH="$EXEC:$PROJECT" \
   "$PY" -u "$TRAINER" --repo-root "$EXEC" --model-root "$MODEL_ROOT" --data-root "$FLOW_BANK" \
-    --config "$CONFIG" --output-root "$RUN_ROOT/training_output" --device cuda:0 \
+    --config "$CONFIG" --output-root "$RUN_ROOT/training_output" --device "$DEVICE" \
     > "$RUN_ROOT/trainer.stdout.log" 2> "$RUN_ROOT/trainer.stderr.log"
 RC=$?
 set -e

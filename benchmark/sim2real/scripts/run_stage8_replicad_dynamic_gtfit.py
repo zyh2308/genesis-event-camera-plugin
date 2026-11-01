@@ -156,9 +156,12 @@ def main() -> None:
     if updates < 1:
         raise ValueError("diagnostic update budget must be positive")
     device = torch.device(args.device)
-    if device.type != "cuda" or not torch.cuda.is_available():
-        raise RuntimeError("registered network diagnostic requires CUDA")
-    torch.cuda.set_device(device)
+    if device.type not in {"cpu", "cuda"}:
+        raise RuntimeError(f"device must be cpu or cuda, got {device}")
+    if device.type == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested but is unavailable")
+        torch.cuda.set_device(device)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -214,8 +217,10 @@ def main() -> None:
         "common_masks_frozen_before_training": True,
         "common_active_pixels": {key: int(value.sum()) for key, value in masks.items()},
         "real_data_used": False, "formal_checkpoint_selection": False,
-        "device": str(device), "gpu_name": torch.cuda.get_device_name(device),
-        "gpu_uuid": str(torch.cuda.get_device_properties(device).uuid) if hasattr(torch.cuda.get_device_properties(device), "uuid") else None,
+        "device": str(device),
+        "gpu_name": (torch.cuda.get_device_name(device) if device.type == "cuda" else None),
+        "gpu_uuid": (str(torch.cuda.get_device_properties(device).uuid)
+                     if device.type == "cuda" and hasattr(torch.cuda.get_device_properties(device), "uuid") else None),
         "arms": {},
     }
     seed = int(config["pairing"]["same_initialization_seed"])
@@ -226,7 +231,8 @@ def main() -> None:
     initial_hashes = set()
 
     for arm in config["pairing"]["arms"]:
-        random.seed(seed); np.random.seed(seed); torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
+        random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
+        if device.type == "cuda": torch.cuda.manual_seed_all(seed)
         model, patch_info = model_source(args.model_root.resolve(), device)
         initial_hash = state_sha256(model)
         initial_hashes.add(initial_hash)
@@ -376,7 +382,7 @@ def main() -> None:
             "wall_seconds": time.monotonic() - started,
         }
         del restored_optimizer, restored, model, optimizer
-        torch.cuda.empty_cache()
+        if device.type == "cuda": torch.cuda.empty_cache()
 
     result["status"] = "complete"
     result["finished_utc"] = datetime.now(timezone.utc).isoformat()

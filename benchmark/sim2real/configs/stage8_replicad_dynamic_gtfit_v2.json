@@ -1,6 +1,6 @@
 {
   "schema": "stage8_replicad_dynamic_gtfit_v2",
-  "registered_utc": "2026-11-01T03:06:15Z",
+  "registered_utc": "2026-11-01T03:08:00Z",
   "purpose": "bounded paired synthetic GT-supervised STE-FlowNet diagnostic on one pre-registered textured indoor training layout and one independent validation layout; corrected launcher output paths; not formal training or generator ranking",
   "real_data_used": false,
   "real_scoring_enabled": false,
@@ -125,5 +125,10 @@
     "sofa trajectory is a scripted kinematic probe, not a calibrated natural-object motion distribution",
     "diagnostic uses synthetic flow labels and does not replace the existing self-supervised formal objective",
     "real datasets and real scores are excluded"
-  ]
+  ],
+  "resource_policy": {
+    "gpu": "atomically reserve and recheck only an idle unowned card; poll once per minute for up to five minutes after data creation",
+    "cpu_fallback": "if no GPU appears, use the same two-thread CPU only when at least 16 CPUs, load1 <= 70% of CPU count, and MemAvailable >= 40 GB; both arms run on the same device",
+    "never_preempt_other_jobs": true
+  }
 }
