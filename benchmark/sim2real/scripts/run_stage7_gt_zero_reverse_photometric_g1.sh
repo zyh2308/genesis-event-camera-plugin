@@ -101,7 +101,10 @@ CUDA_VISIBLE_DEVICES="$GPU_INDEX" OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_N
   PYTHONPATH="$REPO" "$PY" -u "$SCRIPT" \
     --repo-root "$REPO" --model-root "$MODEL" --run-root "$BANK" \
     --config "$CONFIG" --output-root "$OUT" --device cuda:0 \
-    > "$RUN/stdout.log" 2> "$RUN/stderr.log"
+    > "$RUN/stdout.log" 2> "$RUN/stderr.log" &
+TRAIN_PID=$!
+printf '%s\n' "$TRAIN_PID" > "$RUN/trainer_pid.txt"
+wait "$TRAIN_PID"
 RC=$?
 set -e
 printf '%s\n' "$RC" > "$RUN/exit_code.txt"
