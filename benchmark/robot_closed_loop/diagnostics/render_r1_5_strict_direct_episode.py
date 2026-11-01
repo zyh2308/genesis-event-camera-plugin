@@ -61,6 +61,7 @@ def _parse_args(core_root: Path, remaining: list[str]) -> argparse.Namespace:
     parser.add_argument("--frozen-core-root", type=Path, required=True)
     parser.add_argument("--profile-config", type=Path)
     parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--support-source-commit", default="unknown")
     parser.add_argument("--trace-root", type=Path, required=True)
     parser.add_argument("--legacy-cache-root", type=Path, required=True)
     parser.add_argument("--scene-config", type=Path, required=True)
@@ -163,6 +164,17 @@ def main() -> int:
         _pose, _resolve_motion_bodies,
     )
     from benchmark.robot_closed_loop.event_state_model import five_bin_tensor
+    import benchmark.robot_closed_loop.robot_env as robot_env_module
+    import benchmark.robot_closed_loop.run as robot_run_module
+    import benchmark.robot_closed_loop.diagnostics.run_paired_generator_smoke as replay_helper_module
+    import benchmark.robot_closed_loop.event_state_model as event_model_module
+
+    support_module_hashes = {}
+    for module in (robot_env_module, robot_run_module, replay_helper_module, event_model_module):
+        module_path = Path(module.__file__).resolve()
+        if not module_path.is_relative_to(source_root):
+            raise RuntimeError(f"benchmark support import escaped requested snapshot: {module_path}")
+        support_module_hashes[str(module_path)] = _sha256(module_path)
 
     plugin_module_hashes = {}
     for module in (physics_interpolator, physics_plugin, adaptive_sampler, physics_warp,
@@ -461,7 +473,7 @@ def main() -> int:
         status = (
             "STRICT_PROVIDER_NEEDS_UNSAVED_ACTUAL_STATE" if missing_sample is not None
             else "DIRECT_RENDER_CACHE_MISMATCH" if not image_consistency_pass
-            else "PASS"
+            else "GENERATED_COMPARE_READY"
         )
 
         summary = {
@@ -472,6 +484,9 @@ def main() -> int:
             "frozen_core_tag": FROZEN_TAG, "frozen_core_commit": FROZEN_COMMIT,
             "profile": profile.get("profile"), "profile_config_sha256": _sha256(profile_path),
             "source_code_commit": os.environ.get("ROBOT_EXECUTION_CODE_COMMIT", "unknown"),
+            "support_source_root": str(source_root),
+            "support_source_commit": args.support_source_commit,
+            "support_module_paths_and_sha256": support_module_hashes,
             "runner_script_sha256": _sha256(Path(__file__).resolve()),
             "scene_config_sha256": _sha256(args.scene_config.resolve()),
             "control_config_sha256": _sha256(args.control_config.resolve()),
@@ -526,7 +541,7 @@ def main() -> int:
                           "raw_equal_on_common_support": identical,
                           "five_bin_exact": summary["five_bin_exact_query_count"],
                           "queries": len(query_rows), "missing_sample": missing_sample}, indent=2), flush=True)
-        return 0 if status == "PASS" else 2
+        return 0 if status == "GENERATED_COMPARE_READY" else 2
     finally:
         gs.destroy()
 
