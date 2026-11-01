@@ -1,0 +1,73 @@
+{
+  "schema": "r1_5_localization_recovery_v1",
+  "experiment_id": "r1_5_localization_recovery_20261101a",
+  "purpose": "Locate the first source-to-localization divergence and perform one evidence-led retrain; development-only, no ranking.",
+  "frozen_core": {
+    "tag": "r1.5-strict-sampled-20261031",
+    "profile": "scientific_strict_sampled_reference",
+    "profile_config_path_in_tag": "benchmark/robot_closed_loop/configs/r1_5_core_strict_sampled_20261102.json",
+    "profile_config_sha256": "3525cad9e84982a2b835b1b7d32428b94be24508fe28faf9f0d79002dfb10818",
+    "required_real_radiance_spacing_max_s": 0.0005,
+    "unknown_or_unobserved_photometry": "request actual timestamped radiance; never legacy hold"
+  },
+  "training_rollouts": {
+    "source_batch": "r1_shared_ideal_small9_20261018a",
+    "remote_cache_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache",
+    "scene_config": "benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+    "scene_config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+    "control_config": "benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json",
+    "control_config_sha256": "3d289c2bef1c562b26f9b713c2a826b813a286a1f7e21f9ead0a01c63c5e0d80",
+    "legacy_hdr_cache_cadence_s": 0.01,
+    "legacy_state_trace_cadence_s": 0.001,
+    "strict_trace_recapture_cadence_s": 0.0005,
+    "episode_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    "episode_split": {
+      "unit": "episode",
+      "train": [0, 1, 2, 3, 7, 8],
+      "validation": [4, 5, 6]
+    },
+    "reuse_common_reference_581_for_training": false,
+    "physics_trace_recapture_is_renderer_free": true
+  },
+  "dvs": {
+    "profile": "uncalibrated_ideal_development",
+    "response_mode": "physical_log",
+    "positive_threshold": 0.2,
+    "negative_threshold": 0.2,
+    "threshold_noise": 0.0,
+    "cutoff_hz": 0.0,
+    "leak_rate_hz": 0.0,
+    "shot_noise_rate_hz": 0.0,
+    "refractory_period_s": 0.0,
+    "radiance_floor": 1e-6,
+    "seed": 42,
+    "continuous_history_per_episode": true
+  },
+  "model": {
+    "architecture": "heatmap_v2",
+    "seed": 606,
+    "max_epochs": 40,
+    "patience": 40,
+    "batch_size": 32,
+    "threads": 2,
+    "train_eval_split_unit": "episode",
+    "checkpoint_selection": "fixed validation loss and existing early-stopping rule"
+  },
+  "training": {
+    "train_episode_ids": [0, 1, 2, 3, 7, 8],
+    "validation_episode_ids": [4, 5, 6],
+    "network": "heatmap_v2",
+    "seed": 606,
+    "max_epochs": 40,
+    "patience": 40,
+    "batch_size": 32,
+    "threads": 2
+  },
+  "evaluation": {
+    "remote_reference_root": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016",
+    "reference_manifest_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+    "reference_poll_count": 581,
+    "primary_metrics": ["position_xy_error", "velocity_xy_error", "intercept_xy_error", "arrival_time_error", "state_coverage", "unreachable_decision_coverage"],
+    "reference_role": "previously inspected development regression only; never used for training or checkpoint selection"
+  }
+}

@@ -437,6 +437,7 @@ def run_oracle_trial(
     visibility_evaluator: Optional[Any] = None,
     use_event_observation: bool = True,
     trajectory_cache: Optional[Any] = None,
+    trace_period_s: float = 0.001,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
@@ -466,8 +467,16 @@ def run_oracle_trial(
         float(cfg["robot"]["cartesian_acceleration_limit_m_s2"]),
     )
     control_steps = max(1, int(round((1.0 / float(controller_cfg["high_level_hz"])) / env.dt_s)))
-    # Score every physics step and preserve 1 kHz state/control evidence.
-    sample_steps = max(1, int(round(0.001 / env.dt_s)))
+    # Score every physics step; state/control trace cadence is configurable.
+    # The default preserves the established 1 kHz benchmark trace. Offline
+    # strict-sampled capture can request one trace row per physics step.
+    if not np.isfinite(trace_period_s) or trace_period_s <= 0:
+        raise ValueError("trace_period_s must be a finite positive value")
+    trace_steps_float = float(trace_period_s) / float(env.dt_s)
+    trace_steps = int(round(trace_steps_float))
+    if trace_steps < 1 or not np.isclose(trace_steps_float, trace_steps, rtol=0, atol=1e-8):
+        raise ValueError("trace_period_s must be an integer multiple of the physics dt")
+    sample_steps = trace_steps
     video_steps = max(1, int(round(0.05 / env.dt_s)))
     history: deque = deque(maxlen=max(32, int(math.ceil((latency + 0.03) / env.dt_s)) + 4))
     history.append(MotionState(0.0, np.asarray([x, y, target_size[2] / 2]), initial_velocity))
