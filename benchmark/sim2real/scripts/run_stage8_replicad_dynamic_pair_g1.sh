@@ -16,7 +16,7 @@ CONVERTER_SOURCE=$EXEC/benchmark/sim2real/scripts/generate_stage5_flow_coverage_
 RESERVATIONS=$PROJECT/runs/sim2real/resource_reservations
 
 mkdir -p "$RUN_ROOT/driver_logs"
-test "$(hostname -s)" = g1
+case "$(hostname -s)" in g1|g3) ;; *) echo "refusing unapproved compute host: $(hostname -s)" >&2; exit 2 ;; esac
 test -x "$PY" && test -d "$ASSET_ROOT" && test -d "$GENESIS_ROOT" && test -d "$MODEL_ROOT"
 test -f "$CONFIG" && test -f "$GENERATOR" && test -f "$V2E" && test -f "$BANK_BUILDER" && test -f "$TRAINER"
 test ! -e "$RUN_ROOT/stage8_finished_utc.txt"
