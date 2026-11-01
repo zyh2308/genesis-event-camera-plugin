@@ -136,6 +136,8 @@ class GenesisPhysicsEventPlugin:
         self.dvs_emulator = None
         self.recorder = None
         self._prev = None
+        self._capture_mode = None
+        self._last_observed_time = None
         self._initialized = False
         self.total_steps = 0
         self.total_events = 0
@@ -234,6 +236,8 @@ class GenesisPhysicsEventPlugin:
             raise RuntimeError("call attach() before start_episode()")
         self.dvs_emulator.reset()
         self._prev = None
+        self._capture_mode = None
+        self._last_observed_time = None
         self._initialized = False
         self.total_steps = 0
         self.total_events = 0
@@ -298,6 +302,9 @@ class GenesisPhysicsEventPlugin:
         }
 
     def capture(self, action=None):
+        if self._capture_mode == "observed":
+            raise RuntimeError("start a new episode before changing capture modes")
+        self._capture_mode = "interpolated"
         if self.cam is None or self.dvs_emulator is None:
             raise RuntimeError("call attach() before capture()")
         rgb, depth, seg, provided_radiance = self._render()
@@ -360,6 +367,81 @@ class GenesisPhysicsEventPlugin:
             "radiance": radiance, "depth": depth, "seg": seg,
             "t": t_current, "motion": motion, "rgb": rgb,
         }
+        return events
+
+    def capture_observed(self, radiance, timestamp_s, *, provenance, available_at_s):
+        """Consume an actual timestamped HDR observation without resampling it.
+
+        This explicit strict sampled-input path is for native renderer/cache
+        observations. It does not estimate radiance between observations or
+        promise accuracy faster than ``max_photometric_interval_s``. Sparse
+        observations still require ``capture`` and its reconstruction/provider
+        contract. The two paths cannot be mixed within an episode.
+        """
+        if self.dvs_emulator is None or self.interpolator is None:
+            raise RuntimeError("call attach() before capture_observed()")
+        if not self.strict_fidelity:
+            raise ValueError("observed HDR capture requires strict_fidelity=True")
+        if self.input_space != "linear":
+            raise ValueError("observed HDR capture requires declared linear input space")
+        if self._capture_mode not in (None, "observed"):
+            raise RuntimeError("start a new episode before changing capture modes")
+        t = float(timestamp_s)
+        available = float(available_at_s)
+        if not np.isfinite(t) or not np.isfinite(available):
+            raise ValueError("observation and availability timestamps must be finite")
+        if not isinstance(provenance, str) or not provenance.strip():
+            raise ValueError("actual HDR observation provenance is required")
+        if available < t - 1e-10 or available > self._time() + 1e-10:
+            raise ValueError("HDR observation is not causally available at the current scene time")
+        previous = self._last_observed_time
+        gap = None if previous is None else t - previous
+        if gap is not None and gap <= 0:
+            raise ValueError("observed HDR timestamps must increase strictly")
+        if gap is not None and gap > self.max_photometric_interval_s + 1e-10:
+            from .physics_interpolator import RenderRequest, RenderRequiredError
+            request = RenderRequest(
+                t=float(previous + min(self.max_photometric_interval_s, gap / 2)),
+                alpha=float(min(self.max_photometric_interval_s, gap / 2) / gap),
+                reason="missing_actual_hdr_observation", mask=None,
+                diagnostics={"observed_gap_s": float(gap), "maximum_gap_s": self.max_photometric_interval_s},
+                available_at=available,
+            )
+            raise RenderRequiredError("actual HDR observation gap exceeds the sampled-input contract", [request])
+        raw = _array(radiance)
+        if raw is None or raw.ndim not in (2, 3) or (raw.ndim == 3 and raw.shape[2] != 3):
+            raise ValueError("observed radiance must be HxW or HxWx3")
+        if raw.shape[:2] != (int(self.cam.res[1]), int(self.cam.res[0])):
+            raise ValueError("observed HDR resolution does not match the attached camera")
+        if not np.issubdtype(raw.dtype, np.floating):
+            raise ValueError("observed HDR must use floating radiance, not integer display pixels")
+        if not np.isfinite(raw).all() or np.any(raw < 0):
+            raise ValueError("observed linear radiance must be finite and nonnegative")
+        from .radiometry import linear_luminance
+        sample = self._sensor_crop(linear_luminance(prepare_linear_radiance(raw, input_space="linear")))
+        if previous is None:
+            self.dvs_emulator.initialize(sample, t)
+            events = np.empty((0, 4), dtype=np.float64)
+        else:
+            events = self.dvs_emulator.generate_events(sample, t)
+        self._capture_mode = "observed"
+        self._last_observed_time = t
+        self._initialized = True
+        self.total_steps += 1
+        self.total_events += len(events)
+        self.interpolator.last_uncertainty = {
+            "strict_sampling_status": "actual_timestamped_observation",
+            "strict_sample_output": "direct_radiance_frames_at_observed_states",
+            "geometry_warp_used_for_strict_output": False,
+            "observed_interval_s": gap,
+            "max_photometric_interval_s": self.max_photometric_interval_s,
+            "provenance": provenance,
+            "output_available_at_s": available,
+            "future_state_used": False,
+            "capture_mode": "observed",
+        }
+        if self.recorder is not None and len(events):
+            self.recorder.record_aer_events(events)
         return events
 
     def end_episode(self):
