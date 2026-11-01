@@ -1,0 +1,3766 @@
+{
+  "status": "COMPLETED_WITH_EVALUATION_RECOVERY",
+  "experiment_id": "r1_5_coverage_candidate_retrain_20261101a",
+  "purpose": "R1.5 candidate development retrain and same Direct-HDR reference replay; not a held-out test or ranking",
+  "training_source_commit": "6eb9dbf764edf93df0d968a7ded862b86cafdb49",
+  "evaluation_source_commit": "8e09ea19b7fd3da24b0a7c9473ed5b6ec0efc298",
+  "source_archive_sha256": "374c10d8e889431bf3f10a9dcd86ab5bf24a8266c2b82be1c833e236aa8c9c56",
+  "evaluation_fix": "accept ROBOT_EXECUTION_CODE_COMMIT when running from a selective source snapshot without .git",
+  "training": {
+    "checkpoint_sha256": "eb671a19c70bb9f004cc4c630764f497d6c2ed9b4361ef7904665fddce3cd796",
+    "source_manifest_sha256": "c640c5a61016b6ea532d976331372f6c55924d0688fab6f7f2f338a64afbcc44",
+    "fit_summary_sha256": "7c4c8e0857f6fae5da78f743088e10fd5e760807b23e30605ddf1d5c55909f41",
+    "training_summary": {
+      "device": "cpu",
+      "threads": 2,
+      "seed": 606,
+      "max_epochs": 40,
+      "best_epoch": 40,
+      "patience": 40,
+      "batch_size": 32,
+      "training_wall_s": 547.9529109409777,
+      "best_validation_phase_balanced_objective": 0.44668328762054443,
+      "phase_reweighting": "equal aggregate weight per episode-phase group within each split"
+    },
+    "validation_metrics": {
+      "n_windows": 566,
+      "position_xy_error_m": {
+        "n": 566,
+        "mean": 0.015354443494579062,
+        "p50": 0.008201850017776204,
+        "p95": 0.050458259534865185
+      },
+      "velocity_xy_error_m_s": {
+        "n": 566,
+        "mean": 0.04284921850013982,
+        "p50": 0.018318036965219952,
+        "p95": 0.14206567651099178
+      },
+      "event_state_valid_fraction": 0.9770318021201413,
+      "event_state_valid_windows": 553,
+      "event_state_age_ms_when_valid": {
+        "n": 553,
+        "mean": 10.0,
+        "p50": 10.0,
+        "p95": 10.0
+      },
+      "phase": {
+        "pre_contact": {
+          "n": 194,
+          "position_xy_error_m": {
+            "n": 194,
+            "mean": 0.008360942842640657,
+            "p50": 0.005100433754171659,
+            "p95": 0.02680752495028218
+          },
+          "velocity_xy_error_m_s": {
+            "n": 194,
+            "mean": 0.09346687992989193,
+            "p50": 0.09530297211001895,
+            "p95": 0.16295571666880743
+          },
+          "event_state_valid_fraction": 1.0,
+          "event_state_age_ms_p95": 10.0
+        },
+        "contact_to_lift": {
+          "n": 148,
+          "position_xy_error_m": {
+            "n": 148,
+            "mean": 0.010511775057591887,
+            "p50": 0.007755846422951276,
+            "p95": 0.02685785245765777
+          },
+          "velocity_xy_error_m_s": {
+            "n": 148,
+            "mean": 0.0186793017249962,
+            "p50": 0.009204263639040948,
+            "p95": 0.06631421411928672
+          },
+          "event_state_valid_fraction": 1.0,
+          "event_state_age_ms_p95": 10.0
+        },
+        "post_lift": {
+          "n": 224,
+          "position_xy_error_m": {
+            "n": 224,
+            "mean": 0.024610934812213676,
+            "p50": 0.017161257126181217,
+            "p95": 0.08302429763514718
+          },
+          "velocity_xy_error_m_s": {
+            "n": 224,
+            "mean": 0.01498011745259226,
+            "p50": 0.010835899210812117,
+            "p95": 0.03787019552721076
+          },
+          "event_state_valid_fraction": 0.9419642857142857,
+          "event_state_age_ms_p95": 10.0
+        }
+      },
+      "pre_contact_same_fixed_predictor_reference": {
+        "reachable_prediction_pairs": 194,
+        "absolute_intercept_arrival_error_s": {
+          "n": 194,
+          "mean": 0.16224473763273717,
+          "p50": 0.13668554039327868,
+          "p95": 0.3340242771334336
+        },
+        "absolute_intercept_y_error_m": {
+          "n": 194,
+          "mean": 0.002808398106783844,
+          "p50": 0.00236513566979411,
+          "p95": 0.007268874006184181
+        },
+        "reference_definition": "both estimated and GT state at the causal cutoff are passed through the same frozen FixedDecelerationPredictor with the configured observation latency; future GT arrival is not an input"
+      }
+    },
+    "train_episodes": [
+      0,
+      1,
+      2,
+      3,
+      7,
+      8
+    ],
+    "validation_episodes": [
+      4,
+      5,
+      6
+    ],
+    "architecture": "event-heatmap64-aux-z-velocity-v2"
+  },
+  "episodes": [
+    {
+      "episode_id": 0,
+      "seed": 2026104130,
+      "speed_m_s": 0.4,
+      "launch_y_m": -0.055,
+      "candidate_event_count": 658391,
+      "event_archive_sha256": "8b49f8caafb9eaa5dfaaeb87c117f40698380e31a2f59d647a2c32ea754bba7f",
+      "pair_provenance_sha256": "5667bad0ccb915c7a601b18b46ac57aa2288158b3efd78d3b06e8673f853d5a8",
+      "shared_cache_sha256": "d72a0c86bdf1c4491b4c2ece68c500c10f23b9ccee1102919ae8c4d319124357",
+      "trace_sha256": "897e61b6f9ee4fc31b1dee81a296340d86047310eea7c2399570aab7009dc3b9",
+      "split": "train",
+      "complete": true,
+      "sample_count_total": 3020
+    },
+    {
+      "episode_id": 1,
+      "seed": 2026104131,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.055,
+      "candidate_event_count": 836523,
+      "event_archive_sha256": "3c27c2c52ea2770ecb3509f69a6bf5c7243e151ec96485fcf20f5a88a488a85a",
+      "pair_provenance_sha256": "7eeaaba5f8292b5fe99e92544ae906165a2c5d82b9dbdc798c074c20d61375ff",
+      "shared_cache_sha256": "a2c4d19bf953b6082f517a15da526e1e6247e663d698626e58db0d040655a72d",
+      "trace_sha256": "4296f1fd7ef7c9e6d0c5217efc18c3433b5708b2453f3f0397bcd6a093ef3d1a",
+      "split": "train",
+      "complete": true,
+      "sample_count_total": 4328
+    },
+    {
+      "episode_id": 2,
+      "seed": 2026104132,
+      "speed_m_s": 0.3,
+      "launch_y_m": -0.055,
+      "candidate_event_count": 614684,
+      "event_archive_sha256": "f6b5142e0e49141f7c6be31e8ce58ce82fcd20f7faa226a7d8a3bf039ae48ea0",
+      "pair_provenance_sha256": "b16c74c2bcdacfdeda18ea4edc2c51158d06cd63b70a77eef29f7f953bbbe289",
+      "shared_cache_sha256": "6c7bb6a34a4ef96a9eb213e92daadeb52bb540927ff70576620204922eb3523c",
+      "trace_sha256": "a6735d220e926bb9a1e3c2906ba9dbf28e0e379ea64120f129d0cc633020edc0",
+      "split": "train",
+      "complete": true,
+      "sample_count_total": 3010
+    },
+    {
+      "episode_id": 3,
+      "seed": 2026104133,
+      "speed_m_s": 0.3,
+      "launch_y_m": 0.0,
+      "candidate_event_count": 427522,
+      "event_archive_sha256": "208333228415e9980845c236b1acdb3f36340cbb8dd2b5b9b362afe18064c19c",
+      "pair_provenance_sha256": "9d2fbb4632ff075659470fc492ad61e03f19d77322652ecacd449e30e42dd02c",
+      "shared_cache_sha256": "90fbfc6bb5e890371f78fab05fd88ba029ff5fee8194ae1e3b2e6dbdfc55424b",
+      "trace_sha256": "e381518f472a4830a541bc8d1af781a9a926029ece038cceaffab2007eacc5a6",
+      "split": "train",
+      "complete": true,
+      "sample_count_total": 2274
+    },
+    {
+      "episode_id": 4,
+      "seed": 2026104134,
+      "speed_m_s": 0.3,
+      "launch_y_m": 0.055,
+      "candidate_event_count": 582473,
+      "event_archive_sha256": "7aafe123375f78ce53520d311f54b4daf2c79968edc89ab85342f0c018805ac8",
+      "pair_provenance_sha256": "9d1fa10574adfdfa27ad28c79e8f2e55d915026e7424171692b2f258e3b8051e",
+      "shared_cache_sha256": "297fcb56c03edfb0ff15980c4b7d550ab32ee7f455edd94067f916b63d1f6753",
+      "trace_sha256": "52634995aae14544d65f19059037f63dbdd96956c2c6c0e5fd0718db96c244a6",
+      "split": "validation",
+      "complete": true,
+      "sample_count_total": 2909
+    },
+    {
+      "episode_id": 5,
+      "seed": 2026104135,
+      "speed_m_s": 0.4,
+      "launch_y_m": 0.0,
+      "candidate_event_count": 390431,
+      "event_archive_sha256": "098325428749b465c0902318a4299c15335d2a27cce9e650fc19196c018e5d99",
+      "pair_provenance_sha256": "8533229b0bb5ec167bd2d493a81fcc2dccaa728c070d78eff1034a6c5a5414a6",
+      "shared_cache_sha256": "a8b56611bf79da7d2d2440d941c5260be65b2affe48fa8d14676e672fb254e06",
+      "trace_sha256": "62a6c313afc4279f3de17d5e84ad133b4efff07e039b7c910cee43d1af6fa4da",
+      "split": "validation",
+      "complete": true,
+      "sample_count_total": 2125
+    },
+    {
+      "episode_id": 6,
+      "seed": 2026104136,
+      "speed_m_s": 0.5,
+      "launch_y_m": -0.055,
+      "candidate_event_count": 628355,
+      "event_archive_sha256": "b4cf1b11db7ccaa44881846879ab9fcfa24e252ca52da2564653796401ffa80a",
+      "pair_provenance_sha256": "7a9bd1ba91fe5100a3985fc9fd6ee2fa540321a5c59b20d7cf2bc44bead663a0",
+      "shared_cache_sha256": "978d347007b9c21c158564b56d06c9f0c03deb03e049978f03391d6797f181f0",
+      "trace_sha256": "32ba779984423dfd1ff08528a1797707ff33cae339dc189b67b5857d5bed3a3b",
+      "split": "validation",
+      "complete": true,
+      "sample_count_total": 2907
+    },
+    {
+      "episode_id": 7,
+      "seed": 2026104137,
+      "speed_m_s": 0.5,
+      "launch_y_m": 0.0,
+      "candidate_event_count": 712138,
+      "event_archive_sha256": "84514288d049c24c000eb5f3d63802c5fa75f8c601812a419ee48eac1bc47ff1",
+      "pair_provenance_sha256": "7c28cb8887c5acf99e969581d738c662cb44e760b2f88cf60d88ef25c63dadeb",
+      "shared_cache_sha256": "159e1a43f4428e66281dd457edd01454fc42619fad45ba175311810ee22100e3",
+      "trace_sha256": "d409093dac90ccf9f4e6a7fcd8727c3552801ecf3d422572bb34001f884e3be9",
+      "split": "train",
+      "complete": true,
+      "sample_count_total": 3603
+    },
+    {
+      "episode_id": 8,
+      "seed": 2026104138,
+      "speed_m_s": 0.5,
+      "launch_y_m": 0.055,
+      "candidate_event_count": 546438,
+      "event_archive_sha256": "49ff39a20ee8791c6ec4c989473e7647d1177e0e67fcd6eb56f253013504d34d",
+      "pair_provenance_sha256": "30962a3df126dc18010fbd1acbc31352f44017f39ca2b3a1d43814acf85c9ec9",
+      "shared_cache_sha256": "96e8bfb10290a7867d4d44a9fb3c704841a700f9519694a59204312e5c9ac06e",
+      "trace_sha256": "ed562c17fe43ee193da627d403619d4b73a5eca755470cc0a37389f316af2b30",
+      "split": "train",
+      "complete": true,
+      "sample_count_total": 2708
+    }
+  ],
+  "common_reference": {
+    "root": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot-r0_5-39b235a/benchmark/robot_closed_loop/results/r0_5_direct_hdr_gt_shadow_20261016",
+    "manifest_sha256": "86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c",
+    "candidate_eval_summary_sha256": "c61909878ba0f1546a3ed07d9c1fb2f515f4e96f933c760eddd39ce3551644d3",
+    "candidate_eval_polls_sha256": "687961d67c57d5faa5dd35289cb6bd92101d830ce4a26266ec10be13a93a6038",
+    "previous_eval_summary_sha256": "a98539a088a30de0be65180a223a71a804e08aa7eb9d49ff199f0a6149a5a67c",
+    "previous_eval_polls_sha256": "8189910cd1eb7ddb17240eb0ab58e3a35f1b5ca2bc6c7f99a50fc62b0e7fa4c2",
+    "same_reference_manifest_timestamps_and_evaluator": true
+  },
+  "checkpoints": {
+    "candidate_ours": "eb671a19c70bb9f004cc4c630764f497d6c2ed9b4361ef7904665fddce3cd796",
+    "previous_native_ours": "6ecea6a4520ae09b8cc99ebfd8da7a6a324363d2e57dbf73790e27ee2dbec8d2",
+    "v2e_control": "bfc0b233aaa91887811f57b493eb9152395ce1ed61263d4863ed2249e4860e45"
+  },
+  "evaluation": {
+    "candidate_ours": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 223,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 223,
+        "false_unreachable": 358,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.3838209982788296
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.10134038490970226,
+          "p50": 0.06358090785515712,
+          "p95": 0.3389202899591532
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 1.731598433049467,
+          "p50": 1.2542752987164631,
+          "p95": 4.7894665057446515
+        },
+        "intercept_xy_error_m": {
+          "n": 223,
+          "mean": 0.07441032246473742,
+          "p50": 0.04163956041698325,
+          "p95": 0.21616928965300722
+        },
+        "intercept_y_signed_error_m": {
+          "n": 223,
+          "mean": 0.008371362917219542,
+          "p50": -0.002631888115655484,
+          "p95": 0.13068632397138585
+        },
+        "arrival_signed_error_s": {
+          "n": 223,
+          "mean": -0.1973442732721871,
+          "p50": -0.20685527600208617,
+          "p95": 0.2988166271984692
+        },
+        "arrival_abs_error_s": {
+          "n": 223,
+          "mean": 0.316515593273315,
+          "p50": 0.26602455856695784,
+          "p95": 0.8301689869065864
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    },
+    "previous_native_ours": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 315,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 315,
+        "false_unreachable": 266,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.5421686746987951
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.08380023855153079,
+          "p50": 0.014401358834745547,
+          "p95": 0.4448802919997428
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 1.776651285568463,
+          "p50": 0.3398052453251008,
+          "p95": 7.667055171491703
+        },
+        "intercept_xy_error_m": {
+          "n": 315,
+          "mean": 0.03314057736141721,
+          "p50": 0.01574486907261128,
+          "p95": 0.09215671635833962
+        },
+        "intercept_y_signed_error_m": {
+          "n": 315,
+          "mean": 0.01672607460510141,
+          "p50": 0.007190612628677881,
+          "p95": 0.08384633263967892
+        },
+        "arrival_signed_error_s": {
+          "n": 315,
+          "mean": -0.07606201343260932,
+          "p50": -0.1079350570691609,
+          "p95": 0.614383230529243
+        },
+        "arrival_abs_error_s": {
+          "n": 315,
+          "mean": 0.24433593418485355,
+          "p50": 0.1773642460514527,
+          "p95": 0.7463360424330285
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    },
+    "same_v2e_control_metrics": {
+      "poll_count": 581,
+      "state_available_count": 581,
+      "state_available_fraction_all_polls": 1.0,
+      "state_status_counts": {
+        "fresh": 581
+      },
+      "gt_predictor_reachable_poll_count": 581,
+      "gt_predictor_unreachable_poll_count": 0,
+      "predicted_reachable_count_all_polls": 514,
+      "reachable_decision_coverage_on_gt_reachable": {
+        "correct_reachable": 514,
+        "false_unreachable": 67,
+        "missing_state": 0,
+        "fraction_correct_reachable": 0.8846815834767642
+      },
+      "unreachable_decision_coverage_on_gt_unreachable": {
+        "correct_unreachable": 0,
+        "false_reachable": 0,
+        "missing_state": 0,
+        "fraction_correct_unreachable": null
+      },
+      "metrics": {
+        "position_xy_error_m": {
+          "n": 581,
+          "mean": 0.00483729818454521,
+          "p50": 0.004089354818698791,
+          "p95": 0.011258517929327071
+        },
+        "velocity_xy_error_m_s": {
+          "n": 581,
+          "mean": 0.1266205478024714,
+          "p50": 0.10773864725069765,
+          "p95": 0.2974091210708824
+        },
+        "intercept_xy_error_m": {
+          "n": 514,
+          "mean": 0.017134279847073927,
+          "p50": 0.011140705409492229,
+          "p95": 0.05087108673354392
+        },
+        "intercept_y_signed_error_m": {
+          "n": 514,
+          "mean": 0.00404633290837661,
+          "p50": 0.0014397351482824553,
+          "p95": 0.04422331555881276
+        },
+        "arrival_signed_error_s": {
+          "n": 514,
+          "mean": 0.035762282475238064,
+          "p50": -0.015232133356602201,
+          "p95": 0.590461372931713
+        },
+        "arrival_abs_error_s": {
+          "n": 514,
+          "mean": 0.16579545760657208,
+          "p50": 0.0879114701314549,
+          "p95": 0.6033363147242562
+        },
+        "state_age_ms": {
+          "n": 581,
+          "mean": 10.000000000000073,
+          "p50": 10.000000000000064,
+          "p95": 10.000000000000231
+        }
+      }
+    },
+    "candidate_by_speed": {
+      "0.3": {
+        "ours": {
+          "poll_count": 275,
+          "state_available_count": 275,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 275
+          },
+          "gt_predictor_reachable_poll_count": 275,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 89,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 89,
+            "false_unreachable": 186,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.3236363636363636
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 275,
+              "mean": 0.1135925670308097,
+              "p50": 0.08213619684191646,
+              "p95": 0.3591232413864092
+            },
+            "velocity_xy_error_m_s": {
+              "n": 275,
+              "mean": 1.8241864144618833,
+              "p50": 1.3933648517875432,
+              "p95": 4.6444665976257165
+            },
+            "intercept_xy_error_m": {
+              "n": 89,
+              "mean": 0.0912364605791535,
+              "p50": 0.05051632952112866,
+              "p95": 0.24116390386633232
+            },
+            "intercept_y_signed_error_m": {
+              "n": 89,
+              "mean": 0.006755318658056837,
+              "p50": -0.020625454054746417,
+              "p95": 0.12167212856193489
+            },
+            "arrival_signed_error_s": {
+              "n": 89,
+              "mean": -0.34407531954408005,
+              "p50": -0.3648268207001495,
+              "p95": 0.17632723925477103
+            },
+            "arrival_abs_error_s": {
+              "n": 89,
+              "mean": 0.4240625757472572,
+              "p50": 0.40377386393206266,
+              "p95": 0.8892705315274276
+            },
+            "state_age_ms": {
+              "n": 275,
+              "mean": 10.0000000000001,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 275,
+          "state_available_count": 275,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 275
+          },
+          "gt_predictor_reachable_poll_count": 275,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 217,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 217,
+            "false_unreachable": 58,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.7890909090909091
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 275,
+              "mean": 0.005585199602130516,
+              "p50": 0.004679398803645018,
+              "p95": 0.012452040589167827
+            },
+            "velocity_xy_error_m_s": {
+              "n": 275,
+              "mean": 0.1332192401093724,
+              "p50": 0.11602500084554397,
+              "p95": 0.3183951959464679
+            },
+            "intercept_xy_error_m": {
+              "n": 217,
+              "mean": 0.01992847985718823,
+              "p50": 0.013228033518552729,
+              "p95": 0.0647720313094101
+            },
+            "intercept_y_signed_error_m": {
+              "n": 217,
+              "mean": 0.0019157073105585715,
+              "p50": 8.49281274614283e-05,
+              "p95": 0.05326434851712041
+            },
+            "arrival_signed_error_s": {
+              "n": 217,
+              "mean": -0.024595303482053233,
+              "p50": -0.06627695842479445,
+              "p95": 0.5478529472775999
+            },
+            "arrival_abs_error_s": {
+              "n": 217,
+              "mean": 0.1981681735200244,
+              "p50": 0.13253675492774242,
+              "p95": 0.5543733241216144
+            },
+            "state_age_ms": {
+              "n": 275,
+              "mean": 10.0000000000001,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "0.4": {
+        "ours": {
+          "poll_count": 174,
+          "state_available_count": 174,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 174
+          },
+          "gt_predictor_reachable_poll_count": 174,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 66,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 66,
+            "false_unreachable": 108,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.3793103448275862
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 174,
+              "mean": 0.10657939315212178,
+              "p50": 0.07788389799274562,
+              "p95": 0.32704860217034715
+            },
+            "velocity_xy_error_m_s": {
+              "n": 174,
+              "mean": 1.8079188156234667,
+              "p50": 1.327128396758639,
+              "p95": 5.364884142475148
+            },
+            "intercept_xy_error_m": {
+              "n": 66,
+              "mean": 0.0702870822314294,
+              "p50": 0.039638783153178266,
+              "p95": 0.23953961781643734
+            },
+            "intercept_y_signed_error_m": {
+              "n": 66,
+              "mean": 0.00437412087137603,
+              "p50": -0.008585388677721805,
+              "p95": 0.20195304802013284
+            },
+            "arrival_signed_error_s": {
+              "n": 66,
+              "mean": -0.14025697816805052,
+              "p50": -0.15676534276142876,
+              "p95": 0.4501307844833925
+            },
+            "arrival_abs_error_s": {
+              "n": 66,
+              "mean": 0.29356302304082343,
+              "p50": 0.2888039446948931,
+              "p95": 0.5737242025923854
+            },
+            "state_age_ms": {
+              "n": 174,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 174,
+          "state_available_count": 174,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 174
+          },
+          "gt_predictor_reachable_poll_count": 174,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 165,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 165,
+            "false_unreachable": 9,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9482758620689655
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 174,
+              "mean": 0.00428023218003962,
+              "p50": 0.0036024652670354524,
+              "p95": 0.011214417050568526
+            },
+            "velocity_xy_error_m_s": {
+              "n": 174,
+              "mean": 0.11862933291342899,
+              "p50": 0.10334889046503024,
+              "p95": 0.27907928865970655
+            },
+            "intercept_xy_error_m": {
+              "n": 165,
+              "mean": 0.018196451481712957,
+              "p50": 0.010157145614892796,
+              "p95": 0.044470236173987106
+            },
+            "intercept_y_signed_error_m": {
+              "n": 165,
+              "mean": 0.0071561463409745086,
+              "p50": 0.0017042674133941834,
+              "p95": 0.04422505418538107
+            },
+            "arrival_signed_error_s": {
+              "n": 165,
+              "mean": 0.08009630598191764,
+              "p50": -0.0006274504575394801,
+              "p95": 0.622688261041904
+            },
+            "arrival_abs_error_s": {
+              "n": 165,
+              "mean": 0.1589866548109163,
+              "p50": 0.07433906049742744,
+              "p95": 0.622688261041904
+            },
+            "state_age_ms": {
+              "n": 174,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "0.5": {
+        "ours": {
+          "poll_count": 132,
+          "state_available_count": 132,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 132
+          },
+          "gt_predictor_reachable_poll_count": 132,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 68,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 68,
+            "false_unreachable": 64,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.5151515151515151
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 132,
+              "mean": 0.06890904008026645,
+              "p50": 0.026911242458306752,
+              "p95": 0.253293943123477
+            },
+            "velocity_xy_error_m_s": {
+              "n": 132,
+              "mean": 1.4381026644412058,
+              "p50": 0.8057022814873623,
+              "p95": 4.8012756450960765
+            },
+            "intercept_xy_error_m": {
+              "n": 68,
+              "mean": 0.05638984545319776,
+              "p50": 0.03991733226730654,
+              "p95": 0.1697410797079941
+            },
+            "intercept_y_signed_error_m": {
+              "n": 68,
+              "mean": 0.014366155771501195,
+              "p50": 0.014618253009594462,
+              "p95": 0.09589217041233954
+            },
+            "arrival_signed_error_s": {
+              "n": 68,
+              "mean": -0.06070748442916566,
+              "p50": -0.08161304180716666,
+              "p95": 0.3267867683897789
+            },
+            "arrival_abs_error_s": {
+              "n": 68,
+              "mean": 0.19803306673160279,
+              "p50": 0.1529618041714874,
+              "p95": 0.3946396793006407
+            },
+            "state_age_ms": {
+              "n": 132,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 132,
+          "state_available_count": 132,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 132
+          },
+          "gt_predictor_reachable_poll_count": 132,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 132,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 132,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 132,
+              "mean": 0.00401348450990895,
+              "p50": 0.003515591684006,
+              "p95": 0.008416440784927351
+            },
+            "velocity_xy_error_m_s": {
+              "n": 132,
+              "mean": 0.12340714633501387,
+              "p50": 0.10400227144422367,
+              "p95": 0.28300873031037677
+            },
+            "intercept_xy_error_m": {
+              "n": 132,
+              "mean": 0.011213069832602382,
+              "p50": 0.007630185087278061,
+              "p95": 0.03363059139148025
+            },
+            "intercept_y_signed_error_m": {
+              "n": 132,
+              "mean": 0.003661685471617982,
+              "p50": 0.002213437839400402,
+              "p95": 0.032154286537813256
+            },
+            "arrival_signed_error_s": {
+              "n": 132,
+              "mean": 0.0795689663701629,
+              "p50": 0.011984696514242499,
+              "p95": 0.5762420727829826
+            },
+            "arrival_abs_error_s": {
+              "n": 132,
+              "mean": 0.12108767812220878,
+              "p50": 0.04992715172320576,
+              "p95": 0.5762420727829826
+            },
+            "state_age_ms": {
+              "n": 132,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      }
+    },
+    "previous_by_speed": {
+      "0.3": {
+        "ours": {
+          "poll_count": 275,
+          "state_available_count": 275,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 275
+          },
+          "gt_predictor_reachable_poll_count": 275,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 140,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 140,
+            "false_unreachable": 135,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.509090909090909
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 275,
+              "mean": 0.08364084617845459,
+              "p50": 0.014252606747952088,
+              "p95": 0.42833929918645225
+            },
+            "velocity_xy_error_m_s": {
+              "n": 275,
+              "mean": 1.5755468027145905,
+              "p50": 0.2901616496617069,
+              "p95": 7.5315498306362105
+            },
+            "intercept_xy_error_m": {
+              "n": 140,
+              "mean": 0.041583283472962085,
+              "p50": 0.01662253532629287,
+              "p95": 0.13701319299822223
+            },
+            "intercept_y_signed_error_m": {
+              "n": 140,
+              "mean": 0.01909229337081069,
+              "p50": 0.002573091670397722,
+              "p95": 0.09892906873854564
+            },
+            "arrival_signed_error_s": {
+              "n": 140,
+              "mean": -0.15745000749372204,
+              "p50": -0.185733249720116,
+              "p95": 0.44258835168281974
+            },
+            "arrival_abs_error_s": {
+              "n": 140,
+              "mean": 0.30693068715787697,
+              "p50": 0.2533906049876481,
+              "p95": 0.7649180653737779
+            },
+            "state_age_ms": {
+              "n": 275,
+              "mean": 10.0000000000001,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 275,
+          "state_available_count": 275,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 275
+          },
+          "gt_predictor_reachable_poll_count": 275,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 217,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 217,
+            "false_unreachable": 58,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.7890909090909091
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 275,
+              "mean": 0.005585199602130516,
+              "p50": 0.004679398803645018,
+              "p95": 0.012452040589167827
+            },
+            "velocity_xy_error_m_s": {
+              "n": 275,
+              "mean": 0.1332192401093724,
+              "p50": 0.11602500084554397,
+              "p95": 0.3183951959464679
+            },
+            "intercept_xy_error_m": {
+              "n": 217,
+              "mean": 0.01992847985718823,
+              "p50": 0.013228033518552729,
+              "p95": 0.0647720313094101
+            },
+            "intercept_y_signed_error_m": {
+              "n": 217,
+              "mean": 0.0019157073105585715,
+              "p50": 8.49281274614283e-05,
+              "p95": 0.05326434851712041
+            },
+            "arrival_signed_error_s": {
+              "n": 217,
+              "mean": -0.024595303482053233,
+              "p50": -0.06627695842479445,
+              "p95": 0.5478529472775999
+            },
+            "arrival_abs_error_s": {
+              "n": 217,
+              "mean": 0.1981681735200244,
+              "p50": 0.13253675492774242,
+              "p95": 0.5543733241216144
+            },
+            "state_age_ms": {
+              "n": 275,
+              "mean": 10.0000000000001,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "0.4": {
+        "ours": {
+          "poll_count": 174,
+          "state_available_count": 174,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 174
+          },
+          "gt_predictor_reachable_poll_count": 174,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 87,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 87,
+            "false_unreachable": 87,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.5
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 174,
+              "mean": 0.09000291943359535,
+              "p50": 0.015188683076803804,
+              "p95": 0.4089465479664415
+            },
+            "velocity_xy_error_m_s": {
+              "n": 174,
+              "mean": 2.270766724796755,
+              "p50": 0.5152235420004632,
+              "p95": 8.352546652667666
+            },
+            "intercept_xy_error_m": {
+              "n": 87,
+              "mean": 0.0296015904474634,
+              "p50": 0.019253458052367278,
+              "p95": 0.07772661810227657
+            },
+            "intercept_y_signed_error_m": {
+              "n": 87,
+              "mean": 0.016153510707271408,
+              "p50": 0.008474052039445875,
+              "p95": 0.07748145342247886
+            },
+            "arrival_signed_error_s": {
+              "n": 87,
+              "mean": -0.009356871732006783,
+              "p50": -0.09326323581385035,
+              "p95": 0.7970251524206255
+            },
+            "arrival_abs_error_s": {
+              "n": 87,
+              "mean": 0.23885649833601028,
+              "p50": 0.1773642460514527,
+              "p95": 0.7970251524206255
+            },
+            "state_age_ms": {
+              "n": 174,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 174,
+          "state_available_count": 174,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 174
+          },
+          "gt_predictor_reachable_poll_count": 174,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 165,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 165,
+            "false_unreachable": 9,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9482758620689655
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 174,
+              "mean": 0.00428023218003962,
+              "p50": 0.0036024652670354524,
+              "p95": 0.011214417050568526
+            },
+            "velocity_xy_error_m_s": {
+              "n": 174,
+              "mean": 0.11862933291342899,
+              "p50": 0.10334889046503024,
+              "p95": 0.27907928865970655
+            },
+            "intercept_xy_error_m": {
+              "n": 165,
+              "mean": 0.018196451481712957,
+              "p50": 0.010157145614892796,
+              "p95": 0.044470236173987106
+            },
+            "intercept_y_signed_error_m": {
+              "n": 165,
+              "mean": 0.0071561463409745086,
+              "p50": 0.0017042674133941834,
+              "p95": 0.04422505418538107
+            },
+            "arrival_signed_error_s": {
+              "n": 165,
+              "mean": 0.08009630598191764,
+              "p50": -0.0006274504575394801,
+              "p95": 0.622688261041904
+            },
+            "arrival_abs_error_s": {
+              "n": 165,
+              "mean": 0.1589866548109163,
+              "p50": 0.07433906049742744,
+              "p95": 0.622688261041904
+            },
+            "state_age_ms": {
+              "n": 174,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "0.5": {
+        "ours": {
+          "poll_count": 132,
+          "state_available_count": 132,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 132
+          },
+          "gt_predictor_reachable_poll_count": 132,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 88,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 88,
+            "false_unreachable": 44,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.6666666666666666
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 132,
+              "mean": 0.07595604483271799,
+              "p50": 0.014360618175489602,
+              "p95": 0.4606919334523828
+            },
+            "velocity_xy_error_m_s": {
+              "n": 132,
+              "mean": 1.5442849701070394,
+              "p50": 0.2923796712353599,
+              "p95": 7.256724974590634
+            },
+            "intercept_xy_error_m": {
+              "n": 88,
+              "mean": 0.023207770610254693,
+              "p50": 0.011962062235794884,
+              "p95": 0.07260667097771636
+            },
+            "intercept_y_signed_error_m": {
+              "n": 88,
+              "mean": 0.013527693149554938,
+              "p50": 0.009018208133758844,
+              "p95": 0.07260667097771636
+            },
+            "arrival_signed_error_s": {
+              "n": 88,
+              "mean": -0.012528242516662097,
+              "p50": -0.0620378581705929,
+              "p95": 0.30511800403673184
+            },
+            "arrival_abs_error_s": {
+              "n": 88,
+              "mean": 0.15017054216924106,
+              "p50": 0.1018541591369026,
+              "p95": 0.3540851971752893
+            },
+            "state_age_ms": {
+              "n": 132,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 132,
+          "state_available_count": 132,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 132
+          },
+          "gt_predictor_reachable_poll_count": 132,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 132,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 132,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 132,
+              "mean": 0.00401348450990895,
+              "p50": 0.003515591684006,
+              "p95": 0.008416440784927351
+            },
+            "velocity_xy_error_m_s": {
+              "n": 132,
+              "mean": 0.12340714633501387,
+              "p50": 0.10400227144422367,
+              "p95": 0.28300873031037677
+            },
+            "intercept_xy_error_m": {
+              "n": 132,
+              "mean": 0.011213069832602382,
+              "p50": 0.007630185087278061,
+              "p95": 0.03363059139148025
+            },
+            "intercept_y_signed_error_m": {
+              "n": 132,
+              "mean": 0.003661685471617982,
+              "p50": 0.002213437839400402,
+              "p95": 0.032154286537813256
+            },
+            "arrival_signed_error_s": {
+              "n": 132,
+              "mean": 0.0795689663701629,
+              "p50": 0.011984696514242499,
+              "p95": 0.5762420727829826
+            },
+            "arrival_abs_error_s": {
+              "n": 132,
+              "mean": 0.12108767812220878,
+              "p50": 0.04992715172320576,
+              "p95": 0.5762420727829826
+            },
+            "state_age_ms": {
+              "n": 132,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      }
+    },
+    "candidate_by_episode": {
+      "0": {
+        "ours": {
+          "poll_count": 93,
+          "state_available_count": 93,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 93
+          },
+          "gt_predictor_reachable_poll_count": 93,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 31,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 31,
+            "false_unreachable": 62,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.3333333333333333
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 93,
+              "mean": 0.060975202191029504,
+              "p50": 0.029128766753462678,
+              "p95": 0.1912186051584892
+            },
+            "velocity_xy_error_m_s": {
+              "n": 93,
+              "mean": 1.3695769827868867,
+              "p50": 0.8862852433847285,
+              "p95": 3.8314525315158985
+            },
+            "intercept_xy_error_m": {
+              "n": 31,
+              "mean": 0.04362984554448777,
+              "p50": 0.03294145791177773,
+              "p95": 0.09629651813225032
+            },
+            "intercept_y_signed_error_m": {
+              "n": 31,
+              "mean": -0.013224535324249566,
+              "p50": -0.005333752504819628,
+              "p95": 0.057999452272007306
+            },
+            "arrival_signed_error_s": {
+              "n": 31,
+              "mean": -0.2900473566909272,
+              "p50": -0.2690400930185519,
+              "p95": 0.15147648801979285
+            },
+            "arrival_abs_error_s": {
+              "n": 31,
+              "mean": 0.33311857339068873,
+              "p50": 0.27065416725586855,
+              "p95": 0.8072829664867863
+            },
+            "state_age_ms": {
+              "n": 93,
+              "mean": 10.0000000000001,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 93,
+          "state_available_count": 93,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 93
+          },
+          "gt_predictor_reachable_poll_count": 93,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 71,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 71,
+            "false_unreachable": 22,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.7634408602150538
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 93,
+              "mean": 0.00557317243431234,
+              "p50": 0.004849920765372054,
+              "p95": 0.01253715585015439
+            },
+            "velocity_xy_error_m_s": {
+              "n": 93,
+              "mean": 0.13766434366544278,
+              "p50": 0.12363279506854187,
+              "p95": 0.31917432818803093
+            },
+            "intercept_xy_error_m": {
+              "n": 71,
+              "mean": 0.019794245918614003,
+              "p50": 0.013578386252773071,
+              "p95": 0.06506093148242945
+            },
+            "intercept_y_signed_error_m": {
+              "n": 71,
+              "mean": 0.0037348905161736006,
+              "p50": -0.0030726992466094533,
+              "p95": 0.06506093148242945
+            },
+            "arrival_signed_error_s": {
+              "n": 71,
+              "mean": -0.012560781599017596,
+              "p50": -0.050698814034205786,
+              "p95": 0.6115585537061132
+            },
+            "arrival_abs_error_s": {
+              "n": 71,
+              "mean": 0.2085245077156815,
+              "p50": 0.13399135771768744,
+              "p95": 0.6115585537061132
+            },
+            "state_age_ms": {
+              "n": 93,
+              "mean": 10.0000000000001,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "1": {
+        "ours": {
+          "poll_count": 95,
+          "state_available_count": 95,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 95
+          },
+          "gt_predictor_reachable_poll_count": 95,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 26,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 26,
+            "false_unreachable": 69,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.2736842105263158
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 95,
+              "mean": 0.0916896708613945,
+              "p50": 0.07722201328897181,
+              "p95": 0.2511313610510214
+            },
+            "velocity_xy_error_m_s": {
+              "n": 95,
+              "mean": 1.5108498255601752,
+              "p50": 1.1732207506591656,
+              "p95": 3.651116829300257
+            },
+            "intercept_xy_error_m": {
+              "n": 26,
+              "mean": 0.0682561620513701,
+              "p50": 0.024734132074468795,
+              "p95": 0.11935972633479802
+            },
+            "intercept_y_signed_error_m": {
+              "n": 26,
+              "mean": 0.003105030379847001,
+              "p50": -0.01859010127400202,
+              "p95": 0.10577483877838774
+            },
+            "arrival_signed_error_s": {
+              "n": 26,
+              "mean": -0.3617499036597762,
+              "p50": -0.32448156661519534,
+              "p95": 0.1472614649274131
+            },
+            "arrival_abs_error_s": {
+              "n": 26,
+              "mean": 0.42606617986527595,
+              "p50": 0.3752778507406094,
+              "p95": 0.9079208056512319
+            },
+            "state_age_ms": {
+              "n": 95,
+              "mean": 10.000000000000101,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 95,
+          "state_available_count": 95,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 95
+          },
+          "gt_predictor_reachable_poll_count": 95,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 74,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 74,
+            "false_unreachable": 21,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.7789473684210526
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 95,
+              "mean": 0.005860466679305342,
+              "p50": 0.00473344647278097,
+              "p95": 0.0113267879712719
+            },
+            "velocity_xy_error_m_s": {
+              "n": 95,
+              "mean": 0.142309111879502,
+              "p50": 0.12339994454637143,
+              "p95": 0.3649757075545889
+            },
+            "intercept_xy_error_m": {
+              "n": 74,
+              "mean": 0.02499629485267534,
+              "p50": 0.016639609788616387,
+              "p95": 0.07860503501571796
+            },
+            "intercept_y_signed_error_m": {
+              "n": 74,
+              "mean": -0.0017810715148031783,
+              "p50": -0.0002784115795281955,
+              "p95": 0.05818530863271188
+            },
+            "arrival_signed_error_s": {
+              "n": 74,
+              "mean": -0.029425049322534296,
+              "p50": -0.07439204977830262,
+              "p95": 0.4964655705050273
+            },
+            "arrival_abs_error_s": {
+              "n": 74,
+              "mean": 0.20014231870245924,
+              "p50": 0.1470621566783754,
+              "p95": 0.5522095644631905
+            },
+            "state_age_ms": {
+              "n": 95,
+              "mean": 10.000000000000101,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "2": {
+        "ours": {
+          "poll_count": 87,
+          "state_available_count": 87,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 87
+          },
+          "gt_predictor_reachable_poll_count": 87,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 32,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 32,
+            "false_unreachable": 55,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.367816091954023
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 87,
+              "mean": 0.19375567123993603,
+              "p50": 0.1764630545332869,
+              "p95": 0.47189834755248616
+            },
+            "velocity_xy_error_m_s": {
+              "n": 87,
+              "mean": 2.6522973695358716,
+              "p50": 2.4753061944796744,
+              "p95": 5.450559436525288
+            },
+            "intercept_xy_error_m": {
+              "n": 32,
+              "mean": 0.1560268614478099,
+              "p50": 0.07463864482155139,
+              "p95": 0.4506365143084075
+            },
+            "intercept_y_signed_error_m": {
+              "n": 32,
+              "mean": 0.02907666142946165,
+              "p50": -0.048293608139114146,
+              "p95": 0.30636772879114377
+            },
+            "arrival_signed_error_s": {
+              "n": 32,
+              "mean": -0.3820543089640687,
+              "p50": -0.47459078790409714,
+              "p95": 0.10925189058182426
+            },
+            "arrival_abs_error_s": {
+              "n": 32,
+              "mean": 0.5105366496842929,
+              "p50": 0.4844227520471722,
+              "p95": 0.8872591667473209
+            },
+            "state_age_ms": {
+              "n": 87,
+              "mean": 10.000000000000094,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 87,
+          "state_available_count": 87,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 87
+          },
+          "gt_predictor_reachable_poll_count": 87,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 72,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 72,
+            "false_unreachable": 15,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.8275862068965517
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 87,
+              "mean": 0.005297477237480884,
+              "p50": 0.004542823536124735,
+              "p95": 0.012266670661274418
+            },
+            "velocity_xy_error_m_s": {
+              "n": 87,
+              "mean": 0.11854185563952338,
+              "p50": 0.09884382907200641,
+              "p95": 0.2729517502952904
+            },
+            "intercept_xy_error_m": {
+              "n": 72,
+              "mean": 0.01485226180125385,
+              "p50": 0.011180349734554947,
+              "p95": 0.03684021820899014
+            },
+            "intercept_y_signed_error_m": {
+              "n": 72,
+              "mean": 0.003921257664421105,
+              "p50": 0.0027018800905728377,
+              "p95": 0.03376514463781942
+            },
+            "arrival_signed_error_s": {
+              "n": 72,
+              "mean": -0.03149877378066338,
+              "p50": -0.06965930894527557,
+              "p95": 0.4098223374088503
+            },
+            "arrival_abs_error_s": {
+              "n": 72,
+              "mean": 0.1859266947506934,
+              "p50": 0.11744352711946589,
+              "p95": 0.44168749114926004
+            },
+            "state_age_ms": {
+              "n": 87,
+              "mean": 10.000000000000094,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "3": {
+        "ours": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 30,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 30,
+            "false_unreachable": 28,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.5172413793103449
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.050022305192513224,
+              "p50": 0.018854741600136157,
+              "p95": 0.13441314188369613
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.8885751061001188,
+              "p50": 0.5261607571840806,
+              "p95": 2.393431213065497
+            },
+            "intercept_xy_error_m": {
+              "n": 30,
+              "mean": 0.06143285181828511,
+              "p50": 0.030637222741628774,
+              "p95": 0.2768055807678627
+            },
+            "intercept_y_signed_error_m": {
+              "n": 30,
+              "mean": 0.05115138773732998,
+              "p50": 0.030301198218578258,
+              "p95": 0.2768055807678627
+            },
+            "arrival_signed_error_s": {
+              "n": 30,
+              "mean": -0.06079645077085706,
+              "p50": -0.09167213832640633,
+              "p95": 0.7778913074139711
+            },
+            "arrival_abs_error_s": {
+              "n": 30,
+              "mean": 0.28547397716032036,
+              "p50": 0.1954958514026448,
+              "p95": 0.8366865002668341
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 57,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 57,
+            "false_unreachable": 1,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9827586206896551
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.00493499077201495,
+              "p50": 0.003984170667123921,
+              "p95": 0.012455260186109731
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.11840540396467905,
+              "p50": 0.10753602353957684,
+              "p95": 0.23677474027536236
+            },
+            "intercept_xy_error_m": {
+              "n": 57,
+              "mean": 0.022785993510422483,
+              "p50": 0.01201334284340383,
+              "p95": 0.052057015359061404
+            },
+            "intercept_y_signed_error_m": {
+              "n": 57,
+              "mean": 0.01200820877397225,
+              "p50": 0.001794298727163711,
+              "p95": 0.052057015359061404
+            },
+            "arrival_signed_error_s": {
+              "n": 57,
+              "mean": 0.12357769779969706,
+              "p50": 0.017902999477209955,
+              "p95": 0.7144339216983457
+            },
+            "arrival_abs_error_s": {
+              "n": 57,
+              "mean": 0.19422504156780204,
+              "p50": 0.09526424367951691,
+              "p95": 0.7144339216983457
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "4": {
+        "ours": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 18,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 18,
+            "false_unreachable": 40,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.3103448275862069
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.11971720928640973,
+              "p50": 0.10820806024599919,
+              "p95": 0.28145432729062353
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 1.9733047039972984,
+              "p50": 1.8399764800502627,
+              "p95": 4.056599203011893
+            },
+            "intercept_xy_error_m": {
+              "n": 18,
+              "mean": 0.08778349605640985,
+              "p50": 0.0483500986647084,
+              "p95": 0.2698690370716159
+            },
+            "intercept_y_signed_error_m": {
+              "n": 18,
+              "mean": -0.017429617652426285,
+              "p50": -0.03334036820654343,
+              "p95": 0.24551125097319632
+            },
+            "arrival_signed_error_s": {
+              "n": 18,
+              "mean": -0.18472122403789332,
+              "p50": -0.15154004052937936,
+              "p95": 0.25342264516762913
+            },
+            "arrival_abs_error_s": {
+              "n": 18,
+              "mean": 0.291660141704104,
+              "p50": 0.25766278713756097,
+              "p95": 0.5798279190644864
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 57,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 57,
+            "false_unreachable": 1,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9827586206896551
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.003770670026782835,
+              "p50": 0.003477307660842459,
+              "p95": 0.007467325368775556
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.10717149667990684,
+              "p50": 0.09757825626088545,
+              "p95": 0.19643683848074947
+            },
+            "intercept_xy_error_m": {
+              "n": 57,
+              "mean": 0.019824310006368417,
+              "p50": 0.010157145614892796,
+              "p95": 0.050572163695085715
+            },
+            "intercept_y_signed_error_m": {
+              "n": 57,
+              "mean": 0.006577789387257928,
+              "p50": -0.0012523052445773885,
+              "p95": 0.050572163695085715
+            },
+            "arrival_signed_error_s": {
+              "n": 57,
+              "mean": 0.08229637804790421,
+              "p50": 0.0036583307219079098,
+              "p95": 0.6320041336386637
+            },
+            "arrival_abs_error_s": {
+              "n": 57,
+              "mean": 0.1549385150769774,
+              "p50": 0.06518242856353655,
+              "p95": 0.6320041336386637
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "5": {
+        "ours": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 18,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 18,
+            "false_unreachable": 40,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.3103448275862069
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.14999866497744235,
+              "p50": 0.11663948986147737,
+              "p95": 0.45339962018382945
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 2.561876636772982,
+              "p50": 1.9329664437994123,
+              "p95": 7.119366044912649
+            },
+            "intercept_xy_error_m": {
+              "n": 18,
+              "mean": 0.06754771909502272,
+              "p50": 0.06521049945714286,
+              "p95": 0.15478348890455573
+            },
+            "intercept_y_signed_error_m": {
+              "n": 18,
+              "mean": -0.05178425204807826,
+              "p50": -0.05115618524927905,
+              "p95": 0.038315021767633364
+            },
+            "arrival_signed_error_s": {
+              "n": 18,
+              "mean": -0.22822694462686352,
+              "p50": -0.3384637203141051,
+              "p95": 0.17783465391492242
+            },
+            "arrival_abs_error_s": {
+              "n": 18,
+              "mean": 0.3089476475117148,
+              "p50": 0.3475972938669057,
+              "p95": 0.5355604150373034
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 51,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 51,
+            "false_unreachable": 7,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.8793103448275862
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.004135035741321073,
+              "p50": 0.0032366005470638487,
+              "p95": 0.010085458066959305
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.13031109809570107,
+              "p50": 0.10894411206298382,
+              "p95": 0.3055231265315143
+            },
+            "intercept_xy_error_m": {
+              "n": 51,
+              "mean": 0.011247592039716791,
+              "p50": 0.009959253508330511,
+              "p95": 0.026145419604823198
+            },
+            "intercept_y_signed_error_m": {
+              "n": 51,
+              "mean": 0.0023796519817779194,
+              "p50": 0.0022949450574283325,
+              "p95": 0.021639276030184725
+            },
+            "arrival_signed_error_s": {
+              "n": 51,
+              "mean": 0.029040552229473333,
+              "p50": -0.008735084529918447,
+              "p95": 0.4396827060931333
+            },
+            "arrival_abs_error_s": {
+              "n": 51,
+              "mean": 0.12412696696174041,
+              "p50": 0.05717345407968233,
+              "p95": 0.4396827060931333
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "6": {
+        "ours": {
+          "poll_count": 42,
+          "state_available_count": 42,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 42
+          },
+          "gt_predictor_reachable_poll_count": 42,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 28,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 28,
+            "false_unreachable": 14,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.6666666666666666
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 42,
+              "mean": 0.03309644977048513,
+              "p50": 0.012838993270900389,
+              "p95": 0.11177509692427091
+            },
+            "velocity_xy_error_m_s": {
+              "n": 42,
+              "mean": 0.6889142065576043,
+              "p50": 0.3750991273160595,
+              "p95": 1.9269044276965808
+            },
+            "intercept_xy_error_m": {
+              "n": 28,
+              "mean": 0.04363602285071617,
+              "p50": 0.039452471141176566,
+              "p95": 0.1424715189045776
+            },
+            "intercept_y_signed_error_m": {
+              "n": 28,
+              "mean": 0.030792977473721398,
+              "p50": 0.0356893001793097,
+              "p95": 0.07343114096110631
+            },
+            "arrival_signed_error_s": {
+              "n": 28,
+              "mean": -0.050866328616920586,
+              "p50": -0.05936715401215978,
+              "p95": 0.2827004785559822
+            },
+            "arrival_abs_error_s": {
+              "n": 28,
+              "mean": 0.18442720387127456,
+              "p50": 0.1318287503529098,
+              "p95": 0.3946396793006407
+            },
+            "state_age_ms": {
+              "n": 42,
+              "mean": 10.000000000000032,
+              "p50": 10.00000000000003,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 42,
+          "state_available_count": 42,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 42
+          },
+          "gt_predictor_reachable_poll_count": 42,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 42,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 42,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 42,
+              "mean": 0.004370320686244548,
+              "p50": 0.004107401780188659,
+              "p95": 0.00866949733110552
+            },
+            "velocity_xy_error_m_s": {
+              "n": 42,
+              "mean": 0.12275365563626824,
+              "p50": 0.09347343264770674,
+              "p95": 0.3072489925904606
+            },
+            "intercept_xy_error_m": {
+              "n": 42,
+              "mean": 0.010293911526052902,
+              "p50": 0.006089859206737151,
+              "p95": 0.0272816156135139
+            },
+            "intercept_y_signed_error_m": {
+              "n": 42,
+              "mean": 0.005262540211894985,
+              "p50": 0.003220397195425686,
+              "p95": 0.0272816156135139
+            },
+            "arrival_signed_error_s": {
+              "n": 42,
+              "mean": 0.08327842474354175,
+              "p50": 0.01018952705580485,
+              "p95": 0.61754998420942
+            },
+            "arrival_abs_error_s": {
+              "n": 42,
+              "mean": 0.12688373089610708,
+              "p50": 0.04657666443488172,
+              "p95": 0.61754998420942
+            },
+            "state_age_ms": {
+              "n": 42,
+              "mean": 10.000000000000032,
+              "p50": 10.00000000000003,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      },
+      "7": {
+        "ours": {
+          "poll_count": 44,
+          "state_available_count": 44,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 44
+          },
+          "gt_predictor_reachable_poll_count": 44,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 24,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 24,
+            "false_unreachable": 20,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.5454545454545454
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 44,
+              "mean": 0.058237662956587895,
+              "p50": 0.02131491291540545,
+              "p95": 0.1591548741439805
+            },
+            "velocity_xy_error_m_s": {
+              "n": 44,
+              "mean": 1.4587970084240751,
+              "p50": 0.9847961131263963,
+              "p95": 4.0824082685020056
+            },
+            "intercept_xy_error_m": {
+              "n": 24,
+              "mean": 0.08626369532782142,
+              "p50": 0.04598028788127405,
+              "p95": 0.17074622213972826
+            },
+            "intercept_y_signed_error_m": {
+              "n": 24,
+              "mean": -0.0052003597494447535,
+              "p50": -0.0038268880175968524,
+              "p95": 0.11803150387017615
+            },
+            "arrival_signed_error_s": {
+              "n": 24,
+              "mean": -0.0504076832416708,
+              "p50": -0.06915863007430216,
+              "p95": 0.26711172245440895
+            },
+            "arrival_abs_error_s": {
+              "n": 24,
+              "mean": 0.18971474329193727,
+              "p50": 0.1624769237714554,
+              "p95": 0.3624852984796549
+            },
+            "state_age_ms": {
+              "n": 44,
+              "mean": 10.000000000000032,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 44,
+          "state_available_count": 44,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 44
+          },
+          "gt_predictor_reachable_poll_count": 44,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 44,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 44,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 44,
+              "mean": 0.004294166256424107,
+              "p50": 0.0038716172225363855,
+              "p95": 0.009417929628968898
+            },
+            "velocity_xy_error_m_s": {
+              "n": 44,
+              "mean": 0.13607125873548886,
+              "p50": 0.12032858130107371,
+              "p95": 0.29379150329794534
+            },
+            "intercept_xy_error_m": {
+              "n": 44,
+              "mean": 0.010051846720993468,
+              "p50": 0.007290019587808508,
+              "p95": 0.032624223286563184
+            },
+            "intercept_y_signed_error_m": {
+              "n": 44,
+              "mean": 0.0019670762177400876,
+              "p50": 0.0014169892897153325,
+              "p95": 0.032624223286563184
+            },
+            "arrival_signed_error_s": {
+              "n": 44,
+              "mean": 0.06217445357811575,
+              "p50": -0.001106409228576119,
+              "p95": 0.46889564499092407
+            },
+            "arrival_abs_error_s": {
+              "n": 44,
+              "mean": 0.11216871468702504,
+              "p50": 0.05498130938861124,
+              "p95": 0.46889564499092407
+            },
+            "state_age_ms": {
+              "n": 44,
+              "mean": 10.000000000000032,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      },
+      "8": {
+        "ours": {
+          "poll_count": 46,
+          "state_available_count": 46,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 46
+          },
+          "gt_predictor_reachable_poll_count": 46,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 16,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 16,
+            "false_unreachable": 30,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.34782608695652173
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 46,
+              "mean": 0.11181489630749844,
+              "p50": 0.050955800086303536,
+              "p95": 0.423095614872561
+            },
+            "velocity_xy_error_m_s": {
+              "n": 46,
+              "mean": 2.1023497100034887,
+              "p50": 1.409860450119016,
+              "p95": 5.8712939549851715
+            },
+            "intercept_xy_error_m": {
+              "n": 16,
+              "mean": 0.03389826019560502,
+              "p50": 0.021438357807343777,
+              "p95": 0.0951612628123761
+            },
+            "intercept_y_signed_error_m": {
+              "n": 16,
+              "mean": 0.014968991074034764,
+              "p50": 0.013679889869661434,
+              "p95": 0.0951612628123761
+            },
+            "arrival_signed_error_s": {
+              "n": 16,
+              "mean": -0.09337920888183683,
+              "p50": -0.1707171979531486,
+              "p95": 0.40556306335508846
+            },
+            "arrival_abs_error_s": {
+              "n": 16,
+              "mean": 0.23432081189667553,
+              "p50": 0.23926694961019648,
+              "p95": 0.4560941573926789
+            },
+            "state_age_ms": {
+              "n": 46,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 46,
+          "state_available_count": 46,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 46
+          },
+          "gt_predictor_reachable_poll_count": 46,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 46,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 46,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 46,
+              "mean": 0.0034191993739793396,
+              "p50": 0.0031203891299668397,
+              "p95": 0.0064632060151488015
+            },
+            "velocity_xy_error_m_s": {
+              "n": 46,
+              "mean": 0.11189031293776198,
+              "p50": 0.10233656696110263,
+              "p95": 0.2405626047574616
+            },
+            "intercept_xy_error_m": {
+              "n": 46,
+              "mean": 0.013163036480121307,
+              "p50": 0.010523949267059924,
+              "p95": 0.033406288309449216
+            },
+            "intercept_y_signed_error_m": {
+              "n": 46,
+              "mean": 0.003820966082030879,
+              "p50": 0.004392740959350057,
+              "p95": 0.02691506482694024
+            },
+            "arrival_signed_error_s": {
+              "n": 46,
+              "mean": 0.09282029922164477,
+              "p50": 0.015671864033852928,
+              "p95": 0.5347495803931177
+            },
+            "arrival_abs_error_s": {
+              "n": 46,
+              "mean": 0.12432681235360776,
+              "p50": 0.04129652087684162,
+              "p95": 0.5347495803931177
+            },
+            "state_age_ms": {
+              "n": 46,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      }
+    },
+    "previous_by_episode": {
+      "0": {
+        "ours": {
+          "poll_count": 93,
+          "state_available_count": 93,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 93
+          },
+          "gt_predictor_reachable_poll_count": 93,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 49,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 49,
+            "false_unreachable": 44,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.5268817204301075
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 93,
+              "mean": 0.043050553424545536,
+              "p50": 0.015457630222963524,
+              "p95": 0.2982206109139456
+            },
+            "velocity_xy_error_m_s": {
+              "n": 93,
+              "mean": 0.9952464858270345,
+              "p50": 0.3069566009982789,
+              "p95": 4.748639910308737
+            },
+            "intercept_xy_error_m": {
+              "n": 49,
+              "mean": 0.028476613618843537,
+              "p50": 0.014739958452250124,
+              "p95": 0.08316431057676274
+            },
+            "intercept_y_signed_error_m": {
+              "n": 49,
+              "mean": 0.011711153094979129,
+              "p50": 0.002352979925864966,
+              "p95": 0.07904912775919411
+            },
+            "arrival_signed_error_s": {
+              "n": 49,
+              "mean": -0.23513477305813746,
+              "p50": -0.23060965167944422,
+              "p95": 0.397396577822053
+            },
+            "arrival_abs_error_s": {
+              "n": 49,
+              "mean": 0.3324876262904131,
+              "p50": 0.30711579228174857,
+              "p95": 0.754110697456532
+            },
+            "state_age_ms": {
+              "n": 93,
+              "mean": 10.0000000000001,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 93,
+          "state_available_count": 93,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 93
+          },
+          "gt_predictor_reachable_poll_count": 93,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 71,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 71,
+            "false_unreachable": 22,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.7634408602150538
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 93,
+              "mean": 0.00557317243431234,
+              "p50": 0.004849920765372054,
+              "p95": 0.01253715585015439
+            },
+            "velocity_xy_error_m_s": {
+              "n": 93,
+              "mean": 0.13766434366544278,
+              "p50": 0.12363279506854187,
+              "p95": 0.31917432818803093
+            },
+            "intercept_xy_error_m": {
+              "n": 71,
+              "mean": 0.019794245918614003,
+              "p50": 0.013578386252773071,
+              "p95": 0.06506093148242945
+            },
+            "intercept_y_signed_error_m": {
+              "n": 71,
+              "mean": 0.0037348905161736006,
+              "p50": -0.0030726992466094533,
+              "p95": 0.06506093148242945
+            },
+            "arrival_signed_error_s": {
+              "n": 71,
+              "mean": -0.012560781599017596,
+              "p50": -0.050698814034205786,
+              "p95": 0.6115585537061132
+            },
+            "arrival_abs_error_s": {
+              "n": 71,
+              "mean": 0.2085245077156815,
+              "p50": 0.13399135771768744,
+              "p95": 0.6115585537061132
+            },
+            "state_age_ms": {
+              "n": 93,
+              "mean": 10.0000000000001,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "1": {
+        "ours": {
+          "poll_count": 95,
+          "state_available_count": 95,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 95
+          },
+          "gt_predictor_reachable_poll_count": 95,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 57,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 57,
+            "false_unreachable": 38,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.6
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 95,
+              "mean": 0.05224849818140122,
+              "p50": 0.010402488593579385,
+              "p95": 0.3307606330422252
+            },
+            "velocity_xy_error_m_s": {
+              "n": 95,
+              "mean": 1.0525237071661435,
+              "p50": 0.1726359612087803,
+              "p95": 7.341223685451699
+            },
+            "intercept_xy_error_m": {
+              "n": 57,
+              "mean": 0.017930277279425665,
+              "p50": 0.012369929493548995,
+              "p95": 0.051206489311319124
+            },
+            "intercept_y_signed_error_m": {
+              "n": 57,
+              "mean": 0.0025104607341999434,
+              "p50": 0.0018653032306106265,
+              "p95": 0.04101716183765645
+            },
+            "arrival_signed_error_s": {
+              "n": 57,
+              "mean": -0.0789031932968069,
+              "p50": -0.14675480374065425,
+              "p95": 0.8425450961280307
+            },
+            "arrival_abs_error_s": {
+              "n": 57,
+              "mean": 0.2835718494322786,
+              "p50": 0.1923648565973109,
+              "p95": 0.8425450961280307
+            },
+            "state_age_ms": {
+              "n": 95,
+              "mean": 10.000000000000101,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 95,
+          "state_available_count": 95,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 95
+          },
+          "gt_predictor_reachable_poll_count": 95,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 74,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 74,
+            "false_unreachable": 21,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.7789473684210526
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 95,
+              "mean": 0.005860466679305342,
+              "p50": 0.00473344647278097,
+              "p95": 0.0113267879712719
+            },
+            "velocity_xy_error_m_s": {
+              "n": 95,
+              "mean": 0.142309111879502,
+              "p50": 0.12339994454637143,
+              "p95": 0.3649757075545889
+            },
+            "intercept_xy_error_m": {
+              "n": 74,
+              "mean": 0.02499629485267534,
+              "p50": 0.016639609788616387,
+              "p95": 0.07860503501571796
+            },
+            "intercept_y_signed_error_m": {
+              "n": 74,
+              "mean": -0.0017810715148031783,
+              "p50": -0.0002784115795281955,
+              "p95": 0.05818530863271188
+            },
+            "arrival_signed_error_s": {
+              "n": 74,
+              "mean": -0.029425049322534296,
+              "p50": -0.07439204977830262,
+              "p95": 0.4964655705050273
+            },
+            "arrival_abs_error_s": {
+              "n": 74,
+              "mean": 0.20014231870245924,
+              "p50": 0.1470621566783754,
+              "p95": 0.5522095644631905
+            },
+            "state_age_ms": {
+              "n": 95,
+              "mean": 10.000000000000101,
+              "p50": 10.00000000000012,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "2": {
+        "ours": {
+          "poll_count": 87,
+          "state_available_count": 87,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 87
+          },
+          "gt_predictor_reachable_poll_count": 87,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 34,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 34,
+            "false_unreachable": 53,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.39080459770114945
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 87,
+              "mean": 0.16130947015355357,
+              "p50": 0.03784409848325149,
+              "p95": 0.5451877620187775
+            },
+            "velocity_xy_error_m_s": {
+              "n": 87,
+              "mean": 2.766985004411662,
+              "p50": 1.256843918724407,
+              "p95": 9.596197717564507
+            },
+            "intercept_xy_error_m": {
+              "n": 34,
+              "mean": 0.10012587688129694,
+              "p50": 0.040544935209004165,
+              "p95": 0.47952384085126315
+            },
+            "intercept_y_signed_error_m": {
+              "n": 34,
+              "mean": 0.057528773776768315,
+              "p50": 0.014563120409356305,
+              "p95": 0.47952384085126315
+            },
+            "arrival_signed_error_s": {
+              "n": 34,
+              "mean": -0.17717397503983406,
+              "p50": -0.2200112575434442,
+              "p95": 0.43877375039035
+            },
+            "arrival_abs_error_s": {
+              "n": 34,
+              "mean": 0.30925903224213686,
+              "p50": 0.2842322292659204,
+              "p95": 0.6189153261658127
+            },
+            "state_age_ms": {
+              "n": 87,
+              "mean": 10.000000000000094,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 87,
+          "state_available_count": 87,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 87
+          },
+          "gt_predictor_reachable_poll_count": 87,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 72,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 72,
+            "false_unreachable": 15,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.8275862068965517
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 87,
+              "mean": 0.005297477237480884,
+              "p50": 0.004542823536124735,
+              "p95": 0.012266670661274418
+            },
+            "velocity_xy_error_m_s": {
+              "n": 87,
+              "mean": 0.11854185563952338,
+              "p50": 0.09884382907200641,
+              "p95": 0.2729517502952904
+            },
+            "intercept_xy_error_m": {
+              "n": 72,
+              "mean": 0.01485226180125385,
+              "p50": 0.011180349734554947,
+              "p95": 0.03684021820899014
+            },
+            "intercept_y_signed_error_m": {
+              "n": 72,
+              "mean": 0.003921257664421105,
+              "p50": 0.0027018800905728377,
+              "p95": 0.03376514463781942
+            },
+            "arrival_signed_error_s": {
+              "n": 72,
+              "mean": -0.03149877378066338,
+              "p50": -0.06965930894527557,
+              "p95": 0.4098223374088503
+            },
+            "arrival_abs_error_s": {
+              "n": 72,
+              "mean": 0.1859266947506934,
+              "p50": 0.11744352711946589,
+              "p95": 0.44168749114926004
+            },
+            "state_age_ms": {
+              "n": 87,
+              "mean": 10.000000000000094,
+              "p50": 10.000000000000064,
+              "p95": 10.000000000000231
+            }
+          }
+        }
+      },
+      "3": {
+        "ours": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 26,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 26,
+            "false_unreachable": 32,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.4482758620689655
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.09712786136592343,
+              "p50": 0.01556548347531397,
+              "p95": 0.4968978996329154
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 2.9242495850264443,
+              "p50": 1.5622565607158785,
+              "p95": 8.932825804180126
+            },
+            "intercept_xy_error_m": {
+              "n": 26,
+              "mean": 0.029532152881015097,
+              "p50": 0.02306366764679156,
+              "p95": 0.07778609826149394
+            },
+            "intercept_y_signed_error_m": {
+              "n": 26,
+              "mean": 0.012795651309503362,
+              "p50": 0.0069353284693076805,
+              "p95": 0.07668627833565447
+            },
+            "arrival_signed_error_s": {
+              "n": 26,
+              "mean": -0.0913796708074798,
+              "p50": -0.052926900757674825,
+              "p95": 0.3159432281645383
+            },
+            "arrival_abs_error_s": {
+              "n": 26,
+              "mean": 0.19238622885399317,
+              "p50": 0.10374703540287485,
+              "p95": 0.48660775004969065
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 57,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 57,
+            "false_unreachable": 1,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9827586206896551
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.00493499077201495,
+              "p50": 0.003984170667123921,
+              "p95": 0.012455260186109731
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.11840540396467905,
+              "p50": 0.10753602353957684,
+              "p95": 0.23677474027536236
+            },
+            "intercept_xy_error_m": {
+              "n": 57,
+              "mean": 0.022785993510422483,
+              "p50": 0.01201334284340383,
+              "p95": 0.052057015359061404
+            },
+            "intercept_y_signed_error_m": {
+              "n": 57,
+              "mean": 0.01200820877397225,
+              "p50": 0.001794298727163711,
+              "p95": 0.052057015359061404
+            },
+            "arrival_signed_error_s": {
+              "n": 57,
+              "mean": 0.12357769779969706,
+              "p50": 0.017902999477209955,
+              "p95": 0.7144339216983457
+            },
+            "arrival_abs_error_s": {
+              "n": 57,
+              "mean": 0.19422504156780204,
+              "p50": 0.09526424367951691,
+              "p95": 0.7144339216983457
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "4": {
+        "ours": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 40,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 40,
+            "false_unreachable": 18,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.6896551724137931
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.023274226335987684,
+              "p50": 0.010814637890544612,
+              "p95": 0.08938203443644496
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.5043417300710898,
+              "p50": 0.25670171265136965,
+              "p95": 1.9769086476920887
+            },
+            "intercept_xy_error_m": {
+              "n": 40,
+              "mean": 0.02232455296455305,
+              "p50": 0.014074239888390561,
+              "p95": 0.07679712384833629
+            },
+            "intercept_y_signed_error_m": {
+              "n": 40,
+              "mean": 0.00887696731614211,
+              "p50": 0.006497805980237793,
+              "p95": 0.07679712384833629
+            },
+            "arrival_signed_error_s": {
+              "n": 40,
+              "mean": -0.0037250462306027575,
+              "p50": -0.11741174051678,
+              "p95": 0.42770359099190847
+            },
+            "arrival_abs_error_s": {
+              "n": 40,
+              "mean": 0.21492356730941237,
+              "p50": 0.17374239124859175,
+              "p95": 0.42770359099190847
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 57,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 57,
+            "false_unreachable": 1,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9827586206896551
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.003770670026782835,
+              "p50": 0.003477307660842459,
+              "p95": 0.007467325368775556
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.10717149667990684,
+              "p50": 0.09757825626088545,
+              "p95": 0.19643683848074947
+            },
+            "intercept_xy_error_m": {
+              "n": 57,
+              "mean": 0.019824310006368417,
+              "p50": 0.010157145614892796,
+              "p95": 0.050572163695085715
+            },
+            "intercept_y_signed_error_m": {
+              "n": 57,
+              "mean": 0.006577789387257928,
+              "p50": -0.0012523052445773885,
+              "p95": 0.050572163695085715
+            },
+            "arrival_signed_error_s": {
+              "n": 57,
+              "mean": 0.08229637804790421,
+              "p50": 0.0036583307219079098,
+              "p95": 0.6320041336386637
+            },
+            "arrival_abs_error_s": {
+              "n": 57,
+              "mean": 0.1549385150769774,
+              "p50": 0.06518242856353655,
+              "p95": 0.6320041336386637
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "5": {
+        "ours": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 21,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 21,
+            "false_unreachable": 37,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.3620689655172414
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.14960667059887492,
+              "p50": 0.04984179969117661,
+              "p95": 0.5374338221520482
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 3.3837088592927307,
+              "p50": 2.5660583211474326,
+              "p95": 8.634918292887267
+            },
+            "intercept_xy_error_m": {
+              "n": 21,
+              "mean": 0.043548584544800095,
+              "p50": 0.02000355404239016,
+              "p95": 0.06998360329106851
+            },
+            "intercept_y_signed_error_m": {
+              "n": 21,
+              "mean": 0.03417094308761145,
+              "p50": 0.017548567429428515,
+              "p95": 0.06998360329106851
+            },
+            "arrival_signed_error_s": {
+              "n": 21,
+              "mean": 0.08146787854923783,
+              "p50": -0.08058396643172411,
+              "p95": 1.1113941993896135
+            },
+            "arrival_abs_error_s": {
+              "n": 21,
+              "mean": 0.34197765298345595,
+              "p50": 0.1936854591807035,
+              "p95": 1.1113941993896135
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 58,
+          "state_available_count": 58,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 58
+          },
+          "gt_predictor_reachable_poll_count": 58,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 51,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 51,
+            "false_unreachable": 7,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.8793103448275862
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 58,
+              "mean": 0.004135035741321073,
+              "p50": 0.0032366005470638487,
+              "p95": 0.010085458066959305
+            },
+            "velocity_xy_error_m_s": {
+              "n": 58,
+              "mean": 0.13031109809570107,
+              "p50": 0.10894411206298382,
+              "p95": 0.3055231265315143
+            },
+            "intercept_xy_error_m": {
+              "n": 51,
+              "mean": 0.011247592039716791,
+              "p50": 0.009959253508330511,
+              "p95": 0.026145419604823198
+            },
+            "intercept_y_signed_error_m": {
+              "n": 51,
+              "mean": 0.0023796519817779194,
+              "p50": 0.0022949450574283325,
+              "p95": 0.021639276030184725
+            },
+            "arrival_signed_error_s": {
+              "n": 51,
+              "mean": 0.029040552229473333,
+              "p50": -0.008735084529918447,
+              "p95": 0.4396827060931333
+            },
+            "arrival_abs_error_s": {
+              "n": 51,
+              "mean": 0.12412696696174041,
+              "p50": 0.05717345407968233,
+              "p95": 0.4396827060931333
+            },
+            "state_age_ms": {
+              "n": 58,
+              "mean": 10.000000000000055,
+              "p50": 10.00000000000005,
+              "p95": 10.00000000000012
+            }
+          }
+        }
+      },
+      "6": {
+        "ours": {
+          "poll_count": 42,
+          "state_available_count": 42,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 42
+          },
+          "gt_predictor_reachable_poll_count": 42,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 25,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 25,
+            "false_unreachable": 17,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.5952380952380952
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 42,
+              "mean": 0.05358034802684736,
+              "p50": 0.015798061903771428,
+              "p95": 0.2410639248705309
+            },
+            "velocity_xy_error_m_s": {
+              "n": 42,
+              "mean": 1.3434248043398296,
+              "p50": 0.6779589528833885,
+              "p95": 4.702091388043452
+            },
+            "intercept_xy_error_m": {
+              "n": 25,
+              "mean": 0.024142598619177065,
+              "p50": 0.010706021516057915,
+              "p95": 0.06877085132518984
+            },
+            "intercept_y_signed_error_m": {
+              "n": 25,
+              "mean": -0.0018117008653592464,
+              "p50": -0.005961195836851965,
+              "p95": 0.0677928564374263
+            },
+            "arrival_signed_error_s": {
+              "n": 25,
+              "mean": -0.021467467743244786,
+              "p50": -0.12825417610114814,
+              "p95": 0.5628798691787388
+            },
+            "arrival_abs_error_s": {
+              "n": 25,
+              "mean": 0.19679315740793069,
+              "p50": 0.14342665824271345,
+              "p95": 0.5628798691787388
+            },
+            "state_age_ms": {
+              "n": 42,
+              "mean": 10.000000000000032,
+              "p50": 10.00000000000003,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 42,
+          "state_available_count": 42,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 42
+          },
+          "gt_predictor_reachable_poll_count": 42,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 42,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 42,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 42,
+              "mean": 0.004370320686244548,
+              "p50": 0.004107401780188659,
+              "p95": 0.00866949733110552
+            },
+            "velocity_xy_error_m_s": {
+              "n": 42,
+              "mean": 0.12275365563626824,
+              "p50": 0.09347343264770674,
+              "p95": 0.3072489925904606
+            },
+            "intercept_xy_error_m": {
+              "n": 42,
+              "mean": 0.010293911526052902,
+              "p50": 0.006089859206737151,
+              "p95": 0.0272816156135139
+            },
+            "intercept_y_signed_error_m": {
+              "n": 42,
+              "mean": 0.005262540211894985,
+              "p50": 0.003220397195425686,
+              "p95": 0.0272816156135139
+            },
+            "arrival_signed_error_s": {
+              "n": 42,
+              "mean": 0.08327842474354175,
+              "p50": 0.01018952705580485,
+              "p95": 0.61754998420942
+            },
+            "arrival_abs_error_s": {
+              "n": 42,
+              "mean": 0.12688373089610708,
+              "p50": 0.04657666443488172,
+              "p95": 0.61754998420942
+            },
+            "state_age_ms": {
+              "n": 42,
+              "mean": 10.000000000000032,
+              "p50": 10.00000000000003,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      },
+      "7": {
+        "ours": {
+          "poll_count": 44,
+          "state_available_count": 44,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 44
+          },
+          "gt_predictor_reachable_poll_count": 44,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 42,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 42,
+            "false_unreachable": 2,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.9545454545454546
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 44,
+              "mean": 0.01136710821793596,
+              "p50": 0.009647138091016173,
+              "p95": 0.021234753796040545
+            },
+            "velocity_xy_error_m_s": {
+              "n": 44,
+              "mean": 0.16671815921010724,
+              "p50": 0.18176952403247604,
+              "p95": 0.30449064314803864
+            },
+            "intercept_xy_error_m": {
+              "n": 42,
+              "mean": 0.010930169134296397,
+              "p50": 0.009018208133758844,
+              "p95": 0.031006274360938408
+            },
+            "intercept_y_signed_error_m": {
+              "n": 42,
+              "mean": 0.009835059268823325,
+              "p50": 0.008901662481592873,
+              "p95": 0.031006274360938408
+            },
+            "arrival_signed_error_s": {
+              "n": 42,
+              "mean": 0.008080340691588458,
+              "p50": -0.04510447891781576,
+              "p95": 0.2131864011436241
+            },
+            "arrival_abs_error_s": {
+              "n": 42,
+              "mean": 0.10676112895080593,
+              "p50": 0.08045072068479778,
+              "p95": 0.2131864011436241
+            },
+            "state_age_ms": {
+              "n": 44,
+              "mean": 10.000000000000032,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 44,
+          "state_available_count": 44,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 44
+          },
+          "gt_predictor_reachable_poll_count": 44,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 44,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 44,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 44,
+              "mean": 0.004294166256424107,
+              "p50": 0.0038716172225363855,
+              "p95": 0.009417929628968898
+            },
+            "velocity_xy_error_m_s": {
+              "n": 44,
+              "mean": 0.13607125873548886,
+              "p50": 0.12032858130107371,
+              "p95": 0.29379150329794534
+            },
+            "intercept_xy_error_m": {
+              "n": 44,
+              "mean": 0.010051846720993468,
+              "p50": 0.007290019587808508,
+              "p95": 0.032624223286563184
+            },
+            "intercept_y_signed_error_m": {
+              "n": 44,
+              "mean": 0.0019670762177400876,
+              "p50": 0.0014169892897153325,
+              "p95": 0.032624223286563184
+            },
+            "arrival_signed_error_s": {
+              "n": 44,
+              "mean": 0.06217445357811575,
+              "p50": -0.001106409228576119,
+              "p95": 0.46889564499092407
+            },
+            "arrival_abs_error_s": {
+              "n": 44,
+              "mean": 0.11216871468702504,
+              "p50": 0.05498130938861124,
+              "p95": 0.46889564499092407
+            },
+            "state_age_ms": {
+              "n": 44,
+              "mean": 10.000000000000032,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      },
+      "8": {
+        "ours": {
+          "poll_count": 46,
+          "state_available_count": 46,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 46
+          },
+          "gt_predictor_reachable_poll_count": 46,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 21,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 21,
+            "false_unreachable": 25,
+            "missing_state": 0,
+            "fraction_correct_reachable": 0.45652173913043476
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 46,
+              "mean": 0.15816675085221746,
+              "p50": 0.0412717948758905,
+              "p95": 0.4940454444795485
+            },
+            "velocity_xy_error_m_s": {
+              "n": 46,
+              "mean": 3.045351636230688,
+              "p50": 1.8941091224240516,
+              "p95": 8.232998872421325
+            },
+            "intercept_xy_error_m": {
+              "n": 21,
+              "mean": 0.04665008307535893,
+              "p50": 0.04241981250025846,
+              "p95": 0.07484672487339976
+            },
+            "intercept_y_signed_error_m": {
+              "n": 21,
+              "mean": 0.03917414426210648,
+              "p50": 0.04220060192183421,
+              "p95": 0.07484672487339976
+            },
+            "arrival_signed_error_s": {
+              "n": 21,
+              "mean": -0.043103474139612366,
+              "p50": -0.06439506742959733,
+              "p95": 0.13567119486741497
+            },
+            "arrival_abs_error_s": {
+              "n": 21,
+              "mean": 0.18148625522671896,
+              "p50": 0.12705917062223254,
+              "p95": 0.3607272772927655
+            },
+            "state_age_ms": {
+              "n": 46,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        },
+        "v2e": {
+          "poll_count": 46,
+          "state_available_count": 46,
+          "state_available_fraction_all_polls": 1.0,
+          "state_status_counts": {
+            "fresh": 46
+          },
+          "gt_predictor_reachable_poll_count": 46,
+          "gt_predictor_unreachable_poll_count": 0,
+          "predicted_reachable_count_all_polls": 46,
+          "reachable_decision_coverage_on_gt_reachable": {
+            "correct_reachable": 46,
+            "false_unreachable": 0,
+            "missing_state": 0,
+            "fraction_correct_reachable": 1.0
+          },
+          "unreachable_decision_coverage_on_gt_unreachable": {
+            "correct_unreachable": 0,
+            "false_reachable": 0,
+            "missing_state": 0,
+            "fraction_correct_unreachable": null
+          },
+          "metrics": {
+            "position_xy_error_m": {
+              "n": 46,
+              "mean": 0.0034191993739793396,
+              "p50": 0.0031203891299668397,
+              "p95": 0.0064632060151488015
+            },
+            "velocity_xy_error_m_s": {
+              "n": 46,
+              "mean": 0.11189031293776198,
+              "p50": 0.10233656696110263,
+              "p95": 0.2405626047574616
+            },
+            "intercept_xy_error_m": {
+              "n": 46,
+              "mean": 0.013163036480121307,
+              "p50": 0.010523949267059924,
+              "p95": 0.033406288309449216
+            },
+            "intercept_y_signed_error_m": {
+              "n": 46,
+              "mean": 0.003820966082030879,
+              "p50": 0.004392740959350057,
+              "p95": 0.02691506482694024
+            },
+            "arrival_signed_error_s": {
+              "n": 46,
+              "mean": 0.09282029922164477,
+              "p50": 0.015671864033852928,
+              "p95": 0.5347495803931177
+            },
+            "arrival_abs_error_s": {
+              "n": 46,
+              "mean": 0.12432681235360776,
+              "p50": 0.04129652087684162,
+              "p95": 0.5347495803931177
+            },
+            "state_age_ms": {
+              "n": 46,
+              "mean": 10.000000000000034,
+              "p50": 10.000000000000037,
+              "p95": 10.000000000000064
+            }
+          }
+        }
+      }
+    }
+  },
+  "cost_s": {
+    "candidate_reference_eval": 20,
+    "previous_checkpoint_reference_eval": 14,
+    "training_optimization": 547.9529109409777,
+    "candidate_generation_from_per_episode_logs_s": 1508.4605310578481,
+    "full_pipeline_wall_includes": "episode generation, source preparation, training and the original failed metadata-only evaluation attempt; recovery evaluations are listed separately"
+  },
+  "boundaries": {
+    "geometry_gt_used_only_inside_candidate_event_generator": true,
+    "learned_model_input": "causal five-bin event tensors only",
+    "evaluation_gt_used_only_after_inference": true,
+    "episodes_are_previously_inspected_development_material": true,
+    "formal_test_or_ranking": false,
+    "frozen_core_modified": false
+  },
+  "interpretation": "Compares a model trained on the coverage-candidate event source to prior development checkpoints on the same Direct-HDR reference. It does not establish physical event truth or held-out generalization.",
+  "completion_note": "Candidate generation and training completed. The first orchestrator exited 1 only because the evaluator required git metadata in a selective source snapshot; both evaluations were rerun successfully after the code-commit fallback fix."
+}

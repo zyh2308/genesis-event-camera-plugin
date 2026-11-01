@@ -1,7 +1,7 @@
 # Genesis Event Camera：Robot R0 / R0.5 / R0.6 状态
 
-**更新时间：** 2026-10-30（Asia/Tokyo）
-**阶段：** R1.5 主要 warp 异常已由具体 splat 规则解释，并完成 CPU NumPy/Torch 候选一致性与连续表面/遮挡控制。候选把两片段旧路径约 85–93% 的超限像素时间点压下，但仍有动态亮度和轮廓残差。当前还发现：旧完整 Torch/NumPy 插值器对仅 `1.1e-4 px` 的投影差异反应不稳定，亮度最大差达 `0.95/1.06`；coverage 候选在两自有投影下最大亮度差低于 `0.001`。Frozen core 未改，实际 CUDA 路径未验证；g1 只读检查成功，但没有取得 GPU 项目分配，未启动远端计算。详见 [`像素规则归因`](../../benchmark/robot_closed_loop/results/r1_5_pixel_rule_attribution_20261030d_commit_eb41274/README.md) 与 [`跨后端候选验证`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_validation_20261030d_cpu/README.md)。
+**更新时间：** 2026-11-01（Asia/Tokyo）
+**阶段：** R1.5 coverage-splat 候选已完成 g1 九集事件生成、同预算 CPU 重训和同一 Direct-HDR 参考回放。新模型相对旧 Ours 的位置 P95 从 445 mm 降到 339 mm，但中位误差从 14 mm 升到 64 mm；拦截/到达预测和可达判断覆盖也较差，仍远落后于同参考 V2E。所有 581 个查询均有新鲜状态，说明主要剩余问题是估计错误而非状态缺失。候选只改善部分误差尾部，不能称为稳定定位恢复；旧端点/hold 光度规则也仍在，时间亮度异常未验证修复。Frozen core 未改，CUDA 未使用。详见 [`coverage 候选重训与共同参考结果`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_retrain_20261101a/README.md)。
 **研究边界：** 机器人任务位于 benchmark 层；`genesis_event_plugin/` frozen core 不改；不使用未来 GT、逐帧重设目标、焊接或吸附。
 
 **历史运行状态（截至 2026-10-25；后续结果见文末）：** 10/24 的 SSH 阻塞已解除。候选实现 `d390d851b56fe5d6bc496f488b8822bb101b51f6` 已同步到 g1；当前实验分支与状态文档均在 `f8563d2fee7ec62881971c14489a219cb101795a`，较 d390 只有协调文档变化。两个 episode 所需缓存哈希已核对；尚无 renderer 结果。最新 GPU 复查六张卡都有运行进程，故未启动实验。详细同步和输入证据见文末 `R1.5 g1 staging and cache readiness`。
@@ -1219,3 +1219,10 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
 - **直观结果：**中心窗口事件数为 Direct-HDR/旧版/候选 `625/6,184/407`，高误差像素时刻由 `8,555` 降至 `665`（92.5%）；+55 mm 为 `939/4,313/682`，由 `7,851` 降至 `1,377`（84.4%）。旧版对归档输出最大绝对差为 0。
 - **边界：**只复用既有 Genesis HDR/状态缓存，未新开物理 rollout、未连接服务器；候选仍为诊断实现，没有合入 frozen core。Direct-HDR 是已保存精确状态的参考，不代表未采样中间态；候选仍有动态光度残差。
 - **身份与复跑：**运行代码 commit `54ecff4f05e029c029389dca7e01c1465d95bf3e`；配置 `benchmark/robot_closed_loop/configs/r1_5_genesis_scene_demo_20261101a.json`；脚本 `benchmark/robot_closed_loop/diagnostics/create_r1_5_genesis_scene_before_after_demo.py`。完整代码/配置/输入哈希及复跑命令见结果 README 与 `demo_metrics.json`。
+
+#### Coverage candidate 接入模型、重训与共同参考定位（2026-11-01；g1 CPU）
+
+- **执行与数据：**复用九条同缓存 Genesis rollout；覆盖率候选生成 5,396,955 个事件，按 episode 固定 6/3 训练/验证拆分。`heatmap_v2`、seed 606、40 epoch 上限、batch 32、2 CPU threads。Direct-HDR 共同参考共 581 个查询；候选与旧 Ours 两次回放的参考清单哈希均为 `86cf6c0801365c0c1e5949e4e04d3178fa03f334997db6d09547f69a2b5af37c`。
+- **结果：**候选 Ours 的位置误差中位数/P95 为 `63.6/338.9 mm`，旧 Ours 为 `14.4/444.9 mm`，V2E 为 `4.1/11.3 mm`。候选减小了位置误差尾部，但典型误差上升；拦截误差 P95 为 `216 mm`（旧 Ours `92 mm`、V2E `51 mm`），绝对到达误差 P95 为 `830 ms`（旧 `746 ms`、V2E `603 ms`）。状态有效率三者均 `581/581`；候选正确可达判断 `223/581`，旧 Ours `315/581`，V2E `514/581`。不是稳定定位恢复。
+- **边界和执行问题：**新模型验证集位置 P95 为 `50.5 mm`/566 窗口；共同参考是已检查过的开发集，不是 held-out 测试。首次 orchestration 在训练成功后因选择性部署快照没有 `.git` 元数据而以 exit 1 结束；checkpoint 保留，提交 `8e09ea1` 修复评估器提交号读取后，只重跑两组评估并成功。候选仍沿用端点/hold 亮度处理，本轮不回答动态阴影/中间亮度修复是否有效。Frozen core 未改；未使用 GPU。
+- **结果、哈希和复跑：**[`完整结果说明`](../../benchmark/robot_closed_loop/results/r1_5_coverage_candidate_retrain_20261101a/README.md)；逐集 summary JSON SHA256 `1e376b8e017837a554e35ab859e78b6d3106cbc8f226fcd5da5e3b220d96a167`。g1 原始事件、checkpoint、逐查询 CSV、训练历史及 runtime 日志位于 `/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_coverage_candidate_retrain_20261101a/`；训练代码 commit `6eb9dbf764edf93df0d968a7ded862b86cafdb49`，共同评估修复 commit `8e09ea19b7fd3da24b0a7c9473ed5b6ec0efc298`。全量生成/训练命令保留在 g1 `execution_checkouts/robot-r1_5covcand-6eb9dbf/launch_full_run.sh`，评估恢复命令在同目录 `run_eval_recovery.sh`。
