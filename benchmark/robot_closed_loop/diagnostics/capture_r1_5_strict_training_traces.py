@@ -64,6 +64,7 @@ def compact_state(row: dict) -> dict:
 
 
 def main() -> int:
+    process_started = time.perf_counter()
     p = argparse.ArgumentParser()
     p.add_argument("--cache-root", type=Path, required=True)
     p.add_argument("--scene-config", type=Path, required=True)
@@ -91,9 +92,13 @@ def main() -> int:
     config = json.loads(scene_path.read_text(encoding="utf-8"))
     config["shared_control"] = json.loads(control_path.read_text(encoding="utf-8"))
 
+    genesis_init_started = time.perf_counter()
     import genesis as gs
     gs.init(backend=gs.cpu, logging_level="warning")
+    genesis_import_and_init_wall_s = time.perf_counter() - genesis_init_started
+    scene_build_started = time.perf_counter()
     env = build_robot_scene(config, segmentation_level="link")
+    scene_build_wall_s = time.perf_counter() - scene_build_started
     dt = float(env.dt_s)
     if args.trace_period_s < dt or not np.isclose(args.trace_period_s / dt,
                                                    round(args.trace_period_s / dt), rtol=0, atol=1e-8):
@@ -101,7 +106,7 @@ def main() -> int:
 
     out.mkdir(parents=True, exist_ok=False)
     records = []
-    started = time.perf_counter()
+    rollout_started = time.perf_counter()
     try:
         for episode_id in episode_ids:
             episode = cache_root / f"episode_{episode_id:03d}"
@@ -250,7 +255,10 @@ def main() -> int:
         "python_executable": sys.executable,
         "genesis_module": str(Path(gs.__file__).resolve()),
         "experiment_config_sha256": sha256(args.experiment_config.resolve()) if args.experiment_config else None,
-        "elapsed_wall_s": time.perf_counter() - started,
+        "genesis_import_and_init_wall_s": genesis_import_and_init_wall_s,
+        "scene_build_wall_s": scene_build_wall_s,
+        "episode_replay_wall_s": time.perf_counter() - rollout_started,
+        "elapsed_wall_s_before_artifact_hashing": time.perf_counter() - process_started,
         "episodes": records,
     }
     write_json(out / "summary.json", run)
@@ -273,7 +281,8 @@ def main() -> int:
         for path in sorted(out.rglob("*")) if path.is_file() and path.name != "SHA256SUMS"
     ), encoding="utf-8")
     print(json.dumps({"status": run["status"], "output": str(out),
-                      "elapsed_wall_s": run["elapsed_wall_s"]}, indent=2), flush=True)
+                      "elapsed_wall_s_before_artifact_hashing": run["elapsed_wall_s_before_artifact_hashing"]},
+                     indent=2), flush=True)
     return 0 if run["status"] == "PASS" else 3
 
 
