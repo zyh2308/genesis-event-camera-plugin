@@ -226,10 +226,14 @@ def main() -> None:
                     raise RuntimeError("official scalar photometric loss does not match its per-scale decomposition")
                 arm_photo[arm][variant] = predicted_photo_mean
                 if arm == "eventgenesis":
-                    warped = multiscaleloss.warp(gray1[:, None], pyramid[-1])
+                    # This auxiliary regional MAE is computed at native
+                    # resolution; the official objective above evaluates its
+                    # own image resize separately at each pyramid scale.
+                    native_padded_flow = candidates_padded[variant]
+                    warped = multiscaleloss.warp(gray1[:, None], native_padded_flow)
                     error = (warped[0, 0, 56:296, 16:336] - gray0[0, 56:296, 16:336]).abs()
                     direct_mae = float(error[region].mean().detach().cpu()) if region.any() else None
-                    inbounds_full = float(inbounds(pyramid[-1]).float().mean().detach().cpu())
+                    inbounds_full = float(inbounds_by_variant[variant].mean())
                     variant_metrics[variant] = {
                         "official_photometric_loss_mean_over_4_scales": predicted_photo_mean,
                         "official_photometric_loss_per_scale": one_scale_photo,
