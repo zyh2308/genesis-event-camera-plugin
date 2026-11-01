@@ -72,3 +72,9 @@ from exact saved states. It does not synthesize poses. This code change has
 been committed as `241124048ca0ce93dbecfb6c319f96704bcb4b2b`; it passed syntax,
 shell, and grid-arithmetic checks. A newly allocated GPU run is still needed
 to verify the complete strict/Direct event and localization path.
+
+The paired run launcher and experiment horizon were then committed as
+`32e88262e2d50df0daf94d417d7348d92e3c9f70`. Its experiment config SHA256 is
+`662f858b2783224c4de3c31a684a0ee308ec1a794f7c7baccaf4ec8d9870ffbd`; the
+0.602 s cutoff includes the final 0.6005 s localization query while avoiding
+unscored tail rendering.

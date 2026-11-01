@@ -1293,3 +1293,4 @@ This section supersedes the preceding “Next candidate (`20261021e`, underway)�
   ```
 
 - **仍需解决的研究问题：**上面的采样缺口解释了为什么 strict/direct 对照没有跑到定位，但不能解释也不能修复“我们的定位弱于 V2E”。定位根因仍未判定；只有这次按需真实采样的配对事件和逐查询模型结果出来后，才能区分图像/事件源差异与 checkpoint 训练分布差异。冻结 core 仍保持 `90f792d166f000ef4f9e072a97633cc4ad39c8b7`。
+- **运行窗口收紧：**pair launcher commit `32e88262e2d50df0daf94d417d7348d92e3c9f70` 将采集终点设为 `0.602 s`，覆盖最后一个 `0.6005 s` 查询，并减少无评分尾段。实验配置 SHA256 `662f858b2783224c4de3c31a684a0ee308ec1a794f7c7baccaf4ec8d9870ffbd`；42 kHz endpoint 可被整除核对通过。按需渲染候选位于 commit `241124048ca0ce93dbecfb6c319f96704bcb4b2b`。当前分支已推送至 GitHub。
