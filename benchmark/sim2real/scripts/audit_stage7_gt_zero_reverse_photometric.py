@@ -243,7 +243,8 @@ def main() -> None:
                         "shared_visible_texture_motion_mae": direct_mae,
                         "common_inbounds_pixels": int(common_inbounds.sum()),
                     }
-                del total, photo, smooth, pyramid, gray0_cpu, gray1_cpu, event_image
+                del total, photo, smooth, gray0_cpu, gray1_cpu, event_image
+            del pyramid
 
         if not np.allclose(
             [arm_photo["eventgenesis"][v] for v in arm_photo["eventgenesis"]],
