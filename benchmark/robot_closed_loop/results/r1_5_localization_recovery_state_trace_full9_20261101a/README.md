@@ -29,4 +29,3 @@ The compact tracked copy contains the run summary, manifest, the original g1 ful
 ## Reproduction
 
 Use the command recorded in `docs/coordination/robot_status.md` under “完整九集状态回放命令”. The run is safe to repeat only with a new output directory; the capture script refuses to overwrite an existing result.
-
