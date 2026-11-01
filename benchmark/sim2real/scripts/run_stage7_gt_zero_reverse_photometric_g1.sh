@@ -28,7 +28,8 @@ test "$EXPECTED_SCRIPT" = "$ACTUAL_SCRIPT"
 date -u +%Y-%m-%dT%H:%M:%SZ > "$RUN/driver_started_utc.txt"
 {
   printf 'host=%s\nrun_id=%s\nrun=%s\n' "$(hostname -f)" "$RUN_ID" "$RUN"
-  printf 'execution_snapshot=%s\nsource_commit=' "$REPO"; git -C "$REPO" rev-parse HEAD
+  printf 'execution_snapshot=%s\nexecution_snapshot_source_commit=' "$REPO"
+  sed -n 's/^source_commit=//p' "$RUN/execution_snapshot_manifest.txt"
   printf 'diagnostic_script_sha256='; sha256sum "$SCRIPT"
   printf 'launcher_script_sha256='; sha256sum "$0"
   printf 'config_sha256='; sha256sum "$CONFIG"
