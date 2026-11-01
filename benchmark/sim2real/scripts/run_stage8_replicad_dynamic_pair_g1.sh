@@ -80,18 +80,23 @@ set -e
 printf '%s\n' "$RC" > "$RUN_ROOT/bank_builder_exit_code.txt"
 if [[ "$RC" -ne 0 ]]; then printf '%s\n' "$RC" > "$RUN_ROOT/exit_code.txt"; exit "$RC"; fi
 
-# Reserve one currently idle, unowned GPU atomically, then check it again.
+# Queue politely if other jobs currently use all cards; reserve atomically and verify again.
 mkdir -p "$RESERVATIONS"
-APPS=$(nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader 2>&1 || true)
 GPU_INDEX= GPU_UUID= GPU_NAME= LOCK=
-while IFS=',' read -r idx name uuid util used total; do
-  idx=${idx//[[:space:]]/}; name=${name# }; name=${name% }; uuid=${uuid//[[:space:]]/}
-  util=${util//[[:space:]]/}; used=${used//[[:space:]]/}
-  if [[ "$util" != 0 || ! "$used" =~ ^[0-9]+$ || "$used" -gt 64 ]] || grep -Fq "$uuid" <<< "$APPS"; then continue; fi
-  candidate=$RESERVATIONS/$uuid
-  if mkdir "$candidate" 2>/dev/null; then GPU_INDEX=$idx; GPU_UUID=$uuid; GPU_NAME=$name; LOCK=$candidate; break; fi
-done < <(nvidia-smi --query-gpu=index,name,uuid,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits)
-if [[ -z "$GPU_INDEX" ]]; then echo 'GPU gate refused: no idle unowned GPU' > "$RUN_ROOT/gpu_gate.txt"; printf '5\n' > "$RUN_ROOT/exit_code.txt"; exit 5; fi
+for attempt in $(seq 1 60); do
+  APPS=$(nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader 2>&1 || true)
+  while IFS=',' read -r idx name uuid util used total; do
+    idx=${idx//[[:space:]]/}; name=${name# }; name=${name% }; uuid=${uuid//[[:space:]]/}
+    util=${util//[[:space:]]/}; used=${used//[[:space:]]/}
+    if [[ "$util" != 0 || ! "$used" =~ ^[0-9]+$ || "$used" -gt 64 ]] || grep -Fq "$uuid" <<< "$APPS"; then continue; fi
+    candidate=$RESERVATIONS/$uuid
+    if mkdir "$candidate" 2>/dev/null; then GPU_INDEX=$idx; GPU_UUID=$uuid; GPU_NAME=$name; LOCK=$candidate; break; fi
+  done < <(nvidia-smi --query-gpu=index,name,uuid,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits)
+  [[ -n "$GPU_INDEX" ]] && break
+  printf 'attempt=%s utc=%s state=waiting_no_idle_unowned_gpu\n' "$attempt" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RUN_ROOT/gpu_wait_log.txt"
+  sleep 60
+done
+if [[ -z "$GPU_INDEX" ]]; then echo 'GPU gate timed out after 60 one-minute checks; no idle unowned GPU' > "$RUN_ROOT/gpu_gate.txt"; printf '5\n' > "$RUN_ROOT/exit_code.txt"; exit 5; fi
 RUN_ID=20261101-stage8-replicad-dynamic-v1
 printf '%s\n' "$RUN_ID" > "$LOCK/run_id.txt"
 date -u +%Y-%m-%dT%H:%M:%SZ > "$LOCK/acquired_utc.txt"
