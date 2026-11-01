@@ -1239,7 +1239,7 @@ This section supersedes the preceding â€œNext candidate (`20261021e`, underway)â
 
   ```bash
   tmux new-session -d -s r15_loc_trace_smoke \
-    'ROBOT_EXECUTION_CODE_COMMIT=03877cb bash /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/diagnostics/launch_r1_5_strict_training_trace_capture.sh \
+    'ROBOT_EXECUTION_CODE_COMMIT=b1c45ac bash /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source/benchmark/robot_closed_loop/diagnostics/launch_r1_5_strict_training_trace_capture.sh \
       /home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-03877cb/source \
       /home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plugin-r1-ba137bd/benchmark/robot_closed_loop/results/r1_shared_ideal_small9_20261018a/trajectory_cache \
       /home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/genesis_event_camera_plugin/r1_5_localization_recovery_20261101a/state_trace_smoke_20261101a \
