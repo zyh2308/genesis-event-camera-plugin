@@ -13,6 +13,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -36,6 +37,13 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _code_commit() -> str:
+    value = os.environ.get("ROBOT_EXECUTION_CODE_COMMIT")
+    if value:
+        return value
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
 
 
 def _reference_hashes(reference: Path) -> Dict[str, str]:
@@ -238,7 +246,7 @@ def main() -> int:
     overall = _summarize(rows)
     summary = {
         "purpose": "R1 common Direct-HDR reference development evaluation; paired training is not a ranking",
-        "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "code_commit": _code_commit(),
         "scene_config_sha256": _sha256(scene_path), "control_config_sha256": _sha256(control_path),
         "checkpoint_sha256": {"ours": _sha256(args.ours_checkpoint.resolve()), "v2e": _sha256(args.v2e_checkpoint.resolve())},
         "reference_root": str(reference), "reference_manifest_sha256": _sha256(reference / "SHA256SUMS"),
