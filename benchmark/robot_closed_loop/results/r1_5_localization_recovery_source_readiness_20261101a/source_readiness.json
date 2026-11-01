@@ -10,6 +10,17 @@
       "issue": "the selected support snapshot intentionally did not include diagnostics/run_paired_generator_smoke.py, although the runner imported two helpers from it",
       "render_started": false
     },
+    "launch_attempt_20261101b": {
+      "failure": "runner bootstrap consumed --frozen-core-root, then the second argparse parser required the same already-consumed option",
+      "fix": "make --frozen-core-root default to the resolved bootstrap path in the second parser",
+      "no_assigned_gpu_compute_process_after_exit": true,
+      "render_started": false,
+      "reservation_path": "/home/zhaoyuhan/Eventbased_WAM/.gpu_reservations/r1_5_localization_recovery_20261101b_gpu0_20261101T073805Z.json",
+      "run_id": "r1_5_localization_recovery_20261101b_gpu0_20261101T073805Z",
+      "scene_initialized": false,
+      "tmux_session": "r15_loc_render_20261101b",
+      "training_started": false
+    },
     "path": "benchmark/robot_closed_loop/diagnostics/render_r1_5_strict_direct_episode.py",
     "reason": "frozen tag also includes benchmark/robot_closed_loop; frozen plugin package is now imported first, then the selected support snapshot takes precedence for benchmark modules",
     "remote_import_probe": {
@@ -26,13 +37,14 @@
       "support_snapshot_root": "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/robot-r1-localization-20261101a-b7ba943/support",
       "training_started": false
     },
-    "sha256": "82d11c694f35ec7e42d31a56a535f514950c8b139163fb5ca8b1c8c4ab2af62e",
+    "sha256": "aeeb6ed8e0f4f16e22484377712072c96511e3718cf258225bd1f006f01b88ee",
     "strict_direct_run_started": false,
     "verification": [
       "python3 -m py_compile",
       "git diff --check",
-      "IMPORT_PRECEDENCE_PASS: frozen plugin stays in the frozen tag while benchmark modules resolve from the selected support snapshot",
-      "g1 Eventbased_WAM environment import-only probe passed; no Genesis scene initialization, rendering, or training"
+      "local parser smoke passed: frozen-core-root is consumed at bootstrap and preserved in the full argument namespace",
+      "the previous g1 import-only probe passed for the earlier self-contained code; the latest parser-only correction still needs redeployment and remote argument smoke",
+      "first tmux launch exited on argparse before scene initialization or rendering; no GPU compute process was started"
     ]
   },
   "cpu_render_probe": {
@@ -54,6 +66,14 @@
     "profile": "scientific_strict_sampled_reference",
     "profile_sha256": "3525cad9e84982a2b835b1b7d32428b94be24508fe28faf9f0d79002dfb10818",
     "tag": "r1.5-strict-sampled-20261031"
+  },
+  "gpu_allocation": {
+    "assigned_by_user": true,
+    "gpu_index": 0,
+    "gpu_uuid": "GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23",
+    "reservation_run_id": "r1_5_localization_recovery_20261101b_gpu0_20261101T073805Z",
+    "reservation_status": "reserved; first invocation failed before renderer; retain allocation while deploying corrected runner",
+    "slot_minutes": 30
   },
   "host_resources": {
     "available_ram_gib": 422,
@@ -118,7 +138,7 @@
       8.83,
       8.71
     ],
-    "latest_snapshot_utc": "2026-11-01T07:32:56Z",
+    "latest_snapshot_utc": "2026-11-01T07:39:41Z",
     "online_cpus": 128,
     "renderer_or_training_launched": false
   },

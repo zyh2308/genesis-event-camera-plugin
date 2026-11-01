@@ -58,7 +58,10 @@ def _bootstrap_core_path() -> tuple[Path, list[str]]:
 
 def _parse_args(core_root: Path, remaining: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--frozen-core-root", type=Path, required=True)
+    # _bootstrap_core_path has already consumed this required option so it can
+    # import the frozen plugin before the benchmark support tree. Keep the
+    # resolved value in the full Namespace without requiring it a second time.
+    parser.add_argument("--frozen-core-root", type=Path, default=core_root)
     parser.add_argument("--profile-config", type=Path)
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--support-source-commit", default="unknown")
