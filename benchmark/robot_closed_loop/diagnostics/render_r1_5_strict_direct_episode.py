@@ -81,6 +81,8 @@ def _parse_args(core_root: Path, remaining: list[str]) -> argparse.Namespace:
     parser.add_argument("--genesis-backend", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--probe-sampler-counts", action="store_true",
                         help="diagnostic only: render 1 ms endpoints and record adaptive sample counts without strict intermediate-state enforcement")
+    parser.add_argument("--probe-start-s", type=float,
+                        help="start a sampler-only probe from this exact trace timestamp")
     return parser.parse_args(remaining)
 
 
@@ -338,13 +340,26 @@ def main() -> int:
         if not np.isclose(float(trace[-1]["time_s"]), args.trace_end_s, atol=dt * 0.51, rtol=0):
             raise RuntimeError("--trace-end-s must land on a saved physical state")
         all_times = np.asarray([float(row["time_s"]) for row in trace], dtype=np.float64)
+    if args.probe_start_s is not None:
+        if not args.probe_sampler_counts or not np.isfinite(args.probe_start_s) or args.probe_start_s < 0:
+            raise ValueError("--probe-start-s requires a finite nonnegative sampler probe")
+        trace = [row for row in trace if float(row["time_s"]) >= args.probe_start_s - 1e-10]
+        if not trace or not np.isclose(float(trace[0]["time_s"]), args.probe_start_s, atol=1e-9, rtol=0):
+            raise RuntimeError("sampler probe start must be an exact saved physical-state timestamp")
+        all_times = np.asarray([float(row["time_s"]) for row in trace], dtype=np.float64)
     with h5py.File(cache_path, "r") as handle:
         cache_times = np.asarray(handle["timestamps_s"], dtype=np.float64)
         t0_indices = np.flatnonzero(np.isclose(cache_times, 0.0, atol=1e-9, rtol=0))
         if len(t0_indices) != 1:
             raise RuntimeError("legacy HDR cache must provide the exact t=0 observed frame")
-        initial_row = _state_from_cache(handle, int(t0_indices[0]))
-        if not np.isclose(initial_row["time_s"], 0.0, atol=1e-9, rtol=0):
+        initial_time = (
+            float(trace[0]["time_s"])
+            if args.probe_sampler_counts and args.probe_start_s is not None else 0.0
+        )
+        initial_row = (
+            trace[0] if initial_time > 0 else _state_from_cache(handle, int(t0_indices[0]))
+        )
+        if not np.isclose(initial_row["time_s"], initial_time, atol=1e-9, rtol=0):
             raise RuntimeError("initial HDR cache frame is not at t=0")
         cache_camera_pose = np.asarray(handle["camera_to_world_cv"][int(t0_indices[0])], dtype=np.float64)
         cache_pose_ids = np.asarray(handle["segmentation_pose_ids"], dtype=np.int32)
@@ -357,8 +372,9 @@ def main() -> int:
             for index, t in enumerate(cache_times)
         }
         cache_validation = (
-            {0.0: cache_validation_all[0.0]}
-            if args.trajectory_mode == "paired-new-physics" else cache_validation_all
+            {} if args.probe_sampler_counts and initial_time > 0 else
+            ({0.0: cache_validation_all[0.0]}
+             if args.trajectory_mode == "paired-new-physics" else cache_validation_all)
         )
     trace_time_keys = {round(float(t), 9) for t in all_times}
     missing_cached_times = [float(t) for t in cache_times
@@ -445,7 +461,7 @@ def main() -> int:
         # initialization frame, then every later frame is rendered from an
         # exact row in the verified 0.5 ms physical trace.
         initial_started = time.perf_counter()
-        replay_scene.cur_t = 0.0
+        replay_scene.cur_t = initial_time
         initial = _render_exact(
             env, initial_row, pose_bodies,
             lambda body: _pose(body, as_numpy, quaternion_matrix_wxyz),
@@ -454,25 +470,31 @@ def main() -> int:
         rendered += 1
         with h5py.File(cache_path, "r") as handle:
             cached_hdr = np.asarray(handle["radiance"][int(t0_indices[0])], dtype=np.float32)
-        initial_max_error = float(np.max(np.abs(initial["radiance"] - cached_hdr)))
-        if initial_max_error > 1e-6:
+        initial_max_error = (
+            0.0 if initial_time > 0 else
+            float(np.max(np.abs(initial["radiance"] - cached_hdr)))
+        )
+        if initial_time == 0.0 and initial_max_error > 1e-6:
             raise RuntimeError(f"re-rendered t=0 HDR differs from cached initial frame by {initial_max_error}")
-        initial["time_s"] = 0.0
-        cache_t0 = cache_validation[0.0]
-        cache_image_checks.append({
-            "time_s": 0.0, "radiance_max_abs_error": initial_max_error,
-            "depth_finite_mask_mismatch": int(np.count_nonzero(np.isfinite(initial["depth"]) != np.isfinite(cache_t0["depth"]))),
-            "segmentation_mismatch_pixels": int(np.count_nonzero(initial["seg"] != cache_t0["seg"])),
-        })
+        initial["time_s"] = initial_time
+        if initial_time == 0.0:
+            cache_t0 = cache_validation[0.0]
+            cache_image_checks.append({
+                "time_s": 0.0, "radiance_max_abs_error": initial_max_error,
+                "depth_finite_mask_mismatch": int(np.count_nonzero(np.isfinite(initial["depth"]) != np.isfinite(cache_t0["depth"]))),
+                "segmentation_mismatch_pixels": int(np.count_nonzero(initial["seg"] != cache_t0["seg"])),
+            })
         current["frame"] = initial
-        by_time[0.0] = initial
+        by_time[round(initial_time, 9)] = initial
         render_hash.update(np.ascontiguousarray(initial["radiance"]).tobytes())
-        direct.initialize(linear_luminance(initial["radiance"]), t=0.0)
+        direct.initialize(linear_luminance(initial["radiance"]), t=initial_time)
         plugin.start_episode()
         plugin.capture()
 
         missing_sample = None
         for row_index, row in enumerate(trace, start=1):
+            if float(row["time_s"]) <= initial_time + 1e-10:
+                continue
             if args.probe_sampler_counts and not np.isclose(
                 float(row["time_s"]) / 0.001,
                 round(float(row["time_s"]) / 0.001), atol=1e-7, rtol=0,
@@ -614,7 +636,7 @@ def main() -> int:
             and sum(r["depth_finite_mask_mismatch"] for r in cache_image_checks) == 0
             and sum(r["segmentation_mismatch_pixels"] for r in cache_image_checks) == 0
         )
-        initial_frame_match_pass = bool(
+        initial_frame_match_pass = None if args.probe_sampler_counts and initial_time > 0 else bool(
             cache_image_checks
             and cache_image_checks[0]["time_s"] == 0.0
             and cache_image_checks[0]["radiance_max_abs_error"] <= 1e-6
@@ -664,6 +686,7 @@ def main() -> int:
             "trajectory_mode": args.trajectory_mode,
             "trace_filename": trace_path.name,
             "trace_requested_end_s": args.trace_end_s,
+            "trace_requested_start_s": args.probe_start_s,
             "cached_frame_validation_scope": (
                 "initial frame only; subsequent states belong to a new paired physics rollout"
                 if args.trajectory_mode == "paired-new-physics" else "all exact overlapping cached frames"

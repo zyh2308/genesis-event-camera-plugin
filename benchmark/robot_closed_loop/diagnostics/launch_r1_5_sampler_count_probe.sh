@@ -19,7 +19,8 @@ CACHE_ROOT=/home/zhaoyuhan/Eventbased_WAM/repositories/genesis-event-camera-plug
 PY=/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python
 CONTROL_CONFIG="$ROOT/benchmark/robot_closed_loop/configs/shared_control_r0_8_candidate.json"
 TRACE_NAME=state_trace_dt_166667ns.jsonl
-END_S=0.625
+START_S=0.574
+END_S=0.602
 
 if [[ -e "$RUN_ROOT" ]]; then
   echo "refusing to overwrite run root: $RUN_ROOT" >&2
@@ -74,6 +75,7 @@ for EP in 4 5; do
     --trace-root "$TRACE_ROOT" \
     --trace-filename "$TRACE_NAME" \
     --trace-end-s "$END_S" \
+    --probe-start-s "$START_S" \
     --trajectory-mode paired-new-physics \
     --legacy-cache-root "$CACHE_ROOT" \
     --scene-config "$SCENE_CONFIG" \
