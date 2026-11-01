@@ -1,0 +1,12 @@
+/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py:10: ImportWarning: failed to load custom correlation modulewhich is needed for FlowNetC
+  warnings.warn("failed to load custom correlation module"
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-flow-photo-oracle-run03-v1/audit_stage7_gt_zero_reverse_photometric.py", line 294, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-flow-photo-oracle-run03-v1/audit_stage7_gt_zero_reverse_photometric.py", line 216, in main
+    one_scale_photo.append(float(multiscaleloss.compute_photometric_loss(
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/multiscaleloss.py", line 68, in compute_photometric_loss
+    prev_images_resize[p,0,:,:] = torch.from_numpy(cv2.resize(prev_images[p,:,:], (height, width), interpolation=cv2.INTER_LINEAR))
+                                                              ~~~~~~~~~~~^^^^^^^
+IndexError: too many indices for array: array is 2-dimensional, but 3 were indexed

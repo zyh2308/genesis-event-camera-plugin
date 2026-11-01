@@ -1,0 +1,21 @@
+/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py:10: ImportWarning: failed to load custom correlation modulewhich is needed for FlowNetC
+  warnings.warn("failed to load custom correlation module"
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-flow-photo-oracle-run02-v1/audit_stage7_gt_zero_reverse_photometric.py", line 289, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-flow-photo-oracle-run02-v1/audit_stage7_gt_zero_reverse_photometric.py", line 143, in main
+    model_outputs = model(event_tensor, 352, use_dt4=False, flow_seq=False)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/STEFlow.py", line 190, in forward
+    corr_1 = self.leakyRELU(corr(feature_map_1[0], warp_tmp))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py", line 15, in corr
+    out_corr = spatial_correlation_sample(input1,
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'spatial_correlation_sample' is not defined

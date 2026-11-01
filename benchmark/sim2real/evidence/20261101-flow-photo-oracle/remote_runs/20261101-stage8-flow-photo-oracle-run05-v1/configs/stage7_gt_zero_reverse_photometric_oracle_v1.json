@@ -1,0 +1,109 @@
+{
+  "schema": "stage7_gt_zero_reverse_actual_photometric_oracle_config_v1",
+  "registered_at": "2026-11-01T11:10:12+09:00",
+  "registered_before_execution": true,
+  "purpose": "Check whether the pinned STE-FlowNet photometric objective on fixed ReplicaCAD validation endpoints prefers shared GT flow over zero and reversed flow; no training or checkpoint selection.",
+  "source": {
+    "repository": "genesis-event-camera-plugin",
+    "branch": "exp/public-sim2real-v1",
+    "source_head": "727e95c08a6b52c31e21b5e4d707295229441952",
+    "frozen_simulator_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1"
+  },
+  "model": {
+    "name": "STE-FlowNet",
+    "source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "inference_input": "full-frame event tensor only; model used once only to identify actual four output scales, no prediction is evaluated or trained"
+  },
+  "code": {
+    "script": "benchmark/sim2real/scripts/audit_stage7_gt_zero_reverse_photometric.py",
+    "script_sha256": "b89e89028898b48f45412c868ec5302bd36cc15ad03da360d5337550b3b784c5",
+    "pinned_helpers": {
+      "benchmark/sim2real/scripts/run_steflow_stage2_pilot.py": "167a88520162d06a7b1973eb4fcca64cf73680d50a8f583a60f953f27a0dd48a",
+      "benchmark/sim2real/scripts/train_stage7_replicad_selfsup_diagnostic.py": "7ff0881374ba3b15240c1e9dd38489996e332b9c130881e73f69945bb50d4471",
+      "benchmark/sim2real/compat/steflow_align_corners.py": "0f7290aa45b8ba020c03d2d26b64a0cc213ccec7536e386bce186e4d0446393e",
+      "benchmark/sim2real/scripts/verify_pinned_source.py": "0d96c38cb84d844eb933bed0148abb295c4d5e098b90b286f0ffc1f150cd991d"
+    },
+    "launcher": "benchmark/sim2real/scripts/run_stage7_gt_zero_reverse_photometric_g1.sh",
+    "launcher_sha256": "ad6f3b563c5c4b5ca982d550f3d4521a75d952c32f61992192a90916d3dcc907"
+  },
+  "data": {
+    "bank_run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261031-stage7-replicad-multiaxis-pathpilot-v1",
+    "manifest_sha256": "995aac5c0163ef8efacfb1eb2599b02d05538ee8f05bc98104e4e25690522717",
+    "validation_rollouts": [
+      "v3_sc2_x_060mm",
+      "v3_sc2_y_040mm"
+    ],
+    "split_unit": "full ReplicaCAD layout family; both rows are pre-existing held-out sc2 validation rollouts",
+    "flow_unit": "pixels per 30ms endpoint interval",
+    "event_count_filtering": "none; event counts do not select or remove samples",
+    "radiance_sha256_by_rollout": {
+      "v3_sc2_x_060mm": "3c97fa822e151b7b6832a5bbbaf95d47eeeffd179d1b95be6e9bf48a62db655d",
+      "v3_sc2_y_040mm": "b634499ad2e22cc745c29979bf220bbb3b1d9a0320961b2b54d64380d59e431a"
+    },
+    "event_and_shared_label_artifacts": [
+      {
+        "generator": "eventgenesis",
+        "rollout_id": "v3_sc2_x_060mm",
+        "sample_id": "v3_sc2_x_060mm/dt30",
+        "event_artifact_sha256": "308c55b1c70123c7746481de6cf5d1442bf74136ef91f87e73d372dfaaa04bbd",
+        "shared_label_sha256": "5e3db9bb656d15b2989045e02acbba4ceb9800b9fad7c07ef7c368b1a2678e41",
+        "radiance_sha256": "3c97fa822e151b7b6832a5bbbaf95d47eeeffd179d1b95be6e9bf48a62db655d"
+      },
+      {
+        "generator": "v2e",
+        "rollout_id": "v3_sc2_x_060mm",
+        "sample_id": "v3_sc2_x_060mm/dt30",
+        "event_artifact_sha256": "5fbfe9e759165d775030ee202e767267ec1c83d55c4b1794bfe3cf46d49267da",
+        "shared_label_sha256": "5e3db9bb656d15b2989045e02acbba4ceb9800b9fad7c07ef7c368b1a2678e41",
+        "radiance_sha256": "3c97fa822e151b7b6832a5bbbaf95d47eeeffd179d1b95be6e9bf48a62db655d"
+      },
+      {
+        "generator": "eventgenesis",
+        "rollout_id": "v3_sc2_y_040mm",
+        "sample_id": "v3_sc2_y_040mm/dt30",
+        "event_artifact_sha256": "679acbb7a978bcf8402236b64185bbcf30366381ccf01b62ea79557418da026f",
+        "shared_label_sha256": "79dbde2de978b29171f02e0d89fd8ea9921fc6489bb8c6456e60812586a6f607",
+        "radiance_sha256": "b634499ad2e22cc745c29979bf220bbb3b1d9a0320961b2b54d64380d59e431a"
+      },
+      {
+        "generator": "v2e",
+        "rollout_id": "v3_sc2_y_040mm",
+        "sample_id": "v3_sc2_y_040mm/dt30",
+        "event_artifact_sha256": "7b4e8558eb43033ee4d86798220e1f35da97f578291223f5c6f250cbac841b1f",
+        "shared_label_sha256": "79dbde2de978b29171f02e0d89fd8ea9921fc6489bb8c6456e60812586a6f607",
+        "radiance_sha256": "b634499ad2e22cc745c29979bf220bbb3b1d9a0320961b2b54d64380d59e431a"
+      }
+    ],
+    "gray_endpoints": "linear luma 0.2126 R + 0.7152 G + 0.0722 B from the fixed Genesis radiance source at indices 0 and 3 (0 ms and 30 ms); no gamma or histogram fitting"
+  },
+  "objective": {
+    "implementation": "pinned STE-FlowNet multiscaleloss.compute_photometric_loss through the benchmark objective_dt1 adapter and align_corners=True compatibility patch",
+    "candidates": "shared bank GT flow as stored; all-zero flow; negative GT flow",
+    "scale_flow_conversion": "bilinear resize with align_corners=False; multiply u by scale_width/full_width and v by scale_height/full_height, matching the existing multi-scale supervised helper",
+    "photometric": "four scales, official Charbonnier alpha=0.45 epsilon=1e-3, weights [1,1,1,1]; report per-scale values and official mean",
+    "full_objective": "report official second-order smoothness and photo + 10*smoothness for diagnostic context; do not use it for model/checkpoint selection",
+    "warp_contract": "shared align_corners=True; match actual training loss; keep zero padding and source warp masks unchanged",
+    "ground_truth_validity": "not injected into the official photometric objective; report geometric valid mask/coverage separately to avoid altering the training objective"
+  },
+  "diagnostic_regions": {
+    "primary_geometry_texture_region": "shared flow_valid AND GT magnitude >= 0.5 px/30ms AND luma gradient magnitude > 1/255 at both endpoints AND all three candidate warps remain in-bounds",
+    "luma_gradient_threshold": 0.00392156862745098,
+    "gt_motion_threshold_px": 0.5,
+    "also_report": "valid pixels, joint normal EventGenesis/V2E event-active valid pixels, texture pixels, GT-motion/texture/valid overlap, common in-bounds count and flow-loss in-bounds fractions"
+  },
+  "execution": {
+    "device": "one GPU only, chosen by current live ownership check plus atomic project UUID reservation",
+    "train_updates": 0,
+    "real_data_used": false,
+    "real_scoring_enabled": false,
+    "checkpoint_selection": false,
+    "stop_rule": "fail on any source/data hash mismatch, label mismatch, nonfinite input/output, unexpected model output scales, or mismatch between official scalar photometric loss and its per-scale decomposition",
+    "run_id": "20261101-stage8-flow-photo-oracle-run05-v1"
+  },
+  "limits": [
+    "Only two pre-existing held-out layout-family rollouts; this tests the photometric objective/data pairing, not downstream model learning or generator quality.",
+    "The scalar official loss includes padded and invalid-GT image regions exactly as the pinned implementation does; the separate shared texture/motion region is descriptive.",
+    "No real dataset or score is used."
+  ],
+  "real_scoring_enabled": false
+}

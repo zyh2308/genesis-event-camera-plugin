@@ -1,0 +1,11 @@
+/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet/models/corr.py:10: ImportWarning: failed to load custom correlation modulewhich is needed for FlowNetC
+  warnings.warn("failed to load custom correlation module"
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-flow-photo-oracle-run04-v1/audit_stage7_gt_zero_reverse_photometric.py", line 299, in <module>
+    main()
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261101-stage8-flow-photo-oracle-run04-v1/audit_stage7_gt_zero_reverse_photometric.py", line 229, in main
+    warped = multiscaleloss.warp(gray1[:, None], pyramid[-1])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/Eventbased_WAM/execution_checkouts/sim2real-flow-photo-oracle-20261101/benchmark/sim2real/compat/steflow_align_corners.py", line 47, in loss_warp
+    raise ValueError(f"STE loss warp expects x [B,C,H,W] and flow [B,2,H,W], got {x.shape}, {flow.shape}")
+ValueError: STE loss warp expects x [B,C,H,W] and flow [B,2,H,W], got torch.Size([1, 1, 352, 352]), torch.Size([1, 2, 44, 44])
