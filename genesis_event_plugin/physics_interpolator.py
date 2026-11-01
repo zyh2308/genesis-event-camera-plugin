@@ -107,8 +107,6 @@ class PhysicsInterpolator:
             self.warp_backend = "torch" if device and str(device).startswith("cuda") else "numpy"
         else:
             self.warp_backend = warp_backend
-        if composite == "coverage_time_log_linear" and self.warp_backend != "numpy":
-            raise ValueError("coverage_time_log_linear is currently validated only on the NumPy backend")
         self.strict_fidelity = bool(strict_fidelity)
         if not 0.0 < min_coverage_fraction <= 1.0:
             raise ValueError("min_coverage_fraction must be in (0,1]")
@@ -499,6 +497,15 @@ class PhysicsInterpolator:
                 )
                 if self.disocclusion_policy == "nan":
                     warped_np[invalid] = np.nan
+                # CPU NumPy views and CUDA transfers must expose the same
+                # public output, including the approximate unknown fallback.
+                # A CUDA .cpu().numpy() is a copy, so write the handled frame
+                # back explicitly for callers requesting tensor outputs.
+                if return_torch:
+                    self.last_frames_torch[0, index].copy_(torch.as_tensor(
+                        warped_np, dtype=self.last_frames_torch.dtype,
+                        device=self.last_frames_torch.device,
+                    ))
                 frames.append(warped_np)
             if return_torch:
                 return self.last_frames_torch, timestamps
@@ -916,4 +923,15 @@ class PhysicsInterpolator:
             base_uncertainty["recommend_render"] = True
         self.last_uncertainty = base_uncertainty
         self.last_render_requests = resolved_requests
+        if return_torch:
+            # The public anchor wrapper solves pairs as NumPy lists so that
+            # recursive refinement can concatenate them. Honour its tensor
+            # output contract only after all unknown-region handling, exactly
+            # as the strict-observation branch above does.
+            import torch
+            self.last_frames_torch = torch.as_tensor(
+                np.stack(frames)[None], dtype=torch.float32,
+                device=torch.device(self.device or "cpu"),
+            )
+            return self.last_frames_torch, timestamps
         return frames, timestamps

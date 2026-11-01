@@ -544,7 +544,7 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
     ``return_diagnostics=True`` a third dictionary contains target-domain
     occupancy, visibility, z-buffer and intermediate-unknown masks.
     """
-    if composite not in {"weighted", "next_primary", "same_surface_log_linear"}:
+    if composite not in {"weighted", "next_primary", "same_surface_log_linear", "coverage_time_log_linear"}:
         raise ValueError("unknown projected composite")
     if frame0.shape != frame1.shape or depth0.shape != depth1.shape:
         raise ValueError("endpoint frame/depth shapes must agree")
@@ -567,7 +567,7 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
 
     # Flatten the temporal dimension into the same batched z-buffer.  The
     # endpoint is repeated as a view-like expand, then made contiguous once.
-    need_diag = return_diagnostics or composite == "same_surface_log_linear"
+    need_diag = return_diagnostics or composite in {"same_surface_log_linear", "coverage_time_log_linear"}
 
     def flatten_endpoint(frame, depth, uv, z, valid, surface_id=None):
         M = B * T
@@ -576,7 +576,7 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
         uv_m = uv.reshape(M, 2, H, W)
         z_m = z.reshape(M, H, W)
         valid_m = valid.reshape(M, H, W)
-        if composite == "same_surface_log_linear":
+        if composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
             if surface_id is None:
                 surface_m = None
             else:
@@ -601,7 +601,7 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
     else:
         warped0, visible0 = result0
         warped1, visible1 = result1
-    if composite == "same_surface_log_linear":
+    if composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
         if warped0.ndim == 3:
             warped0 = warped0.reshape(B, T, H, W)
             warped1 = warped1.reshape(B, T, H, W)
@@ -612,11 +612,25 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
         visible1 = visible1.reshape(B, T, H, W)
         if alpha is None:
             raise ValueError("alpha timestamps are required for same_surface_log_linear")
-        alpha_t = torch.as_tensor(alpha, dtype=warped0.dtype, device=warped0.device)
+        alpha_observed = torch.as_tensor(alpha, dtype=torch.float64, device=warped0.device)
+        if composite == "coverage_time_log_linear":
+            if not bool(torch.isfinite(alpha_observed).all()) or bool(((alpha_observed < 0) | (alpha_observed > 1)).any()):
+                raise ValueError("alpha must be finite and in [0,1]")
+        alpha_t = alpha_observed.to(dtype=warped0.dtype)
         if alpha_t.ndim == 0:
             alpha_t = alpha_t.expand(T)
+            alpha_observed = alpha_observed.expand(T)
         if alpha_t.shape != (T,):
             raise ValueError(f"alpha must be scalar or shape ({T},)")
+        # Match the NumPy sparse reconstruction's observed-endpoint policy.
+        # An almost-zero projection must not warp an already observed image.
+        # Keep legacy modes' exact-equality behavior unchanged.
+        if composite == "coverage_time_log_linear":
+            endpoint0_t = alpha_observed <= 1e-10
+            endpoint1_t = alpha_observed >= 1.0 - 1e-10
+        else:
+            endpoint0_t = alpha_t == 0.0
+            endpoint1_t = alpha_t == 1.0
         alpha_view = alpha_t.reshape(1, T, 1, 1)
         support0 = diagnostics0["support"].reshape(B, T, H, W)
         support1 = diagnostics1["support"].reshape(B, T, H, W)
@@ -636,33 +650,57 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
         )
         safe0 = torch.clamp(warped0, min=1e-6)
         safe1 = torch.clamp(warped1, min=1e-6)
+        if composite == "coverage_time_log_linear":
+            if not bool(torch.isfinite(alpha_t).all()) or bool(((alpha_t < 0) | (alpha_t > 1)).any()):
+                raise ValueError("alpha must be finite and in [0,1]")
+            cov0 = diagnostics0["coverage"].reshape(B, T, H, W)
+            cov1 = diagnostics1["coverage"].reshape(B, T, H, W)
+            weight0 = (1.0 - alpha_view) * cov0
+            weight1 = alpha_view * cov1
+            denominator = weight0 + weight1
+            conditional_available = denominator > 1e-8
+            if warped0.ndim == 5:
+                weight0, weight1, denominator = weight0[..., None], weight1[..., None], denominator[..., None]
+            weighted_log = (weight0 * torch.log(safe0) + weight1 * torch.log(safe1)) / torch.clamp(denominator, min=1e-8)
+            conditional_mixed = torch.exp(weighted_log)
         if warped0.ndim == 4:
             mixed = torch.exp((1.0 - alpha_view) * torch.log(safe0) + alpha_view * torch.log(safe1))
+            if composite == "coverage_time_log_linear":
+                mixed = conditional_mixed
             frame0_e = frame0[:, None].expand(B, T, H, W)
             frame1_e = frame1[:, None].expand(B, T, H, W)
             alpha_e = alpha_t.reshape(1, T, 1, 1)
-            endpoint0 = alpha_e == 0.0
-            endpoint1 = alpha_e == 1.0
+            endpoint0 = endpoint0_t.reshape(1, T, 1, 1)
+            endpoint1 = endpoint1_t.reshape(1, T, 1, 1)
             mixed = torch.where(endpoint0, frame0_e, torch.where(endpoint1, frame1_e, mixed))
         else:
             mixed = torch.exp((1.0 - alpha_view[..., None]) * torch.log(safe0) + alpha_view[..., None] * torch.log(safe1))
+            if composite == "coverage_time_log_linear":
+                mixed = conditional_mixed
             frame0_e = frame0[:, None].expand(B, T, H, W, frame0.shape[-1])
             frame1_e = frame1[:, None].expand(B, T, H, W, frame1.shape[-1])
             alpha_e = alpha_t.reshape(1, T, 1, 1, 1)
-            mixed = torch.where(alpha_e == 0.0, frame0_e, torch.where(alpha_e == 1.0, frame1_e, mixed))
+            mixed = torch.where(endpoint0_t.reshape(1, T, 1, 1, 1), frame0_e,
+                                torch.where(endpoint1_t.reshape(1, T, 1, 1, 1), frame1_e, mixed))
         # A direct endpoint image is known independently of depth validity.
         # Geometry support is required only for an intermediate projection.
         endpoint_valid0 = torch.isfinite(frame0).all(dim=-1) if frame0.ndim == 4 else torch.isfinite(frame0)
         endpoint_valid1 = torch.isfinite(frame1).all(dim=-1) if frame1.ndim == 4 else torch.isfinite(frame1)
         endpoint_valid = torch.where(
-            (alpha_t == 0.0).reshape(1, T, 1, 1), endpoint_valid0[:, None],
-            torch.where((alpha_t == 1.0).reshape(1, T, 1, 1), endpoint_valid1[:, None], surface_match),
+            endpoint0_t.reshape(1, T, 1, 1), endpoint_valid0[:, None],
+            torch.where(endpoint1_t.reshape(1, T, 1, 1), endpoint_valid1[:, None], surface_match),
         )
         visible = endpoint_valid
+        output_available = visible
+        if composite == "coverage_time_log_linear":
+            output_available = torch.where(
+                (endpoint0_t | endpoint1_t).reshape(1, T, 1, 1),
+                endpoint_valid, conditional_available,
+            )
         if mixed.ndim == 4:
-            output = torch.where(visible, mixed, torch.full_like(mixed, float("nan")))
+            output = torch.where(output_available, mixed, torch.full_like(mixed, float("nan")))
         else:
-            output = torch.where(visible[..., None], mixed, torch.full_like(mixed, float("nan")))
+            output = torch.where(output_available[..., None], mixed, torch.full_like(mixed, float("nan")))
     elif composite == "next_primary":
         visible = visible0 | visible1
         if warped0.ndim == 3:
@@ -681,13 +719,13 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
         else:
             output = (warped0 * w0[..., None] + warped1 * w1[..., None]) / torch.clamp(denom[..., None], min=1e-8)
         visible = denom > 1e-8
-    if composite != "same_surface_log_linear":
+    if composite not in {"same_surface_log_linear", "coverage_time_log_linear"}:
         if output.ndim == 3:
             output = output.reshape(B, T, H, W)
         else:
             output = output.reshape(B, T, H, W, output.shape[-1])
         visible = visible.reshape(B, T, H, W)
-    if return_diagnostics and composite == "same_surface_log_linear":
+    if return_diagnostics and composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
         diagnostics = {
             "occupancy0": diagnostics0["occupancy"].reshape(B, T, H, W),
             "occupancy1": diagnostics1["occupancy"].reshape(B, T, H, W),
@@ -707,6 +745,10 @@ def depth_aware_bidirectional_warp_projected_batch_torch(
                 diagnostics1["coverage"].reshape(B, T, H, W),
             ),
         }
+        if composite == "coverage_time_log_linear":
+            diagnostics["conditional_radiance_available"] = output_available
+            diagnostics["surface_match"] = visible
+            diagnostics["disocclusion"] = ~visible
         return output, visible, diagnostics
     if return_diagnostics:
         diagnostics = {
