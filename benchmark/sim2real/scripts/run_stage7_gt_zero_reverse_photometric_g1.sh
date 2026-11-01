@@ -33,7 +33,12 @@ date -u +%Y-%m-%dT%H:%M:%SZ > "$RUN/driver_started_utc.txt"
   printf 'launcher_script_sha256='; sha256sum "$0"
   printf 'config_sha256='; sha256sum "$CONFIG"
   printf 'manifest_sha256='; sha256sum "$BANK/flow_bank_retry01/training_bank_manifest.json"
-  printf 'model_commit='; git -C "$MODEL" rev-parse HEAD
+  if [[ -e "$MODEL/.git" ]]; then
+    printf 'model_source_type=git_checkout\nmodel_commit='
+    git -C "$MODEL" rev-parse HEAD
+  else
+    printf 'model_source_type=verified_file_bundle (checked by the pinned-source verifier before the objective runs)\n'
+  fi
   printf 'python='; "$PY" -c 'import torch, numpy, cv2; print(torch.__version__, torch.cuda.is_available(), numpy.__version__, cv2.__version__)'
   printf '\n-- resources before reservation --\n'
   uptime; free -h; df -h "$RUN" /tmp
