@@ -1,0 +1,63 @@
+{
+  "experiment_id": "r1_5_coverage_candidate_retrain_20261101a",
+  "purpose": "Measure whether training on the isolated R1.5 front-to-back coverage-splat candidate improves localization on the already-used common Direct-HDR development reference; not a ranking or held-out test.",
+  "source_batch": "r1_shared_ideal_small9_20261018a/b",
+  "candidate_event_source": {
+    "input": "trajectory_cache.h5/radiance, depth, segmentation, camera_to_world_cv, object_poses",
+    "radiance_units": "scene-linear renderer radiance; not display grayscale or calibrated W/m^2/sr",
+    "geometry_inputs": "cached depth, segmentation, camera pose and object poses used inside event generation only",
+    "coverage_resolve": "front-to-back bilinear-footprint coverage with 1e-5 m depth tie band; incomplete support normalized over observed support",
+    "endpoint_composite": "same diagnostic next-primary convention: prefer endpoint 1 where supported, then endpoint 0; midpoint hold for unsupported pixels; exact observed endpoint identity",
+    "sample_schedule": "same frozen PhysicsInterpolator adaptive sampler and per-episode timestamps as the existing native-HDR generator; sampler inputs are evaluated without emitting legacy warped frames",
+    "temporal_radiance_limit": "endpoint-only radiance and current hold rule remain; this experiment does not claim to repair unknown intermediate illumination or moving-shadow brightness",
+    "pixel_response": {
+      "mode": "physical_log",
+      "positive_threshold": 0.2,
+      "negative_threshold": 0.2,
+      "threshold_noise": 0.0,
+      "cutoff_hz": 0.0,
+      "leak_rate_hz": 0.0,
+      "shot_noise_rate_hz": 0.0,
+      "refractory_period_s": 0.0,
+      "radiance_scale": 1.0,
+      "radiometric_floor": 1e-6,
+      "calibration_status": "uncalibrated ideal development profile"
+    }
+  },
+  "v2e_control": {
+    "training_event_source": "reuse the exact existing paired small9 V2E event source for provenance and split verification",
+    "model_checkpoint": "reuse the fixed V2E checkpoint from the paired small9 development run",
+    "events_regenerated": false,
+    "extra_inputs": false
+  },
+  "training": {
+    "network": "heatmap_v2",
+    "seed": 606,
+    "max_epochs": 40,
+    "patience": 40,
+    "batch_size": 32,
+    "threads": 2,
+    "train_episode_ids": [0, 1, 2, 3, 7, 8],
+    "validation_episode_ids": [4, 5, 6],
+    "split_unit": "episode",
+    "checkpoint_selection": "same validation loss and early-stopping rule as the previous native-HDR development retrain"
+  },
+  "evaluation": {
+    "reference": "same nine-episode 2 kHz Direct-HDR event files and exact same pre-contact poll timestamps used by the previous R1 development comparison",
+    "models": [
+      "new Ours coverage-candidate checkpoint",
+      "previous native-HDR Ours checkpoint, rerun for a same-code control",
+      "fixed existing V2E checkpoint"
+    ],
+    "metrics": [
+      "position_xy_error",
+      "velocity_xy_error",
+      "same_fixed_predictor_arrival_error",
+      "same_fixed_predictor_intercept_xy_error",
+      "state_coverage",
+      "unreachable_decision_coverage"
+    ],
+    "status": "development only; the episodes have been inspected previously and are not a held-out test"
+  },
+  "frozen_core_modified": false
+}
