@@ -1,0 +1,240 @@
+{
+  "schema": "sim2real_newcore_campaign_v1",
+  "registration_date_jst": "2026-11-03",
+  "delivery_deadline_jst": "2026-11-09",
+  "result_lock_target_jst": "2026-11-08",
+  "status": "research_authorized_preflight_and_synthetic_profile_pending",
+  "user_scope": "Retrain reconstruction, optical flow, and pose with the frozen new simulator; deliver numerical tables and quantitative plots only.",
+  "frozen_core": {
+    "release": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+    "source": "6ac417c7a03e125f40ebf967796bf28191d55859",
+    "required_composite": "coverage_time_log_linear",
+    "min_coverage_fraction": 0.995,
+    "strict_fidelity": false,
+    "disocclusion_policy": "hold",
+    "input_space": "linear",
+    "response_mode": "physical_log",
+    "intermediate_state_provider": null,
+    "reference_profile": "benchmark/robot_closed_loop/configs/event_sparse_reconstruction_20261102.json",
+    "historical_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1"
+  },
+  "methods": [
+    {
+      "id": "eventgenesis_new",
+      "label": "EventGenesis",
+      "priority": 0
+    },
+    {
+      "id": "v2e",
+      "label": "V2E (official SuperSloMo pipeline)",
+      "priority": 0
+    },
+    {
+      "id": "vid2e_esim",
+      "label": "Vid2E (SuperSloMo + ESIM)",
+      "priority": 1
+    },
+    {
+      "id": "film_esim",
+      "label": "FILM + ESIM",
+      "priority": 1
+    },
+    {
+      "id": "rife_esim",
+      "label": "RIFE + ESIM",
+      "priority": 1
+    }
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "matrix": {
+    "tasks": 3,
+    "methods": 5,
+    "seeds": 3,
+    "target_training_runs": 45,
+    "core_repair_ablation_additional_runs": "old Ours on exactly the final shared bank/config; minimum seed 0, expand to all three if scheduling allows",
+    "primary_completion_priority": "finish EventGenesis/V2E seeds 0,1,2 for every task before optional ablations; other baselines prepare concurrently"
+  },
+  "shared_controls": {
+    "initialization": "random common per task/seed, never generator-specific pilot warm starts or real-pretrained downstream models",
+    "physical_trajectories_labels_splits": "identical within each task for every generator",
+    "effective_batch_optimizer_objective_updates_preprocess_augmentation": "identical within each task; paired deterministic sample and augmentation streams",
+    "whole_layout_trajectory_splits": true,
+    "real_test_feedback": false,
+    "GT_inference_inputs": false,
+    "match_event_counts": false,
+    "drop_empty_event_windows": false,
+    "reuse_unchanged_V2E_models_only_if_every_control_hash_matches": true
+  },
+  "sensor_profile": {
+    "frozen_acceptance_probe": "Use the exact immutable ideal profile for public-entrypoint acceptance.",
+    "formal_Ours_V2E": "Retain the prior registered nonideal sensor values so the new reconstruction is isolated: C+/C-=0.2, sigma=0.03, cutoff=300Hz, leak=0.01Hz, leak jitter=0.1, noise covariance decades=0.1, shot=0.001Hz, refractory=0.0005s, generator RNG seed42. Save as a separate task profile derived from the frozen geometry profile and validate it.",
+    "other_baselines": "Use pinned official ESIM pipelines and native declared sensor settings; use matched thresholds where supported, disclose all remaining response/noise differences. Do not invent or silently relabel a hybrid as an official simulator.",
+    "ablation": "old/new Ours must use identical full sensor parameters, endpoint cadence and frames. Ideal-matched comparison is a separate registered secondary analysis.",
+    "v2e_no_silent_fallback": "Use official frozen SuperSloMo path for the main V2E row; earlier linear-DN-resampling runs are historical variants, not this main baseline."
+  },
+  "training": {
+    "flow": {
+      "model": "STE-FlowNet",
+      "source_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "objective": "existing official four-scale self-supervised photometric + second-order smoothness (weight10); synthetic GT permitted only for validation and separately labelled diagnostic",
+      "candidate_update_budget": 9000,
+      "effective_batch": 8,
+      "lr": 0.0004,
+      "reference_recipe": "benchmark/sim2real/configs/stage4_corrected_v2_flowdt1_seed0.json",
+      "schedule": "convert the prior epoch milestones to fixed optimizer-update boundaries for the actual expanded bank; freeze before first formal update",
+      "selection": "lowest equal-rollout synthetic validation EPE; tie earlier checkpoint",
+      "data": "rich furnished ReplicaCAD layouts and multiple motion scales; reuse complete float HDR/depth/seg/K/SE3 caches; expand beyond the old two-rollout pilot",
+      "diagnostic": "fixed <=200-update paired synthetic-only gate on independent rollouts; check loss oracles, zero flow, magnitude, nonzero gradients, confidence of input dependence; no generator-ranking gate"
+    },
+    "reconstruction": {
+      "model": "E2VIDRecurrent / E2VID+",
+      "source_commit": "78aa471a66593f55e349303563997297fbc816e8",
+      "objective": "existing LPIPS-VGG + temporal consistency, weights1/2",
+      "candidate_update_budget": 12000,
+      "effective_batch_clips": 2,
+      "clip_length": 40,
+      "event_window_ms": 10,
+      "lr": 0.0001,
+      "selection": "lowest equal-rollout synthetic LPIPS-VGG; tie earlier checkpoint",
+      "data": "shared rich-scene physical bank if temporal labels support exact10ms; preserve explicit state/reset and full saved HDR/depth/seg/SE3, no30ms-divided-by3 labels",
+      "preflight": "synthetic train/eval range/voxel/padding/recurrence parity; actual TC gradients; valid clip boundaries; independent restore; rule out existing grid artifacts on fixed synthetic fixtures"
+    },
+    "pose": {
+      "model": "pinned SingleShotPose / YOLO-6D",
+      "source_commit": "2c282619101f9f31666dd18b42393375bea1600f",
+      "candidate_update_budget": 30000,
+      "initialization": "fresh common random initialization per seed; no R6/R10 generator-specific warm start",
+      "objective": "use mature native objective/confidence warmup; existing shared center-CE adapter only if declared and frozen for every arm before formal training, with no claim of exact original recipe",
+      "selection": "predeclare synthetic pose metric (ADD-S with invalid PnP failures) on independent complete rollouts, tie earlier; center/corner/grid diagnostics reported separately",
+      "data": "start with exact already matched textured wood-block CAD, broad synthetic position/scale/orientation/background/truncation/motion coverage; preserve native float HDR/depth/seg/complete poses; further objects only after CAD-frame/scale/label checks and workload profiling",
+      "scope": "main deliverable must cover all registered wood-block motion/light sequences, not a 200-window excerpt; label it E-POSE wood-block subset. Target additional matched objects when scientifically verified; do not claim full E-POSE from a single object",
+      "event_window_ms": 10,
+      "preflight": "ordinary eval, confidence-only cell selection, no GT crop/mask/box, independently held-out synthetic localization/PnP/geometry and resume"
+    }
+  },
+  "formal_freeze": {
+    "before_first_update": [
+      "complete actual source pins and source hashes",
+      "content-hashed paired bank/split manifest",
+      "actual batch, optimizer, update budget, schedule, validation/selection and init/sample stream hashes",
+      "closed real-score latch",
+      "synthetic correctness/restore receipts",
+      "throughput measurement and deadline estimate"
+    ],
+    "candidate_budgets_rule": "Budgets above are planning values; engineering may size based on synthetic throughput/learning evidence before formal start. A final versioned protocol is mandatory before the first formal update, identical across all arms. No post-real tuning or per-generator extensions.",
+    "scope_changes": "report missing official baseline assets, changing main task/model/objective/dataset, or inability to meet the Monday matrix immediately; keep unblocked lines progressing."
+  },
+  "real_evaluation": {
+    "reconstruction": {
+      "dataset": "HQF all14 sequences",
+      "protocol": "reuse frozen EVREAL/HQF rules, per-frame then per-sequence aggregation; report HQF as previously seen re-evaluation",
+      "metrics": [
+        "LPIPS-Alex down",
+        "SSIM up",
+        "PSNR dB up",
+        "MSE down"
+      ],
+      "HS_ERGB": "extension only; not a blocker to the agreed HQF line"
+    },
+    "flow": {
+      "dataset": "MVSEC indoor_flying1/2/3 and outdoor_day1 if acquired and audited before scoring",
+      "protocol": "standard dt1; actual APS timestamps and official GT propagation; full registered windows; fixed valid/event support; standard outdoor crop; no one-window score",
+      "metrics": [
+        "AEE/EPE native px down",
+        "outlier >3px AND >5% GT magnitude down"
+      ],
+      "dt4": "derived-evaluation extension only if properly supported; not a separate promised training",
+      "missing_sequence_rule": "freeze exact evaluable scope and explain unavailable sequences before scoring; no silent post-score exclusions"
+    },
+    "pose": {
+      "dataset": "E-POSE registered complete wood-block sequences across translation/rotation, speed and illumination",
+      "seen_sequences": [
+        "block/r_01_gl",
+        "block/r_05_gl"
+      ],
+      "metrics": [
+        "ADD-S success at0.1 CAD diameter up",
+        "ADD-S AUC with explicit integration range up",
+        "ADD/ADD-S mean/median and units down",
+        "translation cm down",
+        "symmetry-aware rotation deg down",
+        "2D center/corner error px as diagnostics",
+        "validPnP fraction up"
+      ],
+      "invalid_predictions": "all invalid/missing PnP count as failures; pose averages explicitly state valid-only or unconditional; include all-frame success denominator",
+      "raw_input": "full-frame native raw HDF5 events, not segmented events; public CAD/K permitted; consistent Brown-Conrady rectification",
+      "score_isolation": "register seen versus untouched full sequences, hash checkpoints before opening untouched scores"
+    }
+  },
+  "statistics": {
+    "training_variance": "three seeds; arithmetic mean and sample standard deviation(ddof1); list all seed values",
+    "evaluation_unit": "sequence/layout/trajectory clusters, not adjacent frames as independent samples",
+    "paired_differences": true,
+    "confidence_interval": "paired cluster bootstrap95%CI with seed/sequence hierarchy, state resampling units and small-N limits",
+    "no_required_p_value_or_paper_acceptance_claim": true,
+    "failed_runs": "retain every attempt, exit, reason and full registered denominator"
+  },
+  "deliverables": {
+    "only_numeric": true,
+    "tables": [
+      "main_sim2real_all_tasks",
+      "per_sequence_and_per_seed",
+      "old_new_core_ablation",
+      "generation_efficiency",
+      "coverage_failure_denominators"
+    ],
+    "quantitative_plots": [
+      "training_and_synthetic_validation_curves",
+      "per_sequence_paired_metric_differences_with_uncertainty",
+      "pose_ADD_S_success_or_AUC_curves",
+      "matched_core_ablation_effects"
+    ],
+    "formats": [
+      "CSV raw records",
+      "XLSX editable numeric tables/charts",
+      "LaTeX tables",
+      "vector PDF/SVG plots",
+      "600dpi PNG preview"
+    ],
+    "excluded_this_round": [
+      "demo videos",
+      "qualitative montages",
+      "architecture diagrams",
+      "presentation styling"
+    ],
+    "generation_efficiency": "fixed shared endpoints, same device/software/load, warmup/CUDA synchronization; report walltime, RTF=physical_duration/generation_walltime, optional events/s and VRAM; separate common rendering and startup; no pretend comparisons across CPU/GPU"
+  },
+  "resources": {
+    "host": "g1.pkuml.org",
+    "gpu3": {
+      "uuid": "GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd",
+      "role": "flow default",
+      "holder_pid": 4088994,
+      "run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261102-sim2real-gpu34-060016"
+    },
+    "gpu4": {
+      "uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+      "role": "reconstruction default",
+      "holder_pid": 4089019,
+      "run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261102-sim2real-gpu34-060016"
+    },
+    "gpu5": {
+      "uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+      "role": "pose default",
+      "holder_pid": 325653,
+      "run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-sim2real-weekly-gpu5-175055"
+    },
+    "rule": "atomically transfer research-owned holder leases to task leases, validate PID/starttime/UUID first; never kill other tasks; keep placeholder when idle per user; g3 remains prohibited"
+  },
+  "schedule": {
+    "Nov3": "freeze implementation/data contracts, throughput profiles, start all three data/preflight pipelines and first passed training",
+    "Nov4_6": "complete paired seeds and additional baselines, maintain machine queue and daily completion estimates",
+    "Nov7": "complete preregistered real evaluation and repeat-seed consolidation",
+    "Nov8": "lock numerical results, verify denominators/hashes/statistics, export publication tables/plots",
+    "Nov9": "deliver only verified numeric artifacts; explicitly mark missing/failed cells rather than invent values"
+  }
+}
