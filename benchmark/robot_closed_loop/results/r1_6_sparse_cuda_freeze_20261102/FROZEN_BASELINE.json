@@ -1,0 +1,182 @@
+{
+  "status": "frozen",
+  "baseline_id": "robot-sparse-cuda-r2-20261102",
+  "branch": "freeze/robot-sparse-cuda-r2-20261102",
+  "core_source_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+  "core_canonical_LF_sha256": {
+    "adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+    "calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+    "camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+    "camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+    "dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+    "genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+    "interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+    "noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+    "physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+    "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+    "physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+    "plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+    "radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+    "readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+    "recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+    "torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+    "__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+  },
+  "benchmark_source_sha256": {
+    "event_state.py": "c6064beec2deda814d669202ae2d95b5d354ef2fdd248b442a5da8997a199753",
+    "causal_motion_filter.py": "38a13440ade7f59f09c238ce2c8ad2f2604df4c73b87b7319e8968bdbdbe374a",
+    "loaded_lift_guard.py": "0df0c735813f66db2cde61695bb8ae40c8f2f3ae4d2f9c0a2f8b7ddeaa17965d",
+    "run.py": "8ba44840e4bd6b6d0e830a294f472bc07a5168fc944441acf07f2d1bc0c56a31"
+  },
+  "checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896",
+  "generation_profile": "benchmark/robot_closed_loop/configs/event_sparse_reconstruction_20261102.json",
+  "R2_control_profile": "benchmark/robot_closed_loop/configs/shared_control_r2_verified_20261102.json",
+  "profile_sha256": "bee4a7129232809a6c224e77b82ac4bc81f919a30f3f3175eecf41596d4c2f6f",
+  "control_profile_sha256": "67602d8906945447e04dca4d157bceaf26c3715fa64d33555d91e9bca125e2d8",
+  "acceptance": {
+    "CPU_localization": "581 primary +193 archived queries previously accepted; no dense HDR in generation/training",
+    "CUDA": "g1 RTX3090 and V100S: each 33 checks, 4 sparse clips/16 intervals, 16 fixed-model queries PASS",
+    "strict_event_grasp": {
+      "status": "PASS_strict_event_grasp",
+      "seed": 2026110202,
+      "speed_m_s": 0.5,
+      "y_m": 0.055,
+      "strict_success": true,
+      "close_start_s": 0.48000000000000004,
+      "first_contact_s": 0.49500000000000005,
+      "lift_start_s": 0.9844999999999999,
+      "hold_s": 0.5,
+      "failure": "success",
+      "strict_score": {
+        "score_version": "r0_5_strict_continuous_contact_clearance_slip",
+        "success": true,
+        "continuous_qualified_hold_s": 0.5,
+        "current_qualified_hold_s": 0.5,
+        "required_continuous_hold_s": 0.5,
+        "minimum_true_bottom_clearance_m": -1.3612657785416066e-05,
+        "minimum_true_bottom_clearance_during_longest_qualified_hold_m": 0.0800820607991058,
+        "maximum_relative_slip_since_bilateral_grasp_m": 0.0032024007825064405,
+        "maximum_relative_slip_m": 0.01,
+        "clearance_threshold_samples": 1000,
+        "bilateral_and_clearance_samples": 1000,
+        "qualified_hold_samples": 1000,
+        "bilateral_contact_samples": 2245,
+        "support_contact_samples": 1027,
+        "support_contact_while_clearance_met_samples": 0,
+        "contact_sample_count": 3237,
+        "qualified_hold_sample_fraction": 0.3089280197713933,
+        "bilateral_contact_fraction": 0.6935434043867779,
+        "support_contact_fraction": 0.3172690763052209,
+        "grasp_relative_anchor_m": [
+          0.019595079213250766,
+          -0.00017955358109136843,
+          0.004304668353056346
+        ]
+      },
+      "qualified_trace_rows": 500,
+      "qualified_min_clearance_m": 0.08018119397065233,
+      "qualified_max_slip_m": 0.0032024007825064405,
+      "causal_time_violations": 0,
+      "state_sources": [
+        "direct_hdr_events_controller"
+      ],
+      "motion_fit_trace_rows": 1561,
+      "qualified_flag_mismatch": 0,
+      "clearance_recomputation_max_error_m": 1.3877787807814457e-17,
+      "slip_recomputation_max_error_m": 0.0,
+      "checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896",
+      "unchanged_task_and_model_files": {
+        "scoring.py": "7ad680bbf1cdb18ca13bbfbffda204f1558334e29ce1349f1d3b849eab80886e",
+        "grip_gate.py": "1db159081c30110088daf2bcaaf55005a054e58a3d2817ecc5ed8e42d2108260",
+        "robot_env.py": "8a941724f9041a5281a3e989f9374e94308c2551e21ff54a247c8fd453722cb4",
+        "predictor.py": "ac5d67d1b79102a7564276d219d9b34d5555ef2be473264c2a06cfba34cdc4e3",
+        "event_state_model.py": "e461f0233768f76d0a0be726a10c954e5286945bedef880caf8fb5a8af21a242"
+      },
+      "event_counts": {
+        "events_1000hz": 626926,
+        "events_2000hz": 657370
+      },
+      "progress": {
+        "stage": "R2_events",
+        "status": "completed",
+        "started_utc": "2026-11-02T07:42:54.389397+00:00",
+        "child_pid": 4154168,
+        "exit_code": 0,
+        "wall_s": 317.2436386559857,
+        "finished_utc": "2026-11-02T07:48:11.633026+00:00"
+      },
+      "GT_role": "Evaluator geometry/contact/score only; no GT into event estimator or control",
+      "source_delta": "Joint causal XY and velocity fit with public calibrated deceleration; 250ms past positions; no future, GT, labels, target mask or contact input",
+      "modified_benchmark_files": {
+        "event_state.py": "c6064beec2deda814d669202ae2d95b5d354ef2fdd248b442a5da8997a199753",
+        "causal_motion_filter.py": "38a13440ade7f59f09c238ce2c8ad2f2604df4c73b87b7319e8968bdbdbe374a",
+        "loaded_lift_guard.py": "0df0c735813f66db2cde61695bb8ae40c8f2f3ae4d2f9c0a2f8b7ddeaa17965d",
+        "run.py": "8ba44840e4bd6b6d0e830a294f472bc07a5168fc944441acf07f2d1bc0c56a31"
+      },
+      "sparse_core_hashes_match": true,
+      "trace_sha256": "504dca0fad340cd4872b48e5701d9e5dd0064832ae92864cca5cc818f24ed2d4"
+    }
+  },
+  "R2_success_is_development_smoke_not_success_rate": true,
+  "raw_g1_root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_loaded_guard_20261102o",
+  "raw_manifests": {
+    "A_original": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_cuda_r2_server_20261102a",
+      "manifest_sha256": "4a88c0ff90d1ce830273532b992aa935b7e79f05646751ed98b0ecbe65bdb0f0",
+      "files": 78
+    },
+    "C_velocity100": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_velocity100_20261102c",
+      "manifest_sha256": "6b7c3bbae3cdd40e78e9d5486d4ca2857392bba58ca59e140775a6f9e94dec95",
+      "files": 23
+    },
+    "E_motion_fit": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_kinematic_fit_20261102e",
+      "manifest_sha256": "77b1a9d5d392190ed9a2ccdf7e16b8f50f836dcdd68a5534d638aa3b419948ea",
+      "files": 168
+    },
+    "F_live_reference": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_live_reference_20261102f",
+      "manifest_sha256": "958b55619c1ed1b150cbd9a7e80760fad0c3ed03188d31bcd9b1afb7c02222b7",
+      "files": 168
+    },
+    "G_raw_lateral": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_factor_matrix_20261102gh/g_lateral_raw",
+      "manifest_sha256": "0008b2662c6601aa58e168326f6d04b04c66ea5f93cfb18632781fba0554bc61",
+      "files": 163
+    },
+    "H_close_confirmation": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_factor_matrix_20261102gh/h_close_confirm",
+      "manifest_sha256": "bccd327ebab012e07d91cf256c44d2de0084641e0cc9db8e89a51324ecb8e733",
+      "files": 163
+    },
+    "I_combined": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_combined_20261102i",
+      "manifest_sha256": "d77e4612e479e05c08b7a6995bc48a3100845e26edcedd058ce3ed7227084f03",
+      "files": 164
+    },
+    "K_robot_feedback": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_tcp_feedback_20261102k",
+      "manifest_sha256": "5bcf32f5d9806f27c2563e2d1f2ae42ca13b7d9039af54b15a88e69626d5a209",
+      "files": 166
+    },
+    "L_new_center_seed": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_center_20261102l",
+      "manifest_sha256": "26231673fb032908bed6c6853a359cc8ff65e1ce4d9956279832b03262352e45",
+      "files": 167
+    },
+    "N_stage_baseline": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_stage_baseline_20261102n",
+      "manifest_sha256": "17c13e31f0c8278c351655af0c963043ba80e26ca6f5d3a64fca58dbd5681b84",
+      "files": 164
+    },
+    "O_loaded_guard": {
+      "root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_loaded_guard_20261102o",
+      "manifest_sha256": "b88fc94ea3bcb86268d1bfebeda67d1dbc0414d1d6b068d230c1cdb41bc76b82",
+      "files": 174
+    }
+  },
+  "old_frozen_tags_unchanged": true,
+  "main_branch_unchanged": true,
+  "sensor": "Shared ideal physical_log threshold 0.2, no noise, not EVK4 calibration"
+}

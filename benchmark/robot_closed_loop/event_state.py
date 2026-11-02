@@ -266,6 +266,9 @@ class LearnedEventStateEstimator:
         fixed_height_m: Optional[float] = None,
         velocity_window_s: float = 0.050,
         minimum_regression_samples: int = 4,
+        motion_filter: str = "none",
+        motion_deceleration_m_s2: float = 0.0,
+        minimum_motion_fit_span_s: float = 0.080,
         camera_to_world_cv: Optional[np.ndarray] = None,
         intrinsics_fx_fy_cx_cy: Optional[Sequence[float]] = None,
     ):
@@ -285,6 +288,11 @@ class LearnedEventStateEstimator:
         self.fixed_height_m = None if fixed_height_m is None else float(fixed_height_m)
         self.velocity_window_s = float(velocity_window_s)
         self.minimum_regression_samples = int(minimum_regression_samples)
+        if motion_filter not in {"none", "fixed_deceleration_fit", "fixed_deceleration_fit_x"}:
+            raise ValueError("unsupported causal motion filter")
+        self.motion_filter = motion_filter
+        self.motion_deceleration_m_s2 = float(motion_deceleration_m_s2)
+        self.minimum_motion_fit_span_s = float(minimum_motion_fit_span_s)
         torch.set_num_threads(1)
         self.model, self.label_mean, self.label_scale, checkpoint = load_checkpoint(
             str(self.checkpoint_path), device="cpu",
@@ -422,12 +430,35 @@ class LearnedEventStateEstimator:
                     values[3:5] = velocity_xy
                     values[5] = 0.0
                     velocity_source = "causal_planar_position_regression"
+        position_source = "raw_model"
+        if (self.motion_filter in {"fixed_deceleration_fit", "fixed_deceleration_fit_x"}
+                and self.architecture == self._heatmap_architecture
+                and self.fixed_height_m is not None
+                and len(self._position_history) >= max(8, self.minimum_regression_samples)
+                and self._position_history[-1][0] - self._position_history[0][0]
+                >= self.minimum_motion_fit_span_s - 1e-10):
+            from benchmark.robot_closed_loop.causal_motion_filter import causal_planar_motion_fit
+            hist_t = np.asarray([item[0] for item in self._position_history], dtype=np.float64)
+            hist_xy = np.stack([item[1] for item in self._position_history])
+            fitted_position, fitted_velocity = causal_planar_motion_fit(
+                hist_t, hist_xy, float(cutoff_s), self.motion_deceleration_m_s2,
+            )
+            if self.motion_filter == "fixed_deceleration_fit_x":
+                values[0] = fitted_position[0]
+                values[3:5] = fitted_velocity
+            else:
+                values[:2], values[3:5] = fitted_position, fitted_velocity
+            values[5] = 0.0
+            position_source = velocity_source = "causal_fixed_deceleration_fit"
         self.latest_state = MotionState(float(cutoff_s), values[:3], values[3:])
         self.latest_generated_at_s = now
         self.latest_diagnostics = {
             "world_height_mode": "fixed_target_center_plane" if self.fixed_height_m is not None else "learned_height",
             "fixed_height_m": self.fixed_height_m,
             "velocity_source": velocity_source,
+            "position_source": position_source,
+            "motion_filter": self.motion_filter,
+            "motion_deceleration_m_s2": self.motion_deceleration_m_s2,
             "velocity_regression_window_s": self.velocity_window_s,
             "velocity_regression_samples": len(self._position_history),
             "velocity_regression_xy_rms_m": velocity_rms,
@@ -465,6 +496,8 @@ class LearnedEventStateEstimator:
                 "velocity_window_s": self.velocity_window_s,
                 "minimum_regression_samples": self.minimum_regression_samples,
                 "history_uses_only_valid_causal_observations": True,
+                "motion_filter": self.motion_filter,
+                "motion_deceleration_m_s2": self.motion_deceleration_m_s2,
             },
             "observation_status_counts": dict(self.status_counts),
             "inference_model_only_ms": {
@@ -563,6 +596,9 @@ class DirectHdrEventSource:
                 fixed_height_m=close_estimator.get("heatmap_world_height_m"),
                 velocity_window_s=float(close_estimator.get("velocity_window_s", 0.050)),
                 minimum_regression_samples=int(close_estimator.get("minimum_regression_samples", 4)),
+                motion_filter=str(close_estimator.get("motion_filter", "none")),
+                motion_deceleration_m_s2=float(cfg["controller"]["initial_deceleration_assumption_m_s2"]),
+                minimum_motion_fit_span_s=float(close_estimator.get("minimum_motion_fit_span_s", .080)),
                 camera_to_world_cv=self.camera_to_world_cv,
                 intrinsics_fx_fy_cx_cy=(
                     self.camera_intrinsics["fx"], self.camera_intrinsics["fy"],

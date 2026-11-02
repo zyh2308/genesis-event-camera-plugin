@@ -437,6 +437,7 @@ def run_oracle_trial(
     visibility_evaluator: Optional[Any] = None,
     use_event_observation: bool = True,
     trajectory_cache: Optional[Any] = None,
+    trace_period_s: float = 0.001,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[np.ndarray]]:
     cfg = env.config
     rng = np.random.default_rng(seed)
@@ -466,14 +467,23 @@ def run_oracle_trial(
         float(cfg["robot"]["cartesian_acceleration_limit_m_s2"]),
     )
     control_steps = max(1, int(round((1.0 / float(controller_cfg["high_level_hz"])) / env.dt_s)))
-    # Score every physics step and preserve 1 kHz state/control evidence.
-    sample_steps = max(1, int(round(0.001 / env.dt_s)))
+    # Score every physics step; state/control trace cadence is configurable.
+    # The default preserves the established 1 kHz benchmark trace. Offline
+    # strict-sampled capture can request one trace row per physics step.
+    if not np.isfinite(trace_period_s) or trace_period_s <= 0:
+        raise ValueError("trace_period_s must be a finite positive value")
+    trace_steps_float = float(trace_period_s) / float(env.dt_s)
+    trace_steps = int(round(trace_steps_float))
+    if trace_steps < 1 or not np.isclose(trace_steps_float, trace_steps, rtol=0, atol=1e-8):
+        raise ValueError("trace_period_s must be an integer multiple of the physics dt")
+    sample_steps = trace_steps
     video_steps = max(1, int(round(0.05 / env.dt_s)))
     history: deque = deque(maxlen=max(32, int(math.ceil((latency + 0.03) / env.dt_s)) + 4))
     history.append(MotionState(0.0, np.asarray([x, y, target_size[2] / 2]), initial_velocity))
     trace: List[Dict[str, Any]] = []
     frames: List[np.ndarray] = []
     close_started_s = None
+    close_condition_started_s = None
     predicted_ttc_at_close_s = None
     close_estimated_state = None
     close_estimator_diagnostics = None
@@ -518,6 +528,14 @@ def run_oracle_trial(
     )
     lift_confirmation_cfg = cfg["shared_control"]["proprioceptive_lift_confirmation"]
     lift_confirmation = ProprioceptiveLiftStabilityMonitor(lift_confirmation_cfg, env.dt_s)
+    loaded_guard_cfg = lift_confirmation_cfg.get("loaded_lift_guard", {})
+    loaded_guard = None
+    if loaded_guard_cfg.get("enabled", False):
+        from benchmark.robot_closed_loop.loaded_lift_guard import LoadedLiftGuard
+        loaded_guard = LoadedLiftGuard(
+            lift_confirmation_cfg, cfg["shared_control"]["proprioceptive_grip_gate"], env.dt_s,
+            settled_speed_m_s=float(loaded_guard_cfg.get("settled_TCP_speed_m_s", .01)),
+        )
     strict_score = dict(strict_scorer.last)
     maximum_true_clearance = -float("inf")
     legacy_hold_steps = 0
@@ -543,6 +561,26 @@ def run_oracle_trial(
     y_bounds = tuple(float(v) for v in controller_cfg["legal_intercept_y_range_m"])
     home_hand = _home_hand_goal(env)
     lift_hand_goal = None
+    feedback_cfg = cfg.get("shared_control", {}).get("lateral_robot_feedback", {})
+    feedback_gain = float(feedback_cfg.get("gain", 0.0))
+    feedback_limit = float(feedback_cfg.get("maximum_correction_m", .012))
+    feedback_profile = BoundedLateralCommand(
+        0.0, float(cfg["robot"]["cartesian_speed_limit_m_s"]),
+        float(cfg["robot"]["cartesian_acceleration_limit_m_s2"]),
+    )
+    grasp_hand_y_command_m = None
+
+    def robot_hand_goal(y_desired):
+        y_robot_command = float(y_desired)
+        if feedback_gain > 0:
+            correction = float(np.clip(
+                feedback_gain * (float(y_desired) - env.tcp_position()[1]),
+                -feedback_limit, feedback_limit,
+            ))
+            y_robot_command, _ = feedback_profile.step(
+                float(y_desired) + correction, control_steps * env.dt_s,
+            )
+        return np.asarray([float(controller_cfg["intercept_x_m"]), y_robot_command, home_hand[2]])
 
     for step in range(max_steps):
         t_abs = get_sim_time(env)
@@ -585,7 +623,21 @@ def run_oracle_trial(
                 prediction = predictor.predict(last_obs, observation_age)
                 last_prediction = prediction
                 estimated_current_state = prediction.propagated_state
-                if closure_speed_reference_m_s is None and estimated_current_state is not None:
+                if (close_schedule.get("reference_update", "first_available") == "causal_calibrated_speed"
+                        and close_started_s is None and estimated_current_state is not None):
+                    # Re-estimate speed at the fixed burn-in reference time.
+                    # Inputs are causal event state, simulation clock, and the
+                    # same public no-hand deceleration used by the predictor.
+                    # A noisy first auxiliary estimate must not remain frozen.
+                    reference_elapsed_s = max(
+                        0.0, float(estimated_current_state.time_s)
+                        - float(controller_cfg["event_burn_in_s"]),
+                    )
+                    closure_speed_reference_m_s = (
+                        float(np.linalg.norm(estimated_current_state.velocity_m_s[:2]))
+                        + float(deceleration) * reference_elapsed_s
+                    )
+                elif closure_speed_reference_m_s is None and estimated_current_state is not None:
                     closure_speed_reference_m_s = float(np.linalg.norm(estimated_current_state.velocity_m_s[:2]))
                 if closure_speed_reference_m_s is not None:
                     close_lead = float(np.clip(
@@ -608,10 +660,19 @@ def run_oracle_trial(
                                 terminal_commit_s = rel_t
                     else:
                         y_cmd, y_speed = command.position_m, command.velocity_m_s
-                    hand_goal = np.asarray([float(controller_cfg["intercept_x_m"]), y_cmd, home_hand[2]])
+                    hand_goal = robot_hand_goal(y_cmd)
                     if lift_q is None and probe_q is None and abort_q is None:
                         env.command_hand(hand_goal)
-                    if close_started_s is None and 0.0 <= ttc_cmd <= close_lead:
+                    close_condition = bool(0.0 <= ttc_cmd <= close_lead)
+                    if close_started_s is None:
+                        if not close_condition:
+                            close_condition_started_s = None
+                        elif close_condition_started_s is None:
+                            close_condition_started_s = rel_t
+                    close_dwell_s = float(close_schedule.get("condition_dwell_s", 0.0))
+                    if (close_started_s is None and close_condition
+                            and close_condition_started_s is not None
+                            and rel_t - close_condition_started_s >= close_dwell_s - 1e-10):
                         close_started_s = rel_t
                         closure_lead_used_s = close_lead
                         predicted_ttc_at_close_s = float(ttc_cmd)
@@ -641,7 +702,8 @@ def run_oracle_trial(
                         "lifting": lift_q is not None, "terminal_commit": terminal_commit,
                     }
                 elif lift_q is None and probe_q is None and abort_q is None:
-                    env.command_hand(np.asarray([float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2]]))
+                    close_condition_started_s = None
+                    env.command_hand(robot_hand_goal(command.position_m))
                     if close_started_s is None:
                         env.command_fingers_open()
                     else:
@@ -662,11 +724,10 @@ def run_oracle_trial(
                 # started, keep the fingers closed while the target is inside.
                 estimated_current_state = None
                 last_prediction = None
+                close_condition_started_s = None
                 stall_time = 0.0
                 if lift_q is None and probe_q is None and abort_q is None:
-                    env.command_hand(np.asarray([
-                        float(controller_cfg["intercept_x_m"]), command.position_m, home_hand[2],
-                    ]))
+                    env.command_hand(robot_hand_goal(command.position_m))
                     if close_started_s is None:
                         env.command_fingers_open()
                     else:
@@ -693,8 +754,12 @@ def run_oracle_trial(
                             "gripper_stalled": bool(lift_gate["instantaneous_candidate"]),
                             "lift_gate_stall_s": stall_time}
             if lift_gate["eligible"]:
+                grasp_hand_y_command_m = (
+                    feedback_profile.position_m if feedback_gain > 0 else command.position_m
+                )
                 lift_hand_goal = np.asarray([
-                    float(controller_cfg["intercept_x_m"]), command.position_m,
+                    float(controller_cfg["intercept_x_m"]),
+                    command.position_m if grasp_hand_y_command_m is None else grasp_hand_y_command_m,
                     home_hand[2] + float(lift_confirmation_cfg["probe_height_m"]),
                 ])
                 probe_q = as_numpy(env.command_hand(lift_hand_goal)).reshape(-1)
@@ -722,12 +787,15 @@ def run_oracle_trial(
                                 "lifting": False, "abort_goal_m": abort_goal.tolist()}
             elif probe_status["confirmed"]:
                 lift_hand_goal = np.asarray([
-                    float(controller_cfg["intercept_x_m"]), command.position_m,
+                    float(controller_cfg["intercept_x_m"]),
+                    command.position_m if grasp_hand_y_command_m is None else grasp_hand_y_command_m,
                     home_hand[2] + float(cfg["robot"]["lift_hand_delta_z_m"]),
                 ])
                 lift_q = as_numpy(env.command_hand(lift_hand_goal)).reshape(-1)
                 lift_started_s = rel_t
                 lift_confirmation_completed_s = rel_t
+                if loaded_guard is not None:
+                    loaded_guard.reset(lift_started_s)
                 probe_q = None
                 last_command = {**last_command, "lifting": True, "grasp_probe": False,
                                 "lift_hand_goal_m": lift_hand_goal.tolist()}
@@ -749,10 +817,19 @@ def run_oracle_trial(
             # Continue the same GT-free proprioceptive monitor throughout the
             # commanded lift. A grasp that passes the short probe can still
             # begin slipping under the final lift load.
-            probe_status = lift_confirmation.update(
-                next_rel_t, probe_started_s,
-                env.finger_joint_positions(), env.finger_joint_velocities(),
-            )
+            if loaded_guard is None:
+                probe_status = lift_confirmation.update(
+                    next_rel_t, probe_started_s,
+                    env.finger_joint_positions(), env.finger_joint_velocities(),
+                )
+            else:
+                own_TCP_speed = float(np.linalg.norm(
+                    (env.tcp_position() - tcp_before_step) / env.dt_s,
+                ))
+                probe_status = loaded_guard.update(
+                    next_rel_t, close_started_s, own_TCP_speed,
+                    env.finger_joint_positions(), env.finger_joint_velocities(),
+                )
             last_command = {**last_command, "lift_confirmation": probe_status,
                             "lifting": True, "grasp_probe": False}
             if probe_status["unstable"]:

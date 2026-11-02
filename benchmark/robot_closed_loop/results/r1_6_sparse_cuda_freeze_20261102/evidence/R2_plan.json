@@ -1,0 +1,58 @@
+{
+  "code_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+  "benchmark_source": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_loaded_guard_20261102o/source",
+  "core_source": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core",
+  "checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896",
+  "scene_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "control_sha256": "67602d8906945447e04dca4d157bceaf26c3715fa64d33555d91e9bca125e2d8",
+  "command": [
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python",
+    "-u",
+    "-m",
+    "benchmark.robot_closed_loop.run",
+    "--mode",
+    "reference",
+    "--config",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/source/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+    "--control-config",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_loaded_guard_20261102o/shared_control_kinematic_fit.json",
+    "--out",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_R2_loaded_guard_20261102o/R2_kinematic_fit",
+    "--speeds",
+    ".5",
+    "--reference-episodes",
+    "1",
+    "--reference-y-values=0.055",
+    "--event-controller-hz",
+    "2000",
+    "--reference-controller-source",
+    "events",
+    "--event-model-checkpoint",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/fit/spatial_event_state.pt",
+    "--reference-duration",
+    "3.0",
+    "--seed",
+    "2026110202"
+  ],
+  "conditions": [
+    {
+      "seed": 2026110202,
+      "speed_m_s": 0.5,
+      "y_m": 0.055
+    }
+  ],
+  "inference_input": "independent Direct-HDR reference events; not candidate reconstructed online events",
+  "training_input": "accepted 100Hz sparse endpoint reconstruction; checkpoint fixed before this run",
+  "model_frozen": true,
+  "controller_unchanged": false,
+  "strict_scorer_unchanged": true,
+  "development_only": true,
+  "modified_files": {
+    "event_state.py": "c6064beec2deda814d669202ae2d95b5d354ef2fdd248b442a5da8997a199753",
+    "causal_motion_filter.py": "38a13440ade7f59f09c238ce2c8ad2f2604df4c73b87b7319e8968bdbdbe374a",
+    "loaded_lift_guard.py": "0df0c735813f66db2cde61695bb8ae40c8f2f3ae4d2f9c0a2f8b7ddeaa17965d",
+    "run.py": "8ba44840e4bd6b6d0e830a294f472bc07a5168fc944441acf07f2d1bc0c56a31"
+  },
+  "estimator_change": "Joint causal XY and velocity fit with public calibrated deceleration; 250ms past positions; no future, GT, labels, target mask or contact input",
+  "decision_rationale": "Matched K physical grasp: coarse proprioceptive integrity during arm motion and unchanged 60um drift guard after TCP settles; initial probe and strict scorer unchanged; robot-only positive/negative guard controls passed"
+}
