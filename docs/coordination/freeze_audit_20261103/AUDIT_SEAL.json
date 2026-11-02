@@ -1,0 +1,86 @@
+{
+  "schema": "immutable_baseline_final_audit_v1",
+  "review_date_client": "2026-11-03",
+  "baseline_commit": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "baseline_branch": "freeze/robot-sparse-cuda-r2-20261102",
+  "frozen_baseline_modified": false,
+  "decision": "Retain freeze for the declared original rigid-scene sparse reconstruction profile; stop this core repair cycle. Do not claim universal feature coverage or absence of future bugs.",
+  "verification": {
+    "GitHub_core_files_matching": 17,
+    "g1_core_files_matching": 17,
+    "benchmark_files_matching": 4,
+    "raw_manifest_files_verified": 1598,
+    "public_profile_capture": {
+      "status": "PASS",
+      "backend": "NumPy/CPU equivalent from frozen JSON",
+      "ramp_events": 320,
+      "max_analytic_threshold_time_error_s": 8.888888895774993e-10,
+      "provider_endpoint_calls_for_ramp": [
+        0.0,
+        0.01
+      ],
+      "extra_HDR_frames": 0,
+      "static_events": 0,
+      "torch_version": "2.5.1+cu121"
+    },
+    "training_input_audit": {
+      "episodes": 9,
+      "endpoint_reads": 1814,
+      "renderer_calls": 0,
+      "dense_radiance_reads": 0
+    },
+    "strict_grasp_recomputation": {
+      "status": "PASS",
+      "hold_s": 0.5,
+      "qualified_physics_steps": 1000,
+      "qualified_trace_rows": 500,
+      "minimum_clearance_m": 0.0800820607991058,
+      "maximum_slip_m": 0.0032024007825064405,
+      "future_time_violations": 0,
+      "qualified_flag_mismatch": 0,
+      "maximum_geometry_residual_m": 1.3877787807814457e-17,
+      "maximum_slip_residual_m": 0.0,
+      "state_sources": [
+        "direct_hdr_events_controller"
+      ]
+    },
+    "recorded_physics_environment_files": {
+      "panda_asset": true,
+      "contact_source": true
+    }
+  },
+  "configuration_hash_clarification": {
+    "profile_metadata_hash": "bee4a7129232809a6c224e77b82ac4bc81f919a30f3f3175eecf41596d4c2f6f",
+    "profile_g1_raw_sha256": "dbcf85fe3c86ae21972d4f5b79638018ca44f46a39b8cb1e14e8b6cff3a31a8a",
+    "canonical_LF_sha256": "dbcf85fe3c86ae21972d4f5b79638018ca44f46a39b8cb1e14e8b6cff3a31a8a",
+    "Windows_CRLF_sha256": "bee4a7129232809a6c224e77b82ac4bc81f919a30f3f3175eecf41596d4c2f6f",
+    "raw_byte_hash_matches_original_metadata": false,
+    "semantic_JSON_sha256": "1fa8190d09241910f0c97f637a9c5bf3008f898adf46a89d46ce43afc3846576",
+    "finding": "The metadata hash names the Windows CRLF export. Git/G1 carry LF. Same JSON parameters; append audit seal instead of changing frozen commit."
+  },
+  "clarification_rule": "Use canonical LF UTF-8 SHA256 for Git/G1 source/config files. The old profile_sha256 matches the Windows CRLF export, not the Git/G1 byte representation; JSON values are unchanged. Do not edit the original frozen commit to correct this interpretation.",
+  "remaining_boundaries": [
+    {
+      "item": "Color/depth/segmentation renderer sampling",
+      "status": "not unified to one exact sample/resolve contract; bilinear area coverage remains an approximation, not an exact renderer footprint"
+    },
+    {
+      "item": "Independent lighting/shadows inside an unsampled interval",
+      "status": "not uniquely observable from endpoint images; approximate mode retains that information limitation"
+    },
+    {
+      "item": "Flexible bodies and fluid deformation",
+      "status": "current tested geometry is object/link SE3; no validated per-surface deformation support for scenes B/C"
+    },
+    {
+      "item": "EVK4 calibration and formal success-rate/ranking claims",
+      "status": "not established by this repair acceptance; separate experiments, not a reason to keep tuning core"
+    }
+  ],
+  "handoff_rules": [
+    "Pin the exact commit plus the explicit coverage_time_log_linear profile; updating code alone is insufficient.",
+    "Keep this frozen branch and all previously accepted artifacts unchanged.",
+    "Advance scenes, datasets, perception and common controllers separately; do not tune the event generator to rescue a downstream score.",
+    "A proven new bug or unsupported new capability requires a new version/branch, never a silent rewrite of this baseline."
+  ]
+}
