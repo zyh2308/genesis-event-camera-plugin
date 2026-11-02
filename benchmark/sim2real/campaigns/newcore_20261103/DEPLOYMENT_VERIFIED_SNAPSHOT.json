@@ -1,0 +1,958 @@
+{
+  "observed_utc": "2026-11-02T19:53:38.598832+00:00",
+  "campaign": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+  "formal_runs": 45,
+  "formal_optimizer_updates": 0,
+  "training_has_started": false,
+  "real_scores_computed": false,
+  "core_release": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "recipe_sha256": "51b7c723c9c4f1022483136f244d1970496b74b6886ad08b2f09be7ee1f221da",
+  "source_manifest_sha256": "594ab3ebdc44085423c204765f828240e4ecb0ec3e2d9e0e3dd20721abcf9dc8",
+  "sensor_profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+  "gpu_leases": {
+    "3": {
+      "registry": {
+        "run_id": "20261103-stage9-direct-v1",
+        "status": "event_generation",
+        "host": "g1",
+        "owner": "sim-to-real research chat direct execution",
+        "gpu_index": 3,
+        "gpu_uuid": "GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd",
+        "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "lane": "flow",
+        "started_utc": "2026-11-02T18:08:28Z",
+        "authorization": "explicit user three-line retraining, due2026-11-09; direct execution after old CLI failed",
+        "former_holder_pid": 4088994,
+        "cpu_threads": 2,
+        "pid": 335161,
+        "process_start_ticks": "53273268",
+        "heartbeat_utc": "2026-11-02T19:53:31.709494+00:00",
+        "cuda_device_name": "Tesla V100S-PCIE-32GB",
+        "standby_bytes": 1048576,
+        "current_job": {
+          "job_id": "20_rich_newcore_events",
+          "phase": "event_generation",
+          "started_utc": "2026-11-02T18:28:56.322290+00:00",
+          "argv": [
+            "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+            "-u",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/replay_new_events.py",
+            "--campaign",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+            "--kind",
+            "rich",
+            "--workers",
+            "2"
+          ],
+          "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/rich_newcore_job",
+          "status": "running",
+          "pid": 345754,
+          "process_start_ticks": "53396048"
+        },
+        "last_completed_job": {
+          "job_id": "10_rich_physical_bank",
+          "phase": "physical_data_generation",
+          "started_utc": "2026-11-02T18:21:39.952147+00:00",
+          "argv": [
+            "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+            "-u",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/physical_bank_driver.py",
+            "--campaign",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+            "--kind",
+            "rich"
+          ],
+          "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/rich_physical_job",
+          "status": "complete",
+          "pid": 341505,
+          "process_start_ticks": "53352411",
+          "exit_code": 0,
+          "finished_utc": "2026-11-02T18:26:55.899322+00:00"
+        }
+      },
+      "flock_tests": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/.gpu_reservations/.gpu-GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd.lock",
+          "exclusive_lease_verified": true
+        }
+      ]
+    },
+    "4": {
+      "registry": {
+        "run_id": "20261103-stage9-direct-v1",
+        "status": "event_generation",
+        "host": "g1",
+        "owner": "sim-to-real research chat direct execution",
+        "gpu_index": 4,
+        "gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+        "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "lane": "reconstruction",
+        "started_utc": "2026-11-02T18:08:32Z",
+        "authorization": "explicit user three-line retraining, due2026-11-09; direct execution after old CLI failed",
+        "former_holder_pid": 4089019,
+        "cpu_threads": 2,
+        "pid": 335186,
+        "process_start_ticks": "53273702",
+        "heartbeat_utc": "2026-11-02T19:53:36.752578+00:00",
+        "cuda_device_name": "Tesla V100S-PCIE-32GB",
+        "standby_bytes": 1048576,
+        "current_job": {
+          "job_id": "23_pose_v2e_verified_source",
+          "phase": "event_generation",
+          "started_utc": "2026-11-02T18:31:15.891962+00:00",
+          "argv": [
+            "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+            "-u",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/replay_v2e_events.py",
+            "--campaign",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+            "--kind",
+            "pose"
+          ],
+          "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/pose_v2e_verified_job",
+          "status": "running",
+          "pid": 347293,
+          "process_start_ticks": "53410005"
+        },
+        "last_completed_job": {
+          "job_id": "21_pose_v2e_events",
+          "phase": "event_generation",
+          "started_utc": "2026-11-02T18:29:40.775274+00:00",
+          "argv": [
+            "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+            "-u",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/replay_v2e_events.py",
+            "--campaign",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+            "--kind",
+            "pose"
+          ],
+          "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/pose_v2e_job",
+          "status": "failed",
+          "pid": 346216,
+          "process_start_ticks": "53400493",
+          "exit_code": 1,
+          "finished_utc": "2026-11-02T18:29:55.787619+00:00"
+        }
+      },
+      "flock_tests": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/.gpu_reservations/.gpu-GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3.lock",
+          "exclusive_lease_verified": true
+        }
+      ]
+    },
+    "5": {
+      "registry": {
+        "run_id": "20261103-stage9-direct-v1",
+        "status": "event_generation",
+        "host": "g1",
+        "owner": "sim-to-real research chat direct execution",
+        "gpu_index": 5,
+        "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+        "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "lane": "pose",
+        "started_utc": "2026-11-02T18:08:39Z",
+        "authorization": "explicit user three-line retraining, due2026-11-09; direct execution after old CLI failed",
+        "former_holder_pid": 325653,
+        "cpu_threads": 2,
+        "pid": 335226,
+        "process_start_ticks": "53274333",
+        "heartbeat_utc": "2026-11-02T19:53:31.709900+00:00",
+        "cuda_device_name": "NVIDIA TITAN RTX",
+        "standby_bytes": 1048576,
+        "current_job": {
+          "job_id": "22_pose_newcore_singleworker",
+          "phase": "event_generation",
+          "started_utc": "2026-11-02T18:29:36.937913+00:00",
+          "argv": [
+            "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+            "-u",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/replay_new_events.py",
+            "--campaign",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+            "--kind",
+            "pose",
+            "--workers",
+            "1"
+          ],
+          "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/pose_newcore_singleworker_job",
+          "status": "running",
+          "pid": 346207,
+          "process_start_ticks": "53400109"
+        },
+        "last_completed_job": {
+          "job_id": "20_pose_newcore_events",
+          "phase": "event_generation",
+          "started_utc": "2026-11-02T18:29:01.747637+00:00",
+          "argv": [
+            "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+            "-u",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/replay_new_events.py",
+            "--campaign",
+            "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+            "--kind",
+            "pose",
+            "--workers",
+            "2"
+          ],
+          "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/pose_newcore_job",
+          "status": "failed",
+          "pid": 345932,
+          "process_start_ticks": "53396600",
+          "exit_code": 1,
+          "finished_utc": "2026-11-02T18:29:16.889968+00:00"
+        }
+      },
+      "flock_tests": [
+        {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/.gpu_reservations/.gpu-GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885.lock",
+          "exclusive_lease_verified": true
+        }
+      ]
+    }
+  },
+  "data_progress": {
+    "rich": {
+      "physical_rollouts": 32,
+      "physical_manifest_sha256": "99935160fd3092fecaafdbac006aa76907842bae40cca6d6dbf2ba4e5604f1f8",
+      "event_rollouts": {
+        "eventgenesis": 13,
+        "v2e": 0,
+        "vid2e": 0,
+        "film_esim": 0,
+        "rife_esim": 0
+      }
+    },
+    "pose": {
+      "physical_rollouts": 128,
+      "physical_manifest_sha256": "b9511d4ec6357629dbca253bf54ef6ccd4d7a0e7e618407bad82e5e7ee93b96f",
+      "event_rollouts": {
+        "eventgenesis": 66,
+        "v2e": 49,
+        "vid2e": 0,
+        "film_esim": 0,
+        "rife_esim": 0
+      }
+    }
+  },
+  "diagnostic_results": {
+    "flow": {
+      "passed": true,
+      "task": "flow",
+      "diagnostic_only": true,
+      "formal_optimizer_updates": 0,
+      "diagnostic_optimizer_updates": 2,
+      "source": "new-core pose train_000, never real data",
+      "initial_state_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+      "updated_state_sha256": "6165ee1a0e0a66b8f864143b6caefe83105f07275ff577b5309b9dac4ad5498a",
+      "updates": [
+        {
+          "step": 1,
+          "loss": 268.6707458496094,
+          "finite_gradient_tensors": 70,
+          "photo": 196.6648406982422,
+          "smooth": 7.200589656829834
+        },
+        {
+          "step": 2,
+          "loss": 601.8197021484375,
+          "finite_gradient_tensors": 70,
+          "photo": 282.8846740722656,
+          "smooth": 31.89350700378418
+        }
+      ],
+      "max_allocated_bytes": 3841888768,
+      "visible_gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+      "real_data_used": false
+    },
+    "reconstruction": {
+      "passed": true,
+      "task": "reconstruction",
+      "diagnostic_only": true,
+      "formal_optimizer_updates": 0,
+      "diagnostic_optimizer_updates": 2,
+      "source": "new-core pose train_000, never real data",
+      "initial_state_sha256": "48426d94f4159592155eda873d4e71e2f06439c10eade990de5979231ed07a0f",
+      "updated_state_sha256": "11c397535715135a3dbae5b971d087be75b3130edce22e2708a08e7d132cbef4",
+      "updates": [
+        {
+          "step": 1,
+          "loss": 0.9342510104179382,
+          "finite_gradient_tensors": 30,
+          "temporal_calls": 1,
+          "source": "three adjacent new-core pose windows; runtime-only cross-task diagnostic, not benchmark"
+        },
+        {
+          "step": 2,
+          "loss": 0.9204825162887573,
+          "finite_gradient_tensors": 30,
+          "temporal_calls": 1,
+          "source": "three adjacent new-core pose windows; runtime-only cross-task diagnostic, not benchmark"
+        }
+      ],
+      "max_allocated_bytes": 511817728,
+      "visible_gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+      "real_data_used": false
+    },
+    "pose": {
+      "passed": true,
+      "task": "pose",
+      "diagnostic_only": true,
+      "formal_optimizer_updates": 0,
+      "diagnostic_optimizer_updates": 2,
+      "source": "new-core pose train_000, never real data",
+      "initial_state_sha256": "4d752c00189bb5c392bddd5025e07be0439e020ea55e8780cf914baf2bb359c9",
+      "updated_state_sha256": "e3d915de4ebb5fd234c120050032a24218832d8c064a96e03d4201cad6972fdd",
+      "updates": [
+        {
+          "step": 1,
+          "loss": 15.987936019897461,
+          "finite_gradient_tensors": 68,
+          "coordinate_loss": 10.398538589477539,
+          "center_ce": 5.589397430419922
+        },
+        {
+          "step": 2,
+          "loss": 194.26222229003906,
+          "finite_gradient_tensors": 68,
+          "coordinate_loss": 193.6831817626953,
+          "center_ce": 0.5790430903434753
+        }
+      ],
+      "max_allocated_bytes": 1188604928,
+      "visible_gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+      "real_data_used": false
+    }
+  },
+  "baseline_preflights": {
+    "vid2e": {
+      "passed": true,
+      "method": "vid2e",
+      "oracle": {
+        "passed": true,
+        "positive_ramp_events": 24,
+        "negative_ramp_events": 24,
+        "max_time_error_ns": 1.1111111100763083,
+        "static_events": 0,
+        "threshold": 0.2,
+        "refractory_ns": 500000
+      },
+      "row": {
+        "rollout_id": "train_000",
+        "split": "train",
+        "event_count": 1166,
+        "events_sha256": "d5701386eefdbfa626c6a05d723857bff8b66563675b81e3696ec71214ddad99",
+        "source_physical_manifest_sha256": "b9511d4ec6357629dbca253bf54ef6ccd4d7a0e7e618407bad82e5e7ee93b96f",
+        "sources_manifest_sha256": "24eeeff7d2651f44bc2d856767bc47fbb6423751e3c483ca960ae31ab3394c8c",
+        "weights_manifest_sha256": "f6931f5f39a1581c3f6e49688193740cad2b28aa83792588d903b9a963788f1c",
+        "generator_entrypoint_sha256": "e9e3034b809d9296a9ee3a5904e8b62540f6d532a548ed205a2f06e0c9b8eca3",
+        "interpolator_adapter_sha256": "2902017c777928023066b1de46348c108923853bf6cce8b772de44d477eb8505",
+        "esim_build_receipt_sha256": "4f103f50678b60376ef93db36ec48e3f31cc9e1552fcfbaadf479931defa3e8a",
+        "interpolation_policy": "author SSM max-flow adaptive",
+        "intermediate_samples_per_interval": [
+          2,
+          2
+        ],
+        "wall_s": 0.39284841099288315,
+        "visible_gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+        "sensor": {
+          "backend": "official ESIM CUDA, API-only compatibility copy",
+          "positive_threshold": 0.2,
+          "negative_threshold": 0.2,
+          "refractory_s": 0.0005,
+          "native_sensor_noise": "none; native pipeline comparison, not matched nonideal sensor ablation"
+        },
+        "real_data_used": false,
+        "preflight_only": true
+      },
+      "formal_training_events": false
+    },
+    "rife_esim": {
+      "passed": true,
+      "method": "rife_esim",
+      "oracle": {
+        "passed": true,
+        "positive_ramp_events": 24,
+        "negative_ramp_events": 24,
+        "max_time_error_ns": 1.1111111100763083,
+        "static_events": 0,
+        "threshold": 0.2,
+        "refractory_ns": 500000
+      },
+      "row": {
+        "rollout_id": "train_000",
+        "split": "train",
+        "event_count": 1225,
+        "events_sha256": "f142ca324c22da47cc0079c62d94ab2401cc753360f71585873021e542d47001",
+        "source_physical_manifest_sha256": "b9511d4ec6357629dbca253bf54ef6ccd4d7a0e7e618407bad82e5e7ee93b96f",
+        "sources_manifest_sha256": "24eeeff7d2651f44bc2d856767bc47fbb6423751e3c483ca960ae31ab3394c8c",
+        "weights_manifest_sha256": "f6931f5f39a1581c3f6e49688193740cad2b28aa83792588d903b9a963788f1c",
+        "generator_entrypoint_sha256": "e9e3034b809d9296a9ee3a5904e8b62540f6d532a548ed205a2f06e0c9b8eca3",
+        "interpolator_adapter_sha256": "2902017c777928023066b1de46348c108923853bf6cce8b772de44d477eb8505",
+        "esim_build_receipt_sha256": "4f103f50678b60376ef93db36ec48e3f31cc9e1552fcfbaadf479931defa3e8a",
+        "interpolation_policy": "three recursive midpoint subdivisions (8x)",
+        "intermediate_samples_per_interval": [
+          7,
+          7
+        ],
+        "wall_s": 0.4687905050814152,
+        "visible_gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+        "sensor": {
+          "backend": "official ESIM CUDA, API-only compatibility copy",
+          "positive_threshold": 0.2,
+          "negative_threshold": 0.2,
+          "refractory_s": 0.0005,
+          "native_sensor_noise": "none; native pipeline comparison, not matched nonideal sensor ablation"
+        },
+        "real_data_used": false,
+        "preflight_only": true
+      },
+      "formal_training_events": false
+    },
+    "film_esim": {
+      "passed": true,
+      "method": "film_esim",
+      "oracle": {
+        "passed": true,
+        "positive_ramp_events": 24,
+        "negative_ramp_events": 24,
+        "max_time_error_ns": 1.1111111100763083,
+        "static_events": 0,
+        "threshold": 0.2,
+        "refractory_ns": 500000
+      },
+      "row": {
+        "rollout_id": "train_000",
+        "split": "train",
+        "event_count": 1211,
+        "events_sha256": "1e79a1341f05fd4f41479fd1a74e248baeb5dda9a8c233f6c135fa703250b9ed",
+        "source_physical_manifest_sha256": "b9511d4ec6357629dbca253bf54ef6ccd4d7a0e7e618407bad82e5e7ee93b96f",
+        "sources_manifest_sha256": "24eeeff7d2651f44bc2d856767bc47fbb6423751e3c483ca960ae31ab3394c8c",
+        "weights_manifest_sha256": "f6931f5f39a1581c3f6e49688193740cad2b28aa83792588d903b9a963788f1c",
+        "generator_entrypoint_sha256": "e9e3034b809d9296a9ee3a5904e8b62540f6d532a548ed205a2f06e0c9b8eca3",
+        "interpolator_adapter_sha256": "2902017c777928023066b1de46348c108923853bf6cce8b772de44d477eb8505",
+        "esim_build_receipt_sha256": "4f103f50678b60376ef93db36ec48e3f31cc9e1552fcfbaadf479931defa3e8a",
+        "interpolation_policy": "three recursive midpoint subdivisions (8x)",
+        "intermediate_samples_per_interval": [
+          7,
+          7
+        ],
+        "wall_s": 15.292343171080574,
+        "visible_gpu_uuid": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+        "sensor": {
+          "backend": "official ESIM CUDA, API-only compatibility copy",
+          "positive_threshold": 0.2,
+          "negative_threshold": 0.2,
+          "refractory_s": 0.0005,
+          "native_sensor_noise": "none; native pipeline comparison, not matched nonideal sensor ablation"
+        },
+        "real_data_used": false,
+        "preflight_only": true
+      },
+      "formal_training_events": false
+    }
+  },
+  "queue_assignment": {
+    "passed": true,
+    "formal_runs": 45,
+    "routing": [
+      {
+        "task": "flow",
+        "method": "eventgenesis",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 3,
+        "job_id": "30_0_flow_eventgenesis_preflight"
+      },
+      {
+        "task": "flow",
+        "method": "v2e",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 3,
+        "job_id": "30_1_flow_v2e_preflight"
+      },
+      {
+        "task": "flow",
+        "method": "eventgenesis",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "40_0_flow_eventgenesis_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "v2e",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "40_1_flow_v2e_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "eventgenesis",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "42_0_flow_eventgenesis_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "eventgenesis",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "42_0_reconstruction_eventgenesis_seed2"
+      },
+      {
+        "task": "flow",
+        "method": "v2e",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "42_1_flow_v2e_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "v2e",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "42_1_reconstruction_v2e_seed2"
+      },
+      {
+        "task": "flow",
+        "method": "vid2e",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 3,
+        "job_id": "70_0_flow_vid2e_preflight"
+      },
+      {
+        "task": "flow",
+        "method": "film_esim",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 3,
+        "job_id": "70_1_flow_film_esim_preflight"
+      },
+      {
+        "task": "flow",
+        "method": "rife_esim",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 3,
+        "job_id": "70_2_flow_rife_esim_preflight"
+      },
+      {
+        "task": "flow",
+        "method": "vid2e",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "80_0_flow_vid2e_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "film_esim",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "80_1_flow_film_esim_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "rife_esim",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "80_2_flow_rife_esim_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "vid2e",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "82_0_flow_vid2e_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "vid2e",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "82_0_reconstruction_vid2e_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "film_esim",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "82_1_reconstruction_film_esim_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "rife_esim",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 3,
+        "job_id": "82_2_reconstruction_rife_esim_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "eventgenesis",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 4,
+        "job_id": "30_0_reconstruction_eventgenesis_preflight"
+      },
+      {
+        "task": "reconstruction",
+        "method": "v2e",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 4,
+        "job_id": "30_1_reconstruction_v2e_preflight"
+      },
+      {
+        "task": "reconstruction",
+        "method": "eventgenesis",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "40_0_reconstruction_eventgenesis_seed0"
+      },
+      {
+        "task": "reconstruction",
+        "method": "v2e",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "40_1_reconstruction_v2e_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "eventgenesis",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "41_0_flow_eventgenesis_seed1"
+      },
+      {
+        "task": "flow",
+        "method": "v2e",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "41_1_flow_v2e_seed1"
+      },
+      {
+        "task": "reconstruction",
+        "method": "vid2e",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 4,
+        "job_id": "70_0_reconstruction_vid2e_preflight"
+      },
+      {
+        "task": "reconstruction",
+        "method": "film_esim",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 4,
+        "job_id": "70_1_reconstruction_film_esim_preflight"
+      },
+      {
+        "task": "reconstruction",
+        "method": "rife_esim",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 4,
+        "job_id": "70_2_reconstruction_rife_esim_preflight"
+      },
+      {
+        "task": "reconstruction",
+        "method": "vid2e",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "80_0_reconstruction_vid2e_seed0"
+      },
+      {
+        "task": "reconstruction",
+        "method": "film_esim",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "80_1_reconstruction_film_esim_seed0"
+      },
+      {
+        "task": "reconstruction",
+        "method": "rife_esim",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "80_2_reconstruction_rife_esim_seed0"
+      },
+      {
+        "task": "flow",
+        "method": "vid2e",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "81_0_flow_vid2e_seed1"
+      },
+      {
+        "task": "flow",
+        "method": "film_esim",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "81_1_flow_film_esim_seed1"
+      },
+      {
+        "task": "flow",
+        "method": "rife_esim",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "81_2_flow_rife_esim_seed1"
+      },
+      {
+        "task": "flow",
+        "method": "film_esim",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "82_1_flow_film_esim_seed2"
+      },
+      {
+        "task": "flow",
+        "method": "rife_esim",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 4,
+        "job_id": "82_2_flow_rife_esim_seed2"
+      },
+      {
+        "task": "pose",
+        "method": "eventgenesis",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 5,
+        "job_id": "30_0_pose_eventgenesis_preflight"
+      },
+      {
+        "task": "pose",
+        "method": "v2e",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 5,
+        "job_id": "30_1_pose_v2e_preflight"
+      },
+      {
+        "task": "pose",
+        "method": "eventgenesis",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "40_0_pose_eventgenesis_seed0"
+      },
+      {
+        "task": "pose",
+        "method": "v2e",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "40_1_pose_v2e_seed0"
+      },
+      {
+        "task": "pose",
+        "method": "eventgenesis",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "41_0_pose_eventgenesis_seed1"
+      },
+      {
+        "task": "pose",
+        "method": "v2e",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "41_1_pose_v2e_seed1"
+      },
+      {
+        "task": "pose",
+        "method": "eventgenesis",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "42_0_pose_eventgenesis_seed2"
+      },
+      {
+        "task": "pose",
+        "method": "v2e",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "42_1_pose_v2e_seed2"
+      },
+      {
+        "task": "reconstruction",
+        "method": "eventgenesis",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "66_0_reconstruction_eventgenesis_seed1"
+      },
+      {
+        "task": "reconstruction",
+        "method": "v2e",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "66_1_reconstruction_v2e_seed1"
+      },
+      {
+        "task": "pose",
+        "method": "vid2e",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 5,
+        "job_id": "70_0_pose_vid2e_preflight"
+      },
+      {
+        "task": "pose",
+        "method": "film_esim",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 5,
+        "job_id": "70_1_pose_film_esim_preflight"
+      },
+      {
+        "task": "pose",
+        "method": "rife_esim",
+        "seed": 0,
+        "phase": "training_preflight",
+        "gpu_index": 5,
+        "job_id": "70_2_pose_rife_esim_preflight"
+      },
+      {
+        "task": "pose",
+        "method": "vid2e",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "80_0_pose_vid2e_seed0"
+      },
+      {
+        "task": "pose",
+        "method": "film_esim",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "80_1_pose_film_esim_seed0"
+      },
+      {
+        "task": "pose",
+        "method": "rife_esim",
+        "seed": 0,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "80_2_pose_rife_esim_seed0"
+      },
+      {
+        "task": "pose",
+        "method": "vid2e",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "81_0_pose_vid2e_seed1"
+      },
+      {
+        "task": "reconstruction",
+        "method": "vid2e",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "81_0_reconstruction_vid2e_seed1"
+      },
+      {
+        "task": "pose",
+        "method": "film_esim",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "81_1_pose_film_esim_seed1"
+      },
+      {
+        "task": "reconstruction",
+        "method": "film_esim",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "81_1_reconstruction_film_esim_seed1"
+      },
+      {
+        "task": "pose",
+        "method": "rife_esim",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "81_2_pose_rife_esim_seed1"
+      },
+      {
+        "task": "reconstruction",
+        "method": "rife_esim",
+        "seed": 1,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "81_2_reconstruction_rife_esim_seed1"
+      },
+      {
+        "task": "pose",
+        "method": "vid2e",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "82_0_pose_vid2e_seed2"
+      },
+      {
+        "task": "pose",
+        "method": "film_esim",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "82_1_pose_film_esim_seed2"
+      },
+      {
+        "task": "pose",
+        "method": "rife_esim",
+        "seed": 2,
+        "phase": "formal_synthetic_training",
+        "gpu_index": 5,
+        "job_id": "82_2_pose_rife_esim_seed2"
+      }
+    ],
+    "rationale": "Flow batch8 needs V100S32GB. Balance the two identical V100S cards; move the complete reconstruction seed1 group to TITAN RTX. Same GPU model within every task/seed, with UUID recorded per run.",
+    "hardware": {
+      "flow": "all Tesla V100S32GB; same GPU class, exact UUID may differ",
+      "reconstruction": "seed0/2 Tesla V100S32GB; seed1 all methods TITAN RTX24GB",
+      "pose": "all TITAN RTX24GB"
+    },
+    "planned_formal_run_count_by_gpu": {
+      "3": 13,
+      "4": 12,
+      "5": 20
+    },
+    "retained_after_completion": [
+      3,
+      4
+    ],
+    "real_scores_used": false
+  }
+}

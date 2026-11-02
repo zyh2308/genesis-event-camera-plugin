@@ -1,3 +1,15 @@
+# 2026-11-03 新版三线重训
+
+当前部署：45 个正式训练作业（3 任务 × 5 管线 × 3 seed）已排队；仍处于新版事件数据生成阶段。正式训练尚未开始，实际短检与恢复通过后自动继续完整预算。真实评分关闭。
+
+核心为 release 62da4f35ce3c5c96f04268bd1687a27657af9238；GPU3/4 在本轮作业结束后保留预约及低负载占位。此处是部署快照，服务器 CAMPAIGN_LIVE_STATUS.json 才是机器实时状态。
+
+[部署报告与代码](campaigns/newcore_20261103/README.md) · [不可变部署证据](campaigns/newcore_20261103/DEPLOYMENT_VERIFIED_SNAPSHOT.json)
+
+---
+
+以下为历史状态，不代表新版训练完成。
+
 # Public-data Sim-to-Real status — 2026-11-01 (Asia/Tokyo)
 
 **New E-POSE real pilot (2026-11-01):** [Paired short training, fixed 200-window real test, demo and complete audit](reviews/epose_diverse_short_20261101/README.md). Both models pass synthetic localization, but strict real ADD-S success is only 0% / 1%; this does not establish a generator advantage.

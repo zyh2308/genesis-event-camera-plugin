@@ -1,0 +1,748 @@
+{
+  "status": "queues_installed_inputs_and_preflight_gated",
+  "primary_methods": [
+    "eventgenesis",
+    "v2e"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "tasks": [
+    "flow",
+    "reconstruction",
+    "pose"
+  ],
+  "formal_runs": 18,
+  "jobs": [
+    {
+      "job_id": "30_0_flow_eventgenesis_preflight",
+      "phase": "training_preflight",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "0",
+        "--phase",
+        "preflight"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/30_0_flow_eventgenesis_preflight",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/eventgenesis/flow/training_bank_manifest.json"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "30_1_flow_v2e_preflight",
+      "phase": "training_preflight",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "v2e",
+        "--seed",
+        "0",
+        "--phase",
+        "preflight"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/30_1_flow_v2e_preflight",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/v2e/flow/training_bank_manifest.json"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "40_0_flow_eventgenesis_seed0",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "0",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/40_0_flow_eventgenesis_seed0",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/flow/paired_gate.json"
+      ],
+      "after": [
+        "30_0_flow_eventgenesis_preflight",
+        "30_1_flow_v2e_preflight"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "40_1_flow_v2e_seed0",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "v2e",
+        "--seed",
+        "0",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/40_1_flow_v2e_seed0",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/flow/paired_gate.json"
+      ],
+      "after": [
+        "30_0_flow_eventgenesis_preflight",
+        "30_1_flow_v2e_preflight"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "41_0_flow_eventgenesis_seed1",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "1",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/41_0_flow_eventgenesis_seed1",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/flow/paired_gate.json"
+      ],
+      "after": [
+        "30_0_flow_eventgenesis_preflight",
+        "30_1_flow_v2e_preflight",
+        "40_0_flow_eventgenesis_seed0",
+        "40_1_flow_v2e_seed0"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "41_1_flow_v2e_seed1",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "v2e",
+        "--seed",
+        "1",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/41_1_flow_v2e_seed1",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/flow/paired_gate.json"
+      ],
+      "after": [
+        "30_0_flow_eventgenesis_preflight",
+        "30_1_flow_v2e_preflight",
+        "40_0_flow_eventgenesis_seed0",
+        "40_1_flow_v2e_seed0"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "42_0_flow_eventgenesis_seed2",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "2",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/42_0_flow_eventgenesis_seed2",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/flow/paired_gate.json"
+      ],
+      "after": [
+        "30_0_flow_eventgenesis_preflight",
+        "30_1_flow_v2e_preflight",
+        "41_0_flow_eventgenesis_seed1",
+        "41_1_flow_v2e_seed1"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "42_1_flow_v2e_seed2",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "flow",
+        "--method",
+        "v2e",
+        "--seed",
+        "2",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/42_1_flow_v2e_seed2",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/flow/paired_gate.json"
+      ],
+      "after": [
+        "30_0_flow_eventgenesis_preflight",
+        "30_1_flow_v2e_preflight",
+        "41_0_flow_eventgenesis_seed1",
+        "41_1_flow_v2e_seed1"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "30_0_reconstruction_eventgenesis_preflight",
+      "phase": "training_preflight",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "0",
+        "--phase",
+        "preflight"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/30_0_reconstruction_eventgenesis_preflight",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/eventgenesis/reconstruction/adapter_manifest.json"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "30_1_reconstruction_v2e_preflight",
+      "phase": "training_preflight",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "v2e",
+        "--seed",
+        "0",
+        "--phase",
+        "preflight"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/30_1_reconstruction_v2e_preflight",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/v2e/reconstruction/adapter_manifest.json"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "40_0_reconstruction_eventgenesis_seed0",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "0",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/40_0_reconstruction_eventgenesis_seed0",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/reconstruction/paired_gate.json"
+      ],
+      "after": [
+        "30_0_reconstruction_eventgenesis_preflight",
+        "30_1_reconstruction_v2e_preflight"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "40_1_reconstruction_v2e_seed0",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "v2e",
+        "--seed",
+        "0",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/40_1_reconstruction_v2e_seed0",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/reconstruction/paired_gate.json"
+      ],
+      "after": [
+        "30_0_reconstruction_eventgenesis_preflight",
+        "30_1_reconstruction_v2e_preflight"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "41_0_reconstruction_eventgenesis_seed1",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "1",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/41_0_reconstruction_eventgenesis_seed1",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/reconstruction/paired_gate.json"
+      ],
+      "after": [
+        "30_0_reconstruction_eventgenesis_preflight",
+        "30_1_reconstruction_v2e_preflight",
+        "40_0_reconstruction_eventgenesis_seed0",
+        "40_1_reconstruction_v2e_seed0"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "41_1_reconstruction_v2e_seed1",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "v2e",
+        "--seed",
+        "1",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/41_1_reconstruction_v2e_seed1",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/reconstruction/paired_gate.json"
+      ],
+      "after": [
+        "30_0_reconstruction_eventgenesis_preflight",
+        "30_1_reconstruction_v2e_preflight",
+        "40_0_reconstruction_eventgenesis_seed0",
+        "40_1_reconstruction_v2e_seed0"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "42_0_reconstruction_eventgenesis_seed2",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "2",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/42_0_reconstruction_eventgenesis_seed2",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/reconstruction/paired_gate.json"
+      ],
+      "after": [
+        "30_0_reconstruction_eventgenesis_preflight",
+        "30_1_reconstruction_v2e_preflight",
+        "41_0_reconstruction_eventgenesis_seed1",
+        "41_1_reconstruction_v2e_seed1"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "42_1_reconstruction_v2e_seed2",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "reconstruction",
+        "--method",
+        "v2e",
+        "--seed",
+        "2",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/42_1_reconstruction_v2e_seed2",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/reconstruction/paired_gate.json"
+      ],
+      "after": [
+        "30_0_reconstruction_eventgenesis_preflight",
+        "30_1_reconstruction_v2e_preflight",
+        "41_0_reconstruction_eventgenesis_seed1",
+        "41_1_reconstruction_v2e_seed1"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "30_0_pose_eventgenesis_preflight",
+      "phase": "training_preflight",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "0",
+        "--phase",
+        "preflight"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/30_0_pose_eventgenesis_preflight",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/eventgenesis/pose/adapter_manifest.json"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "30_1_pose_v2e_preflight",
+      "phase": "training_preflight",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "v2e",
+        "--seed",
+        "0",
+        "--phase",
+        "preflight"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/30_1_pose_v2e_preflight",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/v2e/pose/adapter_manifest.json"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "40_0_pose_eventgenesis_seed0",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "0",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/40_0_pose_eventgenesis_seed0",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/pose/paired_gate.json"
+      ],
+      "after": [
+        "30_0_pose_eventgenesis_preflight",
+        "30_1_pose_v2e_preflight"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "40_1_pose_v2e_seed0",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "v2e",
+        "--seed",
+        "0",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/40_1_pose_v2e_seed0",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/pose/paired_gate.json"
+      ],
+      "after": [
+        "30_0_pose_eventgenesis_preflight",
+        "30_1_pose_v2e_preflight"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "41_0_pose_eventgenesis_seed1",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "1",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/41_0_pose_eventgenesis_seed1",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/pose/paired_gate.json"
+      ],
+      "after": [
+        "30_0_pose_eventgenesis_preflight",
+        "30_1_pose_v2e_preflight",
+        "40_0_pose_eventgenesis_seed0",
+        "40_1_pose_v2e_seed0"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "41_1_pose_v2e_seed1",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "v2e",
+        "--seed",
+        "1",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/41_1_pose_v2e_seed1",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/pose/paired_gate.json"
+      ],
+      "after": [
+        "30_0_pose_eventgenesis_preflight",
+        "30_1_pose_v2e_preflight",
+        "40_0_pose_eventgenesis_seed0",
+        "40_1_pose_v2e_seed0"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "42_0_pose_eventgenesis_seed2",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "eventgenesis",
+        "--seed",
+        "2",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/42_0_pose_eventgenesis_seed2",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/pose/paired_gate.json"
+      ],
+      "after": [
+        "30_0_pose_eventgenesis_preflight",
+        "30_1_pose_v2e_preflight",
+        "41_0_pose_eventgenesis_seed1",
+        "41_1_pose_v2e_seed1"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    },
+    {
+      "job_id": "42_1_pose_v2e_seed2",
+      "phase": "formal_synthetic_training",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--task",
+        "pose",
+        "--method",
+        "v2e",
+        "--seed",
+        "2",
+        "--phase",
+        "full"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/job_logs/42_1_pose_v2e_seed2",
+      "ready_files": [
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/preflight/tasks/pose/paired_gate.json"
+      ],
+      "after": [
+        "30_0_pose_eventgenesis_preflight",
+        "30_1_pose_v2e_preflight",
+        "41_0_pose_eventgenesis_seed1",
+        "41_1_pose_v2e_seed1"
+      ],
+      "source_sha256": {
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/run_training_job.py": "5a8c5e891fc5dadd6b875ab7f9737b3d5b2e5f53ff656eb0be80a45bc47f25b4"
+      }
+    }
+  ],
+  "optimizer_updates_at_installation": 0,
+  "real_scoring_enabled": false,
+  "retained_after_completion_gpu_indices": [
+    3,
+    4
+  ],
+  "gpu5_release_after_campaign_finalized": true,
+  "additional_baselines_status": "implementation and source/weight audit pending; not misrepresented as deployed"
+}

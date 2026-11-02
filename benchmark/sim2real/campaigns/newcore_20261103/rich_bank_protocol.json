@@ -1,0 +1,71 @@
+{
+  "schema": "stage9_rich_physical_bank_v1",
+  "registered_date_jst": "2026-11-03",
+  "physical_seed": 20261103,
+  "duration_s": 2,
+  "endpoint_hz": 100,
+  "resolution_wh": [
+    346,
+    260
+  ],
+  "rollouts": 32,
+  "train_rollouts": 24,
+  "validation_rollouts": 8,
+  "strata": [
+    "camera_motion_static_scene",
+    "independent_rigid_motion_static_camera",
+    "camera_and_independent_rigid_motion",
+    "combined_motion_with_occlusion"
+  ],
+  "motion_scales_m": [
+    0.03,
+    0.08,
+    0.18
+  ],
+  "frequencies_hz": [
+    0.35,
+    0.8,
+    1.5
+  ],
+  "split_unit": "complete ReplicaCAD furniture layout, never adjacent windows",
+  "layouts": [
+    {
+      "scene_config": "v3_sc0_staging_00.scene_instance.json",
+      "split": "train"
+    },
+    {
+      "scene_config": "v3_sc0_staging_01.scene_instance.json",
+      "split": "train"
+    },
+    {
+      "scene_config": "v3_sc0_staging_02.scene_instance.json",
+      "split": "train"
+    },
+    {
+      "scene_config": "v3_sc1_staging_00.scene_instance.json",
+      "split": "train"
+    },
+    {
+      "scene_config": "v3_sc1_staging_01.scene_instance.json",
+      "split": "train"
+    },
+    {
+      "scene_config": "v3_sc1_staging_02.scene_instance.json",
+      "split": "train"
+    },
+    {
+      "scene_config": "v3_sc2_staging_00.scene_instance.json",
+      "split": "validation"
+    },
+    {
+      "scene_config": "v3_sc3_staging_00.scene_instance.json",
+      "split": "validation"
+    }
+  ],
+  "selection": "prespecified scene list; first unique rigid object matching tvstand/sofa/coffeetable/table/chair; camera first geometry-valid deterministic candidate; no generator scores or event-count screening",
+  "native_HDR_depth_seg_SE3_saved": true,
+  "real_data_used": false,
+  "source_scene_loader_sha256": "2ee743272ba866df9c0cd09513a42393a3fd22e19f3bccc55150c029c4a765c0",
+  "adapted_scene_loader_sha256": "8aa173ff3bc0d91c7e432fb5edbd1414338f805f5d2f71865c6b94068adef5dd",
+  "scope": "scripted smooth rigid/camera state trajectories stepped in Genesis, full furnished layouts; no claim of dynamic interaction realism"
+}
