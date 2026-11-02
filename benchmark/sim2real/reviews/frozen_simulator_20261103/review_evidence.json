@@ -1,0 +1,735 @@
+{
+  "review_date_jst": "2026-11-03",
+  "requested_handoff": "https://github.com/zyh2308/genesis-event-camera-plugin/blob/e44472f23de2910461fea1e7b8528860d2559622/docs/coordination/FROZEN_SIMULATOR_HANDOFF_20261103.md",
+  "historical_sim2real_core": "e79e656ac00f7847b98db9e12bf43b093f3afff1",
+  "new_release": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "core_source": "6ac417c7a03e125f40ebf967796bf28191d55859",
+  "audit_commit": "d3415f38e4e3bee1d8d19e9b0c732889863d4a52",
+  "profile": {
+    "schema": "robot_sparse_reconstruction_profile_v1",
+    "status": "frozen_after_strict_event_grasp_smoke",
+    "code_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+    "core_canonical_LF_sha256": {
+      "adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+      "calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+      "camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+      "camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+      "dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+      "genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+      "interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+      "noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+      "physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+      "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+      "physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+      "plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+      "radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+      "readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+      "recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+      "torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+      "__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+    },
+    "constructor": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+    "plugin_kwargs": {
+      "device": "cuda:0",
+      "warp_backend": "torch",
+      "warp_composite": "coverage_time_log_linear",
+      "disocclusion_policy": "hold",
+      "strict_fidelity": false,
+      "min_coverage_fraction": 0.995,
+      "input_space": "linear",
+      "radiance_scale": 1,
+      "radiance_white_level": 1,
+      "response_mode": "physical_log",
+      "radiometric_floor": 0.000001,
+      "radiometric_calibration_status": "uncalibrated",
+      "readout_model": "ideal_readout",
+      "intermediate_state_provider": null
+    },
+    "noise_config_class": "genesis_event_plugin.noise_model.DvsNoiseConfig",
+    "noise_config_kwargs": {
+      "pos_thres": 0.2,
+      "neg_thres": 0.2,
+      "sigma_thres": 0,
+      "cutoff_hz": 0,
+      "leak_rate_hz": 0,
+      "leak_jitter_fraction": 0,
+      "shot_noise_rate_hz": 0,
+      "noise_rate_cov_decades": 0,
+      "refractory_period_s": 0,
+      "log_input": false,
+      "radiance_input": true,
+      "radiance_scale": 1,
+      "radiance_white_level": 1,
+      "response_mode": "physical_log",
+      "radiometric_floor": 0.000001,
+      "radiometric_calibration_status": "uncalibrated",
+      "readout_model": "ideal_readout",
+      "seed": 42
+    },
+    "required_runtime_providers": [
+      "frame_provider: timestamped linear HDR, depth and segmentation",
+      "motion_state_provider: CV camera-to-world and object-to-world matrices keyed by segmentation ID"
+    ],
+    "validated_input": {
+      "endpoint_rate_Hz": 100,
+      "resolution_wh": [
+        320,
+        240
+      ],
+      "geometry": "rigid robot and cube scene"
+    },
+    "unknown_support": "Retained as unknown; approximate continuous radiance does not become a real observation",
+    "dense_reference_role": "Evaluation only; never candidate training or intermediate-frame generation",
+    "CPU_equivalent": {
+      "device": "cpu",
+      "warp_backend": "numpy"
+    },
+    "sensor_calibration": "Assumed ideal response, not measured EVK4",
+    "strict_sampled_mode": "Unchanged separate mode, not used as the sparse repair",
+    "default_constructor_unchanged": true,
+    "frozen_baseline_id": "robot-sparse-cuda-r2-20261102",
+    "frozen_branch": "freeze/robot-sparse-cuda-r2-20261102",
+    "R2_smoke": {
+      "seed": 2026110202,
+      "speed_m_s": 0.5,
+      "y_m": 0.055,
+      "strict_hold_s": 0.5,
+      "core_unchanged": true,
+      "controller_profile": "benchmark/robot_closed_loop/configs/shared_control_r2_verified_20261102.json",
+      "model_checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896"
+    },
+    "scope": "Original sparse 100Hz rigid-scene reconstruction, NumPy/Torch CPU and CUDA; one development strict event grasp; not a formal generator ranking"
+  },
+  "source_blob_comparison": {
+    "dvs_emulator_unchanged": true,
+    "noise_model_unchanged": true,
+    "old_default": "next_primary",
+    "new_constructor_default": "same_surface_log_linear",
+    "required_new_composite": "coverage_time_log_linear"
+  },
+  "server_snapshot": {
+    "utc": "2026-11-02T17:33:43.740804+00:00",
+    "release_commit": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+    "core_path": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin",
+    "core_hashes": {
+      "adaptive_sampler.py": {
+        "expected": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+        "actual": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+        "match": true
+      },
+      "calibration.py": {
+        "expected": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+        "actual": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+        "match": true
+      },
+      "camera_margin.py": {
+        "expected": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+        "actual": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+        "match": true
+      },
+      "camera_model.py": {
+        "expected": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+        "actual": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+        "match": true
+      },
+      "dvs_emulator.py": {
+        "expected": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+        "actual": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+        "match": true
+      },
+      "genesis_adapter.py": {
+        "expected": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+        "actual": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+        "match": true
+      },
+      "interpolator.py": {
+        "expected": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+        "actual": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+        "match": true
+      },
+      "noise_model.py": {
+        "expected": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+        "actual": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+        "match": true
+      },
+      "physics_interpolator.py": {
+        "expected": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+        "actual": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+        "match": true
+      },
+      "physics_plugin.py": {
+        "expected": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+        "actual": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+        "match": true
+      },
+      "physics_warp.py": {
+        "expected": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+        "actual": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+        "match": true
+      },
+      "plugin.py": {
+        "expected": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+        "actual": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+        "match": true
+      },
+      "radiometry.py": {
+        "expected": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+        "actual": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+        "match": true
+      },
+      "readout.py": {
+        "expected": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+        "actual": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+        "match": true
+      },
+      "recorder.py": {
+        "expected": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+        "actual": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+        "match": true
+      },
+      "torch_physics.py": {
+        "expected": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+        "actual": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+        "match": true
+      },
+      "__init__.py": {
+        "expected": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd",
+        "actual": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd",
+        "match": true
+      }
+    },
+    "localization_files": [
+      "generation_summary.json",
+      "checkpoint_frozen_before_evaluation.json",
+      "primary_eval_command.json",
+      "secondary_eval_command.json",
+      "summary.json",
+      "source/benchmark/robot_closed_loop/configs/r1_5_localization_recovery_20261101a.json",
+      "source/benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019b.json",
+      "source/benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_ablation_20261019c.json",
+      "source/benchmark/robot_closed_loop/configs/r1_ours_localization_cadence_sweep_20261019d.json",
+      "fit/development_summary.json",
+      "evaluation/primary/r1_common_direct_hdr_summary.json",
+      "evaluation/secondary/r1_common_direct_hdr_summary.json"
+    ],
+    "root_files": [
+      "check_sparse.py",
+      "generate_sparse.py",
+      "PLAN.md",
+      "benchmark",
+      "core",
+      "source",
+      "controls.log",
+      "pipeline.py",
+      "SOURCE_SHA256SUMS",
+      "worker.log",
+      "sparse_controls_command.json",
+      "sparse_controls.log",
+      "sparse_controls.exit",
+      "pixel_controls_command.json",
+      "pixel_controls.log",
+      "pixel_controls.exit",
+      "generate_000_command.json",
+      "generate_001_command.json",
+      "generate_002_command.json",
+      "generate_003_command.json",
+      "generate_004_command.json",
+      "generate_000.log",
+      "generate_005_command.json",
+      "generate_006_command.json",
+      "generate_005.log",
+      "generate_007_command.json",
+      "generate_001.log",
+      "generate_002.log",
+      "generate_003.log",
+      "generate_004.log",
+      "generate_006.log",
+      "generate_007.log",
+      "__pycache__",
+      "sparse_events",
+      "generate_005.exit",
+      "generate_008_command.json",
+      "generate_008.log",
+      "generate_003.exit",
+      "make_evidence.py",
+      "generate_004.exit",
+      "generate_006.exit",
+      "generate_000.exit",
+      "generate_002.exit",
+      "generate_007.exit",
+      "compare_ramp.py",
+      "generate_001.exit",
+      "ramp_mechanism_control.json",
+      "generate_008.exit",
+      "generation_summary.json",
+      "fit_command.json",
+      "fit.log",
+      "postprocess.py",
+      "check_sparse_additional.py",
+      "postprocess",
+      "fit",
+      "fit.exit",
+      "checkpoint_frozen_before_evaluation.json",
+      "primary_eval_command.json",
+      "primary_eval.log",
+      "evaluation",
+      "primary_eval.exit",
+      "secondary_eval_command.json",
+      "secondary_eval.log",
+      "secondary_eval.exit",
+      "summary.json",
+      "SHA256SUMS",
+      "pipeline.exit",
+      "check_sparse_additional.log",
+      "make_evidence.log",
+      "evidence",
+      "independent_audit.json",
+      "postprocess.exit",
+      "PORTABLE_SHA256SUMS",
+      "portable_results.tar.gz",
+      "README.md",
+      "accepted_sparse_candidate.json",
+      "external_artifacts.json",
+      "PUBLICATION_SHA256SUMS",
+      "closeout.json"
+    ],
+    "fit_files": [
+      "spatial_event_state.pt",
+      "train_predictions.csv",
+      "validation_predictions.csv",
+      "training_history.json",
+      "development_summary.json",
+      "SHA256SUMS",
+      "run_manifest.json"
+    ],
+    "profile_sha256": "dbcf85fe3c86ae21972d4f5b79638018ca44f46a39b8cb1e14e8b6cff3a31a8a",
+    "active_reservation_records": {
+      "20261102-sim2real-gpu34-060016_gpu3.json": {
+        "status": "holding_idle",
+        "gpu_index": 3,
+        "pid": 4088994,
+        "heartbeat_utc": "2026-11-02T17:32:56.487914+00:00"
+      },
+      "20261102-sim2real-gpu34-060016_gpu4.json": {
+        "status": "holding_idle",
+        "gpu_index": 4,
+        "pid": 4089019,
+        "heartbeat_utc": "2026-11-02T17:32:56.488978+00:00"
+      }
+    }
+  },
+  "server_compact": {
+    "utc": "2026-11-02T17:35:34.961817+00:00",
+    "localization": {
+      "primary": {
+        "candidate": {
+          "pixel": {
+            "n": 581,
+            "mean": 2.6433304103529993,
+            "p50": 2.32653801316377,
+            "p95": 5.774254356110923
+          },
+          "fail_over_10px_or_missing": {
+            "failed_or_missing": 3,
+            "fraction_all_polls": 0.0051635111876075735
+          },
+          "all_queries": 581
+        },
+        "old": {
+          "pixel": {
+            "n": 581,
+            "mean": 24.984657879530445,
+            "p50": 8.180047572649823,
+            "p95": 106.72021617836626
+          },
+          "fail_over_10px_or_missing": {
+            "failed_or_missing": 225,
+            "fraction_all_polls": 0.387263339070568
+          },
+          "all_queries": 581
+        },
+        "v2e": {
+          "pixel": {
+            "n": 581,
+            "mean": 2.386721179450548,
+            "p50": 2.149151770567856,
+            "p95": 5.2329902416731615
+          },
+          "fail_over_10px_or_missing": {
+            "failed_or_missing": 1,
+            "fraction_all_polls": 0.0017211703958691911
+          },
+          "all_queries": 581
+        }
+      },
+      "secondary": {
+        "candidate": {
+          "pixel": {
+            "n": 193,
+            "mean": 2.5667381665687388,
+            "p50": 2.200422923111603,
+            "p95": 5.544839291654961
+          },
+          "fail_over_10px_or_missing": {
+            "failed_or_missing": 0,
+            "fraction_all_polls": 0
+          },
+          "all_queries": 193
+        },
+        "old": {
+          "pixel": {
+            "n": 193,
+            "mean": 31.520689674256786,
+            "p50": 9.080004407886664,
+            "p95": 112.38461108585798
+          },
+          "fail_over_10px_or_missing": {
+            "failed_or_missing": 87,
+            "fraction_all_polls": 0.45077720207253885
+          },
+          "all_queries": 193
+        },
+        "v2e": {
+          "pixel": {
+            "n": 193,
+            "mean": 2.5286134577497688,
+            "p50": 2.3214400261423536,
+            "p95": 5.217647928887488
+          },
+          "fail_over_10px_or_missing": {
+            "failed_or_missing": 1,
+            "fraction_all_polls": 0.0051813471502590676
+          },
+          "all_queries": 193
+        }
+      }
+    },
+    "training_summary": {
+      "phase": "small 100Hz native HDR endpoint-only public geometric reconstruction, coverage/time log fusion event-state development fit; not a generator comparison or model ranking",
+      "code_commit": "sparse-time-candidate-v1; exact hashes in SOURCE_SHA256SUMS",
+      "branch": "unknown",
+      "config_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+      "source_results_root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/sparse_events",
+      "source_manifest_sha256": "b8b46ec6877ae8ae59751c2090245d68a90c639839537a1e0a5f2cb200d0c350",
+      "episode_level_split_only": true,
+      "split_rationale": "explicit episode assignments; actual speed, lateral position, and window coverage are recorded below",
+      "all_available_episodes_are_development_material": true,
+      "model_architecture": "event-heatmap64-aux-z-velocity-v2",
+      "model_parameter_count": 35261,
+      "input_contract": "causal five 5ms bins, two polarities, 64x64, log1p counts; output state at cutoff",
+      "training_labels": "simulator object position and velocity at each causal observation cutoff",
+      "model_inputs": "only 100Hz native HDR endpoint-only public geometric reconstruction, coverage/time log fusion raw events binned into causal five-bin tensors; no RGB, segmentation, depth, or GT at inference",
+      "training": {
+        "device": "cpu",
+        "threads": 2,
+        "seed": 606,
+        "max_epochs": 40,
+        "best_epoch": 36,
+        "patience": 40,
+        "batch_size": 32,
+        "training_wall_s": 578.6819713519653,
+        "best_validation_phase_balanced_objective": 0.4653674066066742,
+        "phase_reweighting": "equal aggregate weight per episode-phase group within each split"
+      },
+      "validation_metrics": {
+        "n_windows": 566,
+        "position_xy_error_m": {
+          "n": 566,
+          "mean": 0.01804597195074438,
+          "p50": 0.009601980448011868,
+          "p95": 0.06124671060469262
+        },
+        "velocity_xy_error_m_s": {
+          "n": 566,
+          "mean": 0.03678471675145958,
+          "p50": 0.016725163488360104,
+          "p95": 0.13605397187237195
+        },
+        "event_state_valid_fraction": 0.9982332155477032,
+        "event_state_valid_windows": 565,
+        "event_state_age_ms_when_valid": {
+          "n": 565,
+          "mean": 10,
+          "p50": 10,
+          "p95": 10
+        },
+        "phase": {
+          "pre_contact": {
+            "n": 194,
+            "position_xy_error_m": {
+              "n": 194,
+              "mean": 0.005935162734538337,
+              "p50": 0.004498535248124555,
+              "p95": 0.015532259861393184
+            },
+            "velocity_xy_error_m_s": {
+              "n": 194,
+              "mean": 0.07491376580868087,
+              "p50": 0.07128339324954062,
+              "p95": 0.15711948097189748
+            },
+            "event_state_valid_fraction": 1,
+            "event_state_age_ms_p95": 10
+          },
+          "contact_to_lift": {
+            "n": 148,
+            "position_xy_error_m": {
+              "n": 148,
+              "mean": 0.015935701888215578,
+              "p50": 0.011701607119023905,
+              "p95": 0.04459823432749618
+            },
+            "velocity_xy_error_m_s": {
+              "n": 148,
+              "mean": 0.0181884310107549,
+              "p50": 0.009876420989537222,
+              "p95": 0.06165334325590211
+            },
+            "event_state_valid_fraction": 1,
+            "event_state_age_ms_p95": 10
+          },
+          "post_lift": {
+            "n": 224,
+            "position_xy_error_m": {
+              "n": 224,
+              "mean": 0.029929083366807933,
+              "p50": 0.020012860347317564,
+              "p95": 0.08668411101647043
+            },
+            "velocity_xy_error_m_s": {
+              "n": 224,
+              "mean": 0.016049068414510287,
+              "p50": 0.012199833136631819,
+              "p95": 0.048695008315512135
+            },
+            "event_state_valid_fraction": 0.9955357142857143,
+            "event_state_age_ms_p95": 10
+          }
+        },
+        "pre_contact_same_fixed_predictor_reference": {
+          "reachable_prediction_pairs": 194,
+          "absolute_intercept_arrival_error_s": {
+            "n": 194,
+            "mean": 0.11890331987360733,
+            "p50": 0.09820541342956182,
+            "p95": 0.3156385847115607
+          },
+          "absolute_intercept_y_error_m": {
+            "n": 194,
+            "mean": 0.0031604617550702696,
+            "p50": 0.002676384482674602,
+            "p95": 0.008091862830585175
+          },
+          "reference_definition": "both estimated and GT state at the causal cutoff are passed through the same frozen FixedDecelerationPredictor with the configured observation latency; future GT arrival is not an input"
+        }
+      },
+      "metric_boundary": "position/velocity and same-fixed-predictor arrival/intercept metrics use GT only after inference as evaluator; arrival is compared at the causal cutoff and does not use future GT arrival",
+      "spatial_output_head": "explicit 64x64 image-coordinate target heatmap with softargmax, calibrated ray-plane backprojection using predicted height, and separate normalized height/velocity head",
+      "checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896"
+    },
+    "training_summary_keys": [
+      "phase",
+      "code_commit",
+      "branch",
+      "config_sha256",
+      "source_results_root",
+      "source_manifest_sha256",
+      "source_input_sha256",
+      "train_episodes",
+      "validation_episodes",
+      "episode_level_split_only",
+      "split_rationale",
+      "split_coverage",
+      "all_available_episodes_are_development_material",
+      "model_architecture",
+      "model_parameter_count",
+      "input_contract",
+      "training_labels",
+      "model_inputs",
+      "sampling",
+      "training",
+      "validity_policy",
+      "train_metrics",
+      "validation_metrics",
+      "metric_boundary",
+      "spatial_output_head",
+      "checkpoint_sha256"
+    ],
+    "fit_command": [
+      "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python",
+      "-u",
+      "-m",
+      "benchmark.robot_closed_loop.diagnostics.train_event_state_development",
+      "--config",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/source/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+      "--source-results",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/sparse_events",
+      "--out",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/fit",
+      "--train-episodes",
+      "0,1,2,3,7,8",
+      "--validation-episodes",
+      "4,5,6",
+      "--epochs",
+      "40",
+      "--patience",
+      "40",
+      "--batch-size",
+      "32",
+      "--seed",
+      "606",
+      "--threads",
+      "2",
+      "--architecture",
+      "heatmap_v2",
+      "--source-label",
+      "100Hz native HDR endpoint-only public geometric reconstruction, coverage/time log fusion"
+    ],
+    "frozen_checkpoint": {
+      "sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896",
+      "utc": "2026-11-01T10:33:08.389730+00:00",
+      "train": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        8
+      ],
+      "validation": [
+        4,
+        5,
+        6
+      ]
+    },
+    "csv_headers": {
+      "primary": [
+        "source",
+        "episode_id",
+        "seed",
+        "speed_m_s",
+        "launch_y_m",
+        "poll_s",
+        "cutoff_s",
+        "state_status",
+        "tracking_status",
+        "state_age_s",
+        "state_age_ms",
+        "state_available",
+        "reference_reachable",
+        "prediction_reachable",
+        "gt_u_px",
+        "gt_v_px",
+        "pred_u_px",
+        "pred_v_px",
+        "pixel_euclidean_error_px",
+        "position_xy_error_m",
+        "velocity_xy_error_m_s",
+        "intercept_xy_error_m",
+        "intercept_y_signed_error_m",
+        "arrival_signed_error_s",
+        "arrival_abs_error_s",
+        "last_100ms_before_contact"
+      ],
+      "secondary": [
+        "source",
+        "episode_id",
+        "seed",
+        "speed_m_s",
+        "launch_y_m",
+        "poll_s",
+        "cutoff_s",
+        "state_status",
+        "tracking_status",
+        "state_age_s",
+        "state_age_ms",
+        "state_available",
+        "reference_reachable",
+        "prediction_reachable",
+        "gt_u_px",
+        "gt_v_px",
+        "pred_u_px",
+        "pred_v_px",
+        "pixel_euclidean_error_px",
+        "position_xy_error_m",
+        "velocity_xy_error_m_s",
+        "intercept_xy_error_m",
+        "intercept_y_signed_error_m",
+        "arrival_signed_error_s",
+        "arrival_abs_error_s",
+        "last_100ms_before_contact"
+      ]
+    },
+    "public_profile_cpu_check": {
+      "ramp_events": 320,
+      "static_events": 0,
+      "actual_event_times_ms": [
+        2.2222222,
+        4.444445,
+        6.6666662,
+        8.888888
+      ],
+      "max_time_error_s": 8.888888895774993e-10,
+      "provider_calls_per_interval": 2,
+      "no_extra_render": true,
+      "note": "independently rerun during this review; compact copy of preceding stdout"
+    },
+    "epose_bank_cache_note": "R10 shared_trajectory.h5 train_00 and validation_00 inspected: pose,K,timestamps,eventgenesis events,uint8 V2E luma only; native float HDR/depth/seg absent"
+  },
+  "csv_recomputation": {
+    "utc": "2026-11-02T17:36:29.885743+00:00",
+    "scope": "read-only per-query pixel recomputation; no training/inference",
+    "splits": {
+      "primary": {
+        "ours": {
+          "all_queries": 581,
+          "finite": 581,
+          "missing": 0,
+          "p50": 2.32653801316377,
+          "p95": 5.774254356110923,
+          "mean": 2.6433304103529993,
+          "fail_over_10_or_missing": 3,
+          "max_recomputed_difference_px": 0
+        },
+        "v2e": {
+          "all_queries": 581,
+          "finite": 581,
+          "missing": 0,
+          "p50": 2.149151770567856,
+          "p95": 5.2329902416731615,
+          "mean": 2.386721179450548,
+          "fail_over_10_or_missing": 1,
+          "max_recomputed_difference_px": 0
+        }
+      },
+      "secondary": {
+        "ours": {
+          "all_queries": 193,
+          "finite": 193,
+          "missing": 0,
+          "p50": 2.200422923111603,
+          "p95": 5.544839291654961,
+          "mean": 2.5667381665687388,
+          "fail_over_10_or_missing": 0,
+          "max_recomputed_difference_px": 0
+        },
+        "v2e": {
+          "all_queries": 193,
+          "finite": 193,
+          "missing": 0,
+          "p50": 2.3214400261423536,
+          "p95": 5.217647928887488,
+          "mean": 2.5286134577497688,
+          "fail_over_10_or_missing": 1,
+          "max_recomputed_difference_px": 0
+        }
+      }
+    }
+  },
+  "provenance_limits": [
+    "This review reran five local analytic NumPy probes and a CPU public-plugin ramp/static probe; did not rerun archived CUDA tests or all 1598 archived artifact hashes.",
+    "Old robot localization values were read from archived summary; new Ours and V2E values were independently recomputed from raw prediction CSV.",
+    "Robot Direct-HDR reference is synthetic evaluation, not a public real event camera test.",
+    "No new training, public-real scoring, shared-core changes or environment upgrades were performed."
+  ]
+}
