@@ -1,0 +1,57 @@
+{
+  "code_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+  "stages": [
+    {
+      "name": "cuda_controls",
+      "command": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/validate_cuda.py",
+        "--devices",
+        "cpu,cuda:0",
+        "--output",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_v100_20261102b/cuda_controls"
+      ],
+      "exit_code": 0,
+      "wall_s": 4.801974351052195
+    },
+    {
+      "name": "cuda_cache",
+      "command": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/replay_sparse_cache.py",
+        "--devices",
+        "cpu,cuda:0",
+        "--input",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/cpu_cache_replay/sparse_endpoint_blocks.npz",
+        "--output",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_v100_20261102b/cuda_cache"
+      ],
+      "exit_code": 0,
+      "wall_s": 34.56272665801225
+    },
+    {
+      "name": "pixel_equivalence",
+      "command": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/local_cuda_20261102a/check_pixel_equivalence.py",
+        "--replay",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_v100_20261102b/cuda_cache",
+        "--model-source",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/source/benchmark/robot_closed_loop/event_state_model.py",
+        "--checkpoint",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/fit/spatial_event_state.pt",
+        "--input",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/cpu_cache_replay/sparse_endpoint_blocks.npz"
+      ],
+      "exit_code": 0,
+      "wall_s": 5.220712877984624
+    }
+  ],
+  "status": "cuda_validation_passed_R2_pending",
+  "stage": "pixel_equivalence",
+  "child_pid": 4093107,
+  "finished_utc": "2026-11-02T06:05:34.952590+00:00"
+}

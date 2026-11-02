@@ -1,0 +1,59 @@
+{
+  "code_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+  "benchmark_source": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/source",
+  "core_source": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core",
+  "checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896",
+  "scene_sha256": "aa97f6f5a12af92561ef053407bb795bba2801582958b4ad1134bcd24497435a",
+  "control_sha256": "59ef2b10b4fd74f06aa35fbd0303448d28b32e0b63798d27bcc7d55bf2f76c42",
+  "command": [
+    "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-robot/.venv-robot/bin/python",
+    "-u",
+    "-m",
+    "benchmark.robot_closed_loop.run",
+    "--mode",
+    "reference",
+    "--config",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/source/benchmark/robot_closed_loop/configs/scene_pilot_r0_5_candidate.json",
+    "--control-config",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/source/benchmark/robot_closed_loop/configs/shared_control_r0_8_monitor60_diagnostic.json",
+    "--out",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_cuda_r2_server_20261102a/R2_events_seed2026110200",
+    "--speeds",
+    "0.3,0.4,0.5",
+    "--reference-episodes",
+    "1",
+    "--reference-y-values=0,-0.055,0.055",
+    "--event-controller-hz",
+    "2000",
+    "--reference-controller-source",
+    "events",
+    "--event-model-checkpoint",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/robot_r1_5_sparse_time_repair_20261101a/fit/spatial_event_state.pt",
+    "--reference-duration",
+    "3.0",
+    "--seed",
+    "2026110200"
+  ],
+  "conditions": [
+    {
+      "seed": 2026110200,
+      "speed_m_s": 0.3,
+      "y_m": 0.0
+    },
+    {
+      "seed": 2026110201,
+      "speed_m_s": 0.4,
+      "y_m": -0.055
+    },
+    {
+      "seed": 2026110202,
+      "speed_m_s": 0.5,
+      "y_m": 0.055
+    }
+  ],
+  "inference_input": "independent Direct-HDR reference events; not candidate reconstructed online events",
+  "training_input": "accepted 100Hz sparse endpoint reconstruction; checkpoint fixed before this run",
+  "model_frozen": true,
+  "controller_unchanged": true,
+  "strict_scorer_unchanged": true
+}

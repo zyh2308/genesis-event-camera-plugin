@@ -1,0 +1,83 @@
+{
+  "schema": "robot_sparse_reconstruction_profile_v1",
+  "status": "ready_for_freeze_scope_decision",
+  "code_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+  "core_canonical_LF_sha256": {
+    "adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+    "calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+    "camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+    "camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+    "dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+    "genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+    "interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+    "noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+    "physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+    "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+    "physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+    "plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+    "radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+    "readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+    "recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+    "torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+    "__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+  },
+  "constructor": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+  "plugin_kwargs": {
+    "device": "cuda:0",
+    "warp_backend": "torch",
+    "warp_composite": "coverage_time_log_linear",
+    "disocclusion_policy": "hold",
+    "strict_fidelity": false,
+    "min_coverage_fraction": 0.995,
+    "input_space": "linear",
+    "radiance_scale": 1.0,
+    "radiance_white_level": 1.0,
+    "response_mode": "physical_log",
+    "radiometric_floor": 1e-06,
+    "radiometric_calibration_status": "uncalibrated",
+    "readout_model": "ideal_readout",
+    "intermediate_state_provider": null
+  },
+  "noise_config_class": "genesis_event_plugin.noise_model.DvsNoiseConfig",
+  "noise_config_kwargs": {
+    "pos_thres": 0.2,
+    "neg_thres": 0.2,
+    "sigma_thres": 0,
+    "cutoff_hz": 0,
+    "leak_rate_hz": 0,
+    "leak_jitter_fraction": 0,
+    "shot_noise_rate_hz": 0,
+    "noise_rate_cov_decades": 0,
+    "refractory_period_s": 0,
+    "log_input": false,
+    "radiance_input": true,
+    "radiance_scale": 1,
+    "radiance_white_level": 1,
+    "response_mode": "physical_log",
+    "radiometric_floor": 1e-06,
+    "radiometric_calibration_status": "uncalibrated",
+    "readout_model": "ideal_readout",
+    "seed": 42
+  },
+  "required_runtime_providers": [
+    "frame_provider: timestamped linear HDR, depth and segmentation",
+    "motion_state_provider: CV camera-to-world and object-to-world matrices keyed by segmentation ID"
+  ],
+  "validated_input": {
+    "endpoint_rate_Hz": 100,
+    "resolution_wh": [
+      320,
+      240
+    ],
+    "geometry": "rigid robot and cube scene"
+  },
+  "unknown_support": "Retained as unknown; approximate continuous radiance does not become a real observation",
+  "dense_reference_role": "Evaluation only; never candidate training or intermediate-frame generation",
+  "CPU_equivalent": {
+    "device": "cpu",
+    "warp_backend": "numpy"
+  },
+  "sensor_calibration": "Assumed ideal response, not measured EVK4",
+  "strict_sampled_mode": "Unchanged separate mode, not used as the sparse repair",
+  "default_constructor_unchanged": true
+}
