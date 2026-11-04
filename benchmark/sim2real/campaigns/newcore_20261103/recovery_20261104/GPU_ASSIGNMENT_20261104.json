@@ -1,0 +1,72 @@
+{
+  "updated_utc": "2026-11-04T12:39:16.697784+00:00",
+  "persistent_resources": {
+    "flow": [
+      "g1 GPU3 V100S",
+      "g1 GPU4 V100S"
+    ],
+    "reconstruction": [
+      "g3 GPU3 RTX4090"
+    ]
+  },
+  "temporary_resource": {
+    "pose": [
+      "g1 GPU5 TITAN RTX"
+    ]
+  },
+  "retention": "g1 GPU3/4 and g3 GPU3 manager index3/4 remain in low-load CUDA standby after queues; temporary g1 GPU5 follows all45 completion release policy",
+  "moved_pending_reconstruction_runs": [
+    {
+      "method": "v2e",
+      "seed": 2,
+      "from_g1_gpu": 3,
+      "old_job_id": "42_1_reconstruction_v2e_seed2",
+      "new_job_id": "51_reconstruction_v2e_seed2"
+    },
+    {
+      "method": "film_esim",
+      "seed": 2,
+      "from_g1_gpu": 3,
+      "old_job_id": "82_1_reconstruction_film_esim_seed2",
+      "new_job_id": "51_reconstruction_film_esim_seed2"
+    },
+    {
+      "method": "vid2e",
+      "seed": 2,
+      "from_g1_gpu": 3,
+      "old_job_id": "82_0_reconstruction_vid2e_seed2",
+      "new_job_id": "51_reconstruction_vid2e_seed2"
+    },
+    {
+      "method": "rife_esim",
+      "seed": 2,
+      "from_g1_gpu": 3,
+      "old_job_id": "82_2_reconstruction_rife_esim_seed2",
+      "new_job_id": "51_reconstruction_rife_esim_seed2"
+    },
+    {
+      "method": "vid2e",
+      "seed": 1,
+      "from_g1_gpu": 5,
+      "old_job_id": "81_0_reconstruction_vid2e_seed1",
+      "new_job_id": "50_reconstruction_vid2e_seed1"
+    },
+    {
+      "method": "rife_esim",
+      "seed": 1,
+      "from_g1_gpu": 5,
+      "old_job_id": "81_2_reconstruction_rife_esim_seed1",
+      "new_job_id": "50_reconstruction_rife_esim_seed1"
+    },
+    {
+      "method": "film_esim",
+      "seed": 1,
+      "from_g1_gpu": 5,
+      "old_job_id": "81_1_reconstruction_film_esim_seed1",
+      "new_job_id": "50_reconstruction_film_esim_seed1"
+    }
+  ],
+  "hardware_amendment": "all pending reconstruction runs move to RTX4090 with TF32 disabled; completed V100S/TITAN runs retained",
+  "model_data_labels_seeds_optimizer_budget_unchanged": true,
+  "active_training_processes_unchanged": true
+}
