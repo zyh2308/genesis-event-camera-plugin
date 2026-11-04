@@ -1,0 +1,127 @@
+{
+  "passed": false,
+  "checks": {
+    "sensor_v1": true,
+    "actual_inputs_v1": true,
+    "sensor_v2": true,
+    "actual_inputs_v2": true,
+    "process_resume_v2": true,
+    "geometry_v2": true,
+    "model_v1": true,
+    "model_v2": true,
+    "fused_chunk_events_masks_sampling": true,
+    "fused_early_events_masks_sampling": true,
+    "workers_baseline_1": true,
+    "workers_baseline_2": true,
+    "workers_fused_early_1": true,
+    "workers_fused_early_2": true,
+    "workers_fused_chunk_4": true,
+    "long_trace_events_rng": false,
+    "frozen_core_all_17_unchanged": true,
+    "completed_jobs_exit_zero": true
+  },
+  "long_trace": {
+    "intervals": 20,
+    "simulated_s": 0.2,
+    "events_baseline": 50474,
+    "events_candidate": 50474,
+    "events_bitwise_equal": false,
+    "state_max_abs": {
+      "state_base_log_frame": 0.0,
+      "state_lp_log_frame": 1.0102931824462758e-09,
+      "state_new_frame": 0.0,
+      "state_log_new_frame": 0.0,
+      "state_diff_frame": 1.0102931824462758e-09,
+      "state_photoreceptor_noise_arr": 0.0,
+      "state_noise_rate_array": 0.0,
+      "state_timestamp_mem": 1.7671020202669752e-10,
+      "state_pos_thres": 0.0,
+      "state_neg_thres": 0.0,
+      "state_rng_state": 0.0
+    },
+    "rng_exact": true,
+    "long_baseline": {
+      "wall_s": 77.58778788603377,
+      "phases": {
+        "geometry_wall_s": 44.38350856420584,
+        "dvs_wall_s": 30.731297963182442
+      },
+      "peak_allocated_bytes": 11376134144,
+      "fallbacks": 0
+    },
+    "long_fused": {
+      "wall_s": 50.95801578601822,
+      "phases": {
+        "geometry_wall_s": 43.7929835972609,
+        "dvs_wall_s": 4.842799992999062
+      },
+      "peak_allocated_bytes": 12050358784,
+      "fallbacks": 0
+    }
+  },
+  "worker_quality": [
+    {
+      "variant": "baseline",
+      "workers": 1,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 3
+    },
+    {
+      "variant": "baseline",
+      "workers": 2,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 6
+    },
+    {
+      "variant": "fused_early",
+      "workers": 1,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 3
+    },
+    {
+      "variant": "fused_early",
+      "workers": 2,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 6
+    },
+    {
+      "variant": "fused_chunk",
+      "workers": 4,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 12
+    }
+  ],
+  "job_exit_codes": {
+    "00_baseline_profile.done.json": 0,
+    "01_build_fused.done.json": 0,
+    "02_sensor_semantics.done.json": 0,
+    "03_bulk_profile.done.json": 0,
+    "04_fused_profile.done.json": 0,
+    "05_cached_profile.done.json": 0,
+    "06_fused_chunk_profile.done.json": 0,
+    "07_early_profile.done.json": 0,
+    "08_actual_inputs.done.json": 0,
+    "09_paired_suite.done.json": 0,
+    "10_geometry_profile.done.json": 0,
+    "11_analyze.done.json": 0,
+    "12_model_regression.done.json": 0,
+    "13_process_resume.done.json": 0,
+    "14_geometry_tests.done.json": 0,
+    "15_v2_sensor_tests.done.json": 0,
+    "16_v2_actual_inputs.done.json": 0,
+    "17_v2_paired.done.json": 0,
+    "18_v2_analyze.done.json": 0,
+    "19_worker_throughput.done.json": 0,
+    "20_cpu_profile.done.json": 0,
+    "21_long_baseline.done.json": 0,
+    "22_long_fused.done.json": 0,
+    "23_v2_model.done.json": 0
+  },
+  "frozen_core_release": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "real_data_used": false
+}
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_20261105a/final_audit.py", line 43, in <module>
+    assert report['passed'],checks
+           ~~~~~~^^^^^^^^^^
+AssertionError: {'sensor_v1': True, 'actual_inputs_v1': True, 'sensor_v2': True, 'actual_inputs_v2': True, 'process_resume_v2': True, 'geometry_v2': True, 'model_v1': True, 'model_v2': True, 'fused_chunk_events_masks_sampling': True, 'fused_early_events_masks_sampling': True, 'workers_baseline_1': True, 'workers_baseline_2': True, 'workers_fused_early_1': True, 'workers_fused_early_2': True, 'workers_fused_chunk_4': True, 'long_trace_events_rng': False, 'frozen_core_all_17_unchanged': True, 'completed_jobs_exit_zero': True}

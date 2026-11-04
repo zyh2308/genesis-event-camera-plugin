@@ -1,0 +1,152 @@
+{
+  "passed": false,
+  "checks": {
+    "sensor_v1": true,
+    "actual_inputs_v1": true,
+    "sensor_v2": true,
+    "actual_inputs_v2": true,
+    "process_resume_v2": true,
+    "geometry_v2": true,
+    "model_v1": true,
+    "model_v2": true,
+    "fused_chunk_events_masks_sampling": true,
+    "fused_early_events_masks_sampling": true,
+    "workers_baseline_1": true,
+    "workers_baseline_2": true,
+    "workers_fused_early_1": true,
+    "workers_fused_early_2": true,
+    "workers_fused_chunk_4": true,
+    "long_trace_events_rng": false,
+    "frozen_core_all_17_unchanged": true,
+    "completed_jobs_exit_zero": true
+  },
+  "long_trace": {
+    "intervals": 20,
+    "simulated_s": 0.2,
+    "events_baseline": 50474,
+    "events_candidate": 50474,
+    "events_bitwise_equal": false,
+    "state_max_abs": {
+      "state_base_log_frame": 0.0,
+      "state_lp_log_frame": 1.0102931824462758e-09,
+      "state_new_frame": 0.0,
+      "state_log_new_frame": 0.0,
+      "state_diff_frame": 1.0102931824462758e-09,
+      "state_photoreceptor_noise_arr": 0.0,
+      "state_noise_rate_array": 0.0,
+      "state_timestamp_mem": 1.7671020202669752e-10,
+      "state_pos_thres": 0.0,
+      "state_neg_thres": 0.0,
+      "state_rng_state": 0.0
+    },
+    "rng_exact": true,
+    "long_baseline": {
+      "wall_s": 77.58778788603377,
+      "phases": {
+        "geometry_wall_s": 44.38350856420584,
+        "dvs_wall_s": 30.731297963182442
+      },
+      "peak_allocated_bytes": 11376134144,
+      "fallbacks": 0
+    },
+    "long_fused": {
+      "wall_s": 50.95801578601822,
+      "phases": {
+        "geometry_wall_s": 43.7929835972609,
+        "dvs_wall_s": 4.842799992999062
+      },
+      "peak_allocated_bytes": 12050358784,
+      "fallbacks": 0
+    }
+  },
+  "worker_quality": [
+    {
+      "variant": "baseline",
+      "workers": 1,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 3
+    },
+    {
+      "variant": "baseline",
+      "workers": 2,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 6
+    },
+    {
+      "variant": "fused_early",
+      "workers": 1,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 3
+    },
+    {
+      "variant": "fused_early",
+      "workers": 2,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 6
+    },
+    {
+      "variant": "fused_chunk",
+      "workers": 4,
+      "all_events_bitwise_equal": true,
+      "compared_trials": 12
+    }
+  ],
+  "job_exit_codes": {
+    "00_baseline_profile.done.json": 0,
+    "01_build_fused.done.json": 0,
+    "02_sensor_semantics.done.json": 0,
+    "03_bulk_profile.done.json": 0,
+    "04_fused_profile.done.json": 0,
+    "05_cached_profile.done.json": 0,
+    "06_fused_chunk_profile.done.json": 0,
+    "07_early_profile.done.json": 0,
+    "08_actual_inputs.done.json": 0,
+    "09_paired_suite.done.json": 0,
+    "10_geometry_profile.done.json": 0,
+    "11_analyze.done.json": 0,
+    "12_model_regression.done.json": 0,
+    "13_process_resume.done.json": 0,
+    "14_geometry_tests.done.json": 0,
+    "15_v2_sensor_tests.done.json": 0,
+    "16_v2_actual_inputs.done.json": 0,
+    "17_v2_paired.done.json": 0,
+    "18_v2_analyze.done.json": 0,
+    "19_worker_throughput.done.json": 0,
+    "20_cpu_profile.done.json": 0,
+    "21_long_baseline.done.json": 0,
+    "22_long_fused.done.json": 0,
+    "23_v2_model.done.json": 0
+  },
+  "frozen_core_release": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "frozen_core_hashes": {
+    "adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+    "calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+    "camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+    "camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+    "dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+    "genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+    "interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+    "noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+    "physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+    "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+    "physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+    "plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+    "radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+    "readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+    "recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+    "torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+    "__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+  },
+  "real_data_used": false,
+  "environment": {
+    "host": "g1",
+    "python": "3.11.15 (main, Jun 11 2026, 15:20:16) [GCC 14.3.0]",
+    "cpu_count": 128,
+    "load": [
+      6.01,
+      6.08,
+      5.83
+    ],
+    "gpu": "Tesla V100S-PCIE-32GB, GPU-a02affe0-7598-579e-ca39-f551f35ad6e9, 560.35.05, 32768 MiB"
+  }
+}
