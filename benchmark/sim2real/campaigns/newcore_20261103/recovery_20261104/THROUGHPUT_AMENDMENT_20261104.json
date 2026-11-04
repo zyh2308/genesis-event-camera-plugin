@@ -1,0 +1,38 @@
+{
+  "updated_utc": "2026-11-04T12:43:55.398771+00:00",
+  "policy": "Keep seed0 first; balance pending flow jobs across two V100S; fill the temporary pose GPU with seed1 reconstruction after its pose queue",
+  "changes": [
+    {
+      "job": "41_0_flow_eventgenesis_seed1",
+      "from": "g1 GPU4",
+      "to": "g1 GPU3"
+    },
+    {
+      "job": "81_2_flow_rife_esim_seed1",
+      "from": "g1 GPU4",
+      "to": "g1 GPU3"
+    },
+    {
+      "job": "82_2_flow_rife_esim_seed2",
+      "from": "g1 GPU4",
+      "to": "g1 GPU3"
+    },
+    {
+      "job": "90_reconstruction_vid2e_seed1",
+      "from": "g3 GPU3",
+      "to": "g1 GPU5 after all queued pose runs"
+    },
+    {
+      "job": "90_reconstruction_rife_esim_seed1",
+      "from": "g3 GPU3",
+      "to": "g1 GPU5 after all queued pose runs"
+    },
+    {
+      "job": "90_reconstruction_film_esim_seed1",
+      "from": "g3 GPU3",
+      "to": "g1 GPU5 after all queued pose runs"
+    }
+  ],
+  "training_protocol_modified": false,
+  "active_jobs_interrupted": false
+}
