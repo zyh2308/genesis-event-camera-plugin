@@ -1,0 +1,20 @@
+{
+  "official_comparison": {
+    "upstream_commit": "4aa4431bf2f6057c9d40d4990227e3e655699ed3",
+    "adapter": "native_adapter.py",
+    "operator_result": "operator_results.json",
+    "model_result": "model_results.json",
+    "deployment": "rejected"
+  },
+  "ordered_implementation": {
+    "adapter": "ordered_adapter.py",
+    "sources": [
+      "ordered_backward.cpp",
+      "ordered_backward.cu"
+    ],
+    "operator_result": "operator_ordered_results.json",
+    "model_result": "model_ordered_results.json",
+    "note": "upstream_commit in shared operator harness is inherited comparison provenance; it does not identify the independent ordered kernel. Kernel sources and binary are pinned by deployment_manifest.json."
+  },
+  "deployed_gate_pending": true
+}

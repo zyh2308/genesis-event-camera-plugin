@@ -1,0 +1,49 @@
+--- frozen/train_steflow_stage9.py
++++ isolated/train_steflow_ordered.py
+@@ -18,8 +18,8 @@
+ import torch
+ import torch.nn.functional as F
+ 
+-sys.path.insert(0, str(Path(__file__).resolve().parent))
+-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "compat"))
++sys.path.insert(0, '/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/benchmark/sim2real/scripts')
++sys.path.insert(0, '/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/benchmark/sim2real/compat')
+ from run_steflow_stage2_pilot import (
+     compute_epe, model_output_to_flow_hw, objective_dt1, pure_torch_spatial_correlation,
+     set_seed, state_sha256,
+@@ -151,6 +151,7 @@
+         "cuda_rng": torch.cuda.get_rng_state_all(), "config_sha256": config_hash,
+         "data_manifest_sha256": manifest_hash, "initial_state_sha256": initial_hash,
+         "current_state_sha256": current_hash,
++        "correlation_backend": "reference_forward_ordered_cuda_backward",
+         "best_synthetic_validation_epe": best_epe, "best_epoch": best_epoch,
+         "effective_batch": 8, "microbatch": 8, "accumulation_steps": 1,
+         "flow_unit": FLOW_UNIT, "real_data_used": False,
+@@ -241,7 +242,8 @@
+ 
+     sys.path.insert(0, str(model_root))
+     corr_module = importlib.import_module("models.corr")
+-    corr_module.spatial_correlation_sample = pure_torch_spatial_correlation
++    from ordered_adapter import spatial_correlation_sample as ordered_correlation
++    corr_module.spatial_correlation_sample = ordered_correlation
+     import models
+     import multiscaleloss
+     upstream_hashes = patch_ste(models, multiscaleloss, model_root)
+@@ -267,6 +269,8 @@
+     best_epe, best_epoch = float("inf"), None
+     if args.resume:
+         saved = torch.load(args.resume, map_location="cpu", weights_only=False)
++        if saved.get("correlation_backend") != "reference_forward_ordered_cuda_backward":
++            raise ValueError("Refusing a mixed-backend training resume")
+         if not saved.get("resume_allowed", False) or saved.get("resume_phase") != "train":
+             raise ValueError("checkpoint is inference-only or not at a resumable training phase")
+         if saved["generator"] != args.generator or saved["seed"] != args.seed:
+@@ -294,7 +298,7 @@
+         "repo_commit": os.environ.get("STAGE4_REPO_COMMIT", "unknown"),
+         "config_path": str(args.config.resolve()), "config_sha256": sha256(args.config),
+         "data_manifest": str(manifest_path), "data_manifest_sha256": sha256(manifest_path),
+-        "model_root": str(model_root), "correlation_operator": "memory-bounded PyTorch implementation, math-equivalent to locked upstream op",
++        "model_root": str(model_root), "correlation_operator": "reference PyTorch forward / ordered CUDA backward; seed1 paired group",
+         "initial_state_sha256": initial_hash, "effective_batch": 8, "microbatch": 8, "gradient_accumulation_steps": 1,
+         "epochs": 45, "train_windows": 1584, "validation_windows": 528,
+         "objective": "official multiscale Charbonnier photometric + 10x second-order smoothness",

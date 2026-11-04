@@ -1,0 +1,46 @@
+[1/4] /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-c++ -MMD -MF correlation.o.d -DTORCH_EXTENSION_NAME=spatial_correlation_sampler_backend -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/targets/x86_64-linux/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/include/python3.11 -fPIC -std=c++17 -O3 -std=c++17 -fopenmp -DUSE_CUDA -c /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp -o correlation.o 
+FAILED: [code=1] correlation.o 
+/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-c++ -MMD -MF correlation.o.d -DTORCH_EXTENSION_NAME=spatial_correlation_sampler_backend -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/targets/x86_64-linux/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/include/python3.11 -fPIC -std=c++17 -O3 -std=c++17 -fopenmp -DUSE_CUDA -c /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp -o correlation.o 
+In file included from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/ATen/ATen.h:11,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/types.h:3,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/data/dataloader_options.h:4,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/data/dataloader/base.h:3,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/data/dataloader/stateful.h:4,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/data/dataloader.h:3,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/data.h:3,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include/torch/all.h:9,
+                 from /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/extension.h:5,
+                 from /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp:1:
+/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp: In function 'at::Tensor correlation_cpp_forward(at::Tensor, at::Tensor, int, int, int, int, int, int, int, int, int, int, int, int)':
+/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp:99:1: error: for statement expected before '[' token
+   99 | AT_DISPATCH_FLOATING_TYPES(input1.scalar_type(), "correlation_forward_cpp", ([&] {
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp: In function 'std::vector<at::Tensor> correlation_cpp_backward(at::Tensor, at::Tensor, at::Tensor, int, int, int, int, int, int, int, int, int, int, int, int)':
+/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation.cpp:156:1: error: for statement expected before '[' token
+  156 | AT_DISPATCH_FLOATING_TYPES(input1.scalar_type(), "correlation_backward_cpp", ([&] {
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~
+[2/4] /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-c++ -MMD -MF correlation_sampler.o.d -DTORCH_EXTENSION_NAME=spatial_correlation_sampler_backend -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/targets/x86_64-linux/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/include/python3.11 -fPIC -std=c++17 -O3 -std=c++17 -fopenmp -DUSE_CUDA -c /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/upstream/Correlation_Module/correlation_sampler.cpp -o correlation_sampler.o 
+ninja: build stopped: subcommand failed.
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2595, in _run_ninja_build
+    subprocess.run(
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['ninja', '-v', '-j', '2']' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/correlation_cuda_20261104/build_native.py", line 13, in <module>
+    module = load(name='spatial_correlation_sampler_backend',
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2138, in _jit_compile
+    _write_ninja_file_and_build_library(
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2290, in _write_ninja_file_and_build_library
+    _run_ninja_build(
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2612, in _run_ninja_build
+    raise RuntimeError(message) from e
+RuntimeError: Error building extension 'spatial_correlation_sampler_backend'
