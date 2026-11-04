@@ -1,0 +1,39 @@
+ninja_required_version = 1.3
+cxx = /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-c++
+nvcc = /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/nvcc
+
+cflags = -DTORCH_EXTENSION_NAME=eventgenesis_precision_sensor -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/targets/x86_64-linux/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/include/python3.11 -fPIC -std=c++17 -O3 -std=c++17
+post_cflags = 
+cuda_cflags = -ccbin /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-cc -DTORCH_EXTENSION_NAME=eventgenesis_precision_sensor -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/targets/x86_64-linux/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/include -isystem /home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/include/python3.11 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_70,code=sm_70 --compiler-options '-fPIC' -O3 --fmad=false -std=c++17
+cuda_post_cflags = 
+cuda_dlink_post_cflags = 
+sycl_dlink_post_cflags = 
+ldflags = -shared -L/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/targets/x86_64-linux/lib -L/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/site-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/lib -lcudart
+
+rule compile
+  command = $cxx -MMD -MF $out.d $cflags -c $in -o $out $post_cflags
+  depfile = $out.d
+  deps = gcc
+
+rule cuda_compile
+  depfile = $out.d
+  deps = gcc
+  command = $nvcc --generate-dependencies-with-compile --dependency-output $out.d $cuda_cflags -c $in -o $out $cuda_post_cflags
+
+
+
+
+
+rule link
+  command = $cxx $in $ldflags -o $out
+
+build fused_sensor.o: compile /home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_comparison_20261105c/release_candidate_static/genesis_event_plugin/csrc/fused_sensor.cpp
+build fused_sensor.cuda.o: cuda_compile /home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_comparison_20261105c/release_candidate_static/genesis_event_plugin/csrc/fused_sensor.cu
+
+
+
+
+
+build eventgenesis_precision_sensor.so: link fused_sensor.o fused_sensor.cuda.o
+
+default eventgenesis_precision_sensor.so
