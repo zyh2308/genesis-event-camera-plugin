@@ -1,0 +1,52 @@
+{
+  "scope": "Stage 9 synthetic-only final real evaluation; held-out real scoring after checkpoint freeze",
+  "methods": [
+    "eventgenesis",
+    "v2e",
+    "vid2e",
+    "film_esim",
+    "rife_esim"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "checkpoint": "synthetic_best from successful formal run, exact receipt SHA256; no fallback to preflight or last",
+  "tasks": {
+    "reconstruction": {
+      "dataset": "HQF14 previously evaluated benchmark",
+      "scope": "all 14 registered sequences, same fixed time matching and warmup",
+      "primary": "LPIPS-Alex",
+      "secondary": [
+        "SSIM",
+        "PSNR",
+        "MSE"
+      ],
+      "inference": "events only"
+    },
+    "flow": {
+      "dataset": "MVSEC dt1 indoor_flying1/2/3",
+      "scope": "pre-registered APS windows only; one-window input audit is insufficient for scoring",
+      "primary": "AEE (px per dt1 interval)",
+      "secondary": [
+        "outlier rate (>3px and >5% GT magnitude)",
+        "zero-flow baseline"
+      ],
+      "inference": "event representation only; APS timestamps align windows; GT and common scoring mask used only for scoring"
+    },
+    "pose": {
+      "dataset": "E-POSE YCB 036 wood block",
+      "scope": "untouched sequence split as primary; prior r01/r05 exploratory sequences separate; freeze exact sequence list before scoring",
+      "primary": "ADD-S success at 0.1 CAD diameter",
+      "secondary": [
+        "ADD-S AUC with fixed published range",
+        "translation error",
+        "rotation error with symmetry convention"
+      ],
+      "inference": "raw HDF5 full-frame events, public K and CAD, model confidence and PnP; failed predictions count in denominator"
+    }
+  },
+  "aggregation": "Keep per-sequence per-seed values and exact denominators; report seed mean and sample SD; paired sequence-cluster bootstrap CI with same resamples for methods, report valid sequence count and scope; no frame-level pseudo-replication",
+  "score_launch_enabled": false
+}
