@@ -98,7 +98,7 @@ def main():
         "all_other_release_files_byte_identical": True,
         "automatic_production_promotion_performed": False,
         "default_cuda_strict_qualification": "failed_as_recorded_in_handoff",
-        "change": "XYZ projection stack aliases its final homogeneous storage; no cross-frame cache",
+        "change": "Isolated geometry delta at delta_source; qualification is recorded separately",
     }
     receipt_path = destination / "SOURCE_MANIFEST.json"
     receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")

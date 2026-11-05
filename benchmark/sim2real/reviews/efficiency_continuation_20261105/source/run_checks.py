@@ -12,6 +12,8 @@ def main():
     parser.add_argument('--repo', required=True, type=Path)
     parser.add_argument('--run', required=True, type=Path)
     parser.add_argument('--mode', choices=['p0', 'shorts', 'loader'], required=True)
+    parser.add_argument('--delta', type=Path)
+    parser.add_argument('--coverage', action='store_true')
     args = parser.parse_args()
     root = args.run.resolve()
     review = args.repo / 'benchmark/sim2real/reviews'
@@ -27,8 +29,10 @@ def main():
             raise subprocess.CalledProcessError(result.returncode, command)
         return result.returncode
     if args.mode == 'p0':
-        run(own / 'prepare_candidate.py', '--base-release', base, '--out', candidate)
-        run(own / 'check_projection_storage.py', '--reference', base/'genesis_event_plugin/gpu_geometry.py', '--candidate', candidate/'genesis_event_plugin/gpu_geometry.py', '--out', root/'projection_check.json')
+        extra = ['--delta', args.delta] if args.delta else []
+        run(own / 'prepare_candidate.py', '--base-release', base, '--out', candidate, *extra)
+        checker = 'check_coverage.py' if args.coverage else 'check_projection_storage.py'
+        run(own / checker, '--reference', base/'genesis_event_plugin/gpu_geometry.py', '--candidate', candidate/'genesis_event_plugin/gpu_geometry.py', '--out', root/('coverage_check.json' if args.coverage else 'projection_check.json'))
         cases = ['s2_00']
     elif args.mode == 'shorts':
         cases = ['s0_00', 's1_00', 's3_00', 'train_000']
@@ -58,7 +62,7 @@ def main():
         manifest['cases'] = [case]
         manifest_path = root/'formal_cases.json'
         manifest_path.write_text(json.dumps(manifest, indent=2)+'\n')
-        project = root.parent.parent
+        project = base.parents[2]
         campaign = project/'runs/sim2real/20261103-stage9-direct-v1'
         scripts = campaign/'sources/benchmark/sim2real/scripts'
         run(old/'upstream_check_formal_loaders_v2.py', '--cases-json', manifest_path, '--scripts-root', scripts, '--flow-trainer-source', scripts/'train_steflow_stage9.py', '--e2vid-trainer-source', scripts/'train_e2vid_stage9.py', '--e2vid-model-root', project/'external/sources/downstream/event_cnn_minimal', '--output-root', root/'formal_loader_gate')
