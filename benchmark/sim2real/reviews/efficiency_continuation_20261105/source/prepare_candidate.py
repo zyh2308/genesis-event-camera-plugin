@@ -84,7 +84,7 @@ def main():
     except (subprocess.CalledProcessError, FileNotFoundError):
         commit = None
     receipt = {
-        "schema": "isolated_projection_storage_candidate_v1",
+        "schema": "isolated_geometry_candidate_v1",
         "implementation_commit": commit,
         "base_release": str(base),
         "base_manifest": str(manifest_path),

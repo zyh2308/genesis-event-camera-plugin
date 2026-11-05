@@ -179,12 +179,7 @@ def project_endpoint_to_alpha_stack_torch(
                          (yy - K[1, 2]) * depth / K[1, 1], depth), dim=-1).reshape(-1, 3)
     ones = torch.ones((p_cam.shape[0], 1), dtype=dtype, device=device)
     p_world = (source @ torch.cat((p_cam, ones), dim=1).T).T[:, :3]
-    # The writable XYZ stack is a view of the final homogeneous storage.
-    # This removes the otherwise redundant [T,N,3] clone without changing
-    # point transforms, object updates, projection arithmetic, or their order.
-    expanded_world = p_world[None].expand(camera_stack.shape[0], -1, -1)
-    homogeneous = torch.cat((expanded_world, torch.ones((*expanded_world.shape[:2], 1), dtype=dtype, device=device)), dim=-1)
-    p_world_stack = homogeneous[..., :3]
+    p_world_stack = p_world[None].expand(camera_stack.shape[0], -1, -1).clone()
     object_ids = set()
     for mapping in (object_world0, object_world1, object_world_deltas):
         if mapping is not None:
@@ -210,6 +205,7 @@ def project_endpoint_to_alpha_stack_torch(
         points = torch.cat((p_world[mask], torch.ones((int(mask.sum()), 1), dtype=dtype, device=device)), dim=1)
         p_world_stack[:, mask] = torch.bmm(motion, points.T[None].expand(motion.shape[0], -1, -1)).transpose(1, 2)[:, :, :3]
     camera_inv = torch.linalg.inv(camera_stack)
+    homogeneous = torch.cat((p_world_stack, torch.ones((*p_world_stack.shape[:2], 1), dtype=dtype, device=device)), dim=-1)
     p_alpha_cam = torch.einsum("tij,tnj->tni", camera_inv, homogeneous)[..., :3]
     z = p_alpha_cam[..., 2]
     base_valid = torch.isfinite(depth.reshape(-1)) & (depth.reshape(-1) > 1e-6)
@@ -606,12 +602,19 @@ def _splat_projected_coverage_batch_torch(
         # Finite nonnegative tie tolerances guarantee progress. Unsupported
         # nonfinite values have already selected the unchanged bounded path.
         unresolved = [torch.ones_like(item[0], dtype=torch.bool) for item in candidates]
+        first_iteration = True
         while True:
-            nearest = torch.full((total,), float("inf"), dtype=dtype, device=device)
-            for (idx, _w, z, _v, _label), active in zip(candidates, unresolved):
-                selected_active = active.nonzero(as_tuple=False).reshape(-1)
-                if selected_active.numel():
-                    nearest.scatter_reduce_(0, idx.index_select(0, selected_active), z.index_select(0, selected_active), reduce="amin", include_self=True)
+            if first_iteration:
+                # All candidates are unresolved initially. zbuf already holds
+                # the same ordered amin reduction; keep its diagnostics intact.
+                nearest = zbuf
+                first_iteration = False
+            else:
+                nearest = torch.full((total,), float("inf"), dtype=dtype, device=device)
+                for (idx, _w, z, _v, _label), active in zip(candidates, unresolved):
+                    selected_active = active.nonzero(as_tuple=False).reshape(-1)
+                    if selected_active.numel():
+                        nearest.scatter_reduce_(0, idx.index_select(0, selected_active), z.index_select(0, selected_active), reduce="amin", include_self=True)
             tolerance = torch.maximum(
                 torch.full_like(nearest, float(depth_tie_abs_m)),
                 float(depth_tie_rtol) * torch.abs(nearest),

@@ -58,3 +58,15 @@ Outputs must be new. Input banks, labels, checkpoints, frozen packages,
 shared environments and legacy evidence are read only. No formal training or
 real scoring is invoked. All reported equivalence still requires separate
 strict acceptance; event count is not a quality metric.
+
+
+The selected delta is the first-layer z-buffer reuse in ../release/. The failed
+projection-storage source is kept separately under ../candidates/.
+Use prepare_candidate.py --base-release ARCHIVED_COMPLETE_V1 --out NEW_PACKAGE
+to verify/copy the full manifest before applying the selected delta. For exact
+validation run run_checks.py --repo ISOLATED_REPO --run NEW_RUN --mode p0
+--coverage; its full_plugin_gate/comparator inputs are static repository files.
+lease_runner.py is session-specific, copied to this run's registered root; do
+not launch it from the source directory. Its lock/resource paths are explicit.
+See ../RESULTS_ZH.md and ../evidence/FIRST_DELIVERY.json for exact source hashes,
+mode boundaries, rejected candidates, unrerun checks and resource release.

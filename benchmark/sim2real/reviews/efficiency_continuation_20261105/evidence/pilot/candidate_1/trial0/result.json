@@ -1,0 +1,414 @@
+{
+  "variant": "ours_resident",
+  "wall_s": 1.842984396032989,
+  "setup_s": 0.010234278975985944,
+  "peak_bytes": 11680767488,
+  "worker_peak_bytes": 11689287168,
+  "unrelated_allocated_bytes": 8519680,
+  "substeps": [
+    377,
+    377
+  ],
+  "fallbacks": 0,
+  "events": {
+    "count": 3575,
+    "sha256": "b209d134c0202c5709fa31a82d0f7b99f2b00e50bac0cb1b2563175f83ed0769",
+    "dtype": "float64",
+    "t_min": 0.002041298426785678,
+    "t_max": 0.019997135579662203
+  },
+  "phases": null,
+  "setup_peak_allocated_bytes": 15718400,
+  "setup_peak_reserved_bytes": 31457280,
+  "generation_peak_allocated_bytes": 11689287168,
+  "generation_peak_reserved_bytes": 13222543360,
+  "pipeline_peak_allocated_bytes": 11689287168,
+  "pipeline_peak_reserved_bytes": 13222543360,
+  "case": "s2_00",
+  "trial": 0,
+  "intervals": 2,
+  "core": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_continuation_20261105h/candidate_release",
+  "initialized_pipeline_s": 1.853218675008975,
+  "simulated_s": 0.020000000000000462,
+  "deterministic_algorithms": false,
+  "cublas_workspace_config": null,
+  "gpu_uuid_visible": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+  "gpu_name": "Tesla V100S-PCIE-32GB",
+  "runtime": {
+    "torch": "2.8.0+cu126",
+    "cuda": "12.6",
+    "num_threads": 2,
+    "interop_threads": 1,
+    "matmul_tf32": false,
+    "cudnn_tf32": false
+  },
+  "input_array_layout": {
+    "radiance_linear_rgb": {
+      "dtype": "float32",
+      "shape": [
+        3,
+        260,
+        346,
+        3
+      ],
+      "device": "cpu"
+    },
+    "depth_m": {
+      "dtype": "float32",
+      "shape": [
+        3,
+        260,
+        346
+      ],
+      "device": "cpu"
+    },
+    "segmentation_link_idx": {
+      "dtype": "int32",
+      "shape": [
+        3,
+        260,
+        346
+      ],
+      "device": "cpu"
+    },
+    "object_to_world": {
+      "dtype": "float64",
+      "shape": [
+        3,
+        51,
+        4,
+        4
+      ],
+      "device": "cpu"
+    },
+    "camera_to_world_cv": {
+      "dtype": "float64",
+      "shape": [
+        3,
+        4,
+        4
+      ],
+      "device": "cpu"
+    }
+  },
+  "event_output_device": "cpu",
+  "observation": {
+    "optimization_active": true,
+    "optimization_status": {
+      "active": true,
+      "reference_fallback_reasons": []
+    },
+    "plugin_fallbacks": 0,
+    "sensor_fallbacks": 0,
+    "last_fallback_flags": 0,
+    "last_sampling": {
+      "samples": 377,
+      "contrast_samples": 14,
+      "visibility_samples": 2,
+      "depth_samples": 2,
+      "max_log_change": 1.3534141778945923,
+      "max_boundary_flow_px": 0.41490599513053894,
+      "max_relative_depth_change": 0.0012006954057142138,
+      "camera_samples": 2,
+      "articulation_samples": 2,
+      "max_camera_flow_px": 0.4502187669277191,
+      "max_articulation_flow_px": 0.15702469646930695,
+      "uncapped_samples": 377,
+      "capped": false,
+      "radiance_samples": 6,
+      "sensor_samples": 377,
+      "max_radiance_residual": 8.624238014221191,
+      "p99_radiance_residual": 0.5425963401794434,
+      "max_sensor_eps": 18.84955592154003,
+      "disocclusion_fraction": 0.0,
+      "used_correspondence_depth": true,
+      "recommend_render": true,
+      "depth_correspondence_method": "source_material_point"
+    },
+    "plugin_total_steps": 3,
+    "plugin_total_events": 3575,
+    "actual_sensor_config": {
+      "pos_thres": 0.2,
+      "neg_thres": 0.2,
+      "sigma_thres": 0.03,
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "shot_noise_inten_factor": 0.25,
+      "depth_noise_scale": 0.0,
+      "photoreceptor_noise": false,
+      "noise_rate_cov_decades": 0.1,
+      "refractory_period_s": 0.0005,
+      "hot_pixel_rate_hz": 0.0,
+      "pixel_noise_map_path": null,
+      "correlated_noise_alpha": 0.0,
+      "correlated_noise_scale": 0.0,
+      "log_input": false,
+      "log_eps": 1e-06,
+      "radiance_input": true,
+      "radiance_scale": 1.0,
+      "radiance_white_level": 1.0,
+      "radiance_log_threshold": 20.0,
+      "response_mode": "physical_log",
+      "radiometric_gain": 1.0,
+      "radiometric_offset": 0.0,
+      "radiometric_floor": 1e-06,
+      "radiometric_calibration_status": "uncalibrated",
+      "radiometric_calibration_id": "",
+      "calibrated_transfer_path": null,
+      "sensor_eps_target": 0.05,
+      "readout_model": "ideal_readout",
+      "seed": 42
+    },
+    "sensor_tensor_layout": {
+      "base_log_frame": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "lp_log_frame": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "new_frame": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "log_new_frame": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "diff_frame": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "photoreceptor_noise_arr": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "noise_rate_array": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "timestamp_mem": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "pos_thres": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      },
+      "neg_thres": {
+        "dtype": "torch.float64",
+        "device": "cuda:0",
+        "shape": [
+          260,
+          346
+        ]
+      }
+    }
+  },
+  "profile": {
+    "schema": "stage9_task_sensor_profile_v1",
+    "status": "derived_task_profile_preserving_prior_sensor_parameters",
+    "code_commit": "6ac417c7a03e125f40ebf967796bf28191d55859",
+    "core_canonical_LF_sha256": {
+      "adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+      "calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+      "camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+      "camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+      "dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+      "genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+      "interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+      "noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+      "physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+      "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+      "physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+      "plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+      "radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+      "readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+      "recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+      "torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+      "__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+    },
+    "constructor": "genesis_event_plugin.physics_plugin.GenesisPhysicsEventPlugin",
+    "plugin_kwargs": {
+      "device": "cuda:0",
+      "warp_backend": "torch",
+      "warp_composite": "coverage_time_log_linear",
+      "disocclusion_policy": "hold",
+      "strict_fidelity": false,
+      "min_coverage_fraction": 0.995,
+      "input_space": "linear",
+      "radiance_scale": 1.0,
+      "radiance_white_level": 1.0,
+      "response_mode": "physical_log",
+      "radiometric_floor": 1e-06,
+      "radiometric_calibration_status": "uncalibrated",
+      "readout_model": "ideal_readout",
+      "intermediate_state_provider": null
+    },
+    "noise_config_class": "genesis_event_plugin.noise_model.DvsNoiseConfig",
+    "noise_config_kwargs": {
+      "pos_thres": 0.2,
+      "neg_thres": 0.2,
+      "sigma_thres": 0.03,
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "noise_rate_cov_decades": 0.1,
+      "refractory_period_s": 0.0005,
+      "log_input": false,
+      "radiance_input": true,
+      "radiance_scale": 1,
+      "radiance_white_level": 1,
+      "response_mode": "physical_log",
+      "radiometric_floor": 1e-06,
+      "radiometric_calibration_status": "uncalibrated",
+      "readout_model": "ideal_readout",
+      "seed": 42
+    },
+    "required_runtime_providers": [
+      "frame_provider: timestamped linear HDR, depth and segmentation",
+      "motion_state_provider: CV camera-to-world and object-to-world matrices keyed by segmentation ID"
+    ],
+    "validated_input": {
+      "endpoint_rate_Hz": 100,
+      "resolution_wh": [
+        320,
+        240
+      ],
+      "geometry": "rigid robot and cube scene"
+    },
+    "unknown_support": "Retained as unknown; approximate continuous radiance does not become a real observation",
+    "dense_reference_role": "Evaluation only; never candidate training or intermediate-frame generation",
+    "CPU_equivalent": {
+      "device": "cpu",
+      "warp_backend": "numpy"
+    },
+    "sensor_calibration": "Assumed ideal response, not measured EVK4",
+    "strict_sampled_mode": "Unchanged separate mode, not used as the sparse repair",
+    "default_constructor_unchanged": true,
+    "frozen_baseline_id": "robot-sparse-cuda-r2-20261102",
+    "frozen_branch": "freeze/robot-sparse-cuda-r2-20261102",
+    "R2_smoke": {
+      "seed": 2026110202,
+      "speed_m_s": 0.5,
+      "y_m": 0.055,
+      "strict_hold_s": 0.5,
+      "core_unchanged": true,
+      "controller_profile": "benchmark/robot_closed_loop/configs/shared_control_r2_verified_20261102.json",
+      "model_checkpoint_sha256": "dda51f2d5a9665295eeeeccd98682183946f8b080ceb610f82c2baeec3f8d896"
+    },
+    "scope": "Original sparse 100Hz rigid-scene reconstruction, NumPy/Torch CPU and CUDA; one development strict event grasp; not a formal generator ranking",
+    "release_commit": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+    "sampler_kwargs": {
+      "max_samples": 512
+    }
+  },
+  "profile_path": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_continuation_20261105h/candidate_release/stage9_sensor_profile.json",
+  "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+  "core_source_sha256": {
+    "PREPARATION_MANIFEST.json": "f19e6126d06d90f16f8574b1a6fd2331ea19498448fe37d1aca7cda2a04e978a",
+    "SOURCE_MANIFEST.json": "77f03acf650fbaafaa9b867b82ed5b7797159b86508ca739a859ccfdfb5b0fa5",
+    "genesis_event_plugin/__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd",
+    "genesis_event_plugin/adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+    "genesis_event_plugin/calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+    "genesis_event_plugin/camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+    "genesis_event_plugin/camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+    "genesis_event_plugin/csrc/fused_sensor.cpp": "58f3dc98939126568d2336d45963b0386e217415018ced1fd3312076f3455521",
+    "genesis_event_plugin/csrc/fused_sensor.cu": "655ea41207c9141afa4236b8b47924d10a23c27331422f69e7456cce8effb61e",
+    "genesis_event_plugin/dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+    "genesis_event_plugin/evaluation/__init__.py": "2d7785682a8d8cc71c1cdfaa31aff157ac10bac68d0c6b864b9873da1d240f13",
+    "genesis_event_plugin/evaluation/evaluator.py": "52382079b1be34a0d9347d9b4c5821a31d01228aa8faa9c346411641a39269a0",
+    "genesis_event_plugin/evaluation/event_reader.py": "a7e7ead65724e5834dabdd3c7799e00db9ba8946e0fb99050f66aedf56e67461",
+    "genesis_event_plugin/evaluation/event_schema.py": "1185642a40566eeb3cc0a7a2bac4fcf952e07f9b781158990341f68d0f358119",
+    "genesis_event_plugin/evaluation/pecs_metrics.py": "1febf0c852f07d48b4e3dc2384d9f2a747e297ecd15f87f4152d1b094dad4bd4",
+    "genesis_event_plugin/evaluation/plan_a_runner.py": "b9f696ad9c9912b48afb8dcf30e59a9aae1c5498d1e372e6188129ab2d96b32f",
+    "genesis_event_plugin/genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+    "genesis_event_plugin/gpu_geometry.py": "cc652fd35d200b16cf83c8c0e2d351df9d3841e0cda739a774b541984bef94d9",
+    "genesis_event_plugin/gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+    "genesis_event_plugin/gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf",
+    "genesis_event_plugin/gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+    "genesis_event_plugin/interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+    "genesis_event_plugin/noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+    "genesis_event_plugin/optimized.py": "9b75e27eff5ea391db669897ee248817d932a2a0d2ad0db0f55c493769c5b00b",
+    "genesis_event_plugin/physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+    "genesis_event_plugin/physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+    "genesis_event_plugin/physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+    "genesis_event_plugin/plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+    "genesis_event_plugin/radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+    "genesis_event_plugin/readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+    "genesis_event_plugin/recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+    "genesis_event_plugin/torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+    "genesis_event_plugin/utils/__init__.py": "d1d9aace79f47eb2988b4951d61635b85ac3ed40b6c81a3419e313c60d8778a1",
+    "genesis_event_plugin/utils/dvs_core.py": "a1a771385fa5192e11cc9beda28bb46ab9cf6e6b4b57b2394abafaa375014e5e",
+    "genesis_event_plugin/utils/flow_utils.py": "4158b294cd3cdeafd1641b46298566a1d8f9589cf2cae61bbfd9655a8f0ddd85",
+    "genesis_event_plugin/utils/motion_blur.py": "3465c4b2eaa38bb46b7c31ce8bee3e2c5db3686c1da2430b24d8af0841e6b6cb",
+    "stage9_sensor_profile.json": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f"
+  },
+  "index_reuse_v1_anchor": {
+    "manifest_path": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-efficiency-continuation-20261105/benchmark/sim2real/reviews/sampler_cost_20261105/release/manifest.json",
+    "manifest_sha256": "00e928b2ac892abb30cf10a03b7d28b5c0b0289a114eec9dddf77ccf92d777d5",
+    "archived_geometry_sha256": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+    "actual_geometry_sha256": "cc652fd35d200b16cf83c8c0e2d351df9d3841e0cda739a774b541984bef94d9",
+    "all_other_manifest_files_byte_identical": true
+  },
+  "fixture_source_path": "/home/zhaoyuhan/Eventbased_WAM/repositories/gec-efficiency-continuation-20261105/benchmark/sim2real/reviews/sampler_cost_20261105/source/compare_static_template.py",
+  "fixture_source_sha256": "abf169094115f6598bf4c5607027e982e43bd3103c84526fb0c65499ae03be89",
+  "fixture_snapshot_sha256": "cd27e9c9595d89d7927be96359c8bdddd5f2da1cf4533579f518f401b6ae92c9",
+  "measurement_script_sha256": "2b01387798b49ea55fa9320cb0667dda83b0b7115e06912b0b037d433ee8898e",
+  "build_environment": {
+    "CUDA_HOME": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools",
+    "CC": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-cc",
+    "CXX": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/runtime/esim_build_tools/bin/x86_64-conda-linux-gnu-c++",
+    "MAX_JOBS": "2",
+    "TORCH_CUDA_ARCH_LIST": "7.0",
+    "EVENTGENESIS_GPU_BUILD_DIR": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_continuation_20261105h/build_candidate"
+  },
+  "fresh_process": true,
+  "warmed_private_kernel": true,
+  "fresh_measured_plugin": true,
+  "timing_boundary": "preloaded CPU physical input to sorted CPU native raw events; setup plus generation; rendering, input disk I/O, process/JIT startup and output serialization excluded",
+  "peak_boundary": "setup and generation maxima; includes persistent runtime allocations; no unrelated model loaded",
+  "real_data_used": false,
+  "training_started": false,
+  "tolerance_acceptance_used": false
+}
