@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import time
 import traceback
 
@@ -51,6 +52,13 @@ def save(state):
 
 
 def main():
+    if sys.flags.optimize:
+        raise RuntimeError('Optimized Python would disable required project assertions')
+    def interrupted(signum, _frame):
+        raise SystemExit('lease runner signal ' + str(signum))
+    signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGHUP, interrupted)
+    signal.signal(signal.SIGINT, interrupted)
     assert command(['hostname']).strip() == 'g1'
     assert command(['id', '-un']).strip() == 'zhaoyuhan'
     assert ROOT == PROJECT / 'runs' / RUN_ID
@@ -115,19 +123,24 @@ def main():
             started = time.monotonic()
             with (ROOT / (job['id'] + '.log')).open('x') as log:
                 child = subprocess.Popen(job['argv'], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-                state.update(child_pid=child.pid, child_started_utc=now())
-                save(state)
                 try:
-                    code = child.wait(timeout=job.get('timeout_s', 1800))
-                except subprocess.TimeoutExpired:
-                    # Only this directly spawned process group is ours.
-                    os.killpg(child.pid, signal.SIGTERM)
+                    state.update(child_pid=child.pid, child_started_utc=now())
+                    save(state)
                     try:
-                        child.wait(timeout=15)
+                        code = child.wait(timeout=job.get('timeout_s', 1800))
                     except subprocess.TimeoutExpired:
-                        os.killpg(child.pid, signal.SIGKILL)
-                        child.wait()
-                    code = 124
+                        code = 124
+                finally:
+                    # Every exit path reaps our directly created process group
+                    # before the lease can be marked released, including save errors.
+                    if child.poll() is None:
+                        os.killpg(child.pid, signal.SIGTERM)
+                        try:
+                            child.wait(timeout=15)
+                        except subprocess.TimeoutExpired:
+                            os.killpg(child.pid, signal.SIGKILL)
+                            child.wait()
+                    assert child.poll() is not None
             done = {'exit_code': code, 'wall_s': time.monotonic() - started, 'job': job, 'finished_utc': now()}
             (ROOT / (job['id'] + '.done.json')).write_text(json.dumps(done, indent=2) + '\n')
             state.update(status='reserved_efficiency_continuation', last_job=job['id'], last_exit_code=code)
@@ -138,7 +151,7 @@ def main():
         raise
     finally:
         # A child is reaped before control reaches here. Do not release based on SSH state.
-        state.update(status='released_complete', finished_utc=now())
+        state.update(status='released_with_error' if 'error' in state else 'released_complete', finished_utc=now())
         save(state)
         (ROOT / 'resource_release.json').write_text(json.dumps(state, indent=2) + '\n')
         fcntl.flock(gpu_lock, fcntl.LOCK_UN)
