@@ -27,7 +27,7 @@ def command(argv):
     return subprocess.check_output(argv, text=True)
 
 
-def preflight():
+def preflight(settle_attempts=5):
     result = {'utc': now()}
     for key, argv in {
         'gpu': ['nvidia-smi', '--query-gpu=index,uuid,name,memory.used,memory.total,utilization.gpu', '--format=csv,noheader'],
@@ -41,7 +41,16 @@ def preflight():
     assert len(matches) == 1
     fields = [field.strip() for field in matches[0].split(',')]
     assert fields[0] == '2' and 'V100S' in fields[2]
-    assert int(fields[3].split()[0]) < 100 and int(fields[5].split()[0]) == 0
+    assert int(fields[3].split()[0]) < 100, 'GPU2 memory is occupied'
+    # The utilization sampling window may still include our reaped prior job.
+    # Recheck for actual zero; never ignore foreign apps or accept a busy sample.
+    if int(fields[5].split()[0]) != 0:
+        if not settle_attempts:
+            raise RuntimeError('GPU2 utilization did not settle to zero')
+        time.sleep(2)
+        next_sample = preflight(settle_attempts - 1)
+        next_sample.setdefault('settling_samples', []).insert(0, result)
+        return next_sample
     return result
 
 
