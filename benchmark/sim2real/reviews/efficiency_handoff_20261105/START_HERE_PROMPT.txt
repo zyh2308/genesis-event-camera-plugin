@@ -1,0 +1,15 @@
+你接手Genesis Event Camera插件的计算效率优化支线。
+
+先完整阅读共享仓库 docs/coordination/PLUGIN_EFFICIENCY_HANDOFF_20261105.md，以及 benchmark/sim2real/reviews/efficiency_handoff_20261105/EVIDENCE_INDEX.json。它们包含已完成工作、精确版本、实测表、失败门禁、代码入口、原始产物位置和分阶段任务。
+
+仓库：https://github.com/zyh2308/genesis-event-camera-plugin.git
+分支：exp/public-sim2real-v1
+WSL：/home/科研/Eventbased_WAM/repositories/gec-sim2real
+
+你的目标是降低插件事件生成的计算、搬运和内存开销。先从指定确定性配置与已测范围内通过验收的index-reuse v1候选继续，不从零重写，不重复已淘汰方案；默认CUDA严格资格仍保留失败。保持精度、完整噪声和遮挡规则；区分等价工程优化与新算法版本，保留严格失败，不用容差或时间量化让门禁通过。
+
+本会话不接管重建、光流、位姿三项正式训练和真实评分；不得修改既有bank、标签、检查点、冻结核心或共享环境。生成器加速不会直接加快读取离线事件的optimizer更新。
+
+先读 /home/科研/AGENTS.md 并核对仓库。计算仅在g1授权范围内、实时预检并取得原子预约后进行，优先GPU2；不假定其仍空闲，不操作其他任务。g3仍禁用。使用独立worktree、输出与编译目录。
+
+常规工程自行处理。首次交付聚焦精确版本/快路径短检、剩余瓶颈和一个有实测收益的改动；新物理/噪声/采样合同、冻结升级、正式数据替换等方向性事项先以证据汇报。详细执行顺序和验收要求以交接报告为准。
