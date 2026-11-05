@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "research_dates": [
+    "2026-11-05",
+    "2026-11-06"
+  ],
+  "time_zone": "Asia/Tokyo",
+  "scope": "primary_source_read_only_research",
+  "repository": "https://github.com/zyh2308/genesis-event-camera-plugin.git",
+  "base_branch": "exp/efficiency-continuation-20261105",
+  "base_commit": "d3e8787e62128494391d4c18a28003b0abc318d8",
+  "measured_new_speedup": null,
+  "implementation_changed": false,
+  "gpu_experiments_performed": false,
+  "server_access_performed": false,
+  "default_cuda_strict_qualification": "failed_unchanged",
+  "version_note": "Public repository heads are observation pins, not automatically publication versions. Read-depth limitations are explicit. No source code has been executed.",
+  "sources": [
+    {
+      "id": "esim",
+      "title": "ESIM CoRL 2018",
+      "paper": "https://proceedings.mlr.press/v87/rebecq18a/rebecq18a.pdf",
+      "repository": "uzh-rpg/rpg_esim",
+      "ref": "master",
+      "commit": "4cf0b8952e9f58f674c3098f1b027a4b6db53427",
+      "evidence": "paper_full_and_pinned_core",
+      "paths": [
+        "event_camera_simulator/esim/src/event_simulator.cpp"
+      ],
+      "notes": "source_notes/event_models.md",
+      "pinned_repository_url": "https://github.com/uzh-rpg/rpg_esim/tree/4cf0b8952e9f58f674c3098f1b027a4b6db53427"
+    },
+    {
+      "id": "vid2e",
+      "title": "Video to Events CVPR 2020 and later GPU ESIM",
+      "paper": "https://openaccess.thecvf.com/content_CVPR_2020/html/Gehrig_Video_to_Events_Recycling_Video_Datasets_for_Event_Cameras_CVPR_2020_paper.html",
+      "repository": "uzh-rpg/rpg_vid2e",
+      "ref": "master",
+      "commit": "ecbb11a9345bb9d31b4b691e7d82965da4401345",
+      "evidence": "paper_and_pinned_gpu_core_later_than_original_paper",
+      "paths": [
+        "esim_torch/src/esim_torch/esim_cuda_kernel.cu",
+        "esim_torch/src/esim_torch/esim_torch.py"
+      ],
+      "notes": "source_notes/gpu_simulators.md",
+      "pinned_repository_url": "https://github.com/uzh-rpg/rpg_vid2e/tree/ecbb11a9345bb9d31b4b691e7d82965da4401345"
+    },
+    {
+      "id": "openeb",
+      "title": "OpenEB GPUEventSimulator",
+      "repository": "prophesee-ai/openeb",
+      "ref": "main",
+      "commit": "9003b5416676e78ba994d912087486cfa94fae73",
+      "evidence": "pinned_official_implementation",
+      "paths": [
+        "sdk/modules/core_ml/python/pypkg/metavision_core_ml/video_to_event/gpu_simulator.py",
+        "sdk/modules/core_ml/python/pypkg/metavision_core_ml/video_to_event/events_kernels.py",
+        "sdk/modules/core_ml/python/pypkg/metavision_core_ml/video_to_event/cutoff_kernels.py"
+      ],
+      "notes": "source_notes/gpu_simulators.md",
+      "pinned_repository_url": "https://github.com/prophesee-ai/openeb/tree/9003b5416676e78ba994d912087486cfa94fae73"
+    },
+    {
+      "id": "icns",
+      "title": "ICNS Frontiers Neuroscience 2021",
+      "paper": "https://www.frontiersin.org/journals/neuroscience/articles/10.3389/fnins.2021.702765/full",
+      "repository": "neuromorphicsystems/IEBCS",
+      "ref": "main",
+      "commit": "8fdab5c3d078435d091fa8a94ad657e1fedf0c59",
+      "evidence": "paper_full_and_pinned_current_python_reference",
+      "paths": [
+        "src/dvs_sensor.py",
+        "README.md"
+      ],
+      "notes": "source_notes/event_models.md",
+      "pinned_repository_url": "https://github.com/neuromorphicsystems/IEBCS/tree/8fdab5c3d078435d091fa8a94ad657e1fedf0c59"
+    },
+    {
+      "id": "dvs_voltmeter",
+      "title": "DVS Voltmeter ECCV 2022",
+      "paper": "https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670571.pdf",
+      "repository": "Lynn0306/DVS-Voltmeter",
+      "ref": "main",
+      "commit": "9d86353ecfaaa1af82b9eb66b162f0bf80cd4861",
+      "evidence": "paper_full_and_pinned_event_sampling_core",
+      "paths": [
+        "src/simulator.py",
+        "src/simulator_utils.py"
+      ],
+      "notes": "source_notes/event_models.md",
+      "pinned_repository_url": "https://github.com/Lynn0306/DVS-Voltmeter/tree/9d86353ecfaaa1af82b9eb66b162f0bf80cd4861"
+    },
+    {
+      "id": "realtime_icra2023",
+      "title": "Real time Event Simulation with Frame based Cameras ICRA 2023",
+      "paper": "https://arxiv.org/pdf/2209.04634",
+      "project": "https://cogsys-tuebingen.github.io/realtime_event_simulator/",
+      "repository": "cogsys-tuebingen/event_simulator",
+      "ref": "observed_head",
+      "commit": "b85ae4c583d56022f1ed49ed597de739fefbc29d",
+      "evidence": "paper_and_pinned_sparse_interpolation_core",
+      "paths": [
+        "src/SparseInterpolatedEventSimulator.cpp"
+      ],
+      "notes": "source_notes/gpu_simulators.md",
+      "pinned_repository_url": "https://github.com/cogsys-tuebingen/event_simulator/tree/b85ae4c583d56022f1ed49ed597de739fefbc29d"
+    },
+    {
+      "id": "event_adaptive_path_tracing",
+      "title": "Event adaptive path tracing TVCG 2026",
+      "paper": "https://doi.org/10.1109/TVCG.2026.3726999",
+      "project": "https://tatsylab.github.io/projects/manabe2026eapt/",
+      "prior_paper": "https://arxiv.org/html/2408.07996v1",
+      "repository": "ichi-raven/event-adaptive-path-tracing",
+      "ref": "publish",
+      "commit": "19268b816e4d6bec92f08b6cc90887962a29aa30",
+      "evidence": "2026_author_page_and_pinned_shader_2024_preprint_read_separately",
+      "limitation": "2026_publisher_full_text_unavailable_HTTP418_not_claimed_read",
+      "paths": [
+        "shaders/Slang/Integrators/MotionIntegrator.slang",
+        "shaders/Slang/Integrators/EfficientEventIntegrator.slang",
+        "shaders/Slang/Integrators/EfficientEventIntegratorCompute.slang"
+      ],
+      "notes": "source_notes/event_models.md",
+      "pinned_repository_url": "https://github.com/ichi-raven/event-adaptive-path-tracing/tree/19268b816e4d6bec92f08b6cc90887962a29aa30"
+    },
+    {
+      "id": "tides",
+      "title": "TIDES ECCV 2026",
+      "paper": "https://arxiv.org/html/2606.02058v1",
+      "project": "https://tides-event-sim.github.io/",
+      "venue_evidence": "https://personalpages.surrey.ac.uk/s.hadfield/papers.php",
+      "repository": "ThirgoodC/TIDES",
+      "ref": "main",
+      "commit": "9e6e38b5b6886d6cd3e6088f44e7e90255c10e6d",
+      "evidence": "paper_full_project_and_repository_tree",
+      "limitation": "repository_contains_README_only_no_implementation",
+      "paths": [
+        "README.md"
+      ],
+      "notes": "source_notes/continuous_signal_models.md",
+      "pinned_repository_url": "https://github.com/ThirgoodC/TIDES/tree/9e6e38b5b6886d6cd3e6088f44e7e90255c10e6d"
+    },
+    {
+      "id": "fracevent",
+      "title": "FracEvent WACV 2027 accepted manuscript",
+      "paper": "https://arxiv.org/html/2606.26636v4",
+      "paper_version_date": "2026-10-21",
+      "repository": "bonaparte233/FracEvent",
+      "ref": "main",
+      "commit": "1fe6ee7e8e7b4cbc3d2526aa80c033570bb2637f",
+      "code_commit_date": "2026-08-25",
+      "evidence": "paper_methods_and_limitations_pinned_dynamics_event_generation_and_config",
+      "limitation": "code_commit_predates_paper_v4_not_a_matched_release",
+      "paths": [
+        "core/dynamics.py",
+        "core/event_generation.py",
+        "core/config.py"
+      ],
+      "notes": "source_notes/continuous_signal_models.md",
+      "pinned_repository_url": "https://github.com/bonaparte233/FracEvent/tree/1fe6ee7e8e7b4cbc3d2526aa80c033570bb2637f"
+    },
+    {
+      "id": "evis",
+      "title": "EVIS 2026",
+      "paper": "https://arxiv.org/html/2607.08098v1",
+      "repository": "spikelab-jhu/isaac-sim-event-camera-plugin",
+      "ref": "observed_head",
+      "commit": "d6fe47923fad09c4bfa2fd2cb13f82520114cfae",
+      "evidence": "paper_and_pinned_processor",
+      "paths": [
+        "dvs_gen/dvs/processor.py"
+      ],
+      "notes": "source_notes/gpu_simulators.md",
+      "pinned_repository_url": "https://github.com/spikelab-jhu/isaac-sim-event-camera-plugin/tree/d6fe47923fad09c4bfa2fd2cb13f82520114cfae"
+    },
+    {
+      "id": "esaacsim",
+      "title": "EsaacSim 2026",
+      "paper": "https://arxiv.org/html/2608.08522v1",
+      "repository": "ibugueno/esaacsim",
+      "ref": "main",
+      "commit": "2e1ae1e9b64e4d046d52e98f38d5c14cb515acb9",
+      "evidence": "paper_and_pinned_cuda_backend",
+      "paths": [
+        "src/isaac_event_sim/sensors/frame_motion_cuda.py",
+        "src/isaac_event_sim/sensors/frame_motion_fused.py",
+        "src/isaac_event_sim/sensors/event_backends.py"
+      ],
+      "notes": "source_notes/gpu_simulators.md",
+      "pinned_repository_url": "https://github.com/ibugueno/esaacsim/tree/2e1ae1e9b64e4d046d52e98f38d5c14cb515acb9"
+    },
+    {
+      "id": "eventsvgf",
+      "title": "Difference aware Filtering for Event Camera Simulation EGSR 2026",
+      "paper": "https://cs.dartmouth.edu/~wjarosz/publications/kim26difference-aware.html",
+      "project": "https://juhyeonkim95.github.io/project-pages/event_svgf/",
+      "repository": "juhyeonkim95/FalcorComp",
+      "ref": "master",
+      "commit": "b0f2ce3a9d835d95d66b430a555bba1e6b95b6f1",
+      "evidence": "author_abstract_official_event_generator_docs_and_repository_pin",
+      "documentation": "https://falcorcomp.readthedocs.io/en/latest/src/plugin_reference/event/EventGenerator.html",
+      "limitation": "not_full_renderer_code_audit_not_a_temporal_step_reduction",
+      "notes": "source_notes/continuous_signal_models.md",
+      "pinned_repository_url": "https://github.com/juhyeonkim95/FalcorComp/tree/b0f2ce3a9d835d95d66b430a555bba1e6b95b6f1"
+    },
+    {
+      "id": "fastesim",
+      "title": "Continuous Time Modelling of Pixel Attributes MSc 2026",
+      "paper": "https://repository.tudelft.nl/record/uuid:2f3427d8-7779-41ab-8915-ca38e58edb1f",
+      "evidence": "official_university_abstract_only",
+      "limitation": "18.6MB_full_pdf_not_read_official_code_not_verified",
+      "notes": "source_notes/continuous_signal_models.md"
+    },
+    {
+      "id": "v2e",
+      "title": "v2e CVPRW 2021 locked comparison",
+      "paper": "https://tub-rip.github.io/eventvision2021/papers/2021CVPRW_V2E_From_Video_Frames_to_Realistic_DVS_Events.pdf",
+      "repository": "SensorsINI/v2e",
+      "ref": "prior_audit_pin",
+      "commit": "cac638444557a224ba6ee5c29260916f152c00bd",
+      "evidence": "existing_local_107_file_snapshot_and_prior_comparison_audit",
+      "paths": [
+        "v2ecore/slomo.py",
+        "v2ecore/emulator_utils.py"
+      ],
+      "notes": "source_notes/event_models.md",
+      "pinned_repository_url": "https://github.com/SensorsINI/v2e/tree/cac638444557a224ba6ee5c29260916f152c00bd"
+    },
+    {
+      "id": "exact_integration",
+      "title": "Rotter and Diesmann 1999 and NEST v3.9",
+      "paper": "https://brainworks.biologie.uni-freiburg.de/1999/journal%20papers/RotterDiesmann99.pdf",
+      "doi": "10.1007/s004220050570",
+      "documentation": "https://nest-simulator.readthedocs.io/en/v3.9/neurons/exact-integration.html",
+      "repository": "nest/nest-simulator",
+      "ref": "v3.9",
+      "commit": "a32cd8728fbb100cc1ce2bc7955196b2bd15403c",
+      "evidence": "paper_official_tutorial_and_source_entry",
+      "paths": [
+        "models/iaf_psc_exp.cpp"
+      ],
+      "notes": "source_notes/numerics_noise.md",
+      "pinned_repository_url": "https://github.com/nest/nest-simulator/tree/a32cd8728fbb100cc1ce2bc7955196b2bd15403c"
+    },
+    {
+      "id": "brette",
+      "title": "Exact Simulation of Integrate and Fire Models with Exponential Currents 2007",
+      "paper": "https://romainbrette.fr/exact-simulation-of-integrate-and-fire-models-with-exponential-currents/",
+      "doi": "10.1162/neco.2007.19.10.2604",
+      "evidence": "author_paper_page_and_code_entry",
+      "limitation": "linked_Cpp_zip_not_downloaded_or_audited",
+      "notes": "source_notes/numerics_noise.md"
+    },
+    {
+      "id": "poisson",
+      "title": "Lewis and Shedler 1979 and precise Poisson generation",
+      "paper": "https://onlinelibrary.wiley.com/doi/abs/10.1002/nav.3800260304",
+      "doi": "10.1002/nav.3800260304",
+      "documentation": "https://nest-simulator.readthedocs.io/en/stable/models/poisson_generator_ps.html",
+      "evidence": "publisher_abstract_and_official_model_documentation",
+      "notes": "source_notes/numerics_noise.md"
+    },
+    {
+      "id": "random123",
+      "title": "Parallel Random Numbers As Easy As 1 2 3 SC11",
+      "paper": "https://www.thesalmons.org/john/random123/papers/random123sc11.pdf",
+      "doi": "10.1145/2063384.2063405",
+      "repository": "DEShawResearch/random123",
+      "ref": "main",
+      "commit": "9545ff6413f258be2f04c1d319d99aaef7521150",
+      "evidence": "paper_and_official_rng_code",
+      "paths": [
+        "include/Random123/philox.h"
+      ],
+      "notes": "source_notes/numerics_noise.md",
+      "pinned_repository_url": "https://github.com/DEShawResearch/random123/tree/9545ff6413f258be2f04c1d319d99aaef7521150"
+    },
+    {
+      "id": "affine_scan",
+      "title": "Mamba affine selective scan implementation",
+      "paper": "https://arxiv.org/abs/2312.00752",
+      "repository": "state-spaces/mamba",
+      "ref": "main",
+      "commit": "e9594ce1c732d97440f0332fdc43170a2294dbfa",
+      "evidence": "official_SSMScanOp_code_as_mechanism_reference",
+      "paths": [
+        "csrc/selective_scan/selective_scan_common.h"
+      ],
+      "limitation": "not_event_camera_validation_and_not_FP64_drop_in",
+      "notes": "source_notes/numerics_noise.md",
+      "pinned_repository_url": "https://github.com/state-spaces/mamba/tree/e9594ce1c732d97440f0332fdc43170a2294dbfa"
+    }
+  ]
+}
