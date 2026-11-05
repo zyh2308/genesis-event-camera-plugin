@@ -1,0 +1,4383 @@
+{
+  "schema": "native_v2e_bounded_noise_audit_v1",
+  "status": "complete",
+  "pinned_commit": "cac638444557a224ba6ee5c29260916f152c00bd",
+  "source_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/v2e-cac6384445/v2e-pinned",
+  "source_sha256": {
+    "v2ecore/emulator.py": "305dc78517d9d82ed1b6a2199546632a41a6645843a72c837c106bcca0510375",
+    "v2ecore/emulator_utils.py": "064cb7dcbf0cc300aa6cd3fb53c572fe3c119c6c50d87133539cb276bb628de9"
+  },
+  "source_script_sha256": "6a8b05d54c4f5c8c4f524fa7e071d9bb9124f7e1fca995227fd2d6a491dc261a",
+  "imported_modules": {
+    "v2ecore.emulator": "/home/zhaoyuhan/Eventbased_WAM/external/sources/v2e-cac6384445/v2e-pinned/v2ecore/emulator.py",
+    "v2ecore.emulator_utils": "/home/zhaoyuhan/Eventbased_WAM/external/sources/v2e-cac6384445/v2e-pinned/v2ecore/emulator_utils.py"
+  },
+  "resolved_constructor_kwargs": {
+    "pos_thres": 0.2,
+    "neg_thres": 0.2,
+    "sigma_thres": 0.03,
+    "cutoff_hz": 300.0,
+    "leak_rate_hz": 0.01,
+    "refractory_period_s": 0.0005,
+    "shot_noise_rate_hz": 0.001,
+    "photoreceptor_noise": false,
+    "leak_jitter_fraction": 0.1,
+    "noise_rate_cov_decades": 0.1,
+    "seed": 42,
+    "output_folder": null,
+    "dvs_h5": null,
+    "dvs_aedat2": null,
+    "dvs_aedat4": null,
+    "dvs_text": null,
+    "show_dvs_model_state": [],
+    "save_dvs_model_state": false,
+    "output_width": 32,
+    "output_height": 32,
+    "device": "cuda:0",
+    "cs_lambda_pixels": null,
+    "cs_tau_p_ms": null,
+    "hdr": false,
+    "scidvs": false,
+    "record_single_pixel_states": null,
+    "label_signal_noise": false
+  },
+  "parameter_formulas_unchanged": true,
+  "optical_levels": [
+    0.01,
+    0.1,
+    0.5,
+    1.0
+  ],
+  "input_DN_levels": [
+    2.5500000000000003,
+    25.5,
+    127.5,
+    255.0
+  ],
+  "radiometric_mapping": "single fixed gain: DN=255*optical_I; float32 DN, no uint8 quantization",
+  "native_intensity_mapping": "(DN+20)/275, not physical I; native lin-log retained",
+  "ns": [
+    63,
+    126,
+    189,
+    377
+  ],
+  "seconds": 0.1,
+  "replicates": 3,
+  "height": 32,
+  "width": 32,
+  "spatial_seed_fixed_across_all_runs": 42,
+  "temporal_seeds_independent_between_N_and_replicates": true,
+  "torch": "2.8.0+cu126",
+  "cuda": "12.6",
+  "gpu": "Tesla V100S-PCIE-32GB",
+  "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+  "cpu_threads": 2,
+  "starts_from_native_fresh_initialization": true,
+  "initial_phase_assumed": false,
+  "initialization_comment_not_taken_as_executable_behavior": true,
+  "noise_off_RNG_unchanged_gate_used": false,
+  "noise_off_rng_note": "Native signal-event output may call randperm even with temporal noise disabled.",
+  "real_data_used": false,
+  "training_started": false,
+  "production_sources_modified": false,
+  "full_noise_equivalence_claimed": false,
+  "rows": [
+    {
+      "n": 63,
+      "replicate": 0,
+      "temporal_seed": 202611113567,
+      "steps": 630,
+      "dt_min_s": 0.00015873015873014984,
+      "dt_max_s": 0.00015873015873016372,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c4c646ce20eaa05df745fc4f5bf082359fbd9f0f5a8b817cbae081f5d7f7b7dd"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "e705c3e85ea9a1310ec9390060d1778f73a34d70dbb847ccbc43610961321e57"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "6b9d893f35bcb5ce43a653ff65a7d5262cecdd13a1990fdadda9dc0c3736c530"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "d5f279d740256c07624349824ba16f027c2550364eb67382f02821b0a85af219"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 1.3648269195405265e-08,
+      "p_on_max": 1.3928537998918505e-07,
+      "p_off_min": 1.4466620863430085e-08,
+      "p_off_max": 1.3947011174231018e-07,
+      "initial_temporal_rng_cpu_sha256": "6b9d893f35bcb5ce43a653ff65a7d5262cecdd13a1990fdadda9dc0c3736c530",
+      "initial_temporal_rng_cuda_sha256": "571093bf6c5261f7935c102b9601d2366cd4c36ae59640f310f02656f0510a6b",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 0.5606743440730497,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 63,
+      "replicate": 1,
+      "temporal_seed": 202611113664,
+      "steps": 630,
+      "dt_min_s": 0.00015873015873014984,
+      "dt_max_s": 0.00015873015873016372,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c4c646ce20eaa05df745fc4f5bf082359fbd9f0f5a8b817cbae081f5d7f7b7dd"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "487822649ed646f3d3526e1879ea09fe2127ad302a9dcd9bf2ba6056521fee38"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "a1afab5bd452990a9cd27aa35f5fb2961acf2827186798ffdceb13a706be4c87"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "9975b96d6d85e64d36a02acf58defd6ff327eebbf3a76f9e9075d24cd000c89d"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 1.3648269195405265e-08,
+      "p_on_max": 1.3928537998918505e-07,
+      "p_off_min": 1.4466620863430085e-08,
+      "p_off_max": 1.3947011174231018e-07,
+      "initial_temporal_rng_cpu_sha256": "a1afab5bd452990a9cd27aa35f5fb2961acf2827186798ffdceb13a706be4c87",
+      "initial_temporal_rng_cuda_sha256": "aaad9fccdfd05caad8d4009bb26930824971046540f7ce383d18a08d06ec766d",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 0.5618393400218338,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 63,
+      "replicate": 2,
+      "temporal_seed": 202611113761,
+      "steps": 630,
+      "dt_min_s": 0.00015873015873014984,
+      "dt_max_s": 0.00015873015873016372,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c4c646ce20eaa05df745fc4f5bf082359fbd9f0f5a8b817cbae081f5d7f7b7dd"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "acb3a208a748a55871f5a11839a2799c2d9b8ae1d59ad2b16b6e61cfdc37760f"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "14ddf4c90103b6bb5bb840b50d44a934504bbbb960b38e906e1693432da65f70"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "cf5dcec9082b75101d3f22b88af14a6ffda1223f0846a5aa8171f3d21a441dda"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 1.3648269195405265e-08,
+      "p_on_max": 1.3928537998918505e-07,
+      "p_off_min": 1.4466620863430085e-08,
+      "p_off_max": 1.3947011174231018e-07,
+      "initial_temporal_rng_cpu_sha256": "14ddf4c90103b6bb5bb840b50d44a934504bbbb960b38e906e1693432da65f70",
+      "initial_temporal_rng_cuda_sha256": "ed2d7c41eb97d61f1d8879dcc370135a8c335c90f346fd5059109b0124b998d2",
+      "events": 1,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 1,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.009765625,
+        "rare_count_Poisson_approx_CI95": [
+          0.0002472442185965808,
+          0.05441057998963767
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 1,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0390625,
+            "rare_count_Poisson_approx_CI95": [
+              0.0009889768743863232,
+              0.21764231995855068
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 9.765625e-05,
+      "fixed_10ms_count_variance": 9.765624999999999e-05,
+      "fixed_10ms_Fano_descriptive": 0.9999999999999999,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 0.5649025170132518,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 126,
+      "replicate": 0,
+      "temporal_seed": 202611177134,
+      "steps": 1260,
+      "dt_min_s": 7.936507936506798e-05,
+      "dt_max_s": 7.936507936508186e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "aa7be5e5c6248b129ebe65b7a63892f4d5b2343c760fd74e348ff0850ebfb6ea"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c37d08a010a6ffa5d64307a50c9ecbbc2d23cdb3d581ea097ba201b941aa8650"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "51c5a5a034b32f7f712a8263ab969a2051298cc912007c80c56eac93a67fbf2c"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "ff17c26aede26cab296b4751c3c4337fc13b050430f13489849209353181a3ca"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 6.824134597702633e-09,
+      "p_on_max": 6.964268999459253e-08,
+      "p_off_min": 7.2333104317150425e-09,
+      "p_off_max": 6.973505587115509e-08,
+      "initial_temporal_rng_cpu_sha256": "51c5a5a034b32f7f712a8263ab969a2051298cc912007c80c56eac93a67fbf2c",
+      "initial_temporal_rng_cuda_sha256": "dcdf6f02d4093a5f6e9896ac2c9ee3c44d328f52d42ea66ed579b515ce66b2f8",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 1.0888740110676736,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 126,
+      "replicate": 1,
+      "temporal_seed": 202611177231,
+      "steps": 1260,
+      "dt_min_s": 7.936507936506798e-05,
+      "dt_max_s": 7.936507936508186e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "aa7be5e5c6248b129ebe65b7a63892f4d5b2343c760fd74e348ff0850ebfb6ea"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "ebab21e2573bdab5fd7422656a0b9714002d8a8ccccd83417870e3394570676e"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "ff093a6bc4482306dca7feb44dac202c25603986314d2afdb750876082f5afd9"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "79bcbb8476413a955e2eb8fa33311b135a1ed650db05100bd3caac1b7df5028f"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 6.824134597702633e-09,
+      "p_on_max": 6.964268999459253e-08,
+      "p_off_min": 7.2333104317150425e-09,
+      "p_off_max": 6.973505587115509e-08,
+      "initial_temporal_rng_cpu_sha256": "ff093a6bc4482306dca7feb44dac202c25603986314d2afdb750876082f5afd9",
+      "initial_temporal_rng_cuda_sha256": "2b4d87d580bec831d263e487a6729c34c32f3c9cb6155f6b520ed649f50aaa45",
+      "events": 1,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 1,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.009765625,
+        "rare_count_Poisson_approx_CI95": [
+          0.0002472442185965808,
+          0.05441057998963767
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 1,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0390625,
+            "rare_count_Poisson_approx_CI95": [
+              0.0009889768743863232,
+              0.21764231995855068
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 9.765625e-05,
+      "fixed_10ms_count_variance": 9.765624999999999e-05,
+      "fixed_10ms_Fano_descriptive": 0.9999999999999999,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 1.1003240189747885,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 126,
+      "replicate": 2,
+      "temporal_seed": 202611177328,
+      "steps": 1260,
+      "dt_min_s": 7.936507936506798e-05,
+      "dt_max_s": 7.936507936508186e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "aa7be5e5c6248b129ebe65b7a63892f4d5b2343c760fd74e348ff0850ebfb6ea"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "6b7f851733505928086d42846b4436d8ced187dbb88562713d21749cc7759e42"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "8b66b504d54df563a85f31eda460d2192f421c44514ebc7b8f5dfa9bad05e54b"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "12f358171d5b257cab17cd1c7dca24d04d2fd059b15a4287ed60f20a673ccdca"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 6.824134597702633e-09,
+      "p_on_max": 6.964268999459253e-08,
+      "p_off_min": 7.2333104317150425e-09,
+      "p_off_max": 6.973505587115509e-08,
+      "initial_temporal_rng_cpu_sha256": "8b66b504d54df563a85f31eda460d2192f421c44514ebc7b8f5dfa9bad05e54b",
+      "initial_temporal_rng_cuda_sha256": "87de33cc7d9ff61726805a984986ab81d1f00d2440199f7b2bb596628d14176e",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 1.0924999139970168,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 189,
+      "replicate": 0,
+      "temporal_seed": 202611240701,
+      "steps": 1890,
+      "dt_min_s": 5.2910052910040695e-05,
+      "dt_max_s": 5.291005291006151e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "081888a0415c897ed67cd1852873bfbdf8a2304aef86a0c6d43b792f748ca8a5"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "555bd966c5d6abea4162fc2b230876df7d1ea8c0e08df1a4b3c4d355da04f07b"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "2e85bb1a748087cd0ad894fbafa29614db060032b1ad75b0039308391250c7d4"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "c970ba05cac70b6a778594ca4091684335e4cae89eadb19b2e563651539b02bb"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 4.549423065135088e-09,
+      "p_on_max": 4.642845999639502e-08,
+      "p_off_min": 4.822206954476695e-09,
+      "p_off_max": 4.6490037247436724e-08,
+      "initial_temporal_rng_cpu_sha256": "2e85bb1a748087cd0ad894fbafa29614db060032b1ad75b0039308391250c7d4",
+      "initial_temporal_rng_cuda_sha256": "0c2dc8b23845b49b226d48d178b9b439dd73e182b15899fb754d71f721e09ca2",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 1.6248427130049095,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 189,
+      "replicate": 1,
+      "temporal_seed": 202611240798,
+      "steps": 1890,
+      "dt_min_s": 5.2910052910040695e-05,
+      "dt_max_s": 5.291005291006151e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "081888a0415c897ed67cd1852873bfbdf8a2304aef86a0c6d43b792f748ca8a5"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "9c574e6323d436ef1e09943cac3db079ad221d2bd93d778a95ff3ce74cad46db"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "cb769814b9489c6e01abc0484c483218e4dd81bec4b28bf9ed4c090f97546293"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "32352e906091178a7f6b2419487721586a4abdac47723b5b38a8a9fab72b2d95"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 4.549423065135088e-09,
+      "p_on_max": 4.642845999639502e-08,
+      "p_off_min": 4.822206954476695e-09,
+      "p_off_max": 4.6490037247436724e-08,
+      "initial_temporal_rng_cpu_sha256": "cb769814b9489c6e01abc0484c483218e4dd81bec4b28bf9ed4c090f97546293",
+      "initial_temporal_rng_cuda_sha256": "fbcf9e61f7dd361bf9871e78c8411d405d6562cc253a538634a0195d191115e0",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 1.4207554630702361,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 189,
+      "replicate": 2,
+      "temporal_seed": 202611240895,
+      "steps": 1890,
+      "dt_min_s": 5.2910052910040695e-05,
+      "dt_max_s": 5.291005291006151e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "081888a0415c897ed67cd1852873bfbdf8a2304aef86a0c6d43b792f748ca8a5"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f59e0c248524469918ed33cced7b46d8d9d9c801fa1ba39693b608303a672982"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "a84b4ab50e21803e6eab9581a24b5d9cb28bfcc5c52618bba4d1a59a88e55128"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "d216b6eb91caee9985ed665796ff63160cb27138d0b3651fc366c5f61515fd57"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 4.549423065135088e-09,
+      "p_on_max": 4.642845999639502e-08,
+      "p_off_min": 4.822206954476695e-09,
+      "p_off_max": 4.6490037247436724e-08,
+      "initial_temporal_rng_cpu_sha256": "a84b4ab50e21803e6eab9581a24b5d9cb28bfcc5c52618bba4d1a59a88e55128",
+      "initial_temporal_rng_cuda_sha256": "3bcc95c5e74142fe8d8a3a5b84af954ef3c6ae12433a5abd286e3f12abc969ad",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 1.4289752979530022,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 377,
+      "replicate": 0,
+      "temporal_seed": 202611430393,
+      "steps": 3770,
+      "dt_min_s": 2.6525198938989747e-05,
+      "dt_max_s": 2.6525198939003625e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "3d7554ae3816a78f568e382baee5b20a409d5cede0dadbee9d8958697e539887"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "2b948cb198b727b15d5f019fe1e1ce3c9b893334ddfe69a557948586846e8199"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "fdf9f94fcbe90b17f691af7c1f1cc3334e1de71dbe8a5ff4f8d2fda7be4a3e21"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "f3f7e65fce27c01f2693af8b922aa62a263da0b7f551de941d52878c0cc65ac4"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 2.2807452501605613e-09,
+      "p_on_max": 2.327580620508928e-08,
+      "p_off_min": 2.4174989771779716e-09,
+      "p_off_max": 2.3306676498051833e-08,
+      "initial_temporal_rng_cpu_sha256": "fdf9f94fcbe90b17f691af7c1f1cc3334e1de71dbe8a5ff4f8d2fda7be4a3e21",
+      "initial_temporal_rng_cuda_sha256": "8dcab3fd4a8729eb272a2d0cef89e9fa7ab9a74e3bed90348d02ef71cb314679",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 2.9622753279982135,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 377,
+      "replicate": 1,
+      "temporal_seed": 202611430490,
+      "steps": 3770,
+      "dt_min_s": 2.6525198938989747e-05,
+      "dt_max_s": 2.6525198939003625e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "3d7554ae3816a78f568e382baee5b20a409d5cede0dadbee9d8958697e539887"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "10eb57076180a59d6e26c47cc76f41d2aedfedc4c08abc927c214db56dafda92"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "b383609ceafed7ee7b0e9e3632ca93936d9ba619b122ea6c3d2be17086ac036b"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "2bff134f23059d0f219bdf1d762a556d9aedd8fb43f0929c1bb7359fa4e58995"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 2.2807452501605613e-09,
+      "p_on_max": 2.327580620508928e-08,
+      "p_off_min": 2.4174989771779716e-09,
+      "p_off_max": 2.3306676498051833e-08,
+      "initial_temporal_rng_cpu_sha256": "b383609ceafed7ee7b0e9e3632ca93936d9ba619b122ea6c3d2be17086ac036b",
+      "initial_temporal_rng_cuda_sha256": "311f6977b2bbdca2986bd9f476241348f94723e5d805f94b77537dbe9111efac",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 2.82777376298327,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    },
+    {
+      "n": 377,
+      "replicate": 2,
+      "temporal_seed": 202611430587,
+      "steps": 3770,
+      "dt_min_s": 2.6525198938989747e-05,
+      "dt_max_s": 2.6525198939003625e-05,
+      "initial_lp_minus_base": {
+        "count": 1024,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "native_random_base_offset_measured_nonzero": false,
+      "initial_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "504048cef76cee449344aa9bed5eec23d53817f44592a77635c6f022b102391d"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "f3e13fc59efa61c92a165c0f37f546267c732b8fb7a55d66683fcac311ce1dc8"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "a74dafa0d9664c13c356885986b5087a6c8e62d78244b58e334db4c3ca063b0b"
+        }
+      },
+      "final_state": {
+        "lp_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "3d7554ae3816a78f568e382baee5b20a409d5cede0dadbee9d8958697e539887"
+        },
+        "base_log_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "79a3533e40ac63d60f52cf454a2355cb5a8da38b772d6e13d0d042b69f1aa79b"
+        },
+        "pos_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533"
+        },
+        "neg_thres": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1"
+        },
+        "noise_rate_array": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+        },
+        "timestamp_mem": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "bd7bbb771c51054e4454d1a577ac4bc2904459cef6a8181fa45cf59e896605d6"
+        },
+        "new_frame": {
+          "dtype": "float64",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "7e9ba8b655d599b3752121c0d627116ffc68024d44b4fb8389c0e870362cb29f"
+        },
+        "log_new_frame": {
+          "dtype": "float32",
+          "shape": [
+            32,
+            32
+          ],
+          "sha256": "f12a31f331f5daa31372ee870b9838450eb0e70f971df844e327f311a97f95a1"
+        },
+        "rng_cpu": {
+          "dtype": "uint8",
+          "shape": [
+            5056
+          ],
+          "sha256": "18002863277f4c325422bad16e8de5125f45220047ccf072b6f7bc9b880361ec"
+        },
+        "rng_cuda": {
+          "dtype": "uint8",
+          "shape": [
+            16
+          ],
+          "sha256": "9910fd0625e196cd0d953dfe108901223097ed3aafce4c89a978cbbc8b086c07"
+        }
+      },
+      "spatial_maps_sha256": {
+        "pos_thres": "c1fadc2e21d29771b9eee1ec552aa4da250091ebae1f86cb0d34495f723f6533",
+        "neg_thres": "d17ca792369e30dec12f27414877f6a953efee07fd73ed9c1249661d2c77dcc1",
+        "noise_rate_array": "14ce02f3ea8f24bcf50357a16636a02a70e2ca17f5d14ee6ebadcd44d2f71d38"
+      },
+      "event_output_dtype": "float32",
+      "new_frame_dtype": "torch.float64",
+      "lp_dtype": "torch.float64",
+      "base_dtype": "torch.float64",
+      "shot_probability_dtype": "torch.float64",
+      "uniform_draw_dtype": "torch.float32",
+      "actual_intensity_fraction": {
+        "count": 1024,
+        "mean": 0.44595454541119656,
+        "std": 0.36272693955120305,
+        "min": 0.08199999982660466,
+        "max": 1.0
+      },
+      "p_on_min": 2.2807452501605613e-09,
+      "p_on_max": 2.327580620508928e-08,
+      "p_off_min": 2.4174989771779716e-09,
+      "p_off_max": 2.3306676498051833e-08,
+      "initial_temporal_rng_cpu_sha256": "18002863277f4c325422bad16e8de5125f45220047ccf072b6f7bc9b880361ec",
+      "initial_temporal_rng_cuda_sha256": "198f9e4e0925d5c5e401f0f3cee3db69cc1debdbfb5838f6b227290728197d5f",
+      "events": 0,
+      "on": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "off": {
+        "count": 0,
+        "pixel_seconds": 102.4,
+        "rate_hz_per_pixel": 0.0,
+        "rare_count_Poisson_approx_CI95": [
+          0.0,
+          0.0360242134190814
+        ],
+        "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+        "sufficient_events_for_distribution_claim": false
+      },
+      "per_band": [
+        {
+          "optical_I": 0.01,
+          "DN": 2.5500000000000003,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.1,
+          "DN": 25.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 0.5,
+          "DN": 127.5,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        },
+        {
+          "optical_I": 1.0,
+          "DN": 255.0,
+          "pixels": 256,
+          "on": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          },
+          "off": {
+            "count": 0,
+            "pixel_seconds": 25.6,
+            "rate_hz_per_pixel": 0.0,
+            "rare_count_Poisson_approx_CI95": [
+              0.0,
+              0.1440968536763256
+            ],
+            "ci_scope": "Poisson counting approximation only, not proof of full stateful sensor-law equivalence",
+            "sufficient_events_for_distribution_claim": false
+          }
+        }
+      ],
+      "ISI_s": {
+        "count": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "refractory_strict_less_count": 0,
+      "refractory_beyond_2_FP32_ULP_count": 0,
+      "timestamp_2_FP32_ULP_s": 1.4901161193847656e-08,
+      "fixed_10ms_count_mean": 0.0,
+      "fixed_10ms_count_variance": 0.0,
+      "fixed_10ms_Fano_descriptive": null,
+      "ISI_or_Fano_distribution_claimed": false,
+      "wall_s": 2.959085686947219,
+      "low_count_warning": true,
+      "full_noise_equivalence_passed": false
+    }
+  ],
+  "primitive_checks": [
+    {
+      "n": 63,
+      "same_draw_native_formula_equal": true,
+      "probability_dtype": "torch.float64",
+      "uniform_dtype": "torch.float32",
+      "p_on_min": 1.3648269195405265e-08,
+      "p_on_max": 1.3928537998918505e-07,
+      "FP32_largest_below_one": 0.9999999403953552,
+      "FP32_upper_gap": 5.960464477539063e-08,
+      "on_branch_structurally_unreachable_pixels": 542,
+      "all_fixture_on_probabilities_below_upper_gap": false,
+      "premise": "Actual native CUDA torch.rand is in[0,1); FP32 representability near1, not a uniform24bit-grid assumption",
+      "complete_noise_law_failure_claimed": false
+    },
+    {
+      "n": 126,
+      "same_draw_native_formula_equal": true,
+      "probability_dtype": "torch.float64",
+      "uniform_dtype": "torch.float32",
+      "p_on_min": 6.824134597702633e-09,
+      "p_on_max": 6.964268999459253e-08,
+      "FP32_largest_below_one": 0.9999999403953552,
+      "FP32_upper_gap": 5.960464477539063e-08,
+      "on_branch_structurally_unreachable_pixels": 1021,
+      "all_fixture_on_probabilities_below_upper_gap": false,
+      "premise": "Actual native CUDA torch.rand is in[0,1); FP32 representability near1, not a uniform24bit-grid assumption",
+      "complete_noise_law_failure_claimed": false
+    },
+    {
+      "n": 189,
+      "same_draw_native_formula_equal": true,
+      "probability_dtype": "torch.float64",
+      "uniform_dtype": "torch.float32",
+      "p_on_min": 4.549423065135088e-09,
+      "p_on_max": 4.642845999639502e-08,
+      "FP32_largest_below_one": 0.9999999403953552,
+      "FP32_upper_gap": 5.960464477539063e-08,
+      "on_branch_structurally_unreachable_pixels": 1024,
+      "all_fixture_on_probabilities_below_upper_gap": true,
+      "premise": "Actual native CUDA torch.rand is in[0,1); FP32 representability near1, not a uniform24bit-grid assumption",
+      "complete_noise_law_failure_claimed": false
+    },
+    {
+      "n": 377,
+      "same_draw_native_formula_equal": true,
+      "probability_dtype": "torch.float64",
+      "uniform_dtype": "torch.float32",
+      "p_on_min": 2.2807452501605613e-09,
+      "p_on_max": 2.327580620508928e-08,
+      "FP32_largest_below_one": 0.9999999403953552,
+      "FP32_upper_gap": 5.960464477539063e-08,
+      "on_branch_structurally_unreachable_pixels": 1024,
+      "all_fixture_on_probabilities_below_upper_gap": true,
+      "premise": "Actual native CUDA torch.rand is in[0,1); FP32 representability near1, not a uniform24bit-grid assumption",
+      "complete_noise_law_failure_claimed": false
+    }
+  ],
+  "source_bytes_unchanged": true,
+  "measured_native_base_offsets_all_zero": true,
+  "per_N": [
+    {
+      "n": 63,
+      "total_events": 1,
+      "on": 0,
+      "off": 1,
+      "pixel_seconds": 307.20000000000005,
+      "comparison_to_EventGenesis_is_descriptive_not_ranking": true
+    },
+    {
+      "n": 126,
+      "total_events": 1,
+      "on": 0,
+      "off": 1,
+      "pixel_seconds": 307.20000000000005,
+      "comparison_to_EventGenesis_is_descriptive_not_ranking": true
+    },
+    {
+      "n": 189,
+      "total_events": 0,
+      "on": 0,
+      "off": 0,
+      "pixel_seconds": 307.20000000000005,
+      "comparison_to_EventGenesis_is_descriptive_not_ranking": true
+    },
+    {
+      "n": 377,
+      "total_events": 0,
+      "on": 0,
+      "off": 0,
+      "pixel_seconds": 307.20000000000005,
+      "comparison_to_EventGenesis_is_descriptive_not_ranking": true
+    }
+  ],
+  "wall_total_s": 19.360584070091136,
+  "conclusion": "Short fresh-state native-noise audit only. Sparse event counts do not establish distribution equivalence or generator ranking."
+}
