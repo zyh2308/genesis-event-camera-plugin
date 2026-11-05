@@ -1,0 +1,16 @@
+# V2E sampling-quality comparison implementation plan
+
+**Goal:** Measure V2E under the previous sampling-quality protocol without changing either simulator, and separate measured evidence from published claims.
+
+**Architecture:** Consume pinned official V2E cac638444557a224ba6ee5c29260916f152c00bd, the previous immutable sensor harness, and the new independent Genesis1ms clip. Use g1 GPU2 only under a fresh atomic lease, two CPU threads, private outputs. No g3, training, real-test data, shared-environment installs, source patches, or overwritten results.
+
+**Tech stack:** Existing Torch2.8 research environment, official V2E/SuperSloMo39, NumPy/SciPy, isolated research worktree.
+
+1. Pin official source files, profile, input/checkpoint hashes and previous reference artifacts. Preserve all failures and report actual device, sampling, dtype and fallback.
+2. Sensor main comparison: the same30ms single-crossing step/ramp fixtures, nominal C=.2,300Hz cutoff,.5ms refractory, noise/mismatch off only as a named diagnostic. N=32,63,126,189,252,377,754,1508 per10ms. Use shared optical intensities .12,.4,.65 (all trajectories remain above20 and below255DN after fixed255 exposure); retain .4 as a directly comparable subset of the prior run. Do not silently clip prior1.6HDR input into V2E's native8bit domain.
+3. Preserve each native sensor law. V2E uses lin-log and bandwidth(DN+20)/275, while ours uses physical log and clip(I,0,1). Measure numerical error against each law's independent continuous oracle with a tighter reference convergence check. A shared physical reference, if reported, must separately identify model-law error. Never call numerical accuracy a real-sensor fidelity ranking.
+4. Retain previous pilot budgets: RMSE/C<=.025,p99/C<=.05,event F1>=.99 within50us,p95 time<=20us,count error<=1%. They are project engineering budgets, not an ESIM/V2E standard. Record unmatched events and all cases. V2E's original FP32 timestamps, random event order, threshold maps, per-frame interface and timestamp assignment remain unchanged; RNG consumption is recorded rather than required to be zero.
+5. Geometry: same100Hz endpoints and withheld1ms Genesis frames, original SloMo midpoint timestamps. Native auto(min2) is primary; fixed N is only a controlled sensitivity experiment. Compare in a declared common display mapping, applying the same fixed radiometry to reference and saved ours predictions. RawHDR versus8bit errors must not be mixed. Report active/boundary strata; no20us event claim from1ms images.
+6. Noise: original full profiles and temporal replicates, exact pixel-time and measured initialization metadata. Do not infer initialization from old comments: the pinned source comments out an older random base-phase reset. Verify actual base/LP offsets and spatial maps before comparing fresh-state counts. Low counts mean insufficient evidence, not equivalence.
+7. Check official paper sections and figures. Cite only original papers/authors' sources. Do not present real-sensor latency or unrelated hardware timings as V2E simulation accuracy/speed.
+8. Publish code, measured tables/curves, source receipts and a Chinese comparison report to exp/public-sim2real-v1. Retain large raw artifacts on g1 by path/size/SHA256. Release own GPU2 lease and verify existing sources unchanged.
