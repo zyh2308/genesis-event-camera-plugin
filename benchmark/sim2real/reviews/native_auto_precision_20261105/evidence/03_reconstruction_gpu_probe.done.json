@@ -1,0 +1,42 @@
+{
+  "exit_code": 0,
+  "wall_s": 34.72927088197321,
+  "job": {
+    "id": "03_reconstruction_gpu_probe",
+    "argv": [
+      "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+      "-u",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_formal_acceptance_20261105d/check_reconstruction_predictions_device.py",
+      "--model-root",
+      "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal",
+      "--trainer-source",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/benchmark/sim2real/scripts/train_e2vid_stage9.py",
+      "--training-recipe",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/training_recipe.json",
+      "--checkpoint",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/reconstruction/seed0/eventgenesis/synthetic_best.pt",
+      "--expected-checkpoint-sha256",
+      "d13a2a90630e38e9fada13bf28be0aa837fcdd31649ac7c9b51cc29a2d696b9e",
+      "--reference-h5",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_formal_acceptance_20261105d/formal_existing/s3_00_reference0_vs_static/reference.h5",
+      "--candidate-h5",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_formal_acceptance_20261105d/formal_existing/s3_00_reference0_vs_static/candidate.h5",
+      "--reference-repeat-h5",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_formal_acceptance_20261105d/formal_existing/s3_00_reference0_vs_reference2/candidate.h5",
+      "--start-s",
+      "1",
+      "--end-s",
+      "2",
+      "--expected-windows",
+      "100",
+      "--output-root",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_formal_acceptance_20261105d/reconstruction_predictions_gpu",
+      "--device",
+      "cuda:0"
+    ],
+    "timeout_s": 300,
+    "sha256": {
+      "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_formal_acceptance_20261105d/check_reconstruction_predictions_device.py": "45bae69b2403e449ae2937e707bdc4b0742d9fe55969258219718714b2e226ce"
+    }
+  }
+}
