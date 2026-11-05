@@ -1,0 +1,374 @@
+{
+  "all_selected_source_bytes_equal": true,
+  "gpu2_release": {
+    "status": "released_complete",
+    "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+    "gpu_index": 2,
+    "host": "g1",
+    "pid": 2672731,
+    "process_start_ticks": "76474084",
+    "owner": "sim2real research; user explicitly assigned g1 GPU2",
+    "started_utc": "2026-11-05T10:35:17.189514+00:00",
+    "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f",
+    "job": "06_geometry_independent_v2",
+    "heartbeat_utc": "2026-11-05T10:55:03.173675+00:00",
+    "last_job": "06_geometry_independent_v2",
+    "last_exit_code": 0,
+    "finished_utc": "2026-11-05T10:57:48.630732+00:00"
+  },
+  "gpu2_active_compute_processes": 0,
+  "all_gpu_jobs": [
+    {
+      "exit_code": 0,
+      "wall_s": 28.62410684803035,
+      "job": {
+        "id": "01_analytic_smoke",
+        "argv": [
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/analytic_sensor_sweep.py",
+          "--package-root",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/core",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/analytic_smoke",
+          "--device",
+          "cuda:0",
+          "--n",
+          "63"
+        ],
+        "timeout_s": 600,
+        "sha256": {
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/analytic_sensor_sweep.py": "296e10b6350a6e72da60d5f971dcc926b7734d228ceb0c44c8d5525309dbf1bc"
+        }
+      }
+    },
+    {
+      "exit_code": 0,
+      "wall_s": 30.525731759960763,
+      "job": {
+        "id": "02_analytic_full",
+        "argv": [
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/analytic_sensor_sweep.py",
+          "--package-root",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/core",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/analytic_full",
+          "--device",
+          "cuda:0"
+        ],
+        "timeout_s": 900,
+        "sha256": {
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/analytic_sensor_sweep.py": "296e10b6350a6e72da60d5f971dcc926b7734d228ceb0c44c8d5525309dbf1bc"
+        }
+      }
+    },
+    {
+      "exit_code": 0,
+      "wall_s": 5.328318382031284,
+      "job": {
+        "id": "03_noise_full",
+        "argv": [
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/noise_sampling_sweep.py",
+          "--core",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/core",
+          "--profile",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/stage9_sensor_profile.json",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/noise_full"
+        ],
+        "timeout_s": 900,
+        "sha256": {
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/noise_sampling_sweep.py": "9934d74f8983873bd8489e2aefaf0438abf8fed241a7f3c825955525406b4552"
+        }
+      }
+    },
+    {
+      "exit_code": 1,
+      "wall_s": 3.8751835090806708,
+      "job": {
+        "id": "04_geometry_independent",
+        "argv": [
+          "/usr/bin/env",
+          "CUBLAS_WORKSPACE_CONFIG=:4096:8",
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/geometry_quality_independent_clip.py",
+          "--independent-new-clip",
+          "--core",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/core",
+          "--reference-receipt",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/dense_s3/s3_00_dense_reference.json",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/geometry_independent",
+          "--Ns",
+          "63,126,189,377,754",
+          "--interval-limit",
+          "10"
+        ],
+        "timeout_s": 600,
+        "sha256": {
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/geometry_quality_independent_clip.py": "0a0c94cb68ebab9b493aeed735ee30c5fbce9a20f141855ca36ac342f9373b69"
+        }
+      }
+    },
+    {
+      "exit_code": 0,
+      "wall_s": 22.072338043013588,
+      "job": {
+        "id": "05_smooth_full",
+        "argv": [
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/smooth_sensor_sweep.py",
+          "--package-root",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/core",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/smooth_full",
+          "--device",
+          "cuda:0"
+        ],
+        "timeout_s": 900,
+        "sha256": {
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/smooth_sensor_sweep.py": "85042087baa0290813a44c77972ff4275f812611ee30b5537a4674824f2c85ec"
+        }
+      }
+    },
+    {
+      "exit_code": 0,
+      "wall_s": 95.3670524499612,
+      "job": {
+        "id": "06_geometry_independent_v2",
+        "argv": [
+          "/usr/bin/env",
+          "CUBLAS_WORKSPACE_CONFIG=:4096:8",
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/geometry_quality_independent_clip_v2.py",
+          "--independent-new-clip",
+          "--core",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/core",
+          "--reference-receipt",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/dense_s3/s3_00_dense_reference.json",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/geometry_independent_v2",
+          "--Ns",
+          "63,126,189,377,754",
+          "--interval-limit",
+          "10"
+        ],
+        "timeout_s": 600,
+        "sha256": {
+          "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/geometry_quality_independent_clip_v2.py": "dff74139b51ff3fffac5e4727016364d6f7209f9bd24032fe875fa239bd3d338"
+        }
+      }
+    }
+  ],
+  "real_data_used": false,
+  "training_started": false,
+  "production_sources_modified": false,
+  "source_file_checks": [
+    {
+      "path": "stage9_sensor_profile.json",
+      "sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+      "reference_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f"
+    },
+    {
+      "path": "PREPARATION_MANIFEST.json",
+      "sha256": "f19e6126d06d90f16f8574b1a6fd2331ea19498448fe37d1aca7cda2a04e978a",
+      "reference_sha256": "f19e6126d06d90f16f8574b1a6fd2331ea19498448fe37d1aca7cda2a04e978a"
+    },
+    {
+      "path": "genesis_event_plugin/adaptive_sampler.py",
+      "sha256": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+      "reference_sha256": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f"
+    },
+    {
+      "path": "genesis_event_plugin/calibration.py",
+      "sha256": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+      "reference_sha256": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3"
+    },
+    {
+      "path": "genesis_event_plugin/camera_margin.py",
+      "sha256": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+      "reference_sha256": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8"
+    },
+    {
+      "path": "genesis_event_plugin/camera_model.py",
+      "sha256": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+      "reference_sha256": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c"
+    },
+    {
+      "path": "genesis_event_plugin/dvs_emulator.py",
+      "sha256": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+      "reference_sha256": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638"
+    },
+    {
+      "path": "genesis_event_plugin/genesis_adapter.py",
+      "sha256": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+      "reference_sha256": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa"
+    },
+    {
+      "path": "genesis_event_plugin/interpolator.py",
+      "sha256": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+      "reference_sha256": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3"
+    },
+    {
+      "path": "genesis_event_plugin/noise_model.py",
+      "sha256": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+      "reference_sha256": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7"
+    },
+    {
+      "path": "genesis_event_plugin/physics_interpolator.py",
+      "sha256": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+      "reference_sha256": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e"
+    },
+    {
+      "path": "genesis_event_plugin/physics_plugin.py",
+      "sha256": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+      "reference_sha256": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba"
+    },
+    {
+      "path": "genesis_event_plugin/physics_warp.py",
+      "sha256": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+      "reference_sha256": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55"
+    },
+    {
+      "path": "genesis_event_plugin/plugin.py",
+      "sha256": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+      "reference_sha256": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579"
+    },
+    {
+      "path": "genesis_event_plugin/radiometry.py",
+      "sha256": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+      "reference_sha256": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0"
+    },
+    {
+      "path": "genesis_event_plugin/readout.py",
+      "sha256": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+      "reference_sha256": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0"
+    },
+    {
+      "path": "genesis_event_plugin/recorder.py",
+      "sha256": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+      "reference_sha256": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e"
+    },
+    {
+      "path": "genesis_event_plugin/torch_physics.py",
+      "sha256": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+      "reference_sha256": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad"
+    },
+    {
+      "path": "genesis_event_plugin/__init__.py",
+      "sha256": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd",
+      "reference_sha256": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+    },
+    {
+      "path": "genesis_event_plugin/gpu_geometry.py",
+      "sha256": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+      "reference_sha256": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b"
+    },
+    {
+      "path": "genesis_event_plugin/gpu_interpolator.py",
+      "sha256": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+      "reference_sha256": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af"
+    },
+    {
+      "path": "genesis_event_plugin/gpu_sensor.py",
+      "sha256": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+      "reference_sha256": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb"
+    },
+    {
+      "path": "genesis_event_plugin/optimized.py",
+      "sha256": "9b75e27eff5ea391db669897ee248817d932a2a0d2ad0db0f55c493769c5b00b",
+      "reference_sha256": "9b75e27eff5ea391db669897ee248817d932a2a0d2ad0db0f55c493769c5b00b"
+    },
+    {
+      "path": "genesis_event_plugin/gpu_kernel.py",
+      "sha256": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf",
+      "reference_sha256": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+    },
+    {
+      "path": "genesis_event_plugin/csrc/fused_sensor.cpp",
+      "sha256": "58f3dc98939126568d2336d45963b0386e217415018ced1fd3312076f3455521",
+      "reference_sha256": "58f3dc98939126568d2336d45963b0386e217415018ced1fd3312076f3455521"
+    },
+    {
+      "path": "genesis_event_plugin/csrc/fused_sensor.cu",
+      "sha256": "655ea41207c9141afa4236b8b47924d10a23c27331422f69e7456cce8effb61e",
+      "reference_sha256": "655ea41207c9141afa4236b8b47924d10a23c27331422f69e7456cce8effb61e"
+    },
+    {
+      "path": "genesis_event_plugin/evaluation/evaluator.py",
+      "sha256": "52382079b1be34a0d9347d9b4c5821a31d01228aa8faa9c346411641a39269a0",
+      "reference_sha256": "52382079b1be34a0d9347d9b4c5821a31d01228aa8faa9c346411641a39269a0"
+    },
+    {
+      "path": "genesis_event_plugin/evaluation/event_reader.py",
+      "sha256": "a7e7ead65724e5834dabdd3c7799e00db9ba8946e0fb99050f66aedf56e67461",
+      "reference_sha256": "a7e7ead65724e5834dabdd3c7799e00db9ba8946e0fb99050f66aedf56e67461"
+    },
+    {
+      "path": "genesis_event_plugin/evaluation/event_schema.py",
+      "sha256": "1185642a40566eeb3cc0a7a2bac4fcf952e07f9b781158990341f68d0f358119",
+      "reference_sha256": "1185642a40566eeb3cc0a7a2bac4fcf952e07f9b781158990341f68d0f358119"
+    },
+    {
+      "path": "genesis_event_plugin/evaluation/pecs_metrics.py",
+      "sha256": "1febf0c852f07d48b4e3dc2384d9f2a747e297ecd15f87f4152d1b094dad4bd4",
+      "reference_sha256": "1febf0c852f07d48b4e3dc2384d9f2a747e297ecd15f87f4152d1b094dad4bd4"
+    },
+    {
+      "path": "genesis_event_plugin/evaluation/plan_a_runner.py",
+      "sha256": "b9f696ad9c9912b48afb8dcf30e59a9aae1c5498d1e372e6188129ab2d96b32f",
+      "reference_sha256": "b9f696ad9c9912b48afb8dcf30e59a9aae1c5498d1e372e6188129ab2d96b32f"
+    },
+    {
+      "path": "genesis_event_plugin/evaluation/__init__.py",
+      "sha256": "2d7785682a8d8cc71c1cdfaa31aff157ac10bac68d0c6b864b9873da1d240f13",
+      "reference_sha256": "2d7785682a8d8cc71c1cdfaa31aff157ac10bac68d0c6b864b9873da1d240f13"
+    },
+    {
+      "path": "genesis_event_plugin/utils/dvs_core.py",
+      "sha256": "a1a771385fa5192e11cc9beda28bb46ab9cf6e6b4b57b2394abafaa375014e5e",
+      "reference_sha256": "a1a771385fa5192e11cc9beda28bb46ab9cf6e6b4b57b2394abafaa375014e5e"
+    },
+    {
+      "path": "genesis_event_plugin/utils/flow_utils.py",
+      "sha256": "4158b294cd3cdeafd1641b46298566a1d8f9589cf2cae61bbfd9655a8f0ddd85",
+      "reference_sha256": "4158b294cd3cdeafd1641b46298566a1d8f9589cf2cae61bbfd9655a8f0ddd85"
+    },
+    {
+      "path": "genesis_event_plugin/utils/motion_blur.py",
+      "sha256": "3465c4b2eaa38bb46b7c31ce8bee3e2c5db3686c1da2430b24d8af0841e6b6cb",
+      "reference_sha256": "3465c4b2eaa38bb46b7c31ce8bee3e2c5db3686c1da2430b24d8af0841e6b6cb"
+    },
+    {
+      "path": "genesis_event_plugin/utils/__init__.py",
+      "sha256": "d1d9aace79f47eb2988b4951d61635b85ac3ed40b6c81a3419e313c60d8778a1",
+      "reference_sha256": "d1d9aace79f47eb2988b4951d61635b85ac3ed40b6c81a3419e313c60d8778a1"
+    }
+  ],
+  "identity_gpu2_release": {
+    "status": "released_complete",
+    "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+    "gpu_index": 2,
+    "host": "g1",
+    "pid": 2692467,
+    "process_start_ticks": "76642342",
+    "owner": "sim2real research; user explicitly assigned g1 GPU2",
+    "started_utc": "2026-11-05T11:03:19.414253+00:00",
+    "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampling_quality_20261105f/identity_control_lease",
+    "job": "identity",
+    "heartbeat_utc": "2026-11-05T11:06:26.144272+00:00",
+    "last_job": "identity",
+    "last_exit_code": 0,
+    "finished_utc": "2026-11-05T11:08:35.892012+00:00"
+  },
+  "identity_control_exit_code": 0,
+  "auxiliary_cpu_exit_code": 0,
+  "observed_utc": "2026-11-05T11:09:46.933797+00:00"
+}
