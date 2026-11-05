@@ -55,8 +55,12 @@
 
 ## 决策与使用
 
-本轮同采样精度下已达到实用时间优势，因此停止追加算法优化，冻结这个限定配置的精确GPU版本。它适合下一轮离线数据生产；不据此重生成或替换正在训练的任何数据。若后续目标转为低显存、其他preset或实时在线仿真，应作为新的受控优化任务，不能把本表推广过去。
+本轮在相近高密度中间采样设置下已达到实用时间优势，因此停止追加算法优化，冻结这个限定配置的精确GPU版本。它适合下一轮离线数据生产；不据此重生成或替换正在训练的任何数据。若后续目标转为低显存、其他preset或实时在线仿真，应作为新的受控优化任务，不能把本表推广过去。
 
 包内容SHA256：`21480a95fe934bc385d37f075c4fbb366b9ccb9d0c33654ebddac83902f82ce9`。原始服务器目录：`/home/zhaoyuhan/Eventbased_WAM/runs/simulator_efficiency_comparison_20261105c`。
 
 [逐次计时CSV](../../evidence/20261105-efficiency-comparison/matched_suite_static_timings.csv) · [统计JSON](../../evidence/20261105-efficiency-comparison/matched_suite_static_analysis.json) · [限定配置冻结描述](../../../../frozen_baselines/eventgenesis-gpu-stage9-20261105/BASELINE.json) · [版本使用说明](../../../../frozen_versions/eventgenesis-gpu-stage9-20261105/README.md) · [复现步骤](../../experimental/efficiency_comparison_20261105/REPRODUCE.md)
+
+## 论文措辞校正（2026-11-05）
+
+本报告的采样密度对照不构成实测同等物理精度或事件质量证明；不应称为“同精度下全面领先”。全部原始计时、数值、失败门禁与冻结边界保持原样。扩大样本、推荐运行点及质量—耗时对照的设计见[论文效率实验方案](../paper_efficiency_protocol_20261105/EFFICIENCY_LITERATURE_AND_PROTOCOL.md)。

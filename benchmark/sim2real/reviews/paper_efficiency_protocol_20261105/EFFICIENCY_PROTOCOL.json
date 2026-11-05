@@ -1,0 +1,178 @@
+{
+  "schema": "eventgenesis_paper_efficiency_protocol_v1",
+  "date": "2026-11-05",
+  "status": "design_ready_expanded_measurements_not_started",
+  "source_evidence_commit": "3e68e3b727ec2c21d9aa947a7989ebc2efd14e75",
+  "release": "eventgenesis-gpu-stage9-20261105",
+  "package_sha256": "21480a95fe934bc385d37f075c4fbb366b9ccb9d0c33654ebddac83902f82ce9",
+  "reference_core_commit": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "existing_result": {
+    "scope": "five_fixed_200ms_clips_high_intermediate_sampling_density_cached_generation",
+    "geometric_mean_speedup_vs_v2e_ssm": 2.5560858614927464,
+    "scene_resampled_95pct_interval": [
+      2.2629371002811056,
+      3.1398292734468454
+    ],
+    "not_a_matched_quality_or_universal_speed_claim": true,
+    "raw_float64_bitwise_gate_passed": false,
+    "full_native_end_to_end_benchmark_complete": false
+  },
+  "methods": [
+    {
+      "id": "eventgenesis_gpu_stage9",
+      "profile": "exact_archived_stage9",
+      "commit": "3e68e3b727ec2c21d9aa947a7989ebc2efd14e75"
+    },
+    {
+      "id": "v2e_ssm",
+      "commit": "cac638444557a224ba6ee5c29260916f152c00bd"
+    },
+    {
+      "id": "vid2e_ssm_esim_gpu",
+      "commit": null,
+      "note": "pin historical SSM pipeline; current FILM default is not a distinct sixth method"
+    },
+    {
+      "id": "film_esim_gpu",
+      "commit": null
+    },
+    {
+      "id": "rife_esim_gpu",
+      "commit": null
+    }
+  ],
+  "additional_recent_related_work_not_automatically_deployed": [
+    "Texvent CVPR2026",
+    "SENPI"
+  ],
+  "must_not_claim": [
+    "fastest_current_simulator",
+    "same_quality_from_same_step_count",
+    "fully_gpu_native_renderer",
+    "real_time_from_sub_real_time_RTF"
+  ],
+  "hardware": {
+    "host": "g1.pkuml.org",
+    "gpu_class": "V100S 32GB",
+    "preferred_gpu_index": 2,
+    "actual_uuid_before_execution": null,
+    "g3_access_allowed": false,
+    "live_atomic_resource_check_required": true
+  },
+  "workload": {
+    "strata": {
+      "rich_s0": 4,
+      "rich_s1": 4,
+      "rich_s2": 4,
+      "rich_s3": 4,
+      "pose_matched_object": 4
+    },
+    "target_independent_rollouts": 20,
+    "selection_seed": 20261105,
+    "selection": "exclude exploratory five rollout IDs; rank remaining IDs by sha256(seed:rollout_id) within each stratum",
+    "start_selection": "preregister deterministic start from available intervals before timing",
+    "manifest_path": null,
+    "manifest_must_precede_first_timing": true,
+    "duration_s_primary": 0.2,
+    "native_resolutions": [
+      [
+        320,
+        240
+      ],
+      [
+        346,
+        260
+      ]
+    ],
+    "resolution_reporting": "separate strata/tables; no within-case cross-method resolution changes",
+    "duration_controls_rich_s": [
+      0.4,
+      1.0
+    ],
+    "rich_duration_control_cases_per_stratum": 1
+  },
+  "operating_points": {
+    "primary": [
+      "official_recommended_sampling",
+      "comparable_high_density_sampling_work"
+    ],
+    "eventgenesis_profile_must_not_change": true,
+    "v2e_candidate_max_gaps_s": [
+      null,
+      0.001,
+      0.0001,
+      2.652519893899204e-05
+    ],
+    "None_means": "native automatic sampling",
+    "record_actual_timestamps_counts_max_gap_endpoint_convention": true,
+    "shared_esim_backend_for_three_interpolation_combinations": true
+  },
+  "timing_boundaries": {
+    "warm_cached_primary": {
+      "start": "common source physical/video inputs loaded in CPU memory",
+      "end": "sorted raw CPU events",
+      "includes": [
+        "input preparation",
+        "geometry and interpolation",
+        "sensor",
+        "required transfers",
+        "sorting"
+      ],
+      "excludes": [
+        "Genesis rendering",
+        "disk input",
+        "process and model initialization",
+        "JIT compile",
+        "disk output"
+      ]
+    },
+    "native_end_to_end": "physics stepping and native renderer through common event writer; shared and method-specific acquisition cost recorded separately",
+    "cold_start": "fresh process through first saved events; first JIT compilation and cached compilation separated"
+  },
+  "statistics": {
+    "repetitions_per_case_per_point": 3,
+    "primary_case_estimator": "median",
+    "save_mean_std_iqr_and_all_trials": true,
+    "paired_speedup": "geometric_mean_of_per_case_ratios",
+    "bootstrap": "paired stratified rollout resampling, 95pct interval",
+    "stratum_weighting": "equal weights for four rich families and pose",
+    "no_frame_pseudoreplication": true
+  },
+  "quality": {
+    "reference": "independent direct high-frequency render or analytic motion; not EventGenesis predictions",
+    "reference_convergence_required": true,
+    "initial_curve": "intermediate image and edge localization quality versus total generation time",
+    "not_equal_to_full_sensor_realism": true,
+    "full_event_metrics": "reuse frozen protocol only after units/reference/noise comparability checks",
+    "no_matched_quality_ranking_before_quality_verified": true
+  },
+  "pending_before_expanded_execution": [
+    "pin missing official model and source hashes",
+    "save actual rollout/start manifest and all input hashes",
+    "preregister timeout and interference exclusion rules",
+    "verify resource lease and fast-path activation",
+    "verify all native baseline timing conventions",
+    "verify cross-framework peak-memory instrument"
+  ],
+  "retraining": {
+    "new_jobs_started_by_this_review": false,
+    "current_runs_or_inputs_modified": false,
+    "production_adapter_equivalence_additional_checks_complete": false,
+    "raw_float64_bitwise_gate_passed": false,
+    "required": [
+      "formal flow Gaussian encoder and window boundary comparison",
+      "formal E2VID temporally weighted voxel comparison",
+      "formal pose count tensor comparison",
+      "paired optimizer short check and independent checkpoint restore",
+      "immutable shared-physical banks and split manifests"
+    ],
+    "seed_plan": [
+      0,
+      1,
+      2
+    ],
+    "real_test_tuning_allowed": false,
+    "same_data_does_not_require_retraining_for_engineering_speedup": true,
+    "expanded_data_must_be_paired_across_generators": true
+  }
+}
