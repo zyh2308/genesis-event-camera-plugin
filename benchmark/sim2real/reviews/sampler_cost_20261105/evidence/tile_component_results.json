@@ -1,0 +1,774 @@
+{
+  "scope": "same-input component only",
+  "deterministic_algorithms": true,
+  "rows": [
+    {
+      "call": 1,
+      "candidate": "tile16",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 2.190303743002005,
+          "peak_allocated_bytes": 6087796736,
+          "incremental_peak_bytes": 3396272640
+        },
+        {
+          "trial": 1,
+          "wall_s": 2.1056303000077605,
+          "peak_allocated_bytes": 6087140352,
+          "incremental_peak_bytes": 3395616256
+        },
+        {
+          "trial": 2,
+          "wall_s": 2.103754378040321,
+          "peak_allocated_bytes": 6087140352,
+          "incremental_peak_bytes": 3395616256
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "tile32",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.7210664859740064,
+          "peak_allocated_bytes": 6095907840,
+          "incremental_peak_bytes": 3404383744
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.7106286330381408,
+          "peak_allocated_bytes": 6092079616,
+          "incremental_peak_bytes": 3400555520
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.7091060309903696,
+          "peak_allocated_bytes": 6092079616,
+          "incremental_peak_bytes": 3400555520
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "reference",
+      "bitwise_equal": true,
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.402437892043963
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.382300304947421
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3826305740512908
+        }
+      ]
+    }
+  ],
+  "noise_or_sampling_changed": false,
+  "fixture": {
+    "variant": "ours_resident",
+    "wall_s": 22.565586550044827,
+    "setup_s": 0.41551375400740653,
+    "peak_bytes": 14262150144,
+    "worker_peak_bytes": 14262150144,
+    "unrelated_allocated_bytes": 0,
+    "substeps": [
+      377
+    ],
+    "fallbacks": 0,
+    "events": {
+      "count": 1091,
+      "sha256": "7b2837b67fd0c7473b93579c5a13c59f995775394caad26737b92b589eab013a",
+      "dtype": "float64",
+      "t_min": 0.002041298426785678,
+      "t_max": 0.009992233587861124
+    },
+    "phases": null
+  },
+  "stress": {
+    "schema": "geometry_byte_stress_v1",
+    "device": "0",
+    "torch_version": "2.8.0+cu126",
+    "all_passed": true,
+    "comparison": "dtype/shape/contiguous raw uint8 equality, including NaN bits",
+    "cases": [
+      {
+        "name": "gray/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 332
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 332
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 572
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 572
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 582
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 582
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 508
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 508
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 434
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 508
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 508
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 490
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 490
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 331
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 331
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 571
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 571
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 581
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 581
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 507
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 507
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 433
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 507
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 507
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/missing_surface_labels",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 452
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 452
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 51,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 51,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 452
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 452
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "tile16": {
+            "passed": true,
+            "failures": [],
+            "line_events": 51,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "tile32": {
+            "passed": true,
+            "failures": [],
+            "line_events": 51,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      }
+    ],
+    "candidate_summary": {
+      "tile16": {
+        "passed": 35,
+        "failed": 0
+      },
+      "tile32": {
+        "passed": 35,
+        "failed": 0
+      }
+    },
+    "case_count": 35
+  },
+  "status": "complete",
+  "all_component_cases_exact": true
+}

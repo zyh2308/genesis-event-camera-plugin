@@ -1,0 +1,2592 @@
+{
+  "schema": "eventgenesis_sampler_efficiency_summary_v1",
+  "status": "complete",
+  "primary_metric": "initialized_pipeline_s",
+  "definitions": {
+    "genwall_s": "Stored wall_s: cached endpoint input to sorted CPU raw events, setup excluded",
+    "initialized_pipeline_s": "Stored setup_s+wall_s: includes per-clip initialization and each sensor first frame; pretrained model/private compiled kernel already loaded",
+    "peak_worker_allocated_bytes": "Whole worker Torch allocated-memory peak, including persistent model allocations; not device total usage",
+    "peak_reported_bytes": "Original per-method peak_bytes; ours subtracts unrelated pre-call allocation, V2E reports whole worker peak",
+    "old_over_new_speedup": "median frozen time / median candidate time; >1 means candidate is faster",
+    "candidate_over_v2e_slowdown": "median candidate time / median V2E native-auto time; >1 means candidate is slower",
+    "aggregation": "Geometric mean of per-case ratios across all five fixed cases, never a ratio of arbitrary average clip times"
+  },
+  "limitations": [
+    "No equal-event-quality, temporal-density, or accuracy claim is made for V2E.",
+    "Three repeats quantify timing spread; IQR is descriptive and is not a confidence interval.",
+    "Physical Genesis rendering, input disk loading and event serialization are excluded.",
+    "V2E minimum63 is a separate numerical-step control, not a default or quality-matched configuration.",
+    "Normal-mode timing cannot replace the separate deterministic full-output quality gates."
+  ],
+  "expected": {
+    "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+    "profile": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/stage9_sensor_profile.json",
+    "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+    "noise_config_kwargs": {
+      "pos_thres": 0.2,
+      "neg_thres": 0.2,
+      "sigma_thres": 0.03,
+      "cutoff_hz": 300.0,
+      "leak_rate_hz": 0.01,
+      "leak_jitter_fraction": 0.1,
+      "shot_noise_rate_hz": 0.001,
+      "noise_rate_cov_decades": 0.1,
+      "refractory_period_s": 0.0005,
+      "log_input": false,
+      "radiance_input": true,
+      "radiance_scale": 1,
+      "radiance_white_level": 1,
+      "response_mode": "physical_log",
+      "radiometric_floor": 1e-06,
+      "radiometric_calibration_status": "uncalibrated",
+      "readout_model": "ideal_readout",
+      "seed": 42
+    },
+    "cublas_workspace_config": null,
+    "runtime": {
+      "torch": "2.8.0+cu126",
+      "cuda": "12.6",
+      "num_threads": 2,
+      "interop_threads": 1,
+      "matmul_tf32": false,
+      "cudnn_tf32": false
+    },
+    "trials_per_job": 3,
+    "main_cases": [
+      "s0_00",
+      "s1_00",
+      "s2_00",
+      "s3_00",
+      "train_000"
+    ],
+    "main_methods": [
+      "frozen_gpu",
+      "candidate_gpu",
+      "v2e_auto"
+    ]
+  },
+  "metadata_receipt": null,
+  "source_script_sha256": "7d58fdbe1a7ac1429560dbdde1cee741de314dd1ee635809c625e466d7c5c2a6",
+  "validation": {
+    "passed": true,
+    "issues": [],
+    "jobs_found": 16,
+    "jobs_expected": 16,
+    "physical_inputs_match_by_case": true
+  },
+  "physical_inputs": {
+    "s0_00": {
+      "case": "s0_00",
+      "intervals": 20,
+      "index": 100,
+      "shape_hw": [
+        260,
+        346
+      ],
+      "simulated_s": 0.19999999999999996,
+      "timestamps_sha256": "0ad5c4a664c88e204c0e72a19abeba3eee1e5ba90453334dc15e6a7649c99123",
+      "physical_sha256": {
+        "radiance_linear_rgb": "cf1b942793bbb5f1ccf9833d24f09ee7db17a211bbb7d5ea1afbf645f21cd8ac",
+        "depth_m": "9c72dbf7ebec1f118c3d7206586c03b6b5e457731cb7b5bbfe42334b4bdfbe10",
+        "segmentation_link_idx": "1296dfb695b031a8ade8d7af8b0d296cf692ed2f7357e7aa8d103f9137a67688",
+        "object_to_world": "1c3688823f2a49aa3522532129c66bba1084a6e2e8480e17c3957965f74f6252",
+        "camera_to_world_cv": "781ef9188eb74daf1f1807c8888ed4a4c38c1582db28001a7c37e92949e74f4a"
+      },
+      "display_sha256": [
+        "22d92ba52d4b7349bdffbe564861e77a5cacd7248e64ee89ec777551429e11b7",
+        "ab76848a92c0ea3c14be8098482bc52e74ec98c7c41d3faa50540eb6e89f4b77",
+        "28c14e8df9f48b34c6dcf87e16656316d646139b6762ba92ca697d8ac067c1c4",
+        "59a4d884a088e39821cab3643d1b52b5f8092657b8d592ca52fdf82442e324c7",
+        "d2fd1d096afb926fe4454e844a1c8c3accfce95561f1a994b76c82cca564aea7",
+        "17b55bfdaf727a7ef497d96978b9dababe86ebdcf34606a8646a79e799bc6fa5",
+        "1a6afd45b016089ceaf4e485d4680ea5df8bb1f8f2f17a2bca303d94a71b793f",
+        "afba3a74c1bb6a2e4eea0f37c658ddcb40b63cb6435503544189c04f54d34629",
+        "62925a3fdf79efb0b100a47260e8c7cab2ed41c9303da8a02c123f7ea74f4209",
+        "9be0e632f37f9014af64cef3ee9489dcbc1e2fc7b525f8e3bd0cb3d0d69bc04a",
+        "3640f297558ac0e21da94ab8021f452cdc0690c1494cf9a251f82559e354ee26",
+        "b59e83a5a751a5db49de42c6eeb1e42ae74dec3af1714d2aea5647959ccc1a84",
+        "66cf93105c2749a9ad7b631b75e78ef71572ad1802192dea79ac8be08205c538",
+        "7dfda15183ab80fef7526dcbe05087b18c11a7d915a278d661ec4de13e804bdb",
+        "7ea06864f00d1860a77465840e97e70b3d9cb51b761ca2300e9590f58cf7737b",
+        "21704ba63b8fecd8b7e3f4cda26a75e3bcb814de3c5ac6f64b5a65f619973aff",
+        "0451dd1bdddcd958c6bd1a3b72a3ca630b37763a7f87c740f261c5938cc6b4a3",
+        "812b29f76629376be7071fb30e849b351cbeb0cf9fba3ec484e559b4ff2be968",
+        "bc4692b129be5e0b1a0305a9e8784e8eec803ff6c769ecdf16c03e01d8dfc91f",
+        "a032adaa3fdf9289a7f50146d23a12e02a1dcc9af36d622eb758529c32f24703",
+        "73823ec268f6b67102c9eda23effd22ac98c8f7d0c7b5abb5ae25b64d07cbce3"
+      ],
+      "intrinsics_sha256": "27963879745dde744176c7b27674dc863e3e8e82e611ae4886d85f9cc913a336",
+      "segmentation_ids_sha256": "eb5ff41a2322634094bb82078f703b0689736915ee8c4ea819445d7b37adb760"
+    },
+    "s1_00": {
+      "case": "s1_00",
+      "intervals": 20,
+      "index": 100,
+      "shape_hw": [
+        260,
+        346
+      ],
+      "simulated_s": 0.20000000000000018,
+      "timestamps_sha256": "6ee04afc5e33cb6b9b93b546f2ee02e7a9d82eb7cff5575a196a785809e2b5d2",
+      "physical_sha256": {
+        "radiance_linear_rgb": "6deb8ed88ece4d50333c3734ba403426cd2a80138fe81c7e85d3448dab70c95a",
+        "depth_m": "e8fbb3ad8e32f51cbf142d0c8e0fa4dfb0e705ea8aeea5166224a0c8a7644d63",
+        "segmentation_link_idx": "61f1484dd81310f132806c5932e2159812fa762a005eae07cde9d53a0ce756c3",
+        "object_to_world": "16118c83c2587b36985e080b8e4ff53527cf9de48564507cb63b7e82423a4fa8",
+        "camera_to_world_cv": "0caf15744c028e6df98a03855caa85cd387b70e8639090ecf7fbba08f6a5f496"
+      },
+      "display_sha256": [
+        "cf9ddaef268a5fd650f613a6f7edfa7d6125a0070ca01ae09e292762bc327a9d",
+        "d810cbc0a09e3b55574e0c39d76f474359f379dabae84215e3ac2f0f2f654ff9",
+        "c901c8105d57f1537c6a33ee6624a3c3243e6bdd2705bfb8983ac7dc669c088c",
+        "6528ff89683d06451a24e93e566cd9df676c2d4002481a2bc8b25aec4bdcbc18",
+        "71d7bf3eabf4d06bc637259c10bbb80468fecc79e1495661f0dda0aab5cab2dc",
+        "151263a94e82725ef2e55702bf300c7ec3a6eb1fe88b313503648737c3ef92eb",
+        "2c77aed67268cc516702ac3928c6879630bc3cd0791f3804136443d49bc9367e",
+        "9b222ad19415bba14c778f84db71ce3045238e4339457fa6b743bf647df01601",
+        "387f5f6450b8d07533cc0a66ed79b267ba93700565e88183c887336540c7fee3",
+        "dbf7f60c4c2a70bd60c03aa38bac2a2c779988294275703e8d857cbd7e0639a2",
+        "473864bbb0600e2a2968b1c6ce706607cb8b9c0fb3e25a877f4bde06af8ececf",
+        "ad7e4ccc650b960f770493b736fe06259451ff25231f7ea57bf6b2564612c6e5",
+        "ea5aa3216dc81de73be947afedc4c5ce7bf54d6486e6938a69644a1044d075e8",
+        "62225d8cd1273a703a24daf61b01364be8d7ecddbd088237147ef667d442a6a6",
+        "5be82df0117ba4bab281fed81450dd7b456126981daf0eea08a3e69d176eb63a",
+        "f9c0673098b89a81b3ebee4b1eb8aa330d88962cc01de7c0f1c5ab3fef2b64d8",
+        "5beed486e96cc72d56f91af3806389ec4a80f7ea3b9dd00839a9b00cba1b9c86",
+        "976950a22705a1dc5009195526ac820c7759ffe6447115df370be6bd41179263",
+        "da6d00d1cdfa4ebb4ca067872e427c3188320e6d8b4c0af0237ebfa07ee3be2e",
+        "59dd588ae725df85908d2e80dc1b12455caabe74693657c40422fd11e25ffd55",
+        "aa384eb1b526e6a042358cc1598fb91ef79c4668ffbaa3b381705264a1d4ff90"
+      ],
+      "intrinsics_sha256": "27963879745dde744176c7b27674dc863e3e8e82e611ae4886d85f9cc913a336",
+      "segmentation_ids_sha256": "eb5ff41a2322634094bb82078f703b0689736915ee8c4ea819445d7b37adb760"
+    },
+    "s2_00": {
+      "case": "s2_00",
+      "intervals": 20,
+      "index": 100,
+      "shape_hw": [
+        260,
+        346
+      ],
+      "simulated_s": 0.20000000000000018,
+      "timestamps_sha256": "82ae2a6c12d7c1da65e17e91a9d88bc332b58467670ff2989d6415a9194a22b4",
+      "physical_sha256": {
+        "radiance_linear_rgb": "ab0432e0b4a6087d6278e24c8f1fa2805f067281705da3b5950b9b858bcdbd87",
+        "depth_m": "628a9a6375e3f94577a5e8bf0fea4bc88f50cd12d9e47646d1989dec8395eab5",
+        "segmentation_link_idx": "dbbcf3c71ba51d65443d00641bda68ea83d12c23998a442f7ce2f2ad4617addb",
+        "object_to_world": "740fac3b546341b09a2d1866b32699569fb7cac92691e6ddcd44e0b79251039f",
+        "camera_to_world_cv": "65bdf9172734e3f3336034b73b4a3339361f611a40577ecef64fd8bac21dca5d"
+      },
+      "display_sha256": [
+        "a7dddad8d9298ae6b8a597a804a6175f8b1be645138254039415b1fd08dafd4d",
+        "8465b11a9ab37ef04880863baf9137978df66e52cf709073bd2888b346326bd8",
+        "7fd70659dbbed11bea5bed11263b1e9834501d78e8a68b216b830f709287808a",
+        "d555e014e1bedd77e5cec744ca1a625993680d552e1a6a4db54ae086828c3e6e",
+        "f8250229f099ba44e07e55f79a66c215d2e27971bc53134066cac03a5675300b",
+        "6a4c735bd9c27f5da81608f288953da1c717a4a0f2d7baaab052f499e60966df",
+        "b325102d503f51edd96a3565dd2626988055a5feac50b79d6949ce44b88046e8",
+        "0fa9645aa29792f0a677846e1e2d5476a2e90226ac539b76452e003f1b52e1e2",
+        "2a0f7d1d40baf71fe2af8c608b558dc472f0b7bfab0683aa67b0e1d44354196c",
+        "1915c07b849fe8f10ed5e6ba38549a2073359ebd8b632b0ef1ceec50012603c2",
+        "8cb54f074c1b5b6c3cc55f2b4a762b416da9ce5eef00c32534665935a7fad6ce",
+        "d4d81400ea90acbcb789c15c212b101ee7a80635fb682e97265eeb70a4a7be2d",
+        "a211fc2bf428f63168ad784154a732f499512200132752c4ef52b76520a55849",
+        "3c37553efb096e6ad23fc74704415a95e8b9e46220d5cf74f0001321b92d0e82",
+        "c8f78257c9508adca33bbd539f15b956ba97b6fcedbeeaba51989fabb1382164",
+        "f184c262211d331bcb271feb62708b13797834bbed88cf051a8dfc34958dae96",
+        "e90928a1013c0680fb07b811f65957d1423c08fab8f70f0fa66227c80eee7af4",
+        "9b8a289c6437b15abe063c8b2e8246a55bada77c0231a8192f6fa309c86572de",
+        "4345650415d814ae71c64c4ef9ca4c68cc4c4bc741ac3b0d6c5a324ab72aaad8",
+        "d33fe62e076d1ed17cef10f92f4bddf04ffff9b01f4ae6537209c2c4068cf5eb",
+        "77b63a55eaf2bc345a7f5f3ebf1500ce705ec7c2015ec29254d0b7ce765849e0"
+      ],
+      "intrinsics_sha256": "27963879745dde744176c7b27674dc863e3e8e82e611ae4886d85f9cc913a336",
+      "segmentation_ids_sha256": "eb5ff41a2322634094bb82078f703b0689736915ee8c4ea819445d7b37adb760"
+    },
+    "s3_00": {
+      "case": "s3_00",
+      "intervals": 20,
+      "index": 100,
+      "shape_hw": [
+        260,
+        346
+      ],
+      "simulated_s": 0.20000000000000018,
+      "timestamps_sha256": "d140fff2f46ed56048ce555ca9e21f289f65fb54d3594e7470ca71ce1b4fc03a",
+      "physical_sha256": {
+        "radiance_linear_rgb": "79c51e78ae26873fe38af011ab954454faacdfb1212ef5e2519c7ba0a54f331f",
+        "depth_m": "af08bad1b9863834af9ce035e942453d282b4cfceaa20015694f96ab02d842e0",
+        "segmentation_link_idx": "29c76774237be233a7a4019426568ec76cbb54d7fc57aca15b1d88caeb1a2f64",
+        "object_to_world": "3676df0faabd1cd8ee67b24bffb5451fe068e4fa78898672e9b9e38b6a83ea02",
+        "camera_to_world_cv": "d53e92df42db57a3770d38ec02ad49991d7a1b1b99d7b3495709add06f054582"
+      },
+      "display_sha256": [
+        "918cf64d94b5489cae6260f5ee3361fb955db46c5c274acf168cb277974ae9a1",
+        "f932440948dd69df4da8697825794a7a31ea40df026d82eea82bc3957fe8b3f1",
+        "946d5cea83ff423e4a6f9ebaa2ee2efac3b13c177be2155c9ca9b1fe47d5cc70",
+        "cc70e0243bd99437043e164399885539d7e8b6deceb48f94520f5388bfaf645b",
+        "5caa148b34cd4a26ecbdad6ab540e46d9dc213469317a13fde9f4c5161c8b2fd",
+        "9dfefe338496dab9a6653966614b117a5c131c665c8cdbc69e2ced31ab55733d",
+        "308b7b45d182d7e6bd6075a19f165aafc854a2d36a6739651b6a4edad2fc7a8c",
+        "e8128d3e87e5e747d8058a6efd40670b961470150a715e29e208d3ca94323770",
+        "661acf9db1d5c4fb1a600b1c6148fd6ccf7085c77b88ab98ced19a2f3731f6d9",
+        "5a8967a2a0dadbfbe265eb5eefbe3460a9fbc01a2ea10d2aab5adde57970fc67",
+        "833dec2e63697dd79f53a8742be863e244155646a138feb32e29de866900a69d",
+        "02423e43e130d5e144cddef44affe9536c80a3a3810abc5eed1991c788051291",
+        "4158dedba74757742406cbca6de953fd3c611643828a71c7de979b2549455b9e",
+        "53c7ebacb4410139051137bfa027df000c9745f79457bdbcabbd8a9170f11dd4",
+        "39208f3174f0072ff2a1d48c4a474332eeb46cab549b491cfa394e6b02ec7736",
+        "30be324a8b2a200bf9e3332a9d4cd0f1acb51364d62117d869345a4faa9b216f",
+        "004e94c2b9042d5606f128f213bfa8d1ca5f66fefee863adda8841750325ebdb",
+        "b1d30a9d3e0cbdb5d64724f9079eb90be23b44b5c44e2edc6f6a327511917a27",
+        "142b63ee91e174081cbfc2dc4eefd6dd8d80cbc3a85ed38a216860f4489912a1",
+        "a5efbcf3c762fe08ba0cbe0465ade7918fca6960b77f7884f2eb9656c1e72038",
+        "5165727a1d2247f42f9fe01793b482d2d57578038989021688395e63d41f7eba"
+      ],
+      "intrinsics_sha256": "27963879745dde744176c7b27674dc863e3e8e82e611ae4886d85f9cc913a336",
+      "segmentation_ids_sha256": "eb5ff41a2322634094bb82078f703b0689736915ee8c4ea819445d7b37adb760"
+    },
+    "train_000": {
+      "case": "train_000",
+      "intervals": 20,
+      "index": 0,
+      "shape_hw": [
+        260,
+        346
+      ],
+      "simulated_s": 0.2,
+      "timestamps_sha256": "3d17e96c0a4b9723d061f06310d75ea30b79aee189bc76e478e4baebbfc1c129",
+      "physical_sha256": {
+        "radiance_linear_rgb": "b753c066c3256f38f9ab7280c35ef5c6a96d3c20ee10bd773eefc195cf22ea3c",
+        "depth_m": "61b66960826582f07836fd17a5248ac15542feab865fa7c79e5daa383a59ed0c",
+        "segmentation_link_idx": "bb9f4b075727a967d8eaeddd5b020cbbe55358f4ce164b52c9243d92e14dd182",
+        "object_to_world": "e0c1a9b095099752809d945a7353245e6be3988b5626689ca907b261f57c9c2d",
+        "camera_to_world_cv": "1f902e1afcd962816b703d3dd135ecdc5f9078af4ac7b9fba983375e7910c48b"
+      },
+      "display_sha256": [
+        "31768115bb380dc3288e300a52d748d5394e47847c685e7d6380c25e27360880",
+        "f43571ceb2891a19e9fde5994a2976b36c041ac443ca5b505bf9153036ba16a9",
+        "cb304121f8944d01597fd73ea580a3ab0ca5498e36300b6e5d4cbae39874783d",
+        "5e01bcfbcc2a4b4f3c5065294f3edd8675112ef814b223454e073683ee68dca9",
+        "1e7f5118a397052b593710b9458a4261ea57df3e86a9091a75712b90cf1aaeb9",
+        "3f0a7054eecfe774fb17ee797ccb7d4e7aa5b27f0ebf4a8637defea237c2c169",
+        "7fe8965d4d72cec2d0ce981c40790b8e9c7cb66343da2178444d42fa431af047",
+        "1dbebe25ce71d38c2c914acc3ace868d9661c105055f2351a0122f1349dff5ed",
+        "35138cd88c54a33c1ac967bf1575a3e3f1f4d71ba74f2663fe03dac228c4ec17",
+        "2244e14a5d9247749873e3547a759565d85dd4f19d8c5611c5e545016bbf0582",
+        "38a50ea424ede0f58797a7ba7f1776cd108688798a918ada2e7f6843d3693173",
+        "3e1aec4949f97458b4cac4bfe042f33a027dd3ed98042b75b91dc8dec1404c5b",
+        "520320bd5bb23f5e8dac30ab9124a30abf4b368f3c80f152b5058c2aea351859",
+        "543cf1da989e12f70a5ad5bac5b4270e495c6e6fe0b593dcd3fb5f67434751d5",
+        "22183b3cefa6ae985d8911ef8b5d62c164ae71d5d3550b45314cbdbbf02b8c29",
+        "eee28b9bd4082bd1b7dce4a134ade01cab2db742d35e000cd6b41420a8e6e5bd",
+        "276b25f151a2bc275368523e2f921b5e2057b456b938ef4b9f4931a8924fceb7",
+        "a8b99deba53dcddfcbfca5e682edc9dfaa55e62e7c2d9978117e49653848407e",
+        "999293f2f44c750f6705c406f439580a0a9141a4566cc9fb087a02f0007d4776",
+        "ef90dfee5589e0b110ecca6fb80c4e97b8a65d0fd5edffc729f26bb9809b3d61",
+        "c5fcef2d51a69ea1a3c6dd51d0ec55635f802334e3cdc9dfbbdf4754338d7f9b"
+      ],
+      "intrinsics_sha256": "0c3ad8667b61d03e8146b8a4e888d62a58360264621c3947cdf2171d29acb9e4",
+      "segmentation_ids_sha256": "cd9a54ed1f18bf97db08914e280ea7349e11ca2c4885a4d8052552ceba84208d"
+    }
+  },
+  "jobs": [
+    {
+      "case": "s0_00",
+      "method": "frozen_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/frozen_gpu",
+      "timings_sha256": "c41347fc1ad852177c3b8aded7fbcb6e4e39159f7f8cc4239fab1cf81f064542",
+      "physical_inputs_sha256": "33d53aaf228b2325d1d43bceb3efc6daa4f9c627f463e84b81d497ac96a430a0",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 19.24924864200875,
+          "min": 19.22763258300256,
+          "max": 19.467530490946956,
+          "q25": 19.238440612505656,
+          "q75": 19.358389566477854,
+          "iqr": 0.11994895397219807,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 19.25735487602651,
+          "min": 19.235050996998325,
+          "max": 19.47369545896072,
+          "q25": 19.246202936512418,
+          "q75": 19.365525167493615,
+          "iqr": 0.11932223098119721,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.00741841399576515,
+          "min": 0.006164968013763428,
+          "max": 0.008106234017759562,
+          "q25": 0.006791691004764289,
+          "q75": 0.0077623240067623556,
+          "iqr": 0.0009706330019980669,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 11686735360,
+          "min": 11686735360,
+          "max": 11686735360,
+          "q25": 11686735360.0,
+          "q75": 11686735360.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 11678215680,
+          "min": 11678215680,
+          "max": 11678215680,
+          "q25": 11678215680.0,
+          "q75": 11678215680.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/frozen_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/frozen_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/frozen_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s0_00",
+      "method": "candidate_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/candidate_gpu",
+      "timings_sha256": "1b2730eef02da9a798af8dd0f3be79bc96cbe339cf65e387ad09995884bc67df",
+      "physical_inputs_sha256": "33d53aaf228b2325d1d43bceb3efc6daa4f9c627f463e84b81d497ac96a430a0",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 15.298299103975296,
+          "min": 15.27454052993562,
+          "max": 15.542319568921812,
+          "q25": 15.286419816955458,
+          "q75": 15.420309336448554,
+          "iqr": 0.13388951949309558,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 15.307568719959818,
+          "min": 15.283925790921785,
+          "max": 15.548535073874518,
+          "q25": 15.295747255440801,
+          "q75": 15.428051896917168,
+          "iqr": 0.13230464147636667,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.009269615984521806,
+          "min": 0.006215504952706397,
+          "max": 0.009385260986164212,
+          "q25": 0.007742560468614101,
+          "q75": 0.00932743848534301,
+          "iqr": 0.0015848780167289078,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 12054522368,
+          "min": 12054522368,
+          "max": 12054522368,
+          "q25": 12054522368.0,
+          "q75": 12054522368.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 12046002688,
+          "min": 12046002688,
+          "max": 12046002688,
+          "q25": 12046002688.0,
+          "q75": 12046002688.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/candidate_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/candidate_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/candidate_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s0_00",
+      "method": "v2e_auto",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/v2e_auto",
+      "timings_sha256": "92b2429e0fbf7dbdd0c3361df7c4d89e19de56c1b70dbe54b38f033017d4f93f",
+      "physical_inputs_sha256": "33d53aaf228b2325d1d43bceb3efc6daa4f9c627f463e84b81d497ac96a430a0",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 0.4297871139133349,
+          "min": 0.42503942898474634,
+          "max": 0.4402965409681201,
+          "q25": 0.4274132714490406,
+          "q75": 0.4350418274407275,
+          "iqr": 0.007628555991686881,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 0.4609589239116758,
+          "min": 0.4562766249291599,
+          "max": 0.4779880358837545,
+          "q25": 0.45861777442041785,
+          "q75": 0.46947347989771515,
+          "iqr": 0.010855705477297306,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.031237195944413543,
+          "min": 0.031171809998340905,
+          "max": 0.037691494915634394,
+          "q25": 0.031204502971377224,
+          "q75": 0.03446434543002397,
+          "iqr": 0.0032598424586467445,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/v2e_auto/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/v2e_auto/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s0_00/v2e_auto/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0025000000000000022,
+          "last_frame_s": 0.19749999999999995,
+          "max_dt_s": 0.0050000000000000044,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 0
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0025000000000000022,
+          "last_frame_s": 0.19749999999999995,
+          "max_dt_s": 0.0050000000000000044,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 1
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0025000000000000022,
+          "last_frame_s": 0.19749999999999995,
+          "max_dt_s": 0.0050000000000000044,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 2
+        }
+      ],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s1_00",
+      "method": "frozen_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/frozen_gpu",
+      "timings_sha256": "8fbc1dd6ee656619de8871406f065b4d6c9382a1e859c150e15890391dd8f4e8",
+      "physical_inputs_sha256": "85b01af9c8205f0f697542631c286caa9742e9786358092f86770b8766a5e51e",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 12.333019354031421,
+          "min": 12.32005218998529,
+          "max": 12.386104317964055,
+          "q25": 12.326535772008356,
+          "q75": 12.359561835997738,
+          "iqr": 0.03302606398938224,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 12.343687945976853,
+          "min": 12.335043248953298,
+          "max": 12.395500762970187,
+          "q25": 12.339365597465076,
+          "q75": 12.36959435447352,
+          "iqr": 0.030228757008444518,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.010668591945432127,
+          "min": 0.009396445006132126,
+          "max": 0.014991058968007565,
+          "q25": 0.010032518475782126,
+          "q75": 0.012829825456719846,
+          "iqr": 0.0027973069809377193,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 7720242176,
+          "min": 7720242176,
+          "max": 7720242176,
+          "q25": 7720242176.0,
+          "q75": 7720242176.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 7711722496,
+          "min": 7711722496,
+          "max": 7711722496,
+          "q25": 7711722496.0,
+          "q75": 7711722496.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/frozen_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/frozen_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/frozen_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s1_00",
+      "method": "candidate_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/candidate_gpu",
+      "timings_sha256": "f92b6a42dba54bbf79d059c87d4542ed6c7f19df4ba9c9d940e45223e06ce5ca",
+      "physical_inputs_sha256": "85b01af9c8205f0f697542631c286caa9742e9786358092f86770b8766a5e51e",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 10.717969749006443,
+          "min": 10.694802114041522,
+          "max": 10.89518224389758,
+          "q25": 10.706385931523982,
+          "q75": 10.806575996452011,
+          "iqr": 0.10019006492802873,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 10.722508363076486,
+          "min": 10.699208086007275,
+          "max": 10.899205422960222,
+          "q25": 10.71085822454188,
+          "q75": 10.810856893018354,
+          "iqr": 0.09999866847647354,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.004405971965752542,
+          "min": 0.004023179062642157,
+          "max": 0.004538614070042968,
+          "q25": 0.0042145755141973495,
+          "q75": 0.004472293017897755,
+          "iqr": 0.00025771750370040536,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 7882686976,
+          "min": 7882686976,
+          "max": 7882686976,
+          "q25": 7882686976.0,
+          "q75": 7882686976.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 7874167296,
+          "min": 7874167296,
+          "max": 7874167296,
+          "q25": 7874167296.0,
+          "q75": 7874167296.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/candidate_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/candidate_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/candidate_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s1_00",
+      "method": "v2e_auto",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/v2e_auto",
+      "timings_sha256": "a1de84eee3df7b1426ddf78e9c93e1b1fe4e7e98254d6bbc7346cec56b5bae15",
+      "physical_inputs_sha256": "85b01af9c8205f0f697542631c286caa9742e9786358092f86770b8766a5e51e",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 0.41544164600782096,
+          "min": 0.40934757189825177,
+          "max": 0.43084576399996877,
+          "q25": 0.41239460895303637,
+          "q75": 0.42314370500389487,
+          "iqr": 0.010749096050858498,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 0.4446267469320446,
+          "min": 0.4396376098738983,
+          "max": 0.47153409698512405,
+          "q25": 0.4421321784029715,
+          "q75": 0.45808042195858434,
+          "iqr": 0.015948243555612862,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.030290037975646555,
+          "min": 0.02918510092422366,
+          "max": 0.040688332985155284,
+          "q25": 0.02973756944993511,
+          "q75": 0.03548918548040092,
+          "iqr": 0.0057516160304658115,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/v2e_auto/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/v2e_auto/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s1_00/v2e_auto/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0025000000000000577,
+          "last_frame_s": 0.19750000000000012,
+          "max_dt_s": 0.0050000000000001155,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 0
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0025000000000000577,
+          "last_frame_s": 0.19750000000000012,
+          "max_dt_s": 0.0050000000000001155,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 1
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0025000000000000577,
+          "last_frame_s": 0.19750000000000012,
+          "max_dt_s": 0.0050000000000001155,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 2
+        }
+      ],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s2_00",
+      "method": "frozen_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/frozen_gpu",
+      "timings_sha256": "230b94e241f2b0fe5af26bdb6d785c4537b71a7caa6651ae38802bd918da55fa",
+      "physical_inputs_sha256": "c2268955c0c497f302d3efd763c9cdf35167b3060fc357077305e8d050d6d643",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 21.682185748941265,
+          "min": 21.525730836903676,
+          "max": 21.685069886036217,
+          "q25": 21.60395829292247,
+          "q75": 21.68362781748874,
+          "iqr": 0.07966952456627041,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 21.69286634796299,
+          "min": 21.53247946186457,
+          "max": 21.694247170933522,
+          "q25": 21.61267290491378,
+          "q75": 21.693556759448256,
+          "iqr": 0.080883854534477,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.0077964619267731905,
+          "min": 0.0067486249608919024,
+          "max": 0.012061421992257237,
+          "q25": 0.0072725434438325465,
+          "q75": 0.009928941959515214,
+          "iqr": 0.0026563985156826675,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 11501695488,
+          "min": 11501695488,
+          "max": 11501695488,
+          "q25": 11501695488.0,
+          "q75": 11501695488.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 11493175808,
+          "min": 11493175808,
+          "max": 11493175808,
+          "q25": 11493175808.0,
+          "q75": 11493175808.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/frozen_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/frozen_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/frozen_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s2_00",
+      "method": "candidate_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/candidate_gpu",
+      "timings_sha256": "8fdd2daa571b453e7b2801daed5f990d92795e0f9dbd600634341d11f39c8003",
+      "physical_inputs_sha256": "c2268955c0c497f302d3efd763c9cdf35167b3060fc357077305e8d050d6d643",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 17.1018657280365,
+          "min": 17.090021091978997,
+          "max": 17.32970528199803,
+          "q25": 17.09594341000775,
+          "q75": 17.215785505017266,
+          "iqr": 0.11984209500951692,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 17.10859027702827,
+          "min": 17.096440205932595,
+          "max": 17.342846389045008,
+          "q25": 17.102515241480432,
+          "q75": 17.22571833303664,
+          "iqr": 0.12320309155620635,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.006724548991769552,
+          "min": 0.006419113953597844,
+          "max": 0.013141107046976686,
+          "q25": 0.006571831472683698,
+          "q75": 0.009932828019373119,
+          "iqr": 0.003360996546689421,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 11693075456,
+          "min": 11693075456,
+          "max": 11693075456,
+          "q25": 11693075456.0,
+          "q75": 11693075456.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 11684555776,
+          "min": 11684555776,
+          "max": 11684555776,
+          "q25": 11684555776.0,
+          "q75": 11684555776.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/candidate_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/candidate_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/candidate_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s2_00",
+      "method": "v2e_auto",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto",
+      "timings_sha256": "6c8d34e8dd4678b90e571760cf48394db454fafe83a9e0b952bb31552dfd0808",
+      "physical_inputs_sha256": "c2268955c0c497f302d3efd763c9cdf35167b3060fc357077305e8d050d6d643",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 0.5012080200249329,
+          "min": 0.4986805390799418,
+          "max": 0.5106685700593516,
+          "q25": 0.49994427955243737,
+          "q75": 0.5059382950421423,
+          "iqr": 0.005994015489704907,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 0.5388737471075729,
+          "min": 0.5353766951011494,
+          "max": 0.5393647419987246,
+          "q25": 0.5371252211043611,
+          "q75": 0.5391192445531487,
+          "iqr": 0.0019940234487876296,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.03669615602120757,
+          "min": 0.02820517704822123,
+          "max": 0.03815672197379172,
+          "q25": 0.0324506665347144,
+          "q75": 0.037426438997499645,
+          "iqr": 0.004975772462785244,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0024999999999999467,
+          "last_frame_s": 0.19750000000000023,
+          "max_dt_s": 0.0050000000000003375,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 0
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0024999999999999467,
+          "last_frame_s": 0.19750000000000023,
+          "max_dt_s": 0.0050000000000003375,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 1
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0024999999999999467,
+          "last_frame_s": 0.19750000000000023,
+          "max_dt_s": 0.0050000000000003375,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 2
+        }
+      ],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s3_00",
+      "method": "frozen_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/frozen_gpu",
+      "timings_sha256": "07fafaef7a8793a0ce5e2275961095e7cbed1dcbfb2ecf3fbd6f6238ac4bea16",
+      "physical_inputs_sha256": "7ea682ac106173224c6ac673c45781b53fe70836fb48a04ff46d025da14bad77",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 22.403445045929402,
+          "min": 22.240215732948855,
+          "max": 22.45325349608902,
+          "q25": 22.32183038943913,
+          "q75": 22.42834927100921,
+          "iqr": 0.10651888157008216,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 22.414541215868667,
+          "min": 22.25006895395927,
+          "max": 22.47277605906129,
+          "q25": 22.33230508491397,
+          "q75": 22.443658637464978,
+          "iqr": 0.11135355255100876,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.011096169939264655,
+          "min": 0.009853221010416746,
+          "max": 0.019522562972269952,
+          "q25": 0.0104746954748407,
+          "q75": 0.015309366455767304,
+          "iqr": 0.004834670980926603,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 11510261248,
+          "min": 11510261248,
+          "max": 11510261248,
+          "q25": 11510261248.0,
+          "q75": 11510261248.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 11501741568,
+          "min": 11501741568,
+          "max": 11501741568,
+          "q25": 11501741568.0,
+          "q75": 11501741568.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/frozen_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/frozen_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/frozen_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s3_00",
+      "method": "candidate_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/candidate_gpu",
+      "timings_sha256": "7f0c72ed16278c96041fb884755cc415cdbae84788caaa1a552e39552aa0e8fe",
+      "physical_inputs_sha256": "7ea682ac106173224c6ac673c45781b53fe70836fb48a04ff46d025da14bad77",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 17.819811267079785,
+          "min": 17.74333635403309,
+          "max": 17.95391333498992,
+          "q25": 17.781573810556438,
+          "q75": 17.886862301034853,
+          "iqr": 0.10528849047841504,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 17.832031387020834,
+          "min": 17.74751301005017,
+          "max": 17.959518780000508,
+          "q25": 17.789772198535502,
+          "q75": 17.89577508351067,
+          "iqr": 0.10600288497516885,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.005605445010587573,
+          "min": 0.004176656017079949,
+          "max": 0.012220119941048324,
+          "q25": 0.004891050513833761,
+          "q75": 0.008912782475817949,
+          "iqr": 0.004021731961984187,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 11699462656,
+          "min": 11699462656,
+          "max": 11699462656,
+          "q25": 11699462656.0,
+          "q75": 11699462656.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 11690942976,
+          "min": 11690942976,
+          "max": 11690942976,
+          "q25": 11690942976.0,
+          "q75": 11690942976.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/candidate_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/candidate_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/candidate_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s3_00",
+      "method": "v2e_auto",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/v2e_auto",
+      "timings_sha256": "d58e121131f0647d1417a0cde38fd61b10f937155b3abf542af674a01f27241d",
+      "physical_inputs_sha256": "7ea682ac106173224c6ac673c45781b53fe70836fb48a04ff46d025da14bad77",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 0.49189975194167346,
+          "min": 0.490694893989712,
+          "max": 0.5148716320982203,
+          "q25": 0.49129732296569273,
+          "q75": 0.5033856920199469,
+          "iqr": 0.012088369054254144,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 0.5407315650954843,
+          "min": 0.5271304909838364,
+          "max": 0.5479958560317755,
+          "q25": 0.5339310280396603,
+          "q75": 0.5443637105636299,
+          "iqr": 0.01043268252396956,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.035230739042162895,
+          "min": 0.025859932997263968,
+          "max": 0.057300962042063475,
+          "q25": 0.03054533601971343,
+          "q75": 0.046265850542113185,
+          "iqr": 0.015720514522399753,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/v2e_auto/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/v2e_auto/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s3_00/v2e_auto/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0024999999999999467,
+          "last_frame_s": 0.19750000000000023,
+          "max_dt_s": 0.0050000000000003375,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 0
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0024999999999999467,
+          "last_frame_s": 0.19750000000000023,
+          "max_dt_s": 0.0050000000000003375,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 1
+        },
+        {
+          "input_frames": 40,
+          "first_frame_s": 0.0024999999999999467,
+          "last_frame_s": 0.19750000000000023,
+          "max_dt_s": 0.0050000000000003375,
+          "factor": 2.0,
+          "minimum_factor": 2,
+          "trial": 2
+        }
+      ],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "train_000",
+      "method": "frozen_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/frozen_gpu",
+      "timings_sha256": "463355062e26a80ec88f07e050365918b8aa0c04754666e2b6577191a5dc6c19",
+      "physical_inputs_sha256": "b35dc2c677cb693747c6ba2d700828a2b734c063b0752739f0cc8732f8d73715",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 20.37747314304579,
+          "min": 20.375700847944245,
+          "max": 20.402263981988654,
+          "q25": 20.376586995495018,
+          "q75": 20.389868562517222,
+          "iqr": 0.013281567022204399,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 20.404857486952096,
+          "min": 20.381539192050695,
+          "max": 20.407059100922197,
+          "q25": 20.393198339501396,
+          "q75": 20.405958293937147,
+          "iqr": 0.012759954435750842,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.004795118933543563,
+          "min": 0.004066049004904926,
+          "max": 0.02915663900785148,
+          "q25": 0.004430583969224244,
+          "q75": 0.016975878970697522,
+          "iqr": 0.012545295001473278,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 11819820544,
+          "min": 11819820544,
+          "max": 11819820544,
+          "q25": 11819820544.0,
+          "q75": 11819820544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 11811300864,
+          "min": 11811300864,
+          "max": 11811300864,
+          "q25": 11811300864.0,
+          "q75": 11811300864.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/frozen_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/frozen_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/frozen_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "train_000",
+      "method": "candidate_gpu",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/candidate_gpu",
+      "timings_sha256": "0f1f6b67a252e09bd4cccaa607b35b6147d6c74079206594569d54a532889bf7",
+      "physical_inputs_sha256": "b35dc2c677cb693747c6ba2d700828a2b734c063b0752739f0cc8732f8d73715",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 15.955450249952264,
+          "min": 15.951141060097143,
+          "max": 16.213350945035927,
+          "q25": 15.953295655024704,
+          "q75": 16.084400597494096,
+          "iqr": 0.13110494246939197,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 15.959397171041928,
+          "min": 15.956339242169634,
+          "max": 16.22612112108618,
+          "q25": 15.95786820660578,
+          "q75": 16.092759146064054,
+          "iqr": 0.13489093945827335,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.005198182072490454,
+          "min": 0.003946921089664102,
+          "max": 0.012770176050253212,
+          "q25": 0.004572551581077278,
+          "q75": 0.008984179061371833,
+          "iqr": 0.004411627480294555,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 12395876864,
+          "min": 12395876864,
+          "max": 12395876864,
+          "q25": 12395876864.0,
+          "q75": 12395876864.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 12387357184,
+          "min": 12387357184,
+          "max": 12387357184,
+          "q25": 12387357184.0,
+          "q75": 12387357184.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/candidate_gpu/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/candidate_gpu/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/candidate_gpu/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "e74793c4805eabfa2a19d9db02b5d829c73a12a61d3fed6b4cbeb8e5995a060b",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "train_000",
+      "method": "v2e_auto",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/v2e_auto",
+      "timings_sha256": "e8ce6ba2c49aff278309195137afe9892bce92508b4114a10909cba53faf7817",
+      "physical_inputs_sha256": "b35dc2c677cb693747c6ba2d700828a2b734c063b0752739f0cc8732f8d73715",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 0.7401856890646741,
+          "min": 0.7236129189841449,
+          "max": 0.7647910040104762,
+          "q25": 0.7318993040244095,
+          "q75": 0.7524883465375751,
+          "iqr": 0.020589042513165623,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 0.771689270157367,
+          "min": 0.7558334399946034,
+          "max": 0.7899245199514553,
+          "q25": 0.7637613550759852,
+          "q75": 0.7808068950544111,
+          "iqr": 0.01704553997842595,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.03150358109269291,
+          "min": 0.025133515940979123,
+          "max": 0.03222052101045847,
+          "q25": 0.028318548516836017,
+          "q75": 0.03186205105157569,
+          "iqr": 0.003543502534739673,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/v2e_auto/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/v2e_auto/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/train_000/v2e_auto/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [
+        {
+          "input_frames": 88,
+          "first_frame_s": 0.001,
+          "last_frame_s": 0.19875,
+          "max_dt_s": 0.0025000000000000022,
+          "factor": 4.333333333333333,
+          "minimum_factor": 2,
+          "trial": 0
+        },
+        {
+          "input_frames": 88,
+          "first_frame_s": 0.001,
+          "last_frame_s": 0.19875,
+          "max_dt_s": 0.0025000000000000022,
+          "factor": 4.333333333333333,
+          "minimum_factor": 2,
+          "trial": 1
+        },
+        {
+          "input_frames": 88,
+          "first_frame_s": 0.001,
+          "last_frame_s": 0.19875,
+          "max_dt_s": 0.0025000000000000022,
+          "factor": 4.333333333333333,
+          "minimum_factor": 2,
+          "trial": 2
+        }
+      ],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    },
+    {
+      "case": "s2_00",
+      "method": "v2e_auto_min63",
+      "directory": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto_min63",
+      "timings_sha256": "039b8350290942314760c55c1ecb249aca6b28e02a3e4dbdaedf020aa7dddb46",
+      "physical_inputs_sha256": "c2268955c0c497f302d3efd763c9cdf35167b3060fc357077305e8d050d6d643",
+      "metrics": {
+        "genwall_s": {
+          "n": 3,
+          "median": 8.344053186941892,
+          "min": 8.32953848305624,
+          "max": 8.347555435961112,
+          "q25": 8.336795834999066,
+          "q75": 8.345804311451502,
+          "iqr": 0.009008476452436298,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "initialized_pipeline_s": {
+          "n": 3,
+          "median": 8.370681312051602,
+          "min": 8.365131982020102,
+          "max": 8.381838078959845,
+          "q25": 8.367906647035852,
+          "q75": 8.376259695505723,
+          "iqr": 0.008353048469871283,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "setup_s": {
+          "n": 3,
+          "median": 0.034282642998732626,
+          "min": 0.021078795078210533,
+          "max": 0.041142828995361924,
+          "q25": 0.02768071903847158,
+          "q75": 0.037712735997047275,
+          "iqr": 0.010032016958575696,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_worker_allocated_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        },
+        "peak_reported_bytes": {
+          "n": 3,
+          "median": 813676544,
+          "min": 813676544,
+          "max": 813676544,
+          "q25": 813676544.0,
+          "q75": 813676544.0,
+          "iqr": 0.0,
+          "quantile_definition": "linear, position=(n-1)*p"
+        }
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto_min63/trial0_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 1,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto_min63/trial1_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        },
+        {
+          "trial": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_name": "Tesla V100S-PCIE-32GB",
+          "profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+          "cublas_workspace_config": null,
+          "noise_config_exact": true,
+          "runtime": {
+            "torch": "2.8.0+cu126",
+            "cuda": "12.6",
+            "num_threads": 2,
+            "interop_threads": 1,
+            "matmul_tf32": false,
+            "cudnn_tf32": false
+          },
+          "raw_events": "/home/zhaoyuhan/Eventbased_WAM/runs/simulator_sampler_optimization_20261105e/bench/s2_00/v2e_auto_min63/trial2_events.npy",
+          "timing_boundary": "cached CPU physical/display input to sorted CPU raw events; setup, input disk load and serialization excluded",
+          "primary_timing_boundary": "per-clip initialized pipeline: setup plus generation, including each sensor first frame; preloaded SSM network/private compiled kernel, physical rendering, input disk load and serialization excluded"
+        }
+      ],
+      "v2e_temporal_information": [
+        {
+          "input_frames": 1260,
+          "first_frame_s": 7.936507936507767e-05,
+          "last_frame_s": 0.1999206349206351,
+          "max_dt_s": 0.00015873015873021923,
+          "factor": 63.0,
+          "minimum_factor": 63,
+          "trial": 0
+        },
+        {
+          "input_frames": 1260,
+          "first_frame_s": 7.936507936507767e-05,
+          "last_frame_s": 0.1999206349206351,
+          "max_dt_s": 0.00015873015873021923,
+          "factor": 63.0,
+          "minimum_factor": 63,
+          "trial": 1
+        },
+        {
+          "input_frames": 1260,
+          "first_frame_s": 7.936507936507767e-05,
+          "last_frame_s": 0.1999206349206351,
+          "max_dt_s": 0.00015873015873021923,
+          "factor": 63.0,
+          "minimum_factor": 63,
+          "trial": 2
+        }
+      ],
+      "complete_three_trials": true,
+      "validation_passed": true,
+      "core_source_sha256": {
+        "gpu_geometry.py": "8070b135491441bbb2096b9120ba59c897e8782a20ce72874c0fb8c7a810ec43",
+        "gpu_interpolator.py": "86a543be16cabd47f6e14fabea8b251e6c9053d0858e46a1a4236331ffb444af",
+        "gpu_sensor.py": "447f8de130a1bd21da5169fd5e6a3a08d17a9eea86dc30f745a91c19f511b6fb",
+        "gpu_kernel.py": "d90ea9b140213ff376f96a6a47338f2fd4899b8d9b401a73f9722afd0d1945bf"
+      }
+    }
+  ],
+  "per_case_comparisons": [
+    {
+      "case": "s0_00",
+      "validation_passed": true,
+      "initialized_pipeline_s": {
+        "old_over_new_speedup": 1.2580283145106181,
+        "new_time_reduction_percent": 20.510533152108977,
+        "candidate_over_v2e_slowdown": 33.20809713381944,
+        "frozen_over_v2e_slowdown": 41.77672646536377
+      },
+      "genwall_s": {
+        "old_over_new_speedup": 1.258260706708682,
+        "new_time_reduction_percent": 20.52521431621528,
+        "candidate_over_v2e_slowdown": 35.595062319760814,
+        "frozen_over_v2e_slowdown": 44.78786826980182
+      }
+    },
+    {
+      "case": "s1_00",
+      "validation_passed": true,
+      "initialized_pipeline_s": {
+        "old_over_new_speedup": 1.1511940609422124,
+        "new_time_reduction_percent": 13.13367277263967,
+        "candidate_over_v2e_slowdown": 24.115752003365827,
+        "frozen_over_v2e_slowdown": 27.76191048143
+      },
+      "genwall_s": {
+        "old_over_new_speedup": 1.1506861507212869,
+        "new_time_reduction_percent": 13.095330175550647,
+        "candidate_over_v2e_slowdown": 25.798977671113573,
+        "frozen_over_v2e_slowdown": 29.68652630891811
+      }
+    },
+    {
+      "case": "s2_00",
+      "validation_passed": true,
+      "initialized_pipeline_s": {
+        "old_over_new_speedup": 1.2679517129526467,
+        "new_time_reduction_percent": 21.132643318780207,
+        "candidate_over_v2e_slowdown": 31.748791565481408,
+        "frozen_over_v2e_slowdown": 40.25593464962869
+      },
+      "genwall_s": {
+        "old_over_new_speedup": 1.2678257503446462,
+        "new_time_reduction_percent": 21.12480759062042,
+        "candidate_over_v2e_slowdown": 34.12129304552181,
+        "frozen_over_v2e_slowdown": 43.25985395816825
+      }
+    },
+    {
+      "case": "s3_00",
+      "validation_passed": true,
+      "initialized_pipeline_s": {
+        "old_over_new_speedup": 1.2569819292816657,
+        "new_time_reduction_percent": 20.444361473718608,
+        "candidate_over_v2e_slowdown": 32.977603931577384,
+        "frozen_over_v2e_slowdown": 41.45225221300079
+      },
+      "genwall_s": {
+        "old_over_new_speedup": 1.2572212303571022,
+        "new_time_reduction_percent": 20.459504194344614,
+        "candidate_over_v2e_slowdown": 36.22650996821961,
+        "frozen_over_v2e_slowdown": 45.54473743378889
+      }
+    },
+    {
+      "case": "train_000",
+      "validation_passed": true,
+      "initialized_pipeline_s": {
+        "old_over_new_speedup": 1.2785481348867227,
+        "new_time_reduction_percent": 21.786284558727363,
+        "candidate_over_v2e_slowdown": 20.681118408951576,
+        "frozen_over_v2e_slowdown": 26.441805369136503
+      },
+      "genwall_s": {
+        "old_over_new_speedup": 1.2771481107596294,
+        "new_time_reduction_percent": 21.70054580394639,
+        "candidate_over_v2e_slowdown": 21.556010181869578,
+        "frozen_over_v2e_slowdown": 27.530217679290068
+      }
+    }
+  ],
+  "aggregate_ratios": {
+    "initialized_pipeline_s": {
+      "cases": 5,
+      "geometric_mean_old_over_new_speedup": 1.2416453249171502,
+      "geometric_mean_candidate_over_v2e_slowdown": 28.042260776159072,
+      "all_five_cases_validated": true
+    },
+    "genwall_s": {
+      "cases": 5,
+      "geometric_mean_old_over_new_speedup": 1.2413321743197074,
+      "geometric_mean_candidate_over_v2e_slowdown": 30.041562857031025,
+      "all_five_cases_validated": true
+    }
+  }
+}

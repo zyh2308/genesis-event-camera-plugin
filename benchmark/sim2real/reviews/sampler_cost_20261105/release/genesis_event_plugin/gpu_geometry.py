@@ -1,0 +1,924 @@
+"""Torch/CUDA reference kernels for the v2 physics path.
+
+The NumPy implementation remains the numerical reference.  These kernels
+avoid the per-pixel Python loops and are intended for the later integrated
+training path; they return tensors so a future tensor-native DVS step can
+avoid GPU↔CPU copies.
+"""
+
+from typing import Mapping, Optional, Tuple
+
+import math
+import torch
+import torch.nn.functional as F
+
+
+def prepare_linear_radiance_torch(
+    image: torch.Tensor,
+    input_space: str = "linear",
+    weights=(0.2126, 0.7152, 0.0722),
+) -> torch.Tensor:
+    if not torch.is_tensor(image):
+        raise TypeError("image must be a torch.Tensor")
+    if image.ndim not in (2, 3) or (image.ndim == 3 and image.shape[-1] != 3):
+        raise ValueError(f"expected HxW or HxWx3, got {tuple(image.shape)}")
+    x = image.to(dtype=torch.float32)
+    if image.dtype in (torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64):
+        x = x / 255.0
+    if input_space == "srgb":
+        x = torch.clamp(x, 0.0, 1.0)
+        x = torch.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4)
+    elif input_space != "linear":
+        raise ValueError("input_space must be 'linear' or 'srgb'")
+    if not torch.isfinite(x).all() or bool((x < 0).any()):
+        raise ValueError("radiance must be finite and non-negative")
+    if x.ndim == 2:
+        return x
+    w = torch.as_tensor(weights, dtype=x.dtype, device=x.device)
+    return torch.tensordot(x, w, dims=([-1], [0]))
+
+
+def compute_se3_flow_torch(
+    depth0: torch.Tensor,
+    seg0: torch.Tensor,
+    K: torch.Tensor,
+    camera_to_world0: torch.Tensor,
+    camera_to_world1: torch.Tensor,
+    object_world_deltas: Optional[Mapping[int, torch.Tensor]] = None,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """CUDA-friendly counterpart of :func:`compute_se3_flow`."""
+    if depth0.ndim != 2 or seg0.shape != depth0.shape:
+        raise ValueError("depth0 and seg0 must be HxW")
+    device = depth0.device
+    dtype = torch.float32
+    depth = depth0.to(dtype=dtype)
+    K = K.to(device=device, dtype=dtype)
+    T0 = camera_to_world0.to(device=device, dtype=dtype)
+    T1 = camera_to_world1.to(device=device, dtype=dtype)
+    H, W = depth.shape
+    yy, xx = torch.meshgrid(
+        torch.arange(H, device=device, dtype=dtype),
+        torch.arange(W, device=device, dtype=dtype), indexing="ij"
+    )
+    p0 = torch.stack(
+        ((xx - K[0, 2]) * depth / K[0, 0],
+         (yy - K[1, 2]) * depth / K[1, 1], depth), dim=-1
+    ).reshape(-1, 3)
+    ones = torch.ones((p0.shape[0], 1), device=device, dtype=dtype)
+    p0h = torch.cat((p0, ones), dim=1)
+    p0w = (T0 @ p0h.T).T[:, :3]
+    p1w = p0w.clone()
+    if object_world_deltas:
+        flat_seg = seg0.reshape(-1)
+        for object_id, delta in object_world_deltas.items():
+            mask = flat_seg == int(object_id)
+            if bool(mask.any()):
+                Td = delta.to(device=device, dtype=dtype)
+                p1w[mask] = (Td @ torch.cat((p0w[mask], torch.ones((int(mask.sum()), 1), device=device, dtype=dtype)), dim=1).T).T[:, :3]
+    p1c = (torch.linalg.inv(T1) @ torch.cat((p1w, ones), dim=1).T).T[:, :3]
+    z1 = p1c[:, 2]
+    valid = torch.isfinite(p1c).all(dim=1) & torch.isfinite(depth.reshape(-1))
+    valid &= (depth.reshape(-1) > 1e-6) & (z1 > 1e-6)
+    u1 = torch.zeros_like(z1)
+    v1 = torch.zeros_like(z1)
+    u1[valid] = K[0, 0] * p1c[valid, 0] / z1[valid] + K[0, 2]
+    v1[valid] = K[1, 1] * p1c[valid, 1] / z1[valid] + K[1, 2]
+    flow = torch.stack((u1 - xx.reshape(-1), v1 - yy.reshape(-1)), dim=0).reshape(2, H, W)
+    flow = torch.where(valid.reshape(1, H, W), flow, torch.zeros_like(flow))
+    return flow, valid.reshape(H, W)
+
+
+def _so3_log_torch(rotation: torch.Tensor) -> torch.Tensor:
+    """Stable logarithm of one 3x3 rotation matrix."""
+    cosine = ((torch.trace(rotation) - 1.0) * 0.5).clamp(-1.0, 1.0)
+    theta = torch.acos(cosine)
+    vee = 0.5 * torch.stack((
+        rotation[2, 1] - rotation[1, 2],
+        rotation[0, 2] - rotation[2, 0],
+        rotation[1, 0] - rotation[0, 1],
+    ))
+    scale = theta / torch.clamp(torch.sin(theta), min=1e-15)
+    return torch.where(theta < 1e-10, vee, vee * scale)
+
+
+def _so3_exp_batch_torch(rotation_vectors: torch.Tensor) -> torch.Tensor:
+    """Rodrigues exponential for a ``[T,3]`` stack of rotation vectors."""
+    theta = torch.linalg.norm(rotation_vectors, dim=-1)
+    x, y, z = rotation_vectors.unbind(dim=-1)
+    zeros = torch.zeros_like(x)
+    K = torch.stack((
+        zeros, -z, y,
+        z, zeros, -x,
+        -y, x, zeros,
+    ), dim=-1).reshape(-1, 3, 3)
+    theta2 = theta * theta
+    a = torch.where(theta < 1e-10, 1.0 - theta2 / 6.0, torch.sin(theta) / torch.clamp(theta, min=1e-15))
+    b = torch.where(theta < 1e-10, 0.5 - theta2 / 24.0, (1.0 - torch.cos(theta)) / torch.clamp(theta2, min=1e-30))
+    eye = torch.eye(3, dtype=rotation_vectors.dtype, device=rotation_vectors.device).expand(rotation_vectors.shape[0], -1, -1)
+    return eye + a[:, None, None] * K + b[:, None, None] * torch.bmm(K, K)
+
+
+def interpolate_se3_stack_torch(
+    camera_to_world0: torch.Tensor,
+    camera_to_world1: torch.Tensor,
+    alphas: torch.Tensor,
+) -> torch.Tensor:
+    """GPU endpoint SE(3) interpolation for a stack of alphas."""
+    # Projection geometry is evaluated in float64 so the CUDA path has the
+    # same precision contract as physics_warp.interpolate_se3. Results are
+    # cast to float32 only at the projected uv/z API boundary.
+    T0 = camera_to_world0.to(dtype=torch.float64)
+    T1 = camera_to_world1.to(device=T0.device, dtype=torch.float64)
+    a = alphas.to(device=T0.device, dtype=T0.dtype).reshape(-1)
+    rel = T0[:3, :3].transpose(0, 1) @ T1[:3, :3]
+    w = _so3_log_torch(rel)
+    Rinc = _so3_exp_batch_torch(a[:, None] * w[None, :])
+    R = torch.einsum("ij,tjk->tik", T0[:3, :3], Rinc)
+    trans = (1.0 - a[:, None]) * T0[:3, 3] + a[:, None] * T1[:3, 3]
+    output = torch.eye(4, dtype=T0.dtype, device=T0.device).expand(a.shape[0], -1, -1).clone()
+    output[:, :3, :3] = R
+    output[:, :3, 3] = trans
+    return output
+
+
+def project_endpoint_to_alpha_stack_torch(
+    depth_source: torch.Tensor,
+    seg_source: torch.Tensor,
+    K: torch.Tensor,
+    camera_source: torch.Tensor,
+    camera0: torch.Tensor,
+    camera1: torch.Tensor,
+    alphas: torch.Tensor,
+    source_index: int = 0,
+    object_world0: Optional[Mapping[int, torch.Tensor]] = None,
+    object_world1: Optional[Mapping[int, torch.Tensor]] = None,
+    object_world_deltas: Optional[Mapping[int, torch.Tensor]] = None,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Project one endpoint at all alphas on-device.
+
+    This is the Torch counterpart of the NumPy ``project_endpoint_to_alpha``
+    reference.  It keeps the alpha stack on the selected device; object IDs
+    are the only Python-level loop because Genesis segmentation labels are a
+    sparse mapping, not a dense tensor dimension.
+    """
+    if depth_source.ndim != 2 or seg_source.shape != depth_source.shape:
+        raise ValueError("depth_source and seg_source must be HxW")
+    device = depth_source.device
+    dtype = torch.float64
+    depth = depth_source.to(dtype=dtype)
+    seg = seg_source.to(device=device)
+    K = K.to(device=device, dtype=dtype)
+    source = camera_source.to(device=device, dtype=dtype)
+    camera_stack = interpolate_se3_stack_torch(camera0.to(device=device), camera1.to(device=device), alphas)
+    H, W = depth.shape
+    yy, xx = torch.meshgrid(
+        torch.arange(H, device=device, dtype=dtype),
+        torch.arange(W, device=device, dtype=dtype), indexing="ij"
+    )
+    p_cam = torch.stack(((xx - K[0, 2]) * depth / K[0, 0],
+                         (yy - K[1, 2]) * depth / K[1, 1], depth), dim=-1).reshape(-1, 3)
+    ones = torch.ones((p_cam.shape[0], 1), dtype=dtype, device=device)
+    p_world = (source @ torch.cat((p_cam, ones), dim=1).T).T[:, :3]
+    p_world_stack = p_world[None].expand(camera_stack.shape[0], -1, -1).clone()
+    object_ids = set()
+    for mapping in (object_world0, object_world1, object_world_deltas):
+        if mapping is not None:
+            object_ids.update(mapping.keys())
+    flat_seg = seg.reshape(-1)
+    for object_id in object_ids:
+        mask = flat_seg == int(object_id)
+        if not bool(mask.any()):
+            continue
+        if object_world0 is not None and object_world1 is not None and object_id in object_world0 and object_id in object_world1:
+            O0 = object_world0[object_id].to(device=device, dtype=dtype)
+            O1 = object_world1[object_id].to(device=device, dtype=dtype)
+            O_stack = interpolate_se3_stack_torch(O0, O1, alphas)
+            source_object = O0 if source_index == 0 else O1
+            motion = torch.bmm(O_stack, torch.linalg.inv(source_object).expand(O_stack.shape[0], -1, -1))
+        elif object_world_deltas is not None and object_id in object_world_deltas:
+            delta = object_world_deltas[object_id].to(device=device, dtype=dtype)
+            identity = torch.eye(4, dtype=dtype, device=device)
+            O_stack = interpolate_se3_stack_torch(identity, delta, alphas)
+            motion = O_stack if source_index == 0 else torch.bmm(O_stack, torch.linalg.inv(delta).expand(O_stack.shape[0], -1, -1))
+        else:
+            continue
+        points = torch.cat((p_world[mask], torch.ones((int(mask.sum()), 1), dtype=dtype, device=device)), dim=1)
+        p_world_stack[:, mask] = torch.bmm(motion, points.T[None].expand(motion.shape[0], -1, -1)).transpose(1, 2)[:, :, :3]
+    camera_inv = torch.linalg.inv(camera_stack)
+    homogeneous = torch.cat((p_world_stack, torch.ones((*p_world_stack.shape[:2], 1), dtype=dtype, device=device)), dim=-1)
+    p_alpha_cam = torch.einsum("tij,tnj->tni", camera_inv, homogeneous)[..., :3]
+    z = p_alpha_cam[..., 2]
+    base_valid = torch.isfinite(depth.reshape(-1)) & (depth.reshape(-1) > 1e-6)
+    valid = torch.isfinite(p_alpha_cam).all(dim=-1) & base_valid[None, :] & (z > 1e-6)
+    u = torch.where(valid, K[0, 0] * p_alpha_cam[..., 0] / torch.clamp(z, min=1e-6) + K[0, 2], torch.zeros_like(z))
+    v = torch.where(valid, K[1, 1] * p_alpha_cam[..., 1] / torch.clamp(z, min=1e-6) + K[1, 2], torch.zeros_like(z))
+    uv = torch.stack((u, v), dim=1).reshape(-1, 2, H, W).to(dtype=torch.float32)
+    return uv, z.reshape(-1, H, W).to(dtype=torch.float32), valid.reshape(-1, H, W)
+
+
+def _splat_torch(image, depth, flow, amount):
+    H, W = depth.shape
+    scalar = image.ndim == 2
+    src = image[..., None] if scalar else image
+    C = src.shape[-1]
+    device = src.device
+    dtype = src.dtype
+    yy, xx = torch.meshgrid(
+        torch.arange(H, device=device, dtype=dtype),
+        torch.arange(W, device=device, dtype=dtype), indexing="ij"
+    )
+    tx = xx + flow[0].to(dtype) * amount
+    ty = yy + flow[1].to(dtype) * amount
+    x0, y0 = torch.floor(tx).long(), torch.floor(ty).long()
+    wx, wy = tx - x0, ty - y0
+    valid_src = torch.isfinite(src).all(dim=-1) & torch.isfinite(depth) & (depth > 1e-6)
+    zbuf = torch.full((H * W,), float("inf"), device=device, dtype=dtype)
+    candidates = []
+    for ox, oy, weight in ((0, 0, (1-wx)*(1-wy)), (1, 0, wx*(1-wy)),
+                            (0, 1, (1-wx)*wy), (1, 1, wx*wy)):
+        x, y = x0 + ox, y0 + oy
+        valid = valid_src & (weight > 0) & (x >= 0) & (x < W) & (y >= 0) & (y < H)
+        if bool(valid.any()):
+            idx = (y[valid] * W + x[valid]).long()
+            candidates.append((idx, weight[valid], depth[valid], src[valid]))
+            zbuf.scatter_reduce_(0, idx, depth[valid], reduce="amin", include_self=True)
+    out = torch.zeros((H * W, C), device=device, dtype=dtype)
+    norm = torch.zeros((H * W, 1), device=device, dtype=dtype)
+    for idx, weight, z, values in candidates:
+        keep = z <= zbuf[idx] + 1e-5
+        if bool(keep.any()):
+            idx, weight, values = idx[keep], weight[keep], values[keep]
+            out.scatter_add_(0, idx[:, None].expand(-1, C), values * weight[:, None])
+            norm.scatter_add_(0, idx[:, None], weight[:, None])
+    out = out / torch.clamp(norm, min=1e-8)
+    valid = norm[:, 0] > 1e-8
+    out = out.reshape(H, W, C)
+    return (out[..., 0] if scalar else out), valid.reshape(H, W)
+
+
+def depth_aware_bidirectional_warp_torch(
+    frame0, depth0, flow01, frame1, depth1, flow10, alpha: float,
+    composite: str = "weighted",
+):
+    if composite not in {"weighted", "next_primary"}:
+        raise ValueError("composite must be 'weighted' or 'next_primary'")
+    a0, v0 = _splat_torch(frame0, depth0, flow01, alpha)
+    a1, v1 = _splat_torch(frame1, depth1, flow10, 1.0 - alpha)
+    if composite == "next_primary":
+        valid = v0 | v1
+        if frame0.ndim == 2:
+            out = torch.full_like(a0, float("nan"))
+            out = torch.where(v1, a1, torch.where(v0, a0, out))
+        else:
+            out = torch.full_like(a0, float("nan"))
+            mask = v1[..., None]
+            out = torch.where(mask, a1, torch.where(v0[..., None], a0, out))
+        return out, valid
+    w0 = (1.0 - alpha) * v0.to(a0.dtype)
+    w1 = alpha * v1.to(a1.dtype)
+    denom = w0 + w1
+    if frame0.ndim == 2:
+        out = (a0 * w0 + a1 * w1) / torch.clamp(denom, min=1e-8)
+    else:
+        out = (a0 * w0[..., None] + a1 * w1[..., None]) / torch.clamp(denom[..., None], min=1e-8)
+    return out, denom > 1e-8
+
+
+def _splat_projected_batch_torch(
+    image: torch.Tensor,
+    source_depth: torch.Tensor,
+    target_uv: torch.Tensor,
+    target_z: torch.Tensor,
+    source_valid: Optional[torch.Tensor] = None,
+    return_diagnostics: bool = False,
+):
+    """Forward-splat ``B*T`` projected frames without CPU round-trips.
+
+    ``image`` is ``[M,H,W]`` or ``[M,H,W,C]`` and the remaining arguments are
+    ``[M,H,W]``/``[M,2,H,W]``.  The implementation uses one flattened z-buffer
+    per batch/sample and four bilinear candidates.  The small four-way Python
+    loop is over stencil offsets, not over pixels, environments, or temporal
+    samples, so it remains a tensor-native kernel on CUDA.
+    """
+    if image.ndim not in (3, 4):
+        raise ValueError("image must have shape [M,H,W] or [M,H,W,C]")
+    if source_depth.ndim != 3:
+        raise ValueError("source_depth must have shape [M,H,W]")
+    if target_uv.ndim != 4 or target_uv.shape[1] != 2:
+        raise ValueError("target_uv must have shape [M,2,H,W]")
+    if target_z.ndim != 3 or target_z.shape != source_depth.shape:
+        raise ValueError("target_z must have shape [M,H,W]")
+    M, H, W = source_depth.shape
+    if image.shape[:3] != (M, H, W) or target_uv.shape[0] != M:
+        raise ValueError("projected batch dimensions do not agree")
+    scalar = image.ndim == 3
+    src = image.unsqueeze(-1) if scalar else image
+    C = src.shape[-1]
+    dtype = src.dtype
+    device = src.device
+    source_depth = source_depth.to(device=device, dtype=dtype)
+    target_uv = target_uv.to(device=device, dtype=dtype)
+    target_z = target_z.to(device=device, dtype=dtype)
+    if source_valid is None:
+        source_valid = torch.ones((M, H, W), dtype=torch.bool, device=device)
+    else:
+        source_valid = source_valid.to(device=device, dtype=torch.bool)
+    if source_valid.shape != (M, H, W):
+        raise ValueError("source_valid must have shape [M,H,W]")
+
+    yy, xx = torch.meshgrid(
+        torch.arange(H, device=device, dtype=dtype),
+        torch.arange(W, device=device, dtype=dtype), indexing="ij"
+    )
+    tx, ty = target_uv[:, 0], target_uv[:, 1]
+    x0, y0 = torch.floor(tx).long(), torch.floor(ty).long()
+    wx, wy = tx - x0, ty - y0
+    finite_values = torch.isfinite(src).all(dim=-1)
+    valid_src = source_valid & finite_values
+    valid_src &= torch.isfinite(source_depth) & (source_depth > 1e-6)
+    valid_src &= torch.isfinite(target_z) & (target_z > 1e-6)
+
+    offsets = (
+        (0, 0, (1.0 - wx) * (1.0 - wy)),
+        (1, 0, wx * (1.0 - wy)),
+        (0, 1, (1.0 - wx) * wy),
+        (1, 1, wx * wy),
+    )
+    batch_offset = (torch.arange(M, device=device, dtype=torch.long) * (H * W))[:, None, None]
+    total = M * H * W
+    zbuf = torch.full((total,), float("inf"), device=device, dtype=dtype)
+    occupancy = torch.zeros((total,), dtype=torch.bool, device=device)
+    candidates = []
+    for ox, oy, weight in offsets:
+        x, y = x0 + ox, y0 + oy
+        valid = valid_src & (weight > 0) & (x >= 0) & (x < W) & (y >= 0) & (y < H)
+        if bool(valid.any()):
+            idx = (batch_offset + y * W + x)[valid]
+            w = weight[valid]
+            z = target_z[valid]
+            values = src[valid]
+            candidates.append((idx, w, z, values))
+            occupancy.scatter_(0, idx, True)
+            zbuf.scatter_reduce_(0, idx, z, reduce="amin", include_self=True)
+
+    out = torch.zeros((total, C), device=device, dtype=dtype)
+    norm = torch.zeros((total, 1), device=device, dtype=dtype)
+    for idx, weight, z, values in candidates:
+        keep = z <= zbuf[idx] + 1e-5
+        if bool(keep.any()):
+            idx_k = idx[keep]
+            w_k = weight[keep]
+            v_k = values[keep]
+            out.scatter_add_(0, idx_k[:, None].expand(-1, C), v_k * w_k[:, None])
+            norm.scatter_add_(0, idx_k[:, None], w_k[:, None])
+    out = out / torch.clamp(norm, min=1e-8)
+    valid = norm[:, 0] > 1e-8
+    out = out.reshape(M, H, W, C)
+    valid = valid.reshape(M, H, W)
+    output = (out[..., 0] if scalar else out)
+    if return_diagnostics:
+        return output, valid, {
+            "occupancy": occupancy.reshape(M, H, W),
+            "visibility": valid,
+            "z_buffer": zbuf.reshape(M, H, W),
+        }
+    return output, valid
+
+
+def _splat_projected_coverage_bounded_reference(
+    image: torch.Tensor,
+    source_depth: torch.Tensor,
+    target_uv: torch.Tensor,
+    target_z: torch.Tensor,
+    source_valid: Optional[torch.Tensor] = None,
+    source_surface_id: Optional[torch.Tensor] = None,
+    min_coverage_fraction: float = 0.995,
+    depth_tie_abs_m: float = 1e-7,
+    depth_tie_rtol: float = 8.0 * torch.finfo(torch.float32).eps,
+):
+    """Tensor-native front-to-back bilinear-footprint candidate splat."""
+    if not 0.0 < min_coverage_fraction <= 1.0:
+        raise ValueError("min_coverage_fraction must be in (0,1]")
+    if depth_tie_abs_m < 0 or depth_tie_rtol < 0:
+        raise ValueError("depth tie tolerances must be non-negative")
+    if image.ndim not in (3, 4):
+        raise ValueError("image must have shape [M,H,W] or [M,H,W,C]")
+    M, H, W = source_depth.shape
+    scalar = image.ndim == 3
+    src = image.unsqueeze(-1) if scalar else image
+    device, dtype = src.device, src.dtype
+    depth = source_depth.to(device=device, dtype=dtype)
+    uv = target_uv.to(device=device, dtype=dtype)
+    ztarget = target_z.to(device=device, dtype=dtype)
+    if source_valid is None:
+        source_valid = torch.ones((M, H, W), dtype=torch.bool, device=device)
+    else:
+        source_valid = source_valid.to(device=device, dtype=torch.bool)
+    if source_surface_id is not None:
+        surface = source_surface_id.to(device=device, dtype=torch.long)
+        if surface.shape != (M, H, W):
+            raise ValueError("source_surface_id must have shape [M,H,W]")
+    else:
+        surface = None
+
+    tx, ty = uv[:, 0], uv[:, 1]
+    x0, y0 = torch.floor(tx).long(), torch.floor(ty).long()
+    wx, wy = tx - x0, ty - y0
+    finite = torch.isfinite(src).all(dim=-1)
+    valid_src = source_valid & finite & torch.isfinite(depth) & (depth > 1e-6)
+    valid_src &= torch.isfinite(ztarget) & (ztarget > 1e-6)
+    valid_src &= torch.isfinite(uv).all(dim=1)
+    batch_offset = (torch.arange(M, device=device, dtype=torch.long) * (H * W))[:, None, None]
+    total = M * H * W
+    candidates = []
+    occupancy = torch.zeros(total, dtype=torch.bool, device=device)
+    zbuf = torch.full((total,), float("inf"), dtype=dtype, device=device)
+    for ox, oy, weight in (
+        (0, 0, (1.0 - wx) * (1.0 - wy)),
+        (1, 0, wx * (1.0 - wy)),
+        (0, 1, (1.0 - wx) * wy),
+        (1, 1, wx * wy),
+    ):
+        x, y = x0 + ox, y0 + oy
+        keep = valid_src & (weight > 0) & (x >= 0) & (x < W) & (y >= 0) & (y < H)
+        if bool(keep.any()):
+            idx = (batch_offset + y * W + x)[keep]
+            w = weight[keep]
+            z = ztarget[keep]
+            values = src[keep]
+            labels = surface[keep] if surface is not None else None
+            candidates.append((idx, w, z, values, labels))
+            occupancy.scatter_(0, idx, True)
+            zbuf.scatter_reduce_(0, idx, z, reduce="amin", include_self=True)
+
+    out = torch.zeros((total, src.shape[-1]), dtype=dtype, device=device)
+    coverage = torch.zeros(total, dtype=dtype, device=device)
+    surface_id = torch.full((total,), -1, dtype=torch.long, device=device)
+    surface_consistent = torch.zeros(total, dtype=torch.bool, device=device)
+    if candidates:
+        pixel_ids = torch.cat([item[0] for item in candidates])
+        max_layers = int(torch.bincount(pixel_ids, minlength=total).max().item())
+        unresolved = [torch.ones_like(item[0], dtype=torch.bool) for item in candidates]
+        for _ in range(max_layers):
+            nearest = torch.full((total,), float("inf"), dtype=dtype, device=device)
+            for (idx, _w, z, _v, _label), active in zip(candidates, unresolved):
+                if bool(active.any()):
+                    nearest.scatter_reduce_(0, idx[active], z[active], reduce="amin", include_self=True)
+            tolerance = torch.maximum(
+                torch.full_like(nearest, float(depth_tie_abs_m)),
+                float(depth_tie_rtol) * torch.abs(nearest),
+            )
+            layer_weight = torch.zeros(total, dtype=dtype, device=device)
+            layer_value = torch.zeros_like(out)
+            label_min = torch.full((total,), torch.iinfo(torch.long).max, dtype=torch.long, device=device)
+            label_max = torch.full((total,), torch.iinfo(torch.long).min, dtype=torch.long, device=device)
+            next_unresolved = []
+            for (idx, w, z, value, label), active in zip(candidates, unresolved):
+                take = active & (z <= nearest[idx] + tolerance[idx])
+                next_unresolved.append(active & ~take)
+                if bool(take.any()):
+                    idx_t, w_t, value_t = idx[take], w[take], value[take]
+                    layer_weight.scatter_add_(0, idx_t, w_t)
+                    layer_value.scatter_add_(0, idx_t[:, None].expand(-1, value.shape[-1]), value_t * w_t[:, None])
+                    if label is not None:
+                        label_min.scatter_reduce_(0, idx_t, label[take], reduce="amin", include_self=True)
+                        label_max.scatter_reduce_(0, idx_t, label[take], reduce="amax", include_self=True)
+            first_layer = coverage <= 1e-8
+            first_pixels = first_layer & (layer_weight > 0)
+            if surface is not None and bool(first_pixels.any()):
+                surface_id[first_pixels] = label_min[first_pixels]
+                surface_consistent[first_pixels] = label_min[first_pixels] == label_max[first_pixels]
+            accepted = torch.minimum(layer_weight, torch.clamp(1.0 - coverage, min=0.0))
+            scale = accepted / torch.clamp(layer_weight, min=1e-30)
+            out += layer_value * scale[:, None]
+            coverage = torch.clamp(coverage + accepted, max=1.0)
+            unresolved = next_unresolved
+            if not bool(torch.stack([item.any() for item in unresolved]).any()):
+                break
+
+    visible = coverage > 1e-8
+    out = out / torch.clamp(coverage[:, None], min=1e-30)
+    if surface is None:
+        surface_id[visible] = 0
+        surface_consistent[visible] = True
+    out = out.reshape(M, H, W, src.shape[-1])
+    if scalar:
+        out = out[..., 0]
+    shape = (M, H, W)
+    return out, visible.reshape(shape), {
+        "occupancy": occupancy.reshape(shape),
+        "visibility": visible.reshape(shape),
+        "coverage": coverage.reshape(shape),
+        "support": (coverage >= float(min_coverage_fraction)).reshape(shape),
+        "z_buffer": zbuf.reshape(shape),
+        "surface_id": surface_id.reshape(shape),
+        "surface_consistent": surface_consistent.reshape(shape),
+    }
+
+
+def _splat_projected_coverage_batch_torch(
+    image: torch.Tensor,
+    source_depth: torch.Tensor,
+    target_uv: torch.Tensor,
+    target_z: torch.Tensor,
+    source_valid: Optional[torch.Tensor] = None,
+    source_surface_id: Optional[torch.Tensor] = None,
+    min_coverage_fraction: float = 0.995,
+    depth_tie_abs_m: float = 1e-7,
+    depth_tie_rtol: float = 8.0 * torch.finfo(torch.float32).eps,
+):
+    """Tensor-native front-to-back bilinear-footprint candidate splat."""
+    # Preserve the original finite loop bound for NaN/Inf tolerances; NaN
+    # comparisons need not consume any candidate, so an unbounded loop would
+    # otherwise be a behavior change. No numerical tolerance is widened.
+    if not (math.isfinite(float(depth_tie_abs_m)) and math.isfinite(float(depth_tie_rtol))):
+        return _splat_projected_coverage_bounded_reference(
+            image, source_depth, target_uv, target_z, source_valid,
+            source_surface_id, min_coverage_fraction, depth_tie_abs_m,
+            depth_tie_rtol,
+        )
+    if not 0.0 < min_coverage_fraction <= 1.0:
+        raise ValueError("min_coverage_fraction must be in (0,1]")
+    if depth_tie_abs_m < 0 or depth_tie_rtol < 0:
+        raise ValueError("depth tie tolerances must be non-negative")
+    if image.ndim not in (3, 4):
+        raise ValueError("image must have shape [M,H,W] or [M,H,W,C]")
+    M, H, W = source_depth.shape
+    scalar = image.ndim == 3
+    src = image.unsqueeze(-1) if scalar else image
+    device, dtype = src.device, src.dtype
+    depth = source_depth.to(device=device, dtype=dtype)
+    uv = target_uv.to(device=device, dtype=dtype)
+    ztarget = target_z.to(device=device, dtype=dtype)
+    if source_valid is None:
+        source_valid = torch.ones((M, H, W), dtype=torch.bool, device=device)
+    else:
+        source_valid = source_valid.to(device=device, dtype=torch.bool)
+    if source_surface_id is not None:
+        surface = source_surface_id.to(device=device, dtype=torch.long)
+        if surface.shape != (M, H, W):
+            raise ValueError("source_surface_id must have shape [M,H,W]")
+    else:
+        surface = None
+
+    tx, ty = uv[:, 0], uv[:, 1]
+    x0, y0 = torch.floor(tx).long(), torch.floor(ty).long()
+    wx, wy = tx - x0, ty - y0
+    finite = torch.isfinite(src).all(dim=-1)
+    valid_src = source_valid & finite & torch.isfinite(depth) & (depth > 1e-6)
+    valid_src &= torch.isfinite(ztarget) & (ztarget > 1e-6)
+    valid_src &= torch.isfinite(uv).all(dim=1)
+    batch_offset = (torch.arange(M, device=device, dtype=torch.long) * (H * W))[:, None, None]
+    total = M * H * W
+    candidates = []
+    occupancy = torch.zeros(total, dtype=torch.bool, device=device)
+    zbuf = torch.full((total,), float("inf"), dtype=dtype, device=device)
+    for ox, oy, weight in (
+        (0, 0, (1.0 - wx) * (1.0 - wy)),
+        (1, 0, wx * (1.0 - wy)),
+        (0, 1, (1.0 - wx) * wy),
+        (1, 1, wx * wy),
+    ):
+        x, y = x0 + ox, y0 + oy
+        keep = valid_src & (weight > 0) & (x >= 0) & (x < W) & (y >= 0) & (y < H)
+        # Boolean indexing would independently recompute keep.nonzero()
+        # for each selected field. Reuse the identical row-major source rows.
+        selected = keep.reshape(-1).nonzero(as_tuple=False).reshape(-1)
+        if selected.numel():
+            idx = (batch_offset + y * W + x).reshape(-1).index_select(0, selected)
+            w = weight.reshape(-1).index_select(0, selected)
+            z = ztarget.reshape(-1).index_select(0, selected)
+            values = src.reshape(total, src.shape[-1]).index_select(0, selected)
+            labels = surface.reshape(-1).index_select(0, selected) if surface is not None else None
+            candidates.append((idx, w, z, values, labels))
+            occupancy.scatter_(0, idx, True)
+            zbuf.scatter_reduce_(0, idx, z, reduce="amin", include_self=True)
+
+    out = torch.zeros((total, src.shape[-1]), dtype=dtype, device=device)
+    coverage = torch.zeros(total, dtype=dtype, device=device)
+    surface_id = torch.full((total,), -1, dtype=torch.long, device=device)
+    surface_consistent = torch.zeros(total, dtype=torch.bool, device=device)
+    if candidates:
+        # Finite nonnegative tie tolerances guarantee progress. Unsupported
+        # nonfinite values have already selected the unchanged bounded path.
+        unresolved = [torch.ones_like(item[0], dtype=torch.bool) for item in candidates]
+        while True:
+            nearest = torch.full((total,), float("inf"), dtype=dtype, device=device)
+            for (idx, _w, z, _v, _label), active in zip(candidates, unresolved):
+                selected_active = active.nonzero(as_tuple=False).reshape(-1)
+                if selected_active.numel():
+                    nearest.scatter_reduce_(0, idx.index_select(0, selected_active), z.index_select(0, selected_active), reduce="amin", include_self=True)
+            tolerance = torch.maximum(
+                torch.full_like(nearest, float(depth_tie_abs_m)),
+                float(depth_tie_rtol) * torch.abs(nearest),
+            )
+            layer_weight = torch.zeros(total, dtype=dtype, device=device)
+            layer_value = torch.zeros_like(out)
+            label_min = torch.full((total,), torch.iinfo(torch.long).max, dtype=torch.long, device=device)
+            label_max = torch.full((total,), torch.iinfo(torch.long).min, dtype=torch.long, device=device)
+            next_unresolved = []
+            for (idx, w, z, value, label), active in zip(candidates, unresolved):
+                take = active & (z <= nearest[idx] + tolerance[idx])
+                next_unresolved.append(active & ~take)
+                selected_take = take.nonzero(as_tuple=False).reshape(-1)
+                if selected_take.numel():
+                    idx_t = idx.index_select(0, selected_take)
+                    w_t = w.index_select(0, selected_take)
+                    value_t = value.index_select(0, selected_take)
+                    layer_weight.scatter_add_(0, idx_t, w_t)
+                    layer_value.scatter_add_(0, idx_t[:, None].expand(-1, value.shape[-1]), value_t * w_t[:, None])
+                    if label is not None:
+                        label_t = label.index_select(0, selected_take)
+                        label_min.scatter_reduce_(0, idx_t, label_t, reduce="amin", include_self=True)
+                        label_max.scatter_reduce_(0, idx_t, label_t, reduce="amax", include_self=True)
+            first_layer = coverage <= 1e-8
+            first_pixels = first_layer & (layer_weight > 0)
+            if surface is not None:
+                selected_first = first_pixels.nonzero(as_tuple=False).reshape(-1)
+                if selected_first.numel():
+                    first_label_min = label_min.index_select(0, selected_first)
+                    first_label_max = label_max.index_select(0, selected_first)
+                    surface_id.index_copy_(0, selected_first, first_label_min)
+                    surface_consistent.index_copy_(0, selected_first, first_label_min == first_label_max)
+            accepted = torch.minimum(layer_weight, torch.clamp(1.0 - coverage, min=0.0))
+            scale = accepted / torch.clamp(layer_weight, min=1e-30)
+            out += layer_value * scale[:, None]
+            coverage = torch.clamp(coverage + accepted, max=1.0)
+            unresolved = next_unresolved
+            if not bool(torch.stack([item.any() for item in unresolved]).any()):
+                break
+
+    visible = coverage > 1e-8
+    out = out / torch.clamp(coverage[:, None], min=1e-30)
+    if surface is None:
+        surface_id[visible] = 0
+        surface_consistent[visible] = True
+    out = out.reshape(M, H, W, src.shape[-1])
+    if scalar:
+        out = out[..., 0]
+    shape = (M, H, W)
+    return out, visible.reshape(shape), {
+        "occupancy": occupancy.reshape(shape),
+        "visibility": visible.reshape(shape),
+        "coverage": coverage.reshape(shape),
+        "support": (coverage >= float(min_coverage_fraction)).reshape(shape),
+        "z_buffer": zbuf.reshape(shape),
+        "surface_id": surface_id.reshape(shape),
+        "surface_consistent": surface_consistent.reshape(shape),
+    }
+
+
+def depth_aware_bidirectional_warp_projected_batch_torch(
+    frame0: torch.Tensor,
+    depth0: torch.Tensor,
+    uv0: torch.Tensor,
+    z0: torch.Tensor,
+    valid0: torch.Tensor,
+    frame1: torch.Tensor,
+    depth1: torch.Tensor,
+    uv1: torch.Tensor,
+    z1: torch.Tensor,
+    valid1: torch.Tensor,
+    composite: str = "next_primary",
+    return_diagnostics: bool = False,
+    alpha=None,
+    surface_id0: Optional[torch.Tensor] = None,
+    surface_id1: Optional[torch.Tensor] = None,
+    min_coverage_fraction: float = 0.995,
+    depth_tie_abs_m: float = 1e-7,
+    depth_tie_rtol: float = 8.0 * torch.finfo(torch.float32).eps,
+    surface_depth_abs_m: float = 1e-3,
+    surface_depth_rtol: float = 1e-3,
+):
+    """Warp ``B`` endpoint frames at ``T`` projected intermediate poses.
+
+    Endpoint images are ``[B,H,W]`` or ``[B,H,W,C]``.  Projection tensors are
+    ``[B,T,2,H,W]`` and ``[B,T,H,W]``.  Returned scalar frames are
+    ``[B,T,H,W]``; RGB frames are ``[B,T,H,W,C]``.  All splatting, z-buffering,
+    compositing and validity masks stay on the input device. With
+    ``return_diagnostics=True`` a third dictionary contains target-domain
+    occupancy, visibility, z-buffer and intermediate-unknown masks.
+    """
+    if composite not in {"weighted", "next_primary", "same_surface_log_linear", "coverage_time_log_linear"}:
+        raise ValueError("unknown projected composite")
+    if frame0.shape != frame1.shape or depth0.shape != depth1.shape:
+        raise ValueError("endpoint frame/depth shapes must agree")
+    if depth0.ndim != 3:
+        raise ValueError("depth tensors must have shape [B,H,W]")
+    B, H, W = depth0.shape
+    if (
+        uv0.ndim != 5 or uv0.shape[0] != B or uv0.shape[2] != 2
+        or uv0.shape[3:] != (H, W)
+    ):
+        raise ValueError("uv tensors must have shape [B,T,2,H,W]")
+    T = uv0.shape[1]
+    for value, name in ((uv1, "uv1"), (z0, "z0"), (z1, "z1"),
+                        (valid0, "valid0"), (valid1, "valid1")):
+        expected = (B, T, 2, H, W) if name == "uv1" else (B, T, H, W)
+        if value.shape != expected:
+            raise ValueError(f"{name} must have shape {expected}")
+    if frame0.ndim == 4 and frame0.shape[:3] != (B, H, W):
+        raise ValueError("RGB frame tensors must have shape [B,H,W,C]")
+
+    # Flatten the temporal dimension into the same batched z-buffer.  The
+    # endpoint is repeated as a view-like expand, then made contiguous once.
+    need_diag = return_diagnostics or composite in {"same_surface_log_linear", "coverage_time_log_linear"}
+
+    def flatten_endpoint(frame, depth, uv, z, valid, surface_id=None):
+        M = B * T
+        frame_m = frame[:, None].expand((B, T) + tuple(frame.shape[1:])).reshape((M,) + tuple(frame.shape[1:]))
+        depth_m = depth[:, None].expand(B, T, H, W).reshape(M, H, W)
+        uv_m = uv.reshape(M, 2, H, W)
+        z_m = z.reshape(M, H, W)
+        valid_m = valid.reshape(M, H, W)
+        if composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
+            if surface_id is None:
+                surface_m = None
+            else:
+                surface_m = surface_id[:, None].expand(B, T, H, W).reshape(M, H, W)
+            result = _splat_projected_coverage_batch_torch(
+                frame_m, depth_m, uv_m, z_m, valid_m, surface_m,
+                min_coverage_fraction, depth_tie_abs_m, depth_tie_rtol,
+            )
+            if need_diag:
+                return result
+            return result[0], result[1]
+        return _splat_projected_batch_torch(
+            frame_m, depth_m, uv_m, z_m, valid_m,
+            return_diagnostics=need_diag,
+        )
+
+    result0 = flatten_endpoint(frame0, depth0, uv0, z0, valid0, surface_id0)
+    result1 = flatten_endpoint(frame1, depth1, uv1, z1, valid1, surface_id1)
+    if need_diag:
+        warped0, visible0, diagnostics0 = result0
+        warped1, visible1, diagnostics1 = result1
+    else:
+        warped0, visible0 = result0
+        warped1, visible1 = result1
+    if composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
+        if warped0.ndim == 3:
+            warped0 = warped0.reshape(B, T, H, W)
+            warped1 = warped1.reshape(B, T, H, W)
+        else:
+            warped0 = warped0.reshape(B, T, H, W, warped0.shape[-1])
+            warped1 = warped1.reshape(B, T, H, W, warped1.shape[-1])
+        visible0 = visible0.reshape(B, T, H, W)
+        visible1 = visible1.reshape(B, T, H, W)
+        if alpha is None:
+            raise ValueError("alpha timestamps are required for same_surface_log_linear")
+        alpha_observed = torch.as_tensor(alpha, dtype=torch.float64, device=warped0.device)
+        if composite == "coverage_time_log_linear":
+            if not bool(torch.isfinite(alpha_observed).all()) or bool(((alpha_observed < 0) | (alpha_observed > 1)).any()):
+                raise ValueError("alpha must be finite and in [0,1]")
+        alpha_t = alpha_observed.to(dtype=warped0.dtype)
+        if alpha_t.ndim == 0:
+            alpha_t = alpha_t.expand(T)
+            alpha_observed = alpha_observed.expand(T)
+        if alpha_t.shape != (T,):
+            raise ValueError(f"alpha must be scalar or shape ({T},)")
+        # Match the NumPy sparse reconstruction's observed-endpoint policy.
+        # An almost-zero projection must not warp an already observed image.
+        # Keep legacy modes' exact-equality behavior unchanged.
+        if composite == "coverage_time_log_linear":
+            endpoint0_t = alpha_observed <= 1e-10
+            endpoint1_t = alpha_observed >= 1.0 - 1e-10
+        else:
+            endpoint0_t = alpha_t == 0.0
+            endpoint1_t = alpha_t == 1.0
+        alpha_view = alpha_t.reshape(1, T, 1, 1)
+        support0 = diagnostics0["support"].reshape(B, T, H, W)
+        support1 = diagnostics1["support"].reshape(B, T, H, W)
+        sid0 = diagnostics0["surface_id"].reshape(B, T, H, W)
+        sid1 = diagnostics1["surface_id"].reshape(B, T, H, W)
+        consistent0 = diagnostics0["surface_consistent"].reshape(B, T, H, W)
+        consistent1 = diagnostics1["surface_consistent"].reshape(B, T, H, W)
+        zbuf0 = diagnostics0["z_buffer"].reshape(B, T, H, W)
+        zbuf1 = diagnostics1["z_buffer"].reshape(B, T, H, W)
+        ztol = torch.maximum(
+            torch.full_like(zbuf0, float(surface_depth_abs_m)),
+            float(surface_depth_rtol) * torch.maximum(torch.abs(zbuf0), torch.abs(zbuf1)),
+        )
+        surface_match = (
+            support0 & support1 & consistent0 & consistent1
+            & (sid0 == sid1) & (torch.abs(zbuf0 - zbuf1) <= ztol)
+        )
+        safe0 = torch.clamp(warped0, min=1e-6)
+        safe1 = torch.clamp(warped1, min=1e-6)
+        if composite == "coverage_time_log_linear":
+            if not bool(torch.isfinite(alpha_t).all()) or bool(((alpha_t < 0) | (alpha_t > 1)).any()):
+                raise ValueError("alpha must be finite and in [0,1]")
+            cov0 = diagnostics0["coverage"].reshape(B, T, H, W)
+            cov1 = diagnostics1["coverage"].reshape(B, T, H, W)
+            weight0 = (1.0 - alpha_view) * cov0
+            weight1 = alpha_view * cov1
+            denominator = weight0 + weight1
+            conditional_available = denominator > 1e-8
+            if warped0.ndim == 5:
+                weight0, weight1, denominator = weight0[..., None], weight1[..., None], denominator[..., None]
+            weighted_log = (weight0 * torch.log(safe0) + weight1 * torch.log(safe1)) / torch.clamp(denominator, min=1e-8)
+            conditional_mixed = torch.exp(weighted_log)
+        if warped0.ndim == 4:
+            if composite == "coverage_time_log_linear":
+                # Skip only an expression whose result was overwritten.
+                mixed = conditional_mixed
+            else:
+                mixed = torch.exp((1.0 - alpha_view) * torch.log(safe0) + alpha_view * torch.log(safe1))
+            frame0_e = frame0[:, None].expand(B, T, H, W)
+            frame1_e = frame1[:, None].expand(B, T, H, W)
+            alpha_e = alpha_t.reshape(1, T, 1, 1)
+            endpoint0 = endpoint0_t.reshape(1, T, 1, 1)
+            endpoint1 = endpoint1_t.reshape(1, T, 1, 1)
+            mixed = torch.where(endpoint0, frame0_e, torch.where(endpoint1, frame1_e, mixed))
+        else:
+            if composite == "coverage_time_log_linear":
+                # Skip only an expression whose result was overwritten.
+                mixed = conditional_mixed
+            else:
+                mixed = torch.exp((1.0 - alpha_view[..., None]) * torch.log(safe0) + alpha_view[..., None] * torch.log(safe1))
+            frame0_e = frame0[:, None].expand(B, T, H, W, frame0.shape[-1])
+            frame1_e = frame1[:, None].expand(B, T, H, W, frame1.shape[-1])
+            alpha_e = alpha_t.reshape(1, T, 1, 1, 1)
+            mixed = torch.where(endpoint0_t.reshape(1, T, 1, 1, 1), frame0_e,
+                                torch.where(endpoint1_t.reshape(1, T, 1, 1, 1), frame1_e, mixed))
+        # A direct endpoint image is known independently of depth validity.
+        # Geometry support is required only for an intermediate projection.
+        endpoint_valid0 = torch.isfinite(frame0).all(dim=-1) if frame0.ndim == 4 else torch.isfinite(frame0)
+        endpoint_valid1 = torch.isfinite(frame1).all(dim=-1) if frame1.ndim == 4 else torch.isfinite(frame1)
+        endpoint_valid = torch.where(
+            endpoint0_t.reshape(1, T, 1, 1), endpoint_valid0[:, None],
+            torch.where(endpoint1_t.reshape(1, T, 1, 1), endpoint_valid1[:, None], surface_match),
+        )
+        visible = endpoint_valid
+        output_available = visible
+        if composite == "coverage_time_log_linear":
+            output_available = torch.where(
+                (endpoint0_t | endpoint1_t).reshape(1, T, 1, 1),
+                endpoint_valid, conditional_available,
+            )
+        if mixed.ndim == 4:
+            output = torch.where(output_available, mixed, torch.full_like(mixed, float("nan")))
+        else:
+            output = torch.where(output_available[..., None], mixed, torch.full_like(mixed, float("nan")))
+    elif composite == "next_primary":
+        visible = visible0 | visible1
+        if warped0.ndim == 3:
+            output = torch.full_like(warped0, float("nan"))
+            output = torch.where(visible1, warped1, torch.where(visible0, warped0, output))
+        else:
+            output = torch.full_like(warped0, float("nan"))
+            mask1, mask0 = visible1[..., None], visible0[..., None]
+            output = torch.where(mask1, warped1, torch.where(mask0, warped0, output))
+    else:
+        w0 = visible0.to(warped0.dtype)
+        w1 = visible1.to(warped1.dtype)
+        denom = w0 + w1
+        if warped0.ndim == 3:
+            output = (warped0 * w0 + warped1 * w1) / torch.clamp(denom, min=1e-8)
+        else:
+            output = (warped0 * w0[..., None] + warped1 * w1[..., None]) / torch.clamp(denom[..., None], min=1e-8)
+        visible = denom > 1e-8
+    if composite not in {"same_surface_log_linear", "coverage_time_log_linear"}:
+        if output.ndim == 3:
+            output = output.reshape(B, T, H, W)
+        else:
+            output = output.reshape(B, T, H, W, output.shape[-1])
+        visible = visible.reshape(B, T, H, W)
+    if return_diagnostics and composite in {"same_surface_log_linear", "coverage_time_log_linear"}:
+        diagnostics = {
+            "occupancy0": diagnostics0["occupancy"].reshape(B, T, H, W),
+            "occupancy1": diagnostics1["occupancy"].reshape(B, T, H, W),
+            "visibility0": diagnostics0["visibility"].reshape(B, T, H, W),
+            "visibility1": diagnostics1["visibility"].reshape(B, T, H, W),
+            "support0": support0, "support1": support1,
+            "coverage0": diagnostics0["coverage"].reshape(B, T, H, W),
+            "coverage1": diagnostics1["coverage"].reshape(B, T, H, W),
+            "surface_id0": sid0, "surface_id1": sid1,
+            "surface_consistent0": consistent0, "surface_consistent1": consistent1,
+            "surface_match": surface_match,
+            "z_buffer0": zbuf0, "z_buffer1": zbuf1,
+            "intermediate_visibility": visible,
+            "intermediate_unknown": ~visible,
+            "intermediate_coverage": torch.minimum(
+                diagnostics0["coverage"].reshape(B, T, H, W),
+                diagnostics1["coverage"].reshape(B, T, H, W),
+            ),
+        }
+        if composite == "coverage_time_log_linear":
+            diagnostics["conditional_radiance_available"] = output_available
+            diagnostics["surface_match"] = visible
+            diagnostics["disocclusion"] = ~visible
+        return output, visible, diagnostics
+    if return_diagnostics:
+        diagnostics = {
+            "occupancy0": diagnostics0["occupancy"].reshape(B, T, H, W),
+            "occupancy1": diagnostics1["occupancy"].reshape(B, T, H, W),
+            "visibility0": diagnostics0["visibility"].reshape(B, T, H, W),
+            "visibility1": diagnostics1["visibility"].reshape(B, T, H, W),
+            "z_buffer0": diagnostics0["z_buffer"].reshape(B, T, H, W),
+            "z_buffer1": diagnostics1["z_buffer"].reshape(B, T, H, W),
+            "intermediate_visibility": visible,
+            "disocclusion": ~visible,
+        }
+        return output, visible, diagnostics
+    return output, visible

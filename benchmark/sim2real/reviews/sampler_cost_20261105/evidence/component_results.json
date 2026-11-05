@@ -1,0 +1,1200 @@
+{
+  "scope": "same-input component only",
+  "deterministic_algorithms": true,
+  "rows": [
+    {
+      "call": 1,
+      "candidate": "deadmix",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.4018435449106619,
+          "peak_allocated_bytes": 14255250432,
+          "incremental_peak_bytes": 11563726336
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.3812055869493634,
+          "peak_allocated_bytes": 14256037888,
+          "incremental_peak_bytes": 11564513792
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3810000480152667,
+          "peak_allocated_bytes": 14256037888,
+          "incremental_peak_bytes": 11564513792
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "histfree",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.3858569029252976,
+          "peak_allocated_bytes": 13174182400,
+          "incremental_peak_bytes": 10482658304
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.361532091978006,
+          "peak_allocated_bytes": 13174969856,
+          "incremental_peak_bytes": 10483445760
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3632233969401568,
+          "peak_allocated_bytes": 13174969856,
+          "incremental_peak_bytes": 10483445760
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "histfree+deadmix",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.3816508409800008,
+          "peak_allocated_bytes": 13174182400,
+          "incremental_peak_bytes": 10482658304
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.3596222049091011,
+          "peak_allocated_bytes": 13174969856,
+          "incremental_peak_bytes": 10483445760
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.359226698987186,
+          "peak_allocated_bytes": 13174969856,
+          "incremental_peak_bytes": 10483445760
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "prune-full+deadmix",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.4167999769560993,
+          "peak_allocated_bytes": 13173220864,
+          "incremental_peak_bytes": 10481696768
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.3967163080815226,
+          "peak_allocated_bytes": 13174368256,
+          "incremental_peak_bytes": 10482844160
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3967023210134357,
+          "peak_allocated_bytes": 13174368256,
+          "incremental_peak_bytes": 10482844160
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "reference",
+      "bitwise_equal": true,
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.3821604490512982
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.3830474680289626
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3813872560858727
+        }
+      ]
+    }
+  ],
+  "noise_or_sampling_changed": false,
+  "fixture": {
+    "variant": "ours_resident",
+    "wall_s": 34.357619159971364,
+    "setup_s": 0.3213952530641109,
+    "peak_bytes": 14256037888,
+    "worker_peak_bytes": 14256037888,
+    "unrelated_allocated_bytes": 0,
+    "substeps": [
+      377
+    ],
+    "fallbacks": 0,
+    "events": {
+      "count": 1091,
+      "sha256": "7b2837b67fd0c7473b93579c5a13c59f995775394caad26737b92b589eab013a",
+      "dtype": "float64",
+      "t_min": 0.002041298426785678,
+      "t_max": 0.009992233587861124
+    },
+    "phases": null
+  },
+  "stress": {
+    "schema": "geometry_byte_stress_v1",
+    "device": "0",
+    "torch_version": "2.8.0+cu126",
+    "all_passed": true,
+    "comparison": "dtype/shape/contiguous raw uint8 equality, including NaN bits",
+    "cases": [
+      {
+        "name": "gray/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 320
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 323
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 322
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 322
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 574
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 563
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 562
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 624
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 580
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 573
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 572
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 644
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 504
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 499
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 462
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 440
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 425
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 453
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 504
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 499
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 522
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 486
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 480
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 480
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 444
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 319
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 322
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 321
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 321
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 573
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 562
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 561
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 623
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 579
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 572
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 571
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 643
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 503
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 497
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 461
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 439
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 429
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 424
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 423
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 452
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 503
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 498
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 497
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 521
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 484
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 478
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 478
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/missing_surface_labels",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 494
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 489
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 476
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 489
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 443
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 45,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 476
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 489
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 430
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 443
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 45,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "histfree": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "histfree+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          },
+          "prune-full+deadmix": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      }
+    ],
+    "candidate_summary": {
+      "deadmix": {
+        "passed": 35,
+        "failed": 0
+      },
+      "histfree": {
+        "passed": 35,
+        "failed": 0
+      },
+      "histfree+deadmix": {
+        "passed": 35,
+        "failed": 0
+      },
+      "prune-full+deadmix": {
+        "passed": 35,
+        "failed": 0
+      }
+    },
+    "case_count": 35
+  },
+  "status": "complete",
+  "all_component_cases_exact": true
+}

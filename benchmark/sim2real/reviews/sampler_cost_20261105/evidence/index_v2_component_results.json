@@ -1,0 +1,561 @@
+{
+  "scope": "same-input component only",
+  "deterministic_algorithms": true,
+  "rows": [
+    {
+      "call": 1,
+      "candidate": "indexreuse_v2",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.165567730087787,
+          "peak_allocated_bytes": 14867706368,
+          "incremental_peak_bytes": 12176182272
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.141974768950604,
+          "peak_allocated_bytes": 14867257344,
+          "incremental_peak_bytes": 12175733248
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.1414820929057896,
+          "peak_allocated_bytes": 14867257344,
+          "incremental_peak_bytes": 12175733248
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "reference",
+      "bitwise_equal": true,
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.3942195370327681
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.384083317941986
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3833529149414971
+        }
+      ]
+    }
+  ],
+  "noise_or_sampling_changed": false,
+  "fixture": {
+    "variant": "ours_resident",
+    "wall_s": 12.432836754014716,
+    "setup_s": 0.37995662493631244,
+    "peak_bytes": 14867257344,
+    "worker_peak_bytes": 14867257344,
+    "unrelated_allocated_bytes": 0,
+    "substeps": [
+      377
+    ],
+    "fallbacks": 0,
+    "events": {
+      "count": 1091,
+      "sha256": "7b2837b67fd0c7473b93579c5a13c59f995775394caad26737b92b589eab013a",
+      "dtype": "float64",
+      "t_min": 0.002041298426785678,
+      "t_max": 0.009992233587861124
+    },
+    "phases": null
+  },
+  "stress": {
+    "schema": "geometry_byte_stress_v1",
+    "device": "0",
+    "torch_version": "2.8.0+cu126",
+    "all_passed": true,
+    "comparison": "dtype/shape/contiguous raw uint8 equality, including NaN bits",
+    "cases": [
+      {
+        "name": "gray/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 336
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 624
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 638
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 544
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 456
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 544
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 526
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 335
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 623
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 637
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 543
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 455
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 543
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 524
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/missing_surface_labels",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 518
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "indexreuse_v2": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      }
+    ],
+    "candidate_summary": {
+      "indexreuse_v2": {
+        "passed": 35,
+        "failed": 0
+      }
+    },
+    "case_count": 35
+  },
+  "status": "complete",
+  "all_component_cases_exact": true
+}

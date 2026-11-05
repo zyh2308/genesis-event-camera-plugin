@@ -1,0 +1,561 @@
+{
+  "scope": "same-input component only",
+  "deterministic_algorithms": true,
+  "rows": [
+    {
+      "call": 1,
+      "candidate": "indexreuse",
+      "bitwise_equal": true,
+      "differences": [],
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.1706024369923398,
+          "peak_allocated_bytes": 14459212288,
+          "incremental_peak_bytes": 11767688192
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.1471649740124121,
+          "peak_allocated_bytes": 14459336704,
+          "incremental_peak_bytes": 11767812608
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.146810560952872,
+          "peak_allocated_bytes": 14459336704,
+          "incremental_peak_bytes": 11767812608
+        }
+      ]
+    },
+    {
+      "call": 1,
+      "candidate": "reference",
+      "bitwise_equal": true,
+      "timings": [
+        {
+          "trial": 0,
+          "wall_s": 1.388602493912913
+        },
+        {
+          "trial": 1,
+          "wall_s": 1.3838604639749974
+        },
+        {
+          "trial": 2,
+          "wall_s": 1.3838700550841168
+        }
+      ]
+    }
+  ],
+  "noise_or_sampling_changed": false,
+  "fixture": {
+    "variant": "ours_resident",
+    "wall_s": 11.752414749003947,
+    "setup_s": 0.3540964979911223,
+    "peak_bytes": 14459336704,
+    "worker_peak_bytes": 14459336704,
+    "unrelated_allocated_bytes": 0,
+    "substeps": [
+      377
+    ],
+    "fallbacks": 0,
+    "events": {
+      "count": 1091,
+      "sha256": "7b2837b67fd0c7473b93579c5a13c59f995775394caad26737b92b589eab013a",
+      "dtype": "float64",
+      "t_min": 0.002041298426785678,
+      "t_max": 0.009992233587861124
+    },
+    "phases": null
+  },
+  "stress": {
+    "schema": "geometry_byte_stress_v1",
+    "device": "0",
+    "torch_version": "2.8.0+cu126",
+    "all_passed": true,
+    "comparison": "dtype/shape/contiguous raw uint8 equality, including NaN bits",
+    "cases": [
+      {
+        "name": "gray/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 330
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 618
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 632
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 538
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 450
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 538
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 520
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/identity",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/hdr",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/lowlight_log_floor",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/empty_support",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 329
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/partial_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 617
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/support_threshold_is_not_full_coverage",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 631
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/surface_crossing_unknown_visibility_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/two_depth_occlusion_flip",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 537
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/equal_depth_conflicting_surface_ids",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/observed_endpoint_override_invalid_depth",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/nonfinite_source_and_projection",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/signed_and_negative_radiance_direct_api",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 449
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/extreme_finite_hdr_hidden_layer_overflow",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 537
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "rgb/same_surface_composite",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 518
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "gray/missing_surface_labels",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 512
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_abs_m/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/nan",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 488
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/posinf",
+        "expected_error": null,
+        "reference_ok": true,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 442
+          }
+        },
+        "passed": true
+      },
+      {
+        "name": "tolerance/depth_tie_rtol/negative",
+        "expected_error": "ValueError",
+        "reference_ok": false,
+        "candidates": {
+          "indexreuse": {
+            "passed": true,
+            "failures": [],
+            "line_events": 46,
+            "exception": {
+              "exception_type": "ValueError",
+              "exception_message": "depth tie tolerances must be non-negative"
+            }
+          }
+        },
+        "passed": true,
+        "reference_exception": {
+          "exception_type": "ValueError",
+          "exception_message": "depth tie tolerances must be non-negative"
+        }
+      }
+    ],
+    "candidate_summary": {
+      "indexreuse": {
+        "passed": 35,
+        "failed": 0
+      }
+    },
+    "case_count": 35
+  },
+  "status": "complete",
+  "all_component_cases_exact": true
+}
