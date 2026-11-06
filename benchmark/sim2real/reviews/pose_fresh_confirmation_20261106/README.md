@@ -14,3 +14,5 @@
 同一 8 项门槛在新数据全部通过。每个生成器的三个 seed 均超过两个对照，按轨迹配对 bootstrap 的 95% 下界也均大于零。原 32 条开发轨迹上的 7/8 检查作为独立阶段结果保留。
 
 作业 `119_pose_fresh_confirm_paired_20261106` 在 g1 GPU 5 上运行。合成确认写盘后自动启动 E-POSE。真实输入、协议、既有原模型输出以及新分支权重均通过哈希绑定。
+
+E-POSE complete. See [E-POSE report](EPOSE_CONFIRM_REPORT.md).
