@@ -172,8 +172,16 @@ def main():
         parser.add_argument('--'+name, type=Path, required=True)
     parser.add_argument('--smoke', action='store_true')
     parser.add_argument('--real-on-pass', action='store_true')
+    parser.add_argument('--smoke-receipt', type=Path)
+    parser.add_argument('--smoke-completion', type=Path)
     args = parser.parse_args()
     assert not (args.smoke and args.real_on_pass)
+    if not args.smoke:
+        assert args.smoke_receipt is not None and args.smoke_completion is not None
+        smoke_exit = json.loads(args.smoke_receipt.read_text())
+        smoke = json.loads(args.smoke_completion.read_text())
+        assert smoke_exit['exit_code'] == 0 and smoke['status'] == 'complete' and smoke['smoke']
+        assert smoke['physical_seed'] != PHYSICAL_SEED and len(smoke['results']) == len(METHODS)
     assert torch.cuda.device_count() == 1
     torch.set_num_threads(2)
     torch.set_num_interop_threads(1)
