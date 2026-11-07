@@ -1,0 +1,706 @@
+{
+  "root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1",
+  "status": "complete",
+  "gate": {
+    "passed": false,
+    "checks": [
+      {
+        "method": "eventgenesis",
+        "seed": 0,
+        "condition": "clean",
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 0,
+        "condition": "half",
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 0,
+        "condition": "eighth",
+        "passed": true
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 1,
+        "condition": "clean",
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 1,
+        "condition": "half",
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 1,
+        "condition": "eighth",
+        "passed": true
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 2,
+        "condition": "clean",
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 2,
+        "condition": "half",
+        "passed": true
+      },
+      {
+        "method": "eventgenesis",
+        "seed": 2,
+        "condition": "eighth",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 0,
+        "condition": "clean",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 0,
+        "condition": "half",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 0,
+        "condition": "eighth",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 1,
+        "condition": "clean",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 1,
+        "condition": "half",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 1,
+        "condition": "eighth",
+        "passed": false
+      },
+      {
+        "method": "v2e",
+        "seed": 2,
+        "condition": "clean",
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "seed": 2,
+        "condition": "half",
+        "passed": false
+      },
+      {
+        "method": "v2e",
+        "seed": 2,
+        "condition": "eighth",
+        "passed": false
+      }
+    ]
+  },
+  "protocol": {
+    "real_data_used": false,
+    "smoke": false,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "epochs": 6,
+    "lr": 0.00015,
+    "teacher_clean_weight": 2,
+    "arms": [
+      "clean_control",
+      "physical_augmented"
+    ],
+    "training": "all original train windows plus one matched auxiliary batch per step; eight training trajectories at half/eighth radiance",
+    "source_sha256": "93cad0ceaad9a97e86ca1acf4ffce22c33a91c0b012247763cf9c7fcdffc3365",
+    "variant": "frozen matched clean-control localization; only size/shape MLP updated",
+    "parent_controls_sha256": "4bfb05699286fc2a9310efacb7647320ee769193cfd0ec08d18e0135d1b72525",
+    "real_evaluation": "disabled for this study",
+    "validation": "96 previously inspected synthetic trajectories and four disjoint relit validation trajectories",
+    "gate": "each seed clean ADD-S success decline <=2pp; each seed improves depth at half and eighth physical radiance; both methods"
+  },
+  "phase_exit": {
+    "phase": "physical_adaptation",
+    "argv": [
+      "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+      "-u",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/sources/pose_physical_light_adaptation.py",
+      "--campaign",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+      "--radiance-train",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/radiance_train",
+      "--radiance-validation",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance",
+      "--out",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/physical_adaptation"
+    ],
+    "started_utc": "2026-11-07T07:48:11.152811+00:00",
+    "status": "running",
+    "pid": 4065849,
+    "exit_code": 0,
+    "finished_utc": "2026-11-07T07:50:55.421083+00:00"
+  },
+  "release": {
+    "owner": "sim-to-real research chat",
+    "host": "g1",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+    "run_id": "20261107-pose-fixed-localizer-light-v1",
+    "pid": 4065550,
+    "process_start_ticks": "92746910",
+    "status": "released",
+    "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1",
+    "started_utc": "2026-11-07T07:47:25.158263+00:00",
+    "purpose": "paired synthetic pose robustness",
+    "current_job": null,
+    "heartbeat_utc": "2026-11-07T07:50:50.418884+00:00",
+    "released_utc": "2026-11-07T07:50:55.439625+00:00",
+    "completed": [
+      "radiance_train",
+      "smoke",
+      "physical_adaptation"
+    ]
+  },
+  "results": [
+    {
+      "method": "eventgenesis",
+      "seed": 0,
+      "initial_control": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/eventgenesis_seed0_clean_control.pt",
+        "sha256": "11977eb1c943a91fdc7b7f337c4d95d30121a8832f8ef48bb8b63672c377e977"
+      },
+      "train_loss": {
+        "clean_control": [
+          2.843550071120262,
+          2.845627615849177,
+          2.8459496150414147,
+          2.845019360383352,
+          2.8450472553571067,
+          2.844562659660975
+        ],
+        "physical_augmented": [
+          3.1462109237909317,
+          3.1247365127007165,
+          3.1342016756534576,
+          3.1160460263490677,
+          3.0966690878073373,
+          3.109934394558271
+        ]
+      },
+      "arms": {
+        "clean_control": {
+          "clean": {
+            "depth_mae_m": 0.1032012934090773,
+            "depth_bias_m": 0.06509308127626008,
+            "log_size_mae": 0.13602942476669946,
+            "log_size_bias": -0.08517445903271437,
+            "center_px": 11.504290918430678,
+            "success": 0.2552083333333333,
+            "auc": 0.4269778981415498
+          },
+          "half": {
+            "depth_mae_m": 0.03527128454636012,
+            "depth_bias_m": -0.0032708561361518354,
+            "log_size_mae": 0.06289124488830566,
+            "log_size_bias": -0.030348610132932663,
+            "center_px": 9.831363708373642,
+            "success": 0.390625,
+            "auc": 0.7037011658831466
+          },
+          "eighth": {
+            "depth_mae_m": 0.11878962957003872,
+            "depth_bias_m": -0.10539138739339379,
+            "log_size_mae": 0.11278922483325005,
+            "log_size_bias": 0.09176161512732506,
+            "center_px": 32.496809810018675,
+            "success": 0.0625,
+            "auc": 0.19994065509814882
+          }
+        },
+        "physical_augmented": {
+          "clean": {
+            "depth_mae_m": 0.10988089955888147,
+            "depth_bias_m": 0.07958580932519561,
+            "log_size_mae": 0.14454322742919126,
+            "log_size_bias": -0.09906932928909858,
+            "center_px": 11.504290918430678,
+            "success": 0.22395833333333334,
+            "auc": 0.4116641220146568
+          },
+          "half": {
+            "depth_mae_m": 0.040870337498127136,
+            "depth_bias_m": 0.006672196990183309,
+            "log_size_mae": 0.07069421373307705,
+            "log_size_bias": -0.04264465160667896,
+            "center_px": 9.831363708373642,
+            "success": 0.375,
+            "auc": 0.6836126655860967
+          },
+          "eighth": {
+            "depth_mae_m": 0.09713304984068857,
+            "depth_bias_m": -0.07542878858155874,
+            "log_size_mae": 0.09292003698647022,
+            "log_size_bias": 0.06284152902662754,
+            "center_px": 32.496809810018675,
+            "success": 0.0625,
+            "auc": 0.2525831076532893
+          }
+        }
+      }
+    },
+    {
+      "method": "eventgenesis",
+      "seed": 1,
+      "initial_control": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/eventgenesis_seed1_clean_control.pt",
+        "sha256": "676fa95f680029058cee41b2adc25610cef1e5da8f2e5675712651d9c511dfe3"
+      },
+      "train_loss": {
+        "clean_control": [
+          2.8467619319756827,
+          2.847885400056839,
+          2.845787321527799,
+          2.8477977514266968,
+          2.8471621374289193,
+          2.846116070946058
+        ],
+        "physical_augmented": [
+          3.101790448029836,
+          3.08124732474486,
+          3.0770946939786277,
+          3.0899719496568046,
+          3.0487846632798514,
+          3.046305706103643
+        ]
+      },
+      "arms": {
+        "clean_control": {
+          "clean": {
+            "depth_mae_m": 0.09754347739944895,
+            "depth_bias_m": 0.06018540626641836,
+            "log_size_mae": 0.12154093974580367,
+            "log_size_bias": -0.07692168901364009,
+            "center_px": 9.789758681842114,
+            "success": 0.265625,
+            "auc": 0.4586581226085755
+          },
+          "half": {
+            "depth_mae_m": 0.018142570150102483,
+            "depth_bias_m": 0.0011339084862980395,
+            "log_size_mae": 0.036616627126932144,
+            "log_size_bias": -0.021196719259023666,
+            "center_px": 7.607280843118073,
+            "success": 0.46875,
+            "auc": 0.758052375320747
+          },
+          "eighth": {
+            "depth_mae_m": 0.11602702297387155,
+            "depth_bias_m": -0.11050920377827553,
+            "log_size_mae": 0.12053528800606728,
+            "log_size_bias": 0.09338779747486115,
+            "center_px": 27.62028078051444,
+            "success": 0.0625,
+            "auc": 0.26283396537630316
+          }
+        },
+        "physical_augmented": {
+          "clean": {
+            "depth_mae_m": 0.10462190496000053,
+            "depth_bias_m": 0.07282889827094204,
+            "log_size_mae": 0.13159097855289778,
+            "log_size_bias": -0.09302521248658498,
+            "center_px": 9.789758681842114,
+            "success": 0.19791666666666666,
+            "auc": 0.4274483555158734
+          },
+          "half": {
+            "depth_mae_m": 0.021622427125533625,
+            "depth_bias_m": 0.010079801051250413,
+            "log_size_mae": 0.04433584772050381,
+            "log_size_bias": -0.033592766150832176,
+            "center_px": 7.607280843118073,
+            "success": 0.484375,
+            "auc": 0.7553694364871062
+          },
+          "eighth": {
+            "depth_mae_m": 0.08800406603687247,
+            "depth_bias_m": -0.07857548262334732,
+            "log_size_mae": 0.08808677271008492,
+            "log_size_bias": 0.05383405089378357,
+            "center_px": 27.62028078051444,
+            "success": 0.09375,
+            "auc": 0.31573611910707666
+          }
+        }
+      }
+    },
+    {
+      "method": "eventgenesis",
+      "seed": 2,
+      "initial_control": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/eventgenesis_seed2_clean_control.pt",
+        "sha256": "9264d405ba886a947f6eeee540c494014abe9b075c0f8de811db46fecfdb58f2"
+      },
+      "train_loss": {
+        "clean_control": [
+          2.846812372406324,
+          2.844921459754308,
+          2.846009577314059,
+          2.844608098268509,
+          2.845930829644203,
+          2.8448486775159836
+        ],
+        "physical_augmented": [
+          3.151154026389122,
+          3.1408575773239136,
+          3.130679036180178,
+          3.120066856344541,
+          3.1099083671967187,
+          3.106296276052793
+        ]
+      },
+      "arms": {
+        "clean_control": {
+          "clean": {
+            "depth_mae_m": 0.09429834119439111,
+            "depth_bias_m": 0.04853426485262043,
+            "log_size_mae": 0.12347894146417578,
+            "log_size_bias": -0.06393785510833065,
+            "center_px": 9.442319522865665,
+            "success": 0.28125,
+            "auc": 0.4477706257347731
+          },
+          "half": {
+            "depth_mae_m": 0.04150801107641731,
+            "depth_bias_m": -0.01561564769006638,
+            "log_size_mae": 0.07225407101213932,
+            "log_size_bias": 0.011946501210331917,
+            "center_px": 9.363723277055549,
+            "success": 0.46875,
+            "auc": 0.6940373615680234
+          },
+          "eighth": {
+            "depth_mae_m": 0.11898582520047682,
+            "depth_bias_m": -0.11386131684637935,
+            "log_size_mae": 0.13967193104326725,
+            "log_size_bias": 0.1157990675419569,
+            "center_px": 30.441324785999402,
+            "success": 0.078125,
+            "auc": 0.3010315618016989
+          }
+        },
+        "physical_augmented": {
+          "clean": {
+            "depth_mae_m": 0.09877625504252281,
+            "depth_bias_m": 0.058106861529888976,
+            "log_size_mae": 0.13151525038604936,
+            "log_size_bias": -0.07600900794689854,
+            "center_px": 9.442319522865665,
+            "success": 0.24479166666666666,
+            "auc": 0.4296549293894503
+          },
+          "half": {
+            "depth_mae_m": 0.03343572828934687,
+            "depth_bias_m": -0.010728662864932107,
+            "log_size_mae": 0.070136658847332,
+            "log_size_bias": 0.0043940357863903046,
+            "center_px": 9.363723277055549,
+            "success": 0.59375,
+            "auc": 0.7251719346076912
+          },
+          "eighth": {
+            "depth_mae_m": 0.08569458222719978,
+            "depth_bias_m": -0.07927520762539773,
+            "log_size_mae": 0.1130248811095953,
+            "log_size_bias": 0.07378098927438259,
+            "center_px": 30.441324785999402,
+            "success": 0.09375,
+            "auc": 0.3323482468151712
+          }
+        }
+      }
+    },
+    {
+      "method": "v2e",
+      "seed": 0,
+      "initial_control": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/v2e_seed0_clean_control.pt",
+        "sha256": "72f735c085900eec024e474d6e54c730673c3b62f0e4b49743ac0bcd9b47ac4c"
+      },
+      "train_loss": {
+        "clean_control": [
+          2.8934984455506005,
+          2.8942051927248635,
+          2.8930526276429496,
+          2.891769746939341,
+          2.8916278034448624,
+          2.8926174392302832
+        ],
+        "physical_augmented": [
+          2.915941461920738,
+          2.9177275051673255,
+          2.9159545550743737,
+          2.913273364305496,
+          2.912408376733462,
+          2.9145445028940835
+        ]
+      },
+      "arms": {
+        "clean_control": {
+          "clean": {
+            "depth_mae_m": 0.13972828527220302,
+            "depth_bias_m": 0.0608893039040439,
+            "log_size_mae": 0.18926304128641883,
+            "log_size_bias": -0.07719935181861122,
+            "center_px": 21.244420776147706,
+            "success": 0.11197916666666667,
+            "auc": 0.3064865479455179
+          },
+          "half": {
+            "depth_mae_m": 0.043001157059949786,
+            "depth_bias_m": -0.02129961646504073,
+            "log_size_mae": 0.057213274762034416,
+            "log_size_bias": -0.040349895134568214,
+            "center_px": 16.831637313052408,
+            "success": 0.265625,
+            "auc": 0.5916515716114896
+          },
+          "eighth": {
+            "depth_mae_m": 0.0889181653351274,
+            "depth_bias_m": -0.0889181653351274,
+            "log_size_mae": 0.08647720701992512,
+            "log_size_bias": 0.04007387347519398,
+            "center_px": 16.241053121443738,
+            "success": 0.25,
+            "auc": 0.3579914871114832
+          }
+        },
+        "physical_augmented": {
+          "clean": {
+            "depth_mae_m": 0.14116465499171157,
+            "depth_bias_m": 0.06611594137364851,
+            "log_size_mae": 0.1921915654093027,
+            "log_size_bias": -0.08347579464316368,
+            "center_px": 21.244420776147706,
+            "success": 0.10416666666666667,
+            "auc": 0.3018591212842556
+          },
+          "half": {
+            "depth_mae_m": 0.03943250842716443,
+            "depth_bias_m": -0.014920778603920026,
+            "log_size_mae": 0.06035195477306843,
+            "log_size_bias": -0.04935200698673725,
+            "center_px": 16.831637313052408,
+            "success": 0.265625,
+            "auc": 0.6086426471994306
+          },
+          "eighth": {
+            "depth_mae_m": 0.08192883866843655,
+            "depth_bias_m": -0.08189214210368066,
+            "log_size_mae": 0.08381708152592182,
+            "log_size_bias": 0.028400709852576256,
+            "center_px": 16.241053121443738,
+            "success": 0.25,
+            "auc": 0.3863330509115783
+          }
+        }
+      }
+    },
+    {
+      "method": "v2e",
+      "seed": 1,
+      "initial_control": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/v2e_seed1_clean_control.pt",
+        "sha256": "2d08c2738881481fb3bd42c22faaddd6726cb55691f13b2034971d93edc4f2de"
+      },
+      "train_loss": {
+        "clean_control": [
+          2.8902127742767334,
+          2.886631761988004,
+          2.8873015443483987,
+          2.889788791537285,
+          2.882686068614324,
+          2.8849019706249237
+        ],
+        "physical_augmented": [
+          2.9093440175056458,
+          2.9070415049791336,
+          2.907183960080147,
+          2.9120221684376397,
+          2.9001262336969376,
+          2.9041370848814645
+        ]
+      },
+      "arms": {
+        "clean_control": {
+          "clean": {
+            "depth_mae_m": 0.13228580610347598,
+            "depth_bias_m": 0.08003794874004251,
+            "log_size_mae": 0.1962488560626904,
+            "log_size_bias": -0.12552874783674875,
+            "center_px": 19.959776617624467,
+            "success": 0.140625,
+            "auc": 0.3378114190070011
+          },
+          "half": {
+            "depth_mae_m": 0.03936768593732249,
+            "depth_bias_m": -0.01723868868655829,
+            "log_size_mae": 0.0679395217448473,
+            "log_size_bias": -0.04589989222586155,
+            "center_px": 16.504508918561648,
+            "success": 0.265625,
+            "auc": 0.6249941239914532
+          },
+          "eighth": {
+            "depth_mae_m": 0.07662954184568792,
+            "depth_bias_m": -0.07662954184568792,
+            "log_size_mae": 0.08815430477261543,
+            "log_size_bias": 0.027309872210025787,
+            "center_px": 17.340625183591097,
+            "success": 0.25,
+            "auc": 0.44161172222253964
+          }
+        },
+        "physical_augmented": {
+          "clean": {
+            "depth_mae_m": 0.1313349488886231,
+            "depth_bias_m": 0.07661915933963385,
+            "log_size_mae": 0.19636744540184736,
+            "log_size_bias": -0.12393138899157445,
+            "center_px": 19.959776617624467,
+            "success": 0.14322916666666666,
+            "auc": 0.33715246277540967
+          },
+          "half": {
+            "depth_mae_m": 0.039333759609965206,
+            "depth_bias_m": -0.019539247298308894,
+            "log_size_mae": 0.06840214319527149,
+            "log_size_bias": -0.04576610215008259,
+            "center_px": 16.504508918561648,
+            "success": 0.265625,
+            "auc": 0.6210688440266661
+          },
+          "eighth": {
+            "depth_mae_m": 0.07693852766759067,
+            "depth_bias_m": -0.07693852766759067,
+            "log_size_mae": 0.08907102607190609,
+            "log_size_bias": 0.025965752080082893,
+            "center_px": 17.340625183591097,
+            "success": 0.25,
+            "auc": 0.43865539855574565
+          }
+        }
+      }
+    },
+    {
+      "method": "v2e",
+      "seed": 2,
+      "initial_control": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/v2e_seed2_clean_control.pt",
+        "sha256": "96058ce70c202527f1f5ea1db154f19d2964a839e7bdc6cc662242651b2590e7"
+      },
+      "train_loss": {
+        "clean_control": [
+          2.890650282303492,
+          2.8891051709651947,
+          2.8899049113194146,
+          2.8885889103015265,
+          2.8907482077678046,
+          2.888369341691335
+        ],
+        "physical_augmented": [
+          2.9110461374123893,
+          2.908249616622925,
+          2.9086528569459915,
+          2.909006600578626,
+          2.908700793981552,
+          2.9079395085573196
+        ]
+      },
+      "arms": {
+        "clean_control": {
+          "clean": {
+            "depth_mae_m": 0.14022433139239046,
+            "depth_bias_m": 0.08622599166757593,
+            "log_size_mae": 0.20150679862126708,
+            "log_size_bias": -0.11147921920443575,
+            "center_px": 20.80511583451995,
+            "success": 0.09375,
+            "auc": 0.3204285712389576
+          },
+          "half": {
+            "depth_mae_m": 0.03201286728997942,
+            "depth_bias_m": 0.010705554826489405,
+            "log_size_mae": 0.11316079087555408,
+            "log_size_bias": -0.05706990696489811,
+            "center_px": 12.569958119122239,
+            "success": 0.5,
+            "auc": 0.6668330454783176
+          },
+          "eighth": {
+            "depth_mae_m": 0.047063744767882706,
+            "depth_bias_m": -0.029845905521580264,
+            "log_size_mae": 0.1308777965605259,
+            "log_size_bias": -0.011523466557264328,
+            "center_px": 13.357252521034235,
+            "success": 0.421875,
+            "auc": 0.621825393858727
+          }
+        },
+        "physical_augmented": {
+          "clean": {
+            "depth_mae_m": 0.14063061125868978,
+            "depth_bias_m": 0.08669811012473433,
+            "log_size_mae": 0.2026043855585158,
+            "log_size_bias": -0.11299168644472957,
+            "center_px": 20.80511583451995,
+            "success": 0.09114583333333333,
+            "auc": 0.32018516579823597
+          },
+          "half": {
+            "depth_mae_m": 0.03276634450574633,
+            "depth_bias_m": 0.010889969734779315,
+            "log_size_mae": 0.11395708844065666,
+            "log_size_bias": -0.05754510313272476,
+            "center_px": 12.569958119122239,
+            "success": 0.484375,
+            "auc": 0.663193960584441
+          },
+          "eighth": {
+            "depth_mae_m": 0.0476680516610723,
+            "depth_bias_m": -0.029734378711947486,
+            "log_size_mae": 0.13180946558713913,
+            "log_size_bias": -0.012006651610136032,
+            "center_px": 13.357252521034235,
+            "success": 0.421875,
+            "auc": 0.6195592848473955
+          }
+        }
+      }
+    }
+  ],
+  "captured_utc": "2026-11-07T07:59:56.094860+00:00",
+  "latest_hqf_completed": 42,
+  "latest_flow_updates": {
+    "vid2e": 1386,
+    "film_esim": 4158
+  }
+}

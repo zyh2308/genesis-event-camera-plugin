@@ -1,0 +1,120 @@
+"""Produce research tables from the verified three-line server snapshot."""
+import argparse
+import csv
+import json
+from pathlib import Path
+import statistics
+
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--root',type=Path,required=True)
+    args=p.parse_args();root=args.root
+    data=json.loads((root/'snapshot.json').read_text())
+    followup=json.loads((root/'fixed_localizer_followup.json').read_text())
+    refined=json.loads((root/'fixed_localizer_results.json').read_text()) if (root/'fixed_localizer_results.json').exists() else None
+    latest=json.loads((root/'latest_runtime.json').read_text()) if (root/'latest_runtime.json').exists() else None
+    pose=data['pose'];runs=pose['results']
+    assert len(runs)==6 and len(pose['gate']['checks'])==18
+    rows=[]
+    for run in runs:
+        for arm,conditions in run['arms'].items():
+            for condition,metrics in conditions.items():
+                s=metrics['summary']
+                rows.append(dict(method=run['method'],seed=run['seed'],arm=arm,condition=condition,
+                    depth_mae_cm=100*s['depth_mae_m'],depth_bias_cm=100*s['depth_bias_m'],
+                    center_px=s['center_px'],success_pct=100*s['success'],auc_pct=100*s['auc']))
+    with (root/'pose_synthetic_metrics.csv').open('w',newline='') as f:
+        w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
+    matrix=[]
+    for r in data['formal_training']:
+        complete=r['complete'];receipt=r['receipt'];recent_metrics=r.get('latest_metrics') or [{}]
+        matrix.append(dict(task=r['task'],method=r['method'],seed=r['seed'],complete=complete,
+            updates=receipt.get('completed_updates',recent_metrics[0].get('optimizer_update')),
+            selected_checkpoint=receipt.get('selected_checkpoint'),selected_sha256=receipt.get('selected_checkpoint_sha256')))
+    with (root/'formal_training_matrix.csv').open('w',newline='') as f:
+        w=csv.DictWriter(f,fieldnames=list(matrix[0]));w.writeheader();w.writerows(matrix)
+    aggregates={}
+    def values(method,arm,condition,key):
+        return [r[key] for r in rows if (r['method'],r['arm'],r['condition'])==(method,arm,condition)]
+    def mean(method,arm,condition,key):return statistics.mean(values(method,arm,condition,key))
+    lines=['# 三线进度与物理低光照短训结果', '',
+        '位姿配对短训已经完成，最暗合成条件改善明显，但半亮度退步，因此当前候选未通过采用门槛。重建15组正式训练全部完成，本轮已接上HQF210个序列运行的真实评测；光流完成12/15组，剩余训练继续，MVSEC中断的输入补传已接续。', '',
+        f"本报告主快照时间为 `{data['captured_utc']}`，后续结果与运行进度补充至 `{latest['captured_utc'] if latest else data['captured_utc']}`。仍在运行的作业会继续推进，不能把静态快照称为实时进度。", '',
+        '## 位姿：低光照确有改善，但还不是完整解决', '',
+        '这轮为两种生成器×三个seed×两种训练设置，共12次拟合，每次6epoch、288次optimizer更新，全部正常退出。正常亮度验证用96条合成轨迹，每条4个窗口；半亮度和八分之一亮度各用预先指定的4条合成验证轨迹、共64个窗口。它们均未进入训练。表内是三seed均值，完整原值见CSV和快照。', '',
+        '对照保留全部原合成训练窗口，辅助batch使用8条训练轨迹的正常事件；增强组使用相同轨迹、相同标签的两档物理降亮度事件。每个生成器内的两种设置从同一父权重开始，父权重来自此前各自按匹配配方进行的合成训练。优化预算、采样和几何增强一致；这是修复短训，不是从零开始的新正式训练。噪声与遮挡规则、冻结核心不变。旋转分支及该输入下的参考旋转预测固定，用于隔离中心/深度训练的作用。', '',
+        '| 训练事件 | 合成亮度 | 深度MAE 对照→增强/cm | ADD-S成功率 对照→增强/% |',
+        '|---|---|---:|---:|']
+    labels={'clean':'正常','half':'半亮度','eighth':'八分之一亮度'}
+    for method in ('eventgenesis','v2e'):
+        for condition in labels:
+            old,new='clean_control','physical_augmented'
+            lines.append(f"| {method} | {labels[condition]} | {mean(method,old,condition,'depth_mae_cm'):.2f}→{mean(method,new,condition,'depth_mae_cm'):.2f} | {mean(method,old,condition,'success_pct'):.2f}→{mean(method,new,condition,'success_pct'):.2f} |")
+            aggregates[method+'/'+condition]={arm:{key:dict(mean=mean(method,arm,condition,key),
+                sample_sd=statistics.stdev(values(method,arm,condition,key)))
+                for key in ('depth_mae_cm','center_px','success_pct','auc_pct')}
+                for arm in ('clean_control','physical_augmented')}
+    (root/'pose_aggregate_mean_sd.json').write_text(json.dumps(aggregates,indent=2)+'\n')
+    lines.extend(['',
+        'EventGenesis 最暗条件的深度误差约降低34%，位姿成功率增加7.81个百分点。V2E变化较小，但其绝对成功率仍高于EventGenesis，不能宣称已超过V2E。半亮度下EventGenesis三seed均出现深度退步，完整位姿成功率平均下降8.33个百分点。正常条件的六组成功率保持检查均通过。', '',
+        '**采用检查11/18通过，总门槛失败。** 除EventGenesis三组半亮度外，V2E seed1/2的半亮度与最暗深度检查也未通过。没有为了采用该模型而改门槛。最暗亮度不是经过物理照度标定的真实lux，不能将0.125倍辐照度直接等同E-POSE低光照。', '',
+        '以上是4条光照验证轨迹上的合成开发结果，不能外推总体泛化或作为真实E-POSE分数。本轮没有重新评分真实E-POSE。此前木块序列已经查看，因此以后复测也必须标为开发诊断；新的独立最终测试需要另行隔离对象或序列。', '',
+        '## 误差拆解与已经接上的补充短检', '',
+        '在同一输入、同一固定旋转预测下，交换对照/增强模型预测的中心和深度，再计算完整ADD-S成功率。交换不使用GT中心或GT深度作为输入。分解只说明这4条合成轨迹上的分支贡献，不是新的独立训练模型成绩。', '',
+        '| EventGenesis条件 | 中心变化贡献/百分点 | 深度变化贡献/百分点 | 总成功率变化/百分点 |',
+        '|---|---:|---:|---:|'])
+    for c in ('half','eighth'):
+        rr=[r for r in pose['geometry_swaps']['results'] if r['method']=='eventgenesis' and r['condition']==c]
+        center=statistics.mean(r['center_contribution_pp'] for r in rr)
+        depth=statistics.mean(r['depth_contribution_pp'] for r in rr)
+        lines.append(f'| {labels[c]} | {center:.2f} | {depth:.2f} | {center+depth:.2f} |')
+    launch=followup['launch.json'];runroot=launch['argv'][launch['argv'].index('--root')+1]
+    lines.extend(['',
+        '最暗条件的收益主要来自深度修正；半亮度损失更多来自定位漂移，深度变化也贡献了部分损失。CPU复算与训练报告的成功率逐组相同，深度/中心数值也通过既定精度核对。', '',
+        f"已执行固定定位的后续配对短检，管理PID `{launch['pid']}`，目录 `{runroot}`。它从各自已完成的匹配clean_control权重开始，冻结features和center，只更新size/shape MLP；沿用同一两档事件缓存、相同学习率、损失、6epoch/288更新及3seed。旋转仍固定。没有再次补算事件，也不自动开启真实评分。", '',
+        'CPU预检确认只有尺度/形状头的张量更新，特征和定位张量保持逐值一致；实际配对烟雾检查通过，完整训练结束时再次检查冻结张量。实际源码及父权重SHA见`fixed_localizer_sources/`，启动和预检见`fixed_localizer_followup.json`，最终结果见`fixed_localizer_results.json`。后续模型从上一轮对照初始化，跨轮不是纯粹单因素消融，以下只与同轮匹配对照比较。', '',
+    ])
+    if refined:
+        assert refined['status']=='complete' and refined['phase_exit']['exit_code']==0
+        lines.extend(['固定定位短检也全部正常结束，采用检查10/18通过，仍未采用。', '',
+            '| 固定定位训练事件 | 亮度 | 深度MAE 对照→增强/cm | 成功率 对照→增强/% |',
+            '|---|---|---:|---:|'])
+        for method in ('eventgenesis','v2e'):
+            rr=[r for r in refined['results'] if r['method']==method]
+            for condition,label in labels.items():
+                def metric(arm,key):return 100*statistics.mean(r['arms'][arm][condition][key] for r in rr)
+                lines.append(f"| {method} | {label} | {metric('clean_control','depth_mae_m'):.2f}→{metric('physical_augmented','depth_mae_m'):.2f} | {metric('clean_control','success'):.2f}→{metric('physical_augmented','success'):.2f} |")
+        lines.extend(['',
+            '固定定位后，EventGenesis半亮度成功率从44.27%升到48.44%，但正常亮度从26.74%降到22.22%，最暗条件的提升也小于前一轮。这说明只冻结共享特征和定位还不足以稳定兼顾全部条件。两轮候选均不替换正式模型，真实评分继续关闭；两轮GPU5作业均已自动释放。', ''])
+    lines.extend([
+        '## 重建：训练齐全，真实评测已经开始', '',
+        f"正式矩阵15/15组完成，每组12000更新。已用既有桥接重新核对全部selected checkpoint SHA、同seed初始化、训练recipe、14序列数据哈希和下游源树，冻结新的15权重协议。实际已启动GPU0评测，共210个sequence-run；补充核查时已完成 {latest['latest_hqf_completed'] if latest else data['reconstruction']['completed_sequence_runs']}/210 次序列推理，仍未产生完整评分表。", '',
+        '原模型真实载入的合成检查已通过：native180×240输出、两组各3帧；把参考图像从全黑改成全白，预测逐值不变。相同图像对的MSE=0、SSIM=1、PSNR=+inf、LPIPS=0。检查使用实际候选权重，没有读取真实HQF图像。', '',
+        '主评测沿用HQF全部14序列、LPIPS-Alex主指标及SSIM/PSNR/MSE，合成LPIPS-VGG只用于选权重。HQF已见benchmark复测的角色不变。HS-ERGB仍是未完成的独立扩展，没有把HQF结果当作HS-ERGB。没有更改原有训练或覆盖旧分数。', '',
+        '原infer原始provenance中历史e79核心字段保持原样；桥接通过新recipe、正式checkpoint SHA及effective_training_core字段明确本轮训练使用62da版本，不把历史字段或旧权重当新版证据。', '',
+        f"评测根目录 `{data['reconstruction']['evaluation_root']}`，运行结束自动释放本作业GPU。指标在全部210次推理通过身份和时序检查后统一计算，缺失单元格不填0。", '',
+        '## 光流：剩余3组训练，输入续传也已恢复', '',
+        '正式矩阵12/15组完成，每组8910更新。EventGenesis/V2E各三个seed均完成。Vid2E seed2与FILM seed2分别在GPU3/4运行；RIFE seed2尚未启动。已将该未开始任务移到GPU4等待FILM结束，减少在更慢的Vid2E后排队时间。未停止正在运行的任务，训练argv、数据、种子、预算和源码SHA不变，仅改变队列通道及CUDA编译缓存目录。', '',
+        '| 已完成光流方法 | seed0合成EPE | seed1合成EPE | seed2合成EPE | 三seed均值 |',
+        '|---|---:|---:|---:|---:|---:|'])
+    for method in ('eventgenesis','v2e'):
+        vals=[r['best'] for r in data['flow']['selected_synthetic'] if r['method']==method]
+        lines.append('| '+method+' | '+' | '.join(f'{v:.5f}' for v in vals)+f' | {statistics.mean(vals):.5f} |')
+    lines.extend(['',
+        '单位为px/30ms，只是共同合成验证上的选点指标。两者相近，不是MVSEC排名。新bank上有用运动信号的事实不替代真实泛化测试。', '',
+        '本次按服务器实际字节核查，室内6个HDF5中仅2个尺寸完整，其余为缺失或残件。旧补传进程已退出，记录为rsync退出255，完成1/7文件后中断。本轮确认目标无其他写入者，已从正确前缀续传；已完整核对并跳过indoor_flying1_data，正在接续其GT。其余依次补齐，逐文件完成后核完整SHA。原文件或前缀哈希不匹配会拒绝，不覆盖异常源。', '',
+        '本地原始7件输入完整，已有完整SHA登记；当前传输只涉及公共数据输入，不碰训练和结果。注册的服务器数据目录中仍无outdoor_day1，完整四序列MVSEC资格尚未具备，真实评分仍关闭。当前传输入口和PID见`mvsec_transfer_submission.json`。', '',
+        '## 检查入口', '',
+        '- `snapshot.json`及其gzip、`snapshot_verification.json`，保留服务器快照、全部45组正式训练收据与检查点绑定、完整18项采用检查、12个短训权重哈希、光照/中心/深度原值及CPU交叉诊断。',
+        '- `pose_synthetic_metrics.csv`、`pose_aggregate_mean_sd.json`，逐seed原值与三seed均值/样本SD；不把相关窗口当作独立样本。',
+        '- `formal_training_matrix.csv`，只计正式45组，不混入修复性短训。',
+        '- HQF只读源码快照tar及114项源清单，和实际预检/预约启动源码。协议、授权和实际权重SHA在服务器快照中。',
+        '- `fixed_localizer_sources/`及压缩源包，逐项核对六个源文件/父权重清单的SHA。',
+        '',
+        '冻结core为`'+data['frozen_core']+'`。本轮没有修改仿真器、噪声、遮挡规则、原训练模型或配对公平性；后续定位冻结对照作为独立候选留档。',
+        ''])
+    (root/'README.md').write_text('\n'.join(lines))
+
+
+if __name__=='__main__':main()

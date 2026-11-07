@@ -1,0 +1,107 @@
+{
+  "preflight.json": {
+    "status": "passed",
+    "cpu_only": true,
+    "check": "frozen feature/localization tensors exact; only size/shape head updated",
+    "source_files_compiled": 5,
+    "real_data_used": false
+  },
+  "launch.json": {
+    "pid": 4065550,
+    "argv": [
+      "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+      "-u",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/sources/run_pose_light_study.py",
+      "--root",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1",
+      "--campaign",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+      "--gpu-index",
+      "5",
+      "--gpu-uuid",
+      "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+      "--physical-validation",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance"
+    ],
+    "utc": "2026-11-07T07:47:24.952168+00:00",
+    "purpose": "matched frozen-localizer size/depth-only paired short check; reuse existing synthetic events"
+  },
+  "live.json": {
+    "owner": "sim-to-real research chat",
+    "host": "g1",
+    "gpu_index": 5,
+    "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+    "run_id": "20261107-pose-fixed-localizer-light-v1",
+    "pid": 4065550,
+    "process_start_ticks": "92746910",
+    "status": "running",
+    "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1",
+    "started_utc": "2026-11-07T07:47:25.158263+00:00",
+    "purpose": "paired synthetic pose robustness",
+    "current_job": {
+      "phase": "physical_adaptation",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/sources/pose_physical_light_adaptation.py",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--radiance-train",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/radiance_train",
+        "--radiance-validation",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance",
+        "--out",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/physical_adaptation"
+      ],
+      "started_utc": "2026-11-07T07:48:11.152811+00:00",
+      "status": "running",
+      "pid": 4065849
+    },
+    "heartbeat_utc": "2026-11-07T07:49:11.914690+00:00"
+  },
+  "reused_training_data.json": {
+    "source": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/radiance_train",
+    "completion_sha256": "85e8545360b7dda50c427c3d21bd8f237eab8cee3dda2a83d05c8e3f8bd68a36",
+    "read_only_reuse": true,
+    "real_data_used": false
+  },
+  "radiance_train_exit.json": {
+    "phase": "radiance_train",
+    "argv": [
+      "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+      "-u",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/sources/prepare_pose_train_radiance.py",
+      "--campaign",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+      "--out",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/radiance_train"
+    ],
+    "started_utc": "2026-11-07T07:47:25.159625+00:00",
+    "status": "running",
+    "pid": 4065557,
+    "exit_code": 0,
+    "finished_utc": "2026-11-07T07:47:30.162818+00:00"
+  },
+  "smoke_exit.json": {
+    "phase": "smoke",
+    "argv": [
+      "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+      "-u",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/sources/pose_physical_light_adaptation.py",
+      "--campaign",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+      "--radiance-train",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/radiance_train",
+      "--radiance-validation",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance",
+      "--out",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-fixed-localizer-light-v1/smoke",
+      "--smoke"
+    ],
+    "started_utc": "2026-11-07T07:47:30.165220+00:00",
+    "status": "running",
+    "pid": 4065561,
+    "exit_code": 0,
+    "finished_utc": "2026-11-07T07:48:11.144991+00:00"
+  }
+}
