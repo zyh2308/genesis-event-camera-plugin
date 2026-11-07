@@ -8,11 +8,11 @@
 
 - 用户批准首版使用原项目球体，固定半径 40 mm。
 - 原相机安装、640×480、垂直视场 58°，原控制器和动作缩放、延迟、25 Hz 策略频率不变。
-- 每集 reset 时只读一帧实际 RGB。由圆形轮廓和已知尺寸求初始三维位置，不向检测器传对象 GT、深度或分割。
+- 用户最新批准每集 reset 时读取一帧实际 RGB-D，由 RGB 提议与其内部深度估计球心；不向检测器提供目标真值坐标或分割标签。旧单帧 RGB 模式保留作对照。
 - 后续状态只由事件和机器人自身状态更新；运动起始由事件观测判断，不读仿真释放标记。
 - 事件来自真实 100 Hz 稀疏 Genesis scene-linear HDR 端点和冻结稀疏重建路径，响应为该冻结版本的 ideal、阈值 0.2；不是高频 Direct-HDR 替代，也不是 EVK4 标定模式。
 - 任务结束与失败沿用原任务规则：超过 2.5 s 为原成功条件，掉落/非手碰撞等提前失败。与历史 Panda 方块的 strict scorer 是不同任务。
-- 控制器一旦进入已估计的持握状态，本来就只按手部自身状态传播目标。开启 `--stop-events-after-grasp` 时停止此后不参与控制的传感器采样，物理和原评分继续运行。此切换不读取真实接触标记。输出 `capture_schedule.json` 记录真实采样终点。
+- 本适配器一旦进入已估计的持握状态，就按手部自身状态传播目标；动作仍由原策略产生。开启 `--stop-events-after-grasp` 时停止此后不参与控制的传感器采样，物理和原评分继续运行。此切换不读取真实接触标记。输出 `capture_schedule.json` 记录真实采样终点。
 
 采用“图像建立参考、事件跟踪”的输入协议，参考 [EKLT](https://rpg.ifi.uzh.ch/docs/IJCV19_Gehrig.pdf) 与 [CVPR 2023 Data-Driven Feature Tracking](https://openaccess.thecvf.com/content/CVPR2023/papers/Messikommer_Data-Driven_Feature_Tracking_for_Event_Cameras_CVPR_2023_paper.pdf)。这里没有声称实现了这两篇论文的算法。
 
@@ -40,7 +40,7 @@ CUDA 的额外适配仅分组执行相同时间采样，保留全部时间点、
 - `rgb_sphere_initialization.py`：只接受图像与相机参数的球体初始化。
 - `event_sphere_tracker.py` / `event_sphere_tracker_kalman.py`：静止与运动状态估计。
 
-当前状态：用户已批准首帧 RGB-D 初始化，随后只用事件及机器人自身状态。新候选在 g3 做三个条件与初始化消融，结果尚待收齐。旧单帧 RGB 方案的成功和失败见既有 results 目录；没有把首帧测距改善当作完整接取改善。
+当前状态：首帧 RGB-D＋事件跟踪已在 g3 的同一正常来球配置上两次实际接取成功；高速失败，逆光高速接触后未留住，关闭事件更新的对照也失败。完整逐集证据和口径见 [本轮报告](results/single_frame_rgbd_v1_20261107/README.md)。旧单帧 RGB 方案另行保留，不混入本轮统计。
 
 部署时必须实际物化所选源文件，不能用指向旧版本的入口脚本符号链接。Python 会把入口的实际目录加入模块搜索路径，可能覆盖 PYTHONPATH 的新候选。每集 reset 后生成 `loaded_module_receipt.json` 并检查实际加载位置。世界重力是共同场景配置，不是每集目标运动标签；三条件共享其使用规则。
 
