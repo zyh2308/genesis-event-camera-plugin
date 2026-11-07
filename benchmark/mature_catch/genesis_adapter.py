@@ -160,6 +160,11 @@ class GenesisEnv(NativeEnv):
 
     def update_sensor_pose(self):
         i=self.sensor_camera_id;T=np.eye(4);T[:3,:3]=self.Dcmm.data.cam_xmat[i].reshape(3,3);T[:3,3]=self.Dcmm.data.cam_xpos[i]
+        pitch=float(os.environ.get('CATCHIT_SENSOR_PITCH_DEG','0'))
+        assert -15.<=pitch<=15.
+        if pitch:
+            from scipy.spatial.transform import Rotation
+            T[:3,:3]=T[:3,:3]@Rotation.from_euler('x',pitch,degrees=True).as_matrix()
         self.sensor_camera.set_pose(transform=T)
 
     def capture_sensor_probe(self,t):

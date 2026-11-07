@@ -118,7 +118,8 @@ def main():
                     stop_event_capture_after_estimated_grasp=args.stop_events_after_grasp,
                     revocable_grasp=os.environ.get('CATCHIT_REVOCABLE_GRASP')=='1',
                     reject_partial_contours=os.environ.get('CATCHIT_REJECT_PARTIAL_CONTOURS')=='1',
-                    event_flight_fit=os.environ.get('CATCHIT_EVENT_FLIGHT_FIT')=='1')
+                    event_flight_fit=os.environ.get('CATCHIT_EVENT_FLIGHT_FIT')=='1',
+                    sensor_pitch_offset_degrees=float(os.environ.get('CATCHIT_SENSOR_PITCH_DEG','0')))
     (args.output/'protocol.json').write_text(json.dumps(manifest,indent=2))
     try:
         for episode,seed in enumerate(seeds):
