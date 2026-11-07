@@ -52,7 +52,12 @@ def main():
                         assert row['policy_object_input'] is not None
                     else:assert row['policy_object_input'] is None and all(abs(x)<1e-10 for x in row['action'])
                 release=result.get('initial',{}).get('release_time_s')
-                stop=(result['first_touch']-.04) if result.get('first_touch') is not None else result['sim_time']
+                stop=result['first_touch'] if result.get('first_touch') is not None else result['sim_time']
+                # The state at the start of the first contact-containing step was
+                # issued before that contact; retain this critical controller input.
+                camera_stop=next((x['t_before'] for x in trace if x['hand_contact']),result['sim_time'])
+                record['precontact_includes_first_contact_action_input']=True
+                record['precontact_last_certainly_collision_free_endpoint_s']=camera_stop
                 flight=[x for x in trace if release is not None and release<=x['t_before']<stop-1e-9]
                 available=[x for x in flight if x['event_state'] is not None]
                 eligible=[x for x in flight if x['event_state'] is not None and not x['event_state']['source'].startswith('event_acquisition_then_')]
@@ -85,7 +90,7 @@ def main():
                         K=h['intrinsics'][:];fov=[];fov0=[];visible=[];uvs=[]
                         angle=np.deg2rad(7.);R=np.array([[1.,0.,0.],[0.,np.cos(angle),-np.sin(angle)],[0.,np.sin(angle),np.cos(angle)]])
                         for k,t in enumerate(times):
-                            if not(release<=t<stop-1e-9):continue
+                            if not(release<=t<=camera_stop+1e-9):continue
                             pc=(np.linalg.inv(h['camera_to_world_cv'][k])@np.r_[poses[k,j,:3,3],1])[:3];q=K@pc;uv=q[:2]/q[2]
                             inside=bool(pc[2]>0 and 0<=uv[0]<640 and 0<=uv[1]<480);fov.append(inside)
                             pc0=R@pc;q0=K@pc0;uv0=q0[:2]/q0[2];inside0=bool(pc0[2]>0 and 0<=uv0[0]<640 and 0<=uv0[1]<480);fov0.append(inside0)
