@@ -1,0 +1,68 @@
+--- parent/train_e2vid_stage9.py
++++ repair/train_e2vid_repaired.py
+@@ -4 +4 @@
+-The pinned E2VID model/loader/losses remain unchanged. Spatial transforms are
++Isolated repair: use the pinned native sigmoid image output, with unchanged parameters/loader/losses. Spatial transforms are
+@@ -25,0 +26,4 @@
++torch.backends.cuda.matmul.allow_tf32 = False
++torch.backends.cudnn.allow_tf32 = False
++torch.backends.cudnn.deterministic = True
++torch.backends.cudnn.benchmark = False
+@@ -28 +32 @@
+-HERE = Path(__file__).resolve().parent
++HERE = Path(os.environ['STAGE9_CAMPAIGN']) / 'sources/benchmark/sim2real/scripts'
+@@ -121 +125 @@
+-    from stage9_launch_contract import validate_launch
++    from recon_repair_launch_contract import validate_launch
+@@ -306 +310 @@
+-    from stage9_launch_contract import verify_initialization
++    from recon_repair_launch_contract import verify_initialization
+@@ -329,0 +334,8 @@
++    # The native sigmoid is part of the registered model config. Keep the
++    # synthetic selection metric in exactly the same image range as inference.
++    original_perceptual_call = perceptual_loss.__call__
++    def registered_perceptual_call(self, pred, target, normalize=True):
++        if not model.training:
++            pred = pred.clamp(0.0, 1.0)
++        return original_perceptual_call(self, pred, target, normalize=normalize)
++    perceptual_loss.__call__ = registered_perceptual_call
+@@ -430,0 +443,4 @@
++            "model_args": json.loads(json.dumps(cfg["model_args"])),
++            "reconstruction_repair": config["reconstruction_repair"],
++            "real_data_used": False,
++
+@@ -556,0 +573 @@
++                validation_ranges = []
+@@ -560 +577,19 @@
+-                        values = scalar_losses(shim.forward_sequence(sequence))
++                        range_trace = []
++                        def validation_range_hook(_module, _inputs, output):
++                            image = output["image"].detach()
++                            range_trace.append({"minimum": float(image.min()), "maximum": float(image.max()),
++                                "std": float(image.std(unbiased=False))})
++                        range_handle = model.register_forward_hook(validation_range_hook)
++                        try:
++                            values = scalar_losses(shim.forward_sequence(sequence))
++                        finally:
++                            range_handle.remove()
++                        assert len(range_trace) == 200
++                        target_std = float(np.mean([float(item["frame"].float().std(unbiased=False)) for item in sequence[5:]]))
++                        trace = range_trace[5:]
++                        range_row = {"rollout": sequence[-1]["rollout_id"][0],
++                            "contrast_ratio": float(np.mean([r["std"] for r in trace])) / max(target_std, 1e-12),
++                            "degenerate_frame_fraction": float(np.mean([r["std"] < .001 for r in trace])),
++                            "minimum": min(r["minimum"] for r in trace), "maximum": max(r["maximum"] for r in trace)}
++                        atomic_json(run_root / ("latest_validation_range_"+str(val_index)+".json"), range_row)
++                        validation_ranges.append(range_row)
+@@ -569,0 +605,11 @@
++                range_guard = {"epoch": next_epoch, "optimizer_update": update, "real_data_used": False,
++                    "rollouts": validation_ranges,
++                    "contrast_ratio_mean": float(np.mean([r["contrast_ratio"] for r in validation_ranges])),
++                    "degenerate_fraction_mean": float(np.mean([r["degenerate_frame_fraction"] for r in validation_ranges]))}
++                range_guard["passed"] = (range_guard["contrast_ratio_mean"] > .1 and
++                    range_guard["degenerate_fraction_mean"] < .05 and
++                    all(r["minimum"] >= 0 and r["maximum"] <= 1 for r in validation_ranges))
++                atomic_json(run_root / "synthetic_output_stability_guard.json", range_guard)
++                if not range_guard["passed"]:
++                    save_checkpoint(next_epoch, 0, "failed_synthetic_output_stability_guard")
++                    raise RuntimeError("Synthetic output stability guard failed; preserve checkpoint and stop this run")
