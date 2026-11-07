@@ -1,0 +1,44 @@
+{
+  "status": "development candidate, validated on known episode 1702; not held-out success-rate estimate",
+  "source": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a/source_versions/397d4549d685",
+  "code_commit": "6a7f34f",
+  "checkpoint_sha256": "81585772adf9b368e299875a3dce29247e23c641d8294295bec07dfb6450aaf6",
+  "frozen_event_profile_sha256": "dbcf85fe3c86ae21972d4f5b79638018ca44f46a39b8cb1e14e8b6cff3a31a8a",
+  "sensor_resolution": [
+    640,
+    480
+  ],
+  "vertical_fov_degrees": 58,
+  "env": {
+    "CATCHIT_SENSOR_PITCH_DEG": "7",
+    "CATCHIT_EVENT_FLIGHT_FIT": "0",
+    "CATCHIT_REJECT_PARTIAL_CONTOURS": "0",
+    "CATCHIT_REVOCABLE_GRASP": "0"
+  },
+  "runner_flags": [
+    "--backend",
+    "genesis",
+    "--event-control",
+    "--rgbd-initialize",
+    "--sphere-radius",
+    "0.04",
+    "--background-wall",
+    "--stop-events-after-grasp"
+  ],
+  "input_protocol": "one actual RGB-D frame at reset; event target state and robot proprioception thereafter; assumed grasp may propagate hand pose; missing state gives zero incremental action",
+  "conditions": [
+    {
+      "horizontal_speed_m_s": 1.7,
+      "lighting": "normal"
+    },
+    {
+      "horizontal_speed_m_s": 2.2,
+      "lighting": "normal"
+    },
+    {
+      "horizontal_speed_m_s": 2.2,
+      "lighting": "backlit"
+    }
+  ],
+  "success": "unaltered original evaluator plus independent check of actual hand contact; no GT target state passed to actor"
+}

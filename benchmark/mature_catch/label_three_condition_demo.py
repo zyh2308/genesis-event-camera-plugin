@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--receipt', type=Path, default=root/'remote_queue_control/058_three_condition_event_demos.response.json')
 parser.add_argument('--output', type=Path, default=Path('C:/Users/zhaoyuhan/Desktop/成熟接取任务_20261107/05_三条件事件接取_成功与失败'))
 parser.add_argument('--title', default='单帧初始化＋事件跟踪｜三个条件的开发回合')
+parser.add_argument('--label',action='append')
 args = parser.parse_args()
 reply = json.loads(args.receipt.read_text(encoding='utf-8'))
 assert reply['ok'], reply
@@ -25,7 +26,8 @@ source.write_bytes(raw)
 dest = args.output
 font = ImageFont.truetype('C:/Windows/Fonts/msyh.ttc', 20)
 small = ImageFont.truetype('C:/Windows/Fonts/msyh.ttc', 16)
-names = ['正常照明 · 1.7 m/s', '高速 · 2.2 m/s', '高速逆光 · 2.2 m/s']
+names = args.label or ['正常照明 · 1.7 m/s', '高速 · 2.2 m/s', '高速逆光 · 2.2 m/s']
+assert len(names)==len(data['panels'])==3
 reader = imageio.get_reader(source)
 frames = []
 for index, frame in enumerate(reader):

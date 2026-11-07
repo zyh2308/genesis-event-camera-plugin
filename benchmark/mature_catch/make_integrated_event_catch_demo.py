@@ -14,6 +14,8 @@ parser.add_argument('--events', type=Path, default=root/'evidence/demo/event_con
 parser.add_argument('--records', type=Path, default=root/'evidence/hybrid_v8_runtime_v9_trials.json')
 parser.add_argument('--case', default='hybrid_normal_v9')
 parser.add_argument('--initialization', default='RGB')
+parser.add_argument('--camera-label',default='')
+parser.add_argument('--method-label',default='')
 parser.add_argument('--output', type=Path, default=Path('C:/Users/zhaoyuhan/Desktop/成熟接取任务_20261107/07_完整事件接取_全景近景事件三联'))
 args = parser.parse_args()
 scene_path = args.scene
@@ -44,7 +46,7 @@ for i, scene_frame in enumerate(scene):
     draw = ImageDraw.Draw(canvas)
     draw.text((15, 8), f'Genesis 接取任务：单帧 {args.initialization} 初始化＋事件跟踪', font=font, fill='#19374d')
     draw.text((1220, 12), f'{trace[i]["t"]:.2f} s  原速 1×', font=small, fill='#19374d')
-    for x, label in [(15, '底盘与机械臂'), (495, '手部接取近景'), (975, '事件输入与目标位置估计')]:
+    for x, label in [(15, '底盘与机械臂'+('｜'+args.camera_label if args.camera_label else '')), (495, '手部接取近景'), (975, '事件输入与目标位置估计'+('｜'+args.method_label if args.method_label else ''))]:
         draw.text((x, 46), label, font=small, fill='#19374d')
     draw.line((480, 78, 480, 438), fill='white', width=2)
     draw.line((960, 78, 960, 438), fill='white', width=2)
@@ -75,6 +77,7 @@ indexed[0].save(dest.with_suffix('.gif'), save_all=True, append_images=indexed[1
                 loop=0, duration=[40]*len(frames)+[160]*len(slow), disposal=2)
 dest.with_suffix('.json').write_text(json.dumps(dict(
     episode=args.case+'/episode_000', initialization=args.initialization,
+    camera_label=args.camera_label,method_label=args.method_label,
     source_scene_sha256=hashlib.sha256(scene_path.read_bytes()).hexdigest(),
     source_event_panel_sha256=hashlib.sha256(event_path.read_bytes()).hexdigest(),
     scene_times='trace[i].t', event_control_times='trace[i+1].t_before; final hold panel repeats last input',
