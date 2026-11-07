@@ -1,0 +1,2544 @@
+{
+  "captured_utc": "2026-11-07T16:58:58.088583+00:00",
+  "completion": {
+    "status": "complete",
+    "exit_code": 0,
+    "real_data_used_in_training": false,
+    "real_scores_computed": true,
+    "finished_utc": "2026-11-07T16:58:35.092794+00:00"
+  },
+  "exit": {
+    "status": "released_complete",
+    "owner": "sim-to-real research chat",
+    "run_id": "20261108-hqf-repair-pair4800-v2",
+    "host": "g1",
+    "gpu_index": 0,
+    "gpu_uuid": "GPU-fd9f1bd4-83c4-cd74-0c88-241db6ec7e23",
+    "pid": 162583,
+    "process_start_ticks": "95861063",
+    "started_utc": "2026-11-07T16:26:26.677698+00:00",
+    "real_data_used_in_training": false,
+    "real_scoring_enabled": true,
+    "output": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2",
+    "child_pid": 162593,
+    "argv": [
+      "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+      "-u",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/sources/hqf_repair_pair_bridge.py",
+      "run",
+      "--protocol",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/protocol/hqf_repair_pair_protocol.json",
+      "--authorization",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/authorization.json",
+      "--out",
+      "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results",
+      "--device",
+      "cuda:0",
+      "--enable-real-scoring"
+    ],
+    "heartbeat_utc": "2026-11-07T16:58:30.088931+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-11-07T16:58:35.093864+00:00"
+  },
+  "score": {
+    "aggregation": "frame arithmetic mean within sequence; equal arithmetic mean over all 14 sequence means",
+    "checkpoint_bindings": {
+      "eventgenesis_seed0": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/eventgenesis/synthetic_best.pt",
+        "sha256": "6ecce87e995bfd214b564584470927cc8fde0ac7e5a12aae8578bddea94c8192"
+      },
+      "v2e_seed0": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/v2e/synthetic_best.pt",
+        "sha256": "904a887ce46cddb1fe590aa48fe714cb1d5c4fbc3d50df24b168de7559783102"
+      }
+    },
+    "checkpoint_selection_allowed": false,
+    "created_utc": "2026-11-07T16:58:32Z",
+    "data_manifest": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/20261021-hqf14-manifest-validation-v3/hqf_14_file_manifest_v3.json",
+      "sequence_count": 14,
+      "sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add"
+    },
+    "metric_contract": {
+      "LPIPS_AlexNet_input": "repeat the grayscale [0,1] prediction and reference into 3 channels, then map linearly to [-1,1] for the pinned PerceptualSimilarity AlexNet network",
+      "MSE_input": "native grayscale float32 [0,1]",
+      "PSNR_input": "native grayscale float32 [0,1], data_range=1; exact match is +infinity",
+      "SSIM_input": "native grayscale float32 [0,1], data_range=1",
+      "aggregation": "arithmetic mean over evaluated frames within each sequence; then equal arithmetic mean over all 14 sequences",
+      "brightness_or_histogram_fit_to_real_GT": false,
+      "checkpoint_selection_uses_real_data": false,
+      "evaluated_endpoint_set": "all retained, strictly increasing HQF event endpoints after the first image boundary (indices 1..N-1) in each of the 14 sequences; the first image has no preceding event window and is excluded from model input and metrics; no output-selected frame subset",
+      "metric_values_per_frame": true,
+      "model_output_and_reference_range": "float32 [0,1] on the same native grayscale pixel grid",
+      "prediction_mapping": "clip the raw E2VID grayscale output to [0,1] once before metrics and preview export; no per-frame min-max, brightness fit, or histogram fit",
+      "primary_metric": "LPIPS-AlexNet",
+      "raw_model_output_recording": "retain finite raw min/max for audit; metrics use a deterministic clamp to [0,1]",
+      "secondary_metrics": [
+        "SSIM",
+        "PSNR",
+        "MSE"
+      ],
+      "sequence_weights": "equal; never proportional to frame count"
+    },
+    "metric_provenance": {
+      "backbone": {
+        "path": "/home/zhaoyuhan/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth",
+        "sha256": "7be5be791159472b1fbf3c69796f7cb30dca7ad8466c2df70058c37116cdee02",
+        "size_bytes": 244408911
+      },
+      "metric_loop": "unchanged score_pair, isolated module run identities supplied by Stage9 bridge",
+      "metric_source": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal/PerceptualSimilarity/models/__init__.py",
+        "sha256": "bd6a7dd5aab85067d98061b9d0b18fb8ca3daadb0b8bb718fff89dc8d3b2e092",
+        "size_bytes": 5716
+      },
+      "metric_weights": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal/PerceptualSimilarity/models/weights/v0.1/alex.pth",
+        "sha256": "df73285e35b22355a2df87cdb6b70b343713b667eddbda73e1977e0c860835c0",
+        "size_bytes": 6009
+      },
+      "model": "unchanged pinned PerceptualSimilarity v0.1 AlexNet"
+    },
+    "per_arm": {
+      "eventgenesis_seed0": {
+        "equal_sequence_mean": {
+          "lpips_alex_mean": 0.5924658297941667,
+          "mse_mean": 0.07439650109586306,
+          "psnr": {
+            "mean_db": 11.682559113934175,
+            "mean_is_positive_infinity": false,
+            "sequence_positive_infinity_count": 0
+          },
+          "ssim_mean": 0.3484757886224717
+        },
+        "per_sequence": {
+          "bike_bay_hdr": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5962468498773535,
+              "mse_mean": 0.06563327893013768,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.984950598232295,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.34591965608265096
+            },
+            "num_frames_including_anchor": 2431,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/bike_bay_hdr/reconstruction_000001.npy",
+                "prediction_sha256": "94d3b29c2b5d015a9b39a9dd196007ba91b4dabb955f68f6d8a69fa3666700a7",
+                "sample_index": 1,
+                "target_timestamp_s": 0.041460275650024414,
+                "target_uint8_sha256": "d4662c5bdd72d90ff9418726fbdccc79c380e5356904b90c8dae38eea2d20c78"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/bike_bay_hdr/reconstruction_000608.npy",
+                "prediction_sha256": "2e5558852255cd6938a3ec85a244185823b1198dcdfdb739266c9ce82720547f",
+                "sample_index": 608,
+                "target_timestamp_s": 24.312005043029785,
+                "target_uint8_sha256": "200c8298545991365aad77b3b1fae212e8d85b376003786c1c2140a219be8bcb"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/bike_bay_hdr/reconstruction_001215.npy",
+                "prediction_sha256": "881d79aa3d559509346a512b67dd924c9b5593b64edb4e0a9d66b03e704aae24",
+                "sample_index": 1215,
+                "target_timestamp_s": 49.04341006278992,
+                "target_uint8_sha256": "26e9b10a0c723818233e49f3642554e7c499145430fa1b1ed3b0a151f3ec6f23"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/bike_bay_hdr/reconstruction_001822.npy",
+                "prediction_sha256": "d3991cc4c23bbe2c68c226b4583ebc063c279d2a9b09960119f838c39bed7412",
+                "sample_index": 1822,
+                "target_timestamp_s": 74.1334912776947,
+                "target_uint8_sha256": "6c866d0ddcbc69d42a1cb0b42c779c425f6f79d87f64bc17d9a672283c6fe6fc"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/bike_bay_hdr/reconstruction_002430.npy",
+                "prediction_sha256": "6cfd80edb73e4436d75861dbecbce900b0839fdcb9cdce0616b5e9a717146908",
+                "sample_index": 2430,
+                "target_timestamp_s": 98.9578800201416,
+                "target_uint8_sha256": "0a2323c7b50eda2385887e63e7ec44145a402907dea5b5c522a08487f04575e3"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              608,
+              1215,
+              1822,
+              2430
+            ],
+            "scored_frame_count": 2430
+          },
+          "boxes": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5533351484057191,
+              "mse_mean": 0.08589338432390364,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.7536541359643,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.3328236874852571
+            },
+            "num_frames_including_anchor": 540,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/boxes/reconstruction_000001.npy",
+                "prediction_sha256": "62fe85d6ea49ad4921fcd1844a50c87d644a95b8b56fcb6ebb16981e4824c166",
+                "sample_index": 1,
+                "target_timestamp_s": 0.0663139820098877,
+                "target_uint8_sha256": "de2ba22df9f7eaacdd088bc6c52a926bc286606e21103ec2c661f78b3dfe6060"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/boxes/reconstruction_000135.npy",
+                "prediction_sha256": "4d3ed074fb8f7e0a291bc4cb461e78a9d10e7a4a8a308ec3e9001e5bbc3ae3a4",
+                "sample_index": 135,
+                "target_timestamp_s": 5.921303033828735,
+                "target_uint8_sha256": "74220cfc3a9c0e22e36c32c5e153e92cddf5ac6076b7a5f3a066b87ebc2829e3"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/boxes/reconstruction_000270.npy",
+                "prediction_sha256": "54458d1b6cc7685e7d8b25cefe7e2d05bd63d1f1c3eee1581c6e5db503c829ae",
+                "sample_index": 270,
+                "target_timestamp_s": 12.08835506439209,
+                "target_uint8_sha256": "b32135c4a405ffacc98c66ae7b9e22a65dc4852747262a00ec77b05e996af0ec"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/boxes/reconstruction_000404.npy",
+                "prediction_sha256": "ae4405b070d201d866a8d4e8b0eb23fa2bd8247c90b563b2356d245bbc5b0811",
+                "sample_index": 404,
+                "target_timestamp_s": 18.026766061782837,
+                "target_uint8_sha256": "b3935356119432f45a24eae5cc646880b397c99d96d7f78a55d2672d6c19420a"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/boxes/reconstruction_000539.npy",
+                "prediction_sha256": "25009bc955be210a0902c745b07c27181f9f63a2d1c908e74b76af04f9489bc1",
+                "sample_index": 539,
+                "target_timestamp_s": 24.11524987220764,
+                "target_uint8_sha256": "aeeb81e22123fcdd60284ac79ae879430d967829a3f4dbc26feb0ec7e624b1be"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              135,
+              270,
+              404,
+              539
+            ],
+            "scored_frame_count": 539
+          },
+          "desk": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5009813788553212,
+              "mse_mean": 0.09955669442738078,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.073287045288744,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.3983089395002584
+            },
+            "num_frames_including_anchor": 1491,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk/reconstruction_000001.npy",
+                "prediction_sha256": "290d31d818404762d63f88495d1e006c3e4f54177e11e17c34fbca34bbda9dd4",
+                "sample_index": 1,
+                "target_timestamp_s": 0.07299613952636719,
+                "target_uint8_sha256": "d24599f83e423c1d846b18629b9c420b2999b06dfbbb9746498df8965d36a0cd"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk/reconstruction_000373.npy",
+                "prediction_sha256": "b5596e45255a70a0167c9ad01e42c65becc5cc5aa5cbfc58250bf3ccead8f46d",
+                "sample_index": 373,
+                "target_timestamp_s": 16.466737985610962,
+                "target_uint8_sha256": "cd9dfbb765e6a5d104680adeb1ff6263d06dc606f4080eb7d690c442c5572ca6"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk/reconstruction_000745.npy",
+                "prediction_sha256": "b14074715b3a1a34d528d254551e3ac0a00a716a779168cc357991ce5ebdc265",
+                "sample_index": 745,
+                "target_timestamp_s": 32.86048126220703,
+                "target_uint8_sha256": "36f0f87c878a39c41c1d74104b9bdc7fd504cdadef2b2838e8a60febe401393c"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk/reconstruction_001117.npy",
+                "prediction_sha256": "f16620e63b5d3af08a13c52765568d201ff0132ec16152f2c28968d582e43ec9",
+                "sample_index": 1117,
+                "target_timestamp_s": 49.254223346710205,
+                "target_uint8_sha256": "64142867261ae797d9fc5fd274c570f28df4095df7c3e4ad52ad0a8b8c26bfcf"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk/reconstruction_001490.npy",
+                "prediction_sha256": "ddd0afd082373c14e4d08e5e9e19bdf3a6ac1aff6c5b24065a04933a620d3eac",
+                "sample_index": 1490,
+                "target_timestamp_s": 65.69203519821167,
+                "target_uint8_sha256": "bd90cd950b270ff89e79dee989d9438311800bdd5be16c521e5fd72d257c13f4"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              373,
+              745,
+              1117,
+              1490
+            ],
+            "scored_frame_count": 1490
+          },
+          "desk_fast": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5080385218847178,
+              "mse_mean": 0.07294091507330812,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.433263735956327,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.42765234300993743
+            },
+            "num_frames_including_anchor": 724,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_fast/reconstruction_000001.npy",
+                "prediction_sha256": "4788a88916d47ca0c14f79f8211d2b27e45199f66f2d1da59082557569dbaf4e",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04706621170043945,
+                "target_uint8_sha256": "faf276fd7a6115086d56b2344365d1f24588c7a95d8fc2009bdd20d8636a8790"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_fast/reconstruction_000181.npy",
+                "prediction_sha256": "f18398d66620a6520a19ac291c680d9d679b47d429574ff8fb8e74b25be56b18",
+                "sample_index": 181,
+                "target_timestamp_s": 7.979522228240967,
+                "target_uint8_sha256": "96cde27485bfe356baedf8c6213dec06886606ac1a41d49d862937623d27a7cb"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_fast/reconstruction_000362.npy",
+                "prediction_sha256": "a62099afe2dacddb3e1250da92d42ca2708e151b9bff0930da7183b6aa1a1171",
+                "sample_index": 362,
+                "target_timestamp_s": 15.956047296524048,
+                "target_uint8_sha256": "61e9cfdecc9990e6a2b578c7991eef277180bb995354a4f0ef553171cf870ae1"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_fast/reconstruction_000542.npy",
+                "prediction_sha256": "1bf90c0362e1b698aef0c323bd9e7ce30e9adc38b0e053050aa7214d6bc964cf",
+                "sample_index": 542,
+                "target_timestamp_s": 23.888503074645996,
+                "target_uint8_sha256": "6405f7d33bd6715e8505ee8afb6939e5478530c41996d3601ddb467c33774157"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_fast/reconstruction_000723.npy",
+                "prediction_sha256": "89719f0e6f2174f780960061a9c14f3d6c6f49698eaaa83d6ff7e28fc8ff9244",
+                "sample_index": 723,
+                "target_timestamp_s": 31.865028142929077,
+                "target_uint8_sha256": "0e3f86efd0e6140b9332a4973f0159e3adb8a5532a9386ac57c373c2d3552cc5"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              181,
+              362,
+              542,
+              723
+            ],
+            "scored_frame_count": 723
+          },
+          "desk_hand_only": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6499223282536724,
+              "mse_mean": 0.08584903650487255,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.713775037664462,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.4692164108220611
+            },
+            "num_frames_including_anchor": 467,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_hand_only/reconstruction_000001.npy",
+                "prediction_sha256": "d3337d419c75246ad50505c7c57c34f6770e81e20414ff1468d96a59d0ca3587",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04406929016113281,
+                "target_uint8_sha256": "09305486cbf935006f41767a9906bc6d31e17de6f700a2b5eba337861aad91ac"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_hand_only/reconstruction_000117.npy",
+                "prediction_sha256": "984a4e5523a850d4ae83e89bf2b16ad9622f2d63d5145497250fb06cf72e2a37",
+                "sample_index": 117,
+                "target_timestamp_s": 5.156097173690796,
+                "target_uint8_sha256": "f85d659583b52809e5a98dd0468f585eac07a21b36eae546c9c169a57d1e04d4"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_hand_only/reconstruction_000233.npy",
+                "prediction_sha256": "d3f0eeec01381eb7c2acff93bffadc00586a78ebc253c0958f2d1aa9d74e92c4",
+                "sample_index": 233,
+                "target_timestamp_s": 10.268124341964722,
+                "target_uint8_sha256": "90a56984919026fa763d21c502b8b9f086962b5167ddd9ba6c75993f880f20ab"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_hand_only/reconstruction_000349.npy",
+                "prediction_sha256": "3adc62bac5a3fbbf64f41e528cb9b140e172ece3b163051b1abdb32bd516d64c",
+                "sample_index": 349,
+                "target_timestamp_s": 15.38015103340149,
+                "target_uint8_sha256": "2ada5538b138dd934ae64e9e6e7a4bcf096539cbf0d8deb7a1c2d48e75ab93c7"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_hand_only/reconstruction_000466.npy",
+                "prediction_sha256": "21950211c1833ecdce9bebbc54e33e1b482b7cb6aaab8e4c989fc2b1da29428d",
+                "sample_index": 466,
+                "target_timestamp_s": 20.53624701499939,
+                "target_uint8_sha256": "125ca4f552ab90e455e352ee371bea439dd1c6d618527770c6c267c3a2192082"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              117,
+              233,
+              349,
+              466
+            ],
+            "scored_frame_count": 466
+          },
+          "desk_slow": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5503768355631778,
+              "mse_mean": 0.08997690221502719,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.468127164161915,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.40371192265513933
+            },
+            "num_frames_including_anchor": 1434,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_slow/reconstruction_000001.npy",
+                "prediction_sha256": "5a68319bb65aa6703379db20d1502c769974a8572bf0cf046b6fd29768bda0eb",
+                "sample_index": 1,
+                "target_timestamp_s": 0.08316612243652344,
+                "target_uint8_sha256": "f9171cd144816c353a29d1c49ad56ac683a3fe6c4c59d521bdd1900c1c522f52"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_slow/reconstruction_000359.npy",
+                "prediction_sha256": "3215df601339abb18563a02cc9e68dd88056cfa2de9742595b5460279503381a",
+                "sample_index": 359,
+                "target_timestamp_s": 15.85994005203247,
+                "target_uint8_sha256": "9b5214ecbea5695f5f43d58adee0f8c95d2687e28f9d90f62d6a60a07b4dc30b"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_slow/reconstruction_000717.npy",
+                "prediction_sha256": "87cb11a02852caa1d7dd66a1eb5cc92480177093681716b76ffda02ac05a7f20",
+                "sample_index": 717,
+                "target_timestamp_s": 31.6367130279541,
+                "target_uint8_sha256": "b442d5211ec4d973ef0611b2074d9b1615f8cf65b33fc979da2ca21584a9ca5f"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_slow/reconstruction_001075.npy",
+                "prediction_sha256": "b16de9a9b2762826422cc79dcbb7ef71be9719808e2932bacb6cefc720f014e9",
+                "sample_index": 1075,
+                "target_timestamp_s": 47.41348695755005,
+                "target_uint8_sha256": "d98fc99d9fbe9c6faa1e2756d65ea5635fb92ec0a12f20993fff639fa4847da9"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/desk_slow/reconstruction_001433.npy",
+                "prediction_sha256": "ed6ad99c09412ef5734edee75cd900abdf6c83f052c5e2950f594dcccdd9263d",
+                "sample_index": 1433,
+                "target_timestamp_s": 63.19026017189026,
+                "target_uint8_sha256": "4420c38cd31c5e75ce8290b91f64eedb5bd20c0785fddcfa37104f342341e1ed"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              359,
+              717,
+              1075,
+              1433
+            ],
+            "scored_frame_count": 1433
+          },
+          "engineering_posters": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6388730402991706,
+              "mse_mean": 0.06823533838508879,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.986751571037088,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.2979605439835922
+            },
+            "num_frames_including_anchor": 1266,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/engineering_posters/reconstruction_000001.npy",
+                "prediction_sha256": "c94ef8def4ee54b972d831f125b105ef00d2fcb3c45ddd19575231870c410aa5",
+                "sample_index": 1,
+                "target_timestamp_s": 0.058222055435180664,
+                "target_uint8_sha256": "1154494039ebd47b8344f4b091e470987e076186fba99ec956bab56e44303718"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/engineering_posters/reconstruction_000317.npy",
+                "prediction_sha256": "a4eaad4480a499c708f422440c5cbed440d248413db0776509d6e58889b8d882",
+                "sample_index": 317,
+                "target_timestamp_s": 14.446728229522705,
+                "target_uint8_sha256": "e289490e3c380175d63fd9e13a893e756344b9868ea008780244fc487f784820"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/engineering_posters/reconstruction_000633.npy",
+                "prediction_sha256": "0719476b8b5716ef940c8563e06a8952481a4ca0b59538cee30a0141dd41b0ba",
+                "sample_index": 633,
+                "target_timestamp_s": 28.71525812149048,
+                "target_uint8_sha256": "ee3e3b658a75fa1febef1d9f6493a2571bd5a32a576862f3ef19498b1dba083b"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/engineering_posters/reconstruction_000949.npy",
+                "prediction_sha256": "974b0fff76cdbe81e4d432971e48f958f3a373c50580aaaa059a830badf3e0fc",
+                "sample_index": 949,
+                "target_timestamp_s": 44.094534158706665,
+                "target_uint8_sha256": "13d5544dc6b48cd9b8694fc4cae0ff11aa439f619672024b47bd3fe69b0584ff"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/engineering_posters/reconstruction_001265.npy",
+                "prediction_sha256": "38c2b6350d99ebe312859e2a930144250042b538fac1689606e129be1eea09e1",
+                "sample_index": 1265,
+                "target_timestamp_s": 60.65911412239075,
+                "target_uint8_sha256": "81385074687b0685b7531ef23ea1961b45e1743469c81c3a8fb9188707a6fc76"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              317,
+              633,
+              949,
+              1265
+            ],
+            "scored_frame_count": 1265
+          },
+          "high_texture_plants": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6271634900701276,
+              "mse_mean": 0.06786676685353814,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 12.183773748546994,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.13584046888792925
+            },
+            "num_frames_including_anchor": 1090,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/high_texture_plants/reconstruction_000001.npy",
+                "prediction_sha256": "0e1aa7211bf47a710d27d2a48de53a29ea84e5f523520a0560b11763977b7675",
+                "sample_index": 1,
+                "target_timestamp_s": 0.045617103576660156,
+                "target_uint8_sha256": "903554372addda2a01a7c0bf4e23e8bdcd6b8a35c442a2e156cbdc117bc0a9db"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/high_texture_plants/reconstruction_000273.npy",
+                "prediction_sha256": "a9ea41b10fb7b8d715f74cf9341f56dfb37d12f4d63fe4327926a38a320635c9",
+                "sample_index": 273,
+                "target_timestamp_s": 10.7170569896698,
+                "target_uint8_sha256": "9b3885ce286fcbc3e5078407448074c638ca4873e65f64979e0746b0386d6a1b"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/high_texture_plants/reconstruction_000545.npy",
+                "prediction_sha256": "5f8dbd152c5ff4fd033f75766a83e68b77097528f8392e578f002b4a6c1b6432",
+                "sample_index": 545,
+                "target_timestamp_s": 21.426820993423462,
+                "target_uint8_sha256": "116c6703a2cfb1cdf95305741c3cf6e2e10b0fcea5a4b4021bde1aea57e84e07"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/high_texture_plants/reconstruction_000817.npy",
+                "prediction_sha256": "e916417505bfc8198ac1033088cae88ed3208984f55b65566b5387575426a006",
+                "sample_index": 817,
+                "target_timestamp_s": 32.29037308692932,
+                "target_uint8_sha256": "6e330e6860b0b4d958715534a9d3aac8238d938a820864d38184e52ac5c56aea"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/high_texture_plants/reconstruction_001089.npy",
+                "prediction_sha256": "d45ea4580426a549a85581396193c81c8b2b19b3f3e8c0e91235487a97aae275",
+                "sample_index": 1089,
+                "target_timestamp_s": 43.08967614173889,
+                "target_uint8_sha256": "485342e96305ca8f8cc648a67f54a9da3d49bb9ec95b482cf4d9e637f64b3c2c"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              273,
+              545,
+              817,
+              1089
+            ],
+            "scored_frame_count": 1089
+          },
+          "poster_pillar_1": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6178811163816194,
+              "mse_mean": 0.0458291603483438,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 13.787822661481234,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.33500329488042363
+            },
+            "num_frames_including_anchor": 998,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_1/reconstruction_000001.npy",
+                "prediction_sha256": "0328b1575cfe58328486ede9c8abf522545d9b62f11668e0c8ae284edf59e25f",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04119300842285156,
+                "target_uint8_sha256": "b3dfc6c880c4d7d3a4a7c5ee289c1a6ca5f9ea3072061fe2377ae84caed1d879"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_1/reconstruction_000250.npy",
+                "prediction_sha256": "426727b9a3f120157d4acea778e5e7a616f07b2e9907a0d6847b14561af6dda3",
+                "sample_index": 250,
+                "target_timestamp_s": 10.471646070480347,
+                "target_uint8_sha256": "eb2fdc5438be22427a152e2346749da8fd7eb9fcdb78d20dc018c8ad55c494eb"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_1/reconstruction_000499.npy",
+                "prediction_sha256": "b4cb92a0c39891703bf58cabc8bde7cb3f782e1bdffe5da9d116b1c0467fad07",
+                "sample_index": 499,
+                "target_timestamp_s": 20.92929697036743,
+                "target_uint8_sha256": "a2fd4307f06a7d93fa499fcbf0dd652bdc2ac913e6dca430c66164a044f7cea8"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_1/reconstruction_000748.npy",
+                "prediction_sha256": "d616443841561955e0ca0960737bb96aa58e5c554e7df6fabc7f89c715b274b4",
+                "sample_index": 748,
+                "target_timestamp_s": 31.351933002471924,
+                "target_uint8_sha256": "020004fdc97d06c4e9ac280be87f7099f606607f1f491b7ce3c2e0f76825e8d2"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_1/reconstruction_000997.npy",
+                "prediction_sha256": "b31015c3552f6f5db11bf049fc4fcd0e99a58a45a58888826473a4fdf543e32c",
+                "sample_index": 997,
+                "target_timestamp_s": 41.762136936187744,
+                "target_uint8_sha256": "9a34c0d624a4e1d0dbe624c3142aef8fc28e16769ac0a317ba2914a4e7e9d596"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              250,
+              499,
+              748,
+              997
+            ],
+            "scored_frame_count": 997
+          },
+          "poster_pillar_2": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5837597191041591,
+              "mse_mean": 0.035430257334380946,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 15.455475256848318,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.4219811008641897
+            },
+            "num_frames_including_anchor": 613,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_2/reconstruction_000001.npy",
+                "prediction_sha256": "c2d61d2ae95d269a2e34d1f73261cb6a31791dfaeec05ce198a0f916f71f9f15",
+                "sample_index": 1,
+                "target_timestamp_s": 0.06120491027832031,
+                "target_uint8_sha256": "488036cd96116283a67298d09b35c5db7b85a00a4760674f63011a9056c41ea2"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_2/reconstruction_000153.npy",
+                "prediction_sha256": "182c1101793e7c57b521d6ef46fed65faa54f6f6d596d1b3b4f75dc2b4795dbf",
+                "sample_index": 153,
+                "target_timestamp_s": 6.329930067062378,
+                "target_uint8_sha256": "de052a5c6cb6cc5e3c3e10fe50b04336f3589caf7b5ff40d54575c43dc71d8c4"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_2/reconstruction_000306.npy",
+                "prediction_sha256": "13335dc0ec250e39618d44bc6bf966de8cda1a09693a963d2ff9966f6b08a53e",
+                "sample_index": 306,
+                "target_timestamp_s": 12.684101104736328,
+                "target_uint8_sha256": "e61d4cbc655a50daf9b0a5a5caa7d9475a6bcf15240e5222e536e6d33cc21fb5"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_2/reconstruction_000459.npy",
+                "prediction_sha256": "f23c177cec1a45aa9c64240fb232a162de4a21568090c9fc0ef4862e8b8411aa",
+                "sample_index": 459,
+                "target_timestamp_s": 19.030161142349243,
+                "target_uint8_sha256": "0bb571520ea3f21e20c18db5daf09fca7f770a8210c59219777808209cde6222"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/poster_pillar_2/reconstruction_000612.npy",
+                "prediction_sha256": "e86d96990d54851a165dd6554db67152597c4a667efe6c4e08e612dda0310a26",
+                "sample_index": 612,
+                "target_timestamp_s": 25.365426301956177,
+                "target_uint8_sha256": "50cc72f37af5fdf6270d93ff90b6a5b8382d3706f03b822a99b00310cfc0e20d"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              153,
+              306,
+              459,
+              612
+            ],
+            "scored_frame_count": 612
+          },
+          "reflective_materials": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6117112091636966,
+              "mse_mean": 0.0639014499935241,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 12.198543490122843,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.348131915821487
+            },
+            "num_frames_including_anchor": 619,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/reflective_materials/reconstruction_000001.npy",
+                "prediction_sha256": "74010097301b4c9dea462733f23a568f61e8d5f9c7c75f555b4ee0595227f651",
+                "sample_index": 1,
+                "target_timestamp_s": 0.061567068099975586,
+                "target_uint8_sha256": "5b4e8667655edc03e95a5436cb20b0552e1a4a7c5548607927fbc1141203a21f"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/reflective_materials/reconstruction_000155.npy",
+                "prediction_sha256": "5fa8eae0ec6657ef3bf744e04de155aeeaa93796075314e9bfe3dbcddc4ecc66",
+                "sample_index": 155,
+                "target_timestamp_s": 6.912420988082886,
+                "target_uint8_sha256": "56ee6789cbd5c2e7139c4556f2e6833f11be832bcc8e1d9604f3ba2ba7008411"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/reflective_materials/reconstruction_000309.npy",
+                "prediction_sha256": "6f98bdb732ec032f58ed22c9a405bd560b6d8c81c25ffaa007a0a3f9e1fb3cc5",
+                "sample_index": 309,
+                "target_timestamp_s": 13.880600929260254,
+                "target_uint8_sha256": "05582daeb8a275d7c2ce509a5bae3c32ff7a733f42953a002198c1ab317daa01"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/reflective_materials/reconstruction_000463.npy",
+                "prediction_sha256": "1b0f2665fd02e59c4246923730180df741475cb47254d395e69bc37e77eb972d",
+                "sample_index": 463,
+                "target_timestamp_s": 21.811150074005127,
+                "target_uint8_sha256": "95ab391d39915f5dc09d66866d9180bbffe103bdd8d1ad4528a8d24124f446c6"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/reflective_materials/reconstruction_000618.npy",
+                "prediction_sha256": "4ed87e5c25208033fb10d55b9e803f64a30a504c0a4ebc5eb31e32e5a6ba0039",
+                "sample_index": 618,
+                "target_timestamp_s": 28.806512117385864,
+                "target_uint8_sha256": "ac515dfb4e9b2ad2b3b33991b5056b87fa1bdf3cb2b11826249f1751922138d0"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              155,
+              309,
+              463,
+              618
+            ],
+            "scored_frame_count": 618
+          },
+          "slow_and_fast_desk": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5882516800331372,
+              "mse_mean": 0.098825018584205,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.305827486051172,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.364730602417062
+            },
+            "num_frames_including_anchor": 1744,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_and_fast_desk/reconstruction_000001.npy",
+                "prediction_sha256": "31d99c0061e49d755e8104e6c6b46dd41ea3c9b79cc0e0c5101712cf62a7dcc9",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04309678077697754,
+                "target_uint8_sha256": "7e9fd62b5ae48ea68f8b85ad307023874f053a2090fccdcee85e61bdb06cb39a"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_and_fast_desk/reconstruction_000436.npy",
+                "prediction_sha256": "990e6bd0f16e5546793e578c918f14b273a175f5b8fe6c8c530c2639bd0d794b",
+                "sample_index": 436,
+                "target_timestamp_s": 18.649634838104248,
+                "target_uint8_sha256": "1c480b37aadccce4fc8d18954f70766e6052baf4be0ef150db2af645d841a7b1"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_and_fast_desk/reconstruction_000872.npy",
+                "prediction_sha256": "6528d3c9458a89223b56dc3f02539b2c82d339fa223d1a369bd90f3de9ff30d4",
+                "sample_index": 872,
+                "target_timestamp_s": 37.14554190635681,
+                "target_uint8_sha256": "f5c4508d546f6d6d210709c843cd23fa0ff444bb93daecff9821610d9e72600c"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_and_fast_desk/reconstruction_001307.npy",
+                "prediction_sha256": "86cd899ab0a610cad345b73df59a224a10a28aa56854d7fa8646bf98026aaadf",
+                "sample_index": 1307,
+                "target_timestamp_s": 56.8702290058136,
+                "target_uint8_sha256": "52dd620e86381a7d7e97cb8182a13c3687cb7a966930c6dcce659ec33e4495ee"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_and_fast_desk/reconstruction_001743.npy",
+                "prediction_sha256": "97c69ce4b9f21457b8eebcc5b4b2541e8427e9cf6db6f732fa484fad21244401",
+                "sample_index": 1743,
+                "target_timestamp_s": 75.56235074996948,
+                "target_uint8_sha256": "9b13cb89702c1988a8a8358c6dee3cf2526cfc64c93da63c2ad311adf5794578"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              436,
+              872,
+              1307,
+              1743
+            ],
+            "scored_frame_count": 1743
+          },
+          "slow_hand": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6600819520155589,
+              "mse_mean": 0.08766453219845168,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.741089342008868,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.3228144358403367
+            },
+            "num_frames_including_anchor": 901,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_hand/reconstruction_000001.npy",
+                "prediction_sha256": "1fb5f58f3952f907373e0ea326301088266fe319e64abacb5b794fd13d9a0924",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04308819770812988,
+                "target_uint8_sha256": "82682e8998f0cdcbac9e2f1dd40e13041a68ff22c9adfe9696e68fdf4bfc2c8a"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_hand/reconstruction_000225.npy",
+                "prediction_sha256": "a3112a6caec5df1be260050b5a3845b548f32f655216cf09f5792ef0b64106b7",
+                "sample_index": 225,
+                "target_timestamp_s": 9.540585279464722,
+                "target_uint8_sha256": "5711b761f359a238058e8559624420f6609519c13503dd87159c55ac715c2f17"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_hand/reconstruction_000450.npy",
+                "prediction_sha256": "3c702d328e53df512fc0572e74b60574fb31aa1c2df33040e14a51e19c891b32",
+                "sample_index": 450,
+                "target_timestamp_s": 19.219017267227173,
+                "target_uint8_sha256": "f910139dc1c38a1e669194095374a4d6b8615312425270ecd2a72965e9d34430"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_hand/reconstruction_000675.npy",
+                "prediction_sha256": "8e88a0155bf2f60552834680123972746abf8e5f5a972379d651306996a107f9",
+                "sample_index": 675,
+                "target_timestamp_s": 29.10042428970337,
+                "target_uint8_sha256": "4356a4ab501736a7face6f4de3d044a469c7a7430aeb5314c95fbe6baa9f306e"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/slow_hand/reconstruction_000900.npy",
+                "prediction_sha256": "4828f4b0331ab59fb205657bd7c2fe70bd66b8008512b8155b99d9f0055feef6",
+                "sample_index": 900,
+                "target_timestamp_s": 38.83505296707153,
+                "target_uint8_sha256": "689669fc3ed30b17ee3b9c7d88f60ec20ff4eac339003d90d5864ed9d6dc1534"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              225,
+              450,
+              675,
+              900
+            ],
+            "scored_frame_count": 900
+          },
+          "still_life": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6078983472109041,
+              "mse_mean": 0.07394828016992029,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.469486321713905,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.274565718464279
+            },
+            "num_frames_including_anchor": 1194,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/still_life/reconstruction_000001.npy",
+                "prediction_sha256": "9e1106ec57f2df05cd7def5e151b83bdbc3dedc48fd69bb07543db7e634bcd1b",
+                "sample_index": 1,
+                "target_timestamp_s": 0.11231708526611328,
+                "target_uint8_sha256": "c018ed1a28f8a79ce1b0eaf34391cb035cb513d1510a067f2c6cf520325a6fd3"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/still_life/reconstruction_000299.npy",
+                "prediction_sha256": "8d4270e66aacb8edb92f6735d1c42d03556f7eb00bebb117b01637c3e3a7b07f",
+                "sample_index": 299,
+                "target_timestamp_s": 16.880141258239746,
+                "target_uint8_sha256": "224e976405c50c38a370f886be8ad33423a4e5de8ce88bf99ec9f9148c213fd2"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/still_life/reconstruction_000597.npy",
+                "prediction_sha256": "86cd41b80ed0f820f6a8539dd695bb7c9575e24e75d68bf1bb823e899dfef289",
+                "sample_index": 597,
+                "target_timestamp_s": 33.57770609855652,
+                "target_uint8_sha256": "669debeab1cad4b9673382ca4ae10d9707ceeb184eb02392593b731fd2a8c800"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/still_life/reconstruction_000895.npy",
+                "prediction_sha256": "b44317dc91d584a0e5d2b82efbe723d9d2b1f5dcae6f5322b1ed481f01460db1",
+                "sample_index": 895,
+                "target_timestamp_s": 50.54876089096069,
+                "target_uint8_sha256": "593acf1f3503d8cc1dcb76be9a950fe48ae414295ba5007ec3b3631ab937e179"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/eventgenesis_seed0/still_life/reconstruction_001193.npy",
+                "prediction_sha256": "1fcacacfdb161044aa785981ec2e27b0de8daba7c7c853072fad1d3c3e6cdf57",
+                "sample_index": 1193,
+                "target_timestamp_s": 68.00105714797974,
+                "target_uint8_sha256": "5019c5bf87e027dcd754e6bacd3d14fd1ead3ef5a266ddf63ee1fd30533b1dec"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              299,
+              597,
+              895,
+              1193
+            ],
+            "scored_frame_count": 1193
+          }
+        },
+        "sequence_count": 14,
+        "total_scored_frames": 15498
+      },
+      "v2e_seed0": {
+        "equal_sequence_mean": {
+          "lpips_alex_mean": 0.6489402138281689,
+          "mse_mean": 0.07278843236530393,
+          "psnr": {
+            "mean_db": 11.560412269282736,
+            "mean_is_positive_infinity": false,
+            "sequence_positive_infinity_count": 0
+          },
+          "ssim_mean": 0.3404691926135835
+        },
+        "per_sequence": {
+          "bike_bay_hdr": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6825348575419359,
+              "mse_mean": 0.0633448686198164,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 12.070054162299643,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.33601976488794566
+            },
+            "num_frames_including_anchor": 2431,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/bike_bay_hdr/reconstruction_000001.npy",
+                "prediction_sha256": "069d52a5536f75f538e97f543cabf9981834c811ed848a21f8f8519e6783cc60",
+                "sample_index": 1,
+                "target_timestamp_s": 0.041460275650024414,
+                "target_uint8_sha256": "d4662c5bdd72d90ff9418726fbdccc79c380e5356904b90c8dae38eea2d20c78"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/bike_bay_hdr/reconstruction_000608.npy",
+                "prediction_sha256": "9ad81791b0fbd24edca68b88cc83d8b29dab34a0696ace71aab6019c3a17fd99",
+                "sample_index": 608,
+                "target_timestamp_s": 24.312005043029785,
+                "target_uint8_sha256": "200c8298545991365aad77b3b1fae212e8d85b376003786c1c2140a219be8bcb"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/bike_bay_hdr/reconstruction_001215.npy",
+                "prediction_sha256": "bf70588e90722665ae0ee8cac23930407fb438a786517d0bcbb265a7832ed706",
+                "sample_index": 1215,
+                "target_timestamp_s": 49.04341006278992,
+                "target_uint8_sha256": "26e9b10a0c723818233e49f3642554e7c499145430fa1b1ed3b0a151f3ec6f23"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/bike_bay_hdr/reconstruction_001822.npy",
+                "prediction_sha256": "8478aeb7e57ccc61cfb3a7dad8b28d6785958ae07901d2742852f392f078f7de",
+                "sample_index": 1822,
+                "target_timestamp_s": 74.1334912776947,
+                "target_uint8_sha256": "6c866d0ddcbc69d42a1cb0b42c779c425f6f79d87f64bc17d9a672283c6fe6fc"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/bike_bay_hdr/reconstruction_002430.npy",
+                "prediction_sha256": "380fe92e384290ba63769833cc64302434d5106b9cda131e259898f3003769fb",
+                "sample_index": 2430,
+                "target_timestamp_s": 98.9578800201416,
+                "target_uint8_sha256": "0a2323c7b50eda2385887e63e7ec44145a402907dea5b5c522a08487f04575e3"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              608,
+              1215,
+              1822,
+              2430
+            ],
+            "scored_frame_count": 2430
+          },
+          "boxes": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6573536102426738,
+              "mse_mean": 0.09814786074967728,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.181598281392139,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.30395717689199225
+            },
+            "num_frames_including_anchor": 540,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/boxes/reconstruction_000001.npy",
+                "prediction_sha256": "819252a9085ee7bf36a53f4134794ee7c610a5cf401e9ccdddd0d5a53560894c",
+                "sample_index": 1,
+                "target_timestamp_s": 0.0663139820098877,
+                "target_uint8_sha256": "de2ba22df9f7eaacdd088bc6c52a926bc286606e21103ec2c661f78b3dfe6060"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/boxes/reconstruction_000135.npy",
+                "prediction_sha256": "f6c99f0795cf7a4028975796790383d2e3da6bf2163be4eb8f8f40a82a07168f",
+                "sample_index": 135,
+                "target_timestamp_s": 5.921303033828735,
+                "target_uint8_sha256": "74220cfc3a9c0e22e36c32c5e153e92cddf5ac6076b7a5f3a066b87ebc2829e3"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/boxes/reconstruction_000270.npy",
+                "prediction_sha256": "b7adb8627370d74c2f0369b37bbb05b3e0fce006cc553a5ec479c3209c61a224",
+                "sample_index": 270,
+                "target_timestamp_s": 12.08835506439209,
+                "target_uint8_sha256": "b32135c4a405ffacc98c66ae7b9e22a65dc4852747262a00ec77b05e996af0ec"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/boxes/reconstruction_000404.npy",
+                "prediction_sha256": "53e872297a18bf49d8b8d0e4f5dcef8f1ba3ecbd6ee84e52faa7665d8f1dc9ab",
+                "sample_index": 404,
+                "target_timestamp_s": 18.026766061782837,
+                "target_uint8_sha256": "b3935356119432f45a24eae5cc646880b397c99d96d7f78a55d2672d6c19420a"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/boxes/reconstruction_000539.npy",
+                "prediction_sha256": "5031634f008326670a4e44bd6f1db9bf7ad388df401aad622ae77e13535baf79",
+                "sample_index": 539,
+                "target_timestamp_s": 24.11524987220764,
+                "target_uint8_sha256": "aeeb81e22123fcdd60284ac79ae879430d967829a3f4dbc26feb0ec7e624b1be"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              135,
+              270,
+              404,
+              539
+            ],
+            "scored_frame_count": 539
+          },
+          "desk": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.4849632705618071,
+              "mse_mean": 0.08133246489015476,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.989486944695674,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.400528193755723
+            },
+            "num_frames_including_anchor": 1491,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk/reconstruction_000001.npy",
+                "prediction_sha256": "e5e54a0f97b96acb05eae12dd95fceabf5f6862725acf2139791abe42b99b09f",
+                "sample_index": 1,
+                "target_timestamp_s": 0.07299613952636719,
+                "target_uint8_sha256": "d24599f83e423c1d846b18629b9c420b2999b06dfbbb9746498df8965d36a0cd"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk/reconstruction_000373.npy",
+                "prediction_sha256": "da6f383d584c215b6fc98bb1f3328a512fb4aafa15a0c11b2aea4f524a2bf8b2",
+                "sample_index": 373,
+                "target_timestamp_s": 16.466737985610962,
+                "target_uint8_sha256": "cd9dfbb765e6a5d104680adeb1ff6263d06dc606f4080eb7d690c442c5572ca6"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk/reconstruction_000745.npy",
+                "prediction_sha256": "ba10bca1e1f1729f3fbef5f575c8842e4286d44d4d4ff048dbf0b9f4688af791",
+                "sample_index": 745,
+                "target_timestamp_s": 32.86048126220703,
+                "target_uint8_sha256": "36f0f87c878a39c41c1d74104b9bdc7fd504cdadef2b2838e8a60febe401393c"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk/reconstruction_001117.npy",
+                "prediction_sha256": "15852ce4d290cb349337f441382ac21c34aa2c2b34e1eebd6675650200370df8",
+                "sample_index": 1117,
+                "target_timestamp_s": 49.254223346710205,
+                "target_uint8_sha256": "64142867261ae797d9fc5fd274c570f28df4095df7c3e4ad52ad0a8b8c26bfcf"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk/reconstruction_001490.npy",
+                "prediction_sha256": "330ef2dcf3cc2c47ab2f077cc91fba0c31dcb39eab18cdd4b65aef2cb20b7478",
+                "sample_index": 1490,
+                "target_timestamp_s": 65.69203519821167,
+                "target_uint8_sha256": "bd90cd950b270ff89e79dee989d9438311800bdd5be16c521e5fd72d257c13f4"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              373,
+              745,
+              1117,
+              1490
+            ],
+            "scored_frame_count": 1490
+          },
+          "desk_fast": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.5621305436596666,
+              "mse_mean": 0.07073111421570874,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.60167622583709,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.4093094853600715
+            },
+            "num_frames_including_anchor": 724,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_fast/reconstruction_000001.npy",
+                "prediction_sha256": "83642cf4f38bb2579858ffc5cea821a34e04cdd2d5bf41f45304f3351478705a",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04706621170043945,
+                "target_uint8_sha256": "faf276fd7a6115086d56b2344365d1f24588c7a95d8fc2009bdd20d8636a8790"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_fast/reconstruction_000181.npy",
+                "prediction_sha256": "92d41824fd511949ba4804fe64aca5f449eeb99effe7aa40cd18033908b2ae31",
+                "sample_index": 181,
+                "target_timestamp_s": 7.979522228240967,
+                "target_uint8_sha256": "96cde27485bfe356baedf8c6213dec06886606ac1a41d49d862937623d27a7cb"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_fast/reconstruction_000362.npy",
+                "prediction_sha256": "c29e8beda45be291109e39d188bd2c72f69eb178fea83005f2efa8f0da57f616",
+                "sample_index": 362,
+                "target_timestamp_s": 15.956047296524048,
+                "target_uint8_sha256": "61e9cfdecc9990e6a2b578c7991eef277180bb995354a4f0ef553171cf870ae1"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_fast/reconstruction_000542.npy",
+                "prediction_sha256": "d15324bd76fd36ca2e0f4ee6b532b6a1ff0a8216c55846b0005d123e192d37c8",
+                "sample_index": 542,
+                "target_timestamp_s": 23.888503074645996,
+                "target_uint8_sha256": "6405f7d33bd6715e8505ee8afb6939e5478530c41996d3601ddb467c33774157"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_fast/reconstruction_000723.npy",
+                "prediction_sha256": "aa176ac05af0f3528f21bdaffd232f69805c58c44d4895575d9d00a8d3a3eb2b",
+                "sample_index": 723,
+                "target_timestamp_s": 31.865028142929077,
+                "target_uint8_sha256": "0e3f86efd0e6140b9332a4973f0159e3adb8a5532a9386ac57c373c2d3552cc5"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              181,
+              362,
+              542,
+              723
+            ],
+            "scored_frame_count": 723
+          },
+          "desk_hand_only": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.678161508471669,
+              "mse_mean": 0.0793372427145493,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.088704511230373,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.47642201717853433
+            },
+            "num_frames_including_anchor": 467,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_hand_only/reconstruction_000001.npy",
+                "prediction_sha256": "f6de5d505c8ec42c48ad9d165369a7c1fcdbcebd4a1157f481cfd9eac5a734f8",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04406929016113281,
+                "target_uint8_sha256": "09305486cbf935006f41767a9906bc6d31e17de6f700a2b5eba337861aad91ac"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_hand_only/reconstruction_000117.npy",
+                "prediction_sha256": "8494df670caa36d44ae6c0dbc5f00f9e73830266932bb805d20434959de4690f",
+                "sample_index": 117,
+                "target_timestamp_s": 5.156097173690796,
+                "target_uint8_sha256": "f85d659583b52809e5a98dd0468f585eac07a21b36eae546c9c169a57d1e04d4"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_hand_only/reconstruction_000233.npy",
+                "prediction_sha256": "3d7153bfa0f4d339a1d3e50a69a8310f42be67e18ee0877d34e82f7a4a2cd6c4",
+                "sample_index": 233,
+                "target_timestamp_s": 10.268124341964722,
+                "target_uint8_sha256": "90a56984919026fa763d21c502b8b9f086962b5167ddd9ba6c75993f880f20ab"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_hand_only/reconstruction_000349.npy",
+                "prediction_sha256": "1b8f5e6288ee2e36203cf4877ec8c3fd7698d3247816eb86f4fa7c96e1764779",
+                "sample_index": 349,
+                "target_timestamp_s": 15.38015103340149,
+                "target_uint8_sha256": "2ada5538b138dd934ae64e9e6e7a4bcf096539cbf0d8deb7a1c2d48e75ab93c7"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_hand_only/reconstruction_000466.npy",
+                "prediction_sha256": "a261fc2bd56fe4ab7c95deb65794ac41af472c192a88bce4acb5072c7cfe9de2",
+                "sample_index": 466,
+                "target_timestamp_s": 20.53624701499939,
+                "target_uint8_sha256": "125ca4f552ab90e455e352ee371bea439dd1c6d618527770c6c267c3a2192082"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              117,
+              233,
+              349,
+              466
+            ],
+            "scored_frame_count": 466
+          },
+          "desk_slow": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.48623225650251617,
+              "mse_mean": 0.07808803168950153,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.10585957572134,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.4782950316043305
+            },
+            "num_frames_including_anchor": 1434,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_slow/reconstruction_000001.npy",
+                "prediction_sha256": "3109fd07f3621220ea6c31e7a396fd8168220b796f19e89203f333f9e9b27f87",
+                "sample_index": 1,
+                "target_timestamp_s": 0.08316612243652344,
+                "target_uint8_sha256": "f9171cd144816c353a29d1c49ad56ac683a3fe6c4c59d521bdd1900c1c522f52"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_slow/reconstruction_000359.npy",
+                "prediction_sha256": "51bfa6719ac798f6a2eb3bc3ca67a4b7d29207b1aeedb14e23ad8262110f2a0c",
+                "sample_index": 359,
+                "target_timestamp_s": 15.85994005203247,
+                "target_uint8_sha256": "9b5214ecbea5695f5f43d58adee0f8c95d2687e28f9d90f62d6a60a07b4dc30b"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_slow/reconstruction_000717.npy",
+                "prediction_sha256": "707ce4c094d7aa4306fdfcc0d3639b69fba97954f92113ffe7eced64be11474e",
+                "sample_index": 717,
+                "target_timestamp_s": 31.6367130279541,
+                "target_uint8_sha256": "b442d5211ec4d973ef0611b2074d9b1615f8cf65b33fc979da2ca21584a9ca5f"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_slow/reconstruction_001075.npy",
+                "prediction_sha256": "e75942dcd366c19254f8e08f8e01a85449e87e878938124a70b522273bcb2b21",
+                "sample_index": 1075,
+                "target_timestamp_s": 47.41348695755005,
+                "target_uint8_sha256": "d98fc99d9fbe9c6faa1e2756d65ea5635fb92ec0a12f20993fff639fa4847da9"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/desk_slow/reconstruction_001433.npy",
+                "prediction_sha256": "6784b4107cf898fb79322821ee7142a5636e1231ba1d869005c463b3ce4c7051",
+                "sample_index": 1433,
+                "target_timestamp_s": 63.19026017189026,
+                "target_uint8_sha256": "4420c38cd31c5e75ce8290b91f64eedb5bd20c0785fddcfa37104f342341e1ed"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              359,
+              717,
+              1075,
+              1433
+            ],
+            "scored_frame_count": 1433
+          },
+          "engineering_posters": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.7272981063650531,
+              "mse_mean": 0.07577248646316415,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.354041462623686,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.2749507363205848
+            },
+            "num_frames_including_anchor": 1266,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/engineering_posters/reconstruction_000001.npy",
+                "prediction_sha256": "5cfe31314aac45c0919e831f1c50bdc6e059bc29a3cbf0b6d80d4c15202df5a0",
+                "sample_index": 1,
+                "target_timestamp_s": 0.058222055435180664,
+                "target_uint8_sha256": "1154494039ebd47b8344f4b091e470987e076186fba99ec956bab56e44303718"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/engineering_posters/reconstruction_000317.npy",
+                "prediction_sha256": "7f96bfec2c7fb86933a7f21bdaf88188d99feb5679e96e9b0f238beee9b54d34",
+                "sample_index": 317,
+                "target_timestamp_s": 14.446728229522705,
+                "target_uint8_sha256": "e289490e3c380175d63fd9e13a893e756344b9868ea008780244fc487f784820"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/engineering_posters/reconstruction_000633.npy",
+                "prediction_sha256": "496e37982c8802584e2cd71f89f28536e6e6b79f0c2c14b22253863ee5b0d49f",
+                "sample_index": 633,
+                "target_timestamp_s": 28.71525812149048,
+                "target_uint8_sha256": "ee3e3b658a75fa1febef1d9f6493a2571bd5a32a576862f3ef19498b1dba083b"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/engineering_posters/reconstruction_000949.npy",
+                "prediction_sha256": "d20878a9c1a8322589d9b962bc762b6398fcd6e14caa89e2443e5b713debbf74",
+                "sample_index": 949,
+                "target_timestamp_s": 44.094534158706665,
+                "target_uint8_sha256": "13d5544dc6b48cd9b8694fc4cae0ff11aa439f619672024b47bd3fe69b0584ff"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/engineering_posters/reconstruction_001265.npy",
+                "prediction_sha256": "26c6b10ac198f21f553428155af8aab399f7323d248fd3f3031d62af73ad4705",
+                "sample_index": 1265,
+                "target_timestamp_s": 60.65911412239075,
+                "target_uint8_sha256": "81385074687b0685b7531ef23ea1961b45e1743469c81c3a8fb9188707a6fc76"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              317,
+              633,
+              949,
+              1265
+            ],
+            "scored_frame_count": 1265
+          },
+          "high_texture_plants": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.7365809792329457,
+              "mse_mean": 0.06019157615058164,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 12.298681761747716,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.1057821425939947
+            },
+            "num_frames_including_anchor": 1090,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/high_texture_plants/reconstruction_000001.npy",
+                "prediction_sha256": "6c4e55bb5d7dde9aaed2e78043a9cccd853f0ff513ea9e3e5f6f2b88762e6ddf",
+                "sample_index": 1,
+                "target_timestamp_s": 0.045617103576660156,
+                "target_uint8_sha256": "903554372addda2a01a7c0bf4e23e8bdcd6b8a35c442a2e156cbdc117bc0a9db"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/high_texture_plants/reconstruction_000273.npy",
+                "prediction_sha256": "7fc5a2e391e804e6318389a395785680b5796e8cf6ef5dc690064682602fac0a",
+                "sample_index": 273,
+                "target_timestamp_s": 10.7170569896698,
+                "target_uint8_sha256": "9b3885ce286fcbc3e5078407448074c638ca4873e65f64979e0746b0386d6a1b"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/high_texture_plants/reconstruction_000545.npy",
+                "prediction_sha256": "fefb90c4292db192e7390530aee8e88be9c1840cf950d21ee4f72932ab070a3e",
+                "sample_index": 545,
+                "target_timestamp_s": 21.426820993423462,
+                "target_uint8_sha256": "116c6703a2cfb1cdf95305741c3cf6e2e10b0fcea5a4b4021bde1aea57e84e07"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/high_texture_plants/reconstruction_000817.npy",
+                "prediction_sha256": "dda097d4d340599bd195ce2b268933aa553abd3d49597c41f7ba5e7f74c9c63a",
+                "sample_index": 817,
+                "target_timestamp_s": 32.29037308692932,
+                "target_uint8_sha256": "6e330e6860b0b4d958715534a9d3aac8238d938a820864d38184e52ac5c56aea"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/high_texture_plants/reconstruction_001089.npy",
+                "prediction_sha256": "a62b2111b8d46f09c1d1dbd010ab870c7accac1d1d723e2dcf03f30d5d10f7bb",
+                "sample_index": 1089,
+                "target_timestamp_s": 43.08967614173889,
+                "target_uint8_sha256": "485342e96305ca8f8cc648a67f54a9da3d49bb9ec95b482cf4d9e637f64b3c2c"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              273,
+              545,
+              817,
+              1089
+            ],
+            "scored_frame_count": 1089
+          },
+          "poster_pillar_1": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.7083089450895488,
+              "mse_mean": 0.05512647594234913,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 12.632769149550773,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.3191675644788848
+            },
+            "num_frames_including_anchor": 998,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_1/reconstruction_000001.npy",
+                "prediction_sha256": "8f34235c924328a7e24deb565a2e0fbe98d6c8c8f6d2fae31317e4c6fcca6601",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04119300842285156,
+                "target_uint8_sha256": "b3dfc6c880c4d7d3a4a7c5ee289c1a6ca5f9ea3072061fe2377ae84caed1d879"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_1/reconstruction_000250.npy",
+                "prediction_sha256": "c9bd785c40ca2b5d6bf96af73fbcd9a2601274d863094b86114b36da5c408725",
+                "sample_index": 250,
+                "target_timestamp_s": 10.471646070480347,
+                "target_uint8_sha256": "eb2fdc5438be22427a152e2346749da8fd7eb9fcdb78d20dc018c8ad55c494eb"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_1/reconstruction_000499.npy",
+                "prediction_sha256": "54b04c34f1717a68787e269f43a116e6378aa8bd5d8a4dac1dd64ee741a2965e",
+                "sample_index": 499,
+                "target_timestamp_s": 20.92929697036743,
+                "target_uint8_sha256": "a2fd4307f06a7d93fa499fcbf0dd652bdc2ac913e6dca430c66164a044f7cea8"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_1/reconstruction_000748.npy",
+                "prediction_sha256": "704c1e9fe0b2b976cf36283cfe2de7392f7d8e77e002dc9ecccf30be354d65f0",
+                "sample_index": 748,
+                "target_timestamp_s": 31.351933002471924,
+                "target_uint8_sha256": "020004fdc97d06c4e9ac280be87f7099f606607f1f491b7ce3c2e0f76825e8d2"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_1/reconstruction_000997.npy",
+                "prediction_sha256": "d0cc2c92b4a6fd8f3346479ca851867bd718a630f385edd41d47a8f5e07e2eaa",
+                "sample_index": 997,
+                "target_timestamp_s": 41.762136936187744,
+                "target_uint8_sha256": "9a34c0d624a4e1d0dbe624c3142aef8fc28e16769ac0a317ba2914a4e7e9d596"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              250,
+              499,
+              748,
+              997
+            ],
+            "scored_frame_count": 997
+          },
+          "poster_pillar_2": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6697150813111292,
+              "mse_mean": 0.0445327768875535,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 13.614566191792328,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.4235779866997991
+            },
+            "num_frames_including_anchor": 613,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_2/reconstruction_000001.npy",
+                "prediction_sha256": "03d2f64a5c918b7bb25077a343ecdb2a206d46b8deb3cc6c34013321d7ba52f7",
+                "sample_index": 1,
+                "target_timestamp_s": 0.06120491027832031,
+                "target_uint8_sha256": "488036cd96116283a67298d09b35c5db7b85a00a4760674f63011a9056c41ea2"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_2/reconstruction_000153.npy",
+                "prediction_sha256": "d683b0df6727b082b34cf707c6d8f7f252c413aae77df2e464e123d15db8a7a9",
+                "sample_index": 153,
+                "target_timestamp_s": 6.329930067062378,
+                "target_uint8_sha256": "de052a5c6cb6cc5e3c3e10fe50b04336f3589caf7b5ff40d54575c43dc71d8c4"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_2/reconstruction_000306.npy",
+                "prediction_sha256": "9333f342e504e949c5987a4dc61eb07b3c7828ad77b27fceeffb95bdd0534347",
+                "sample_index": 306,
+                "target_timestamp_s": 12.684101104736328,
+                "target_uint8_sha256": "e61d4cbc655a50daf9b0a5a5caa7d9475a6bcf15240e5222e536e6d33cc21fb5"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_2/reconstruction_000459.npy",
+                "prediction_sha256": "142c9d04315de2c1de94104d25b70e7259691563e44f8838dbc1064019f0188d",
+                "sample_index": 459,
+                "target_timestamp_s": 19.030161142349243,
+                "target_uint8_sha256": "0bb571520ea3f21e20c18db5daf09fca7f770a8210c59219777808209cde6222"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/poster_pillar_2/reconstruction_000612.npy",
+                "prediction_sha256": "94bdc4f573c9acbaa6fc948b84657502adb107d190c9081f806866a14481529e",
+                "sample_index": 612,
+                "target_timestamp_s": 25.365426301956177,
+                "target_uint8_sha256": "50cc72f37af5fdf6270d93ff90b6a5b8382d3706f03b822a99b00310cfc0e20d"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              153,
+              306,
+              459,
+              612
+            ],
+            "scored_frame_count": 612
+          },
+          "reflective_materials": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.7200215311305037,
+              "mse_mean": 0.07781687079713039,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.320463717273322,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.3186540254277846
+            },
+            "num_frames_including_anchor": 619,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/reflective_materials/reconstruction_000001.npy",
+                "prediction_sha256": "3f16f405e1b6109a2587263c836409f7d981dd12ef4e7bd4b52e33af4560e30a",
+                "sample_index": 1,
+                "target_timestamp_s": 0.061567068099975586,
+                "target_uint8_sha256": "5b4e8667655edc03e95a5436cb20b0552e1a4a7c5548607927fbc1141203a21f"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/reflective_materials/reconstruction_000155.npy",
+                "prediction_sha256": "fe7ebd39f1a5aab90d17949d39dfe68a460b97337b9dd06070edc7f7131ab90a",
+                "sample_index": 155,
+                "target_timestamp_s": 6.912420988082886,
+                "target_uint8_sha256": "56ee6789cbd5c2e7139c4556f2e6833f11be832bcc8e1d9604f3ba2ba7008411"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/reflective_materials/reconstruction_000309.npy",
+                "prediction_sha256": "b8d6e2f168934931e367633770af10d71237e3e523c6eff4d851b1db29716f70",
+                "sample_index": 309,
+                "target_timestamp_s": 13.880600929260254,
+                "target_uint8_sha256": "05582daeb8a275d7c2ce509a5bae3c32ff7a733f42953a002198c1ab317daa01"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/reflective_materials/reconstruction_000463.npy",
+                "prediction_sha256": "80848de311e4529e540a422ddf5bfdedb026b0411a005f9dd31ba416ed02bcd4",
+                "sample_index": 463,
+                "target_timestamp_s": 21.811150074005127,
+                "target_uint8_sha256": "95ab391d39915f5dc09d66866d9180bbffe103bdd8d1ad4528a8d24124f446c6"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/reflective_materials/reconstruction_000618.npy",
+                "prediction_sha256": "d06b09364118346856c5e82b2aec6a8fb32c837a9070198590358cfc420646e1",
+                "sample_index": 618,
+                "target_timestamp_s": 28.806512117385864,
+                "target_uint8_sha256": "ac515dfb4e9b2ad2b3b33991b5056b87fa1bdf3cb2b11826249f1751922138d0"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              155,
+              309,
+              463,
+              618
+            ],
+            "scored_frame_count": 618
+          },
+          "slow_and_fast_desk": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.575127346380237,
+              "mse_mean": 0.07230887037644185,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.536978342132961,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.37491473049139185
+            },
+            "num_frames_including_anchor": 1744,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_and_fast_desk/reconstruction_000001.npy",
+                "prediction_sha256": "ed2995564cbec98bdb32e6ad7493de9967588e215c5e7fa06396b059b955dc89",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04309678077697754,
+                "target_uint8_sha256": "7e9fd62b5ae48ea68f8b85ad307023874f053a2090fccdcee85e61bdb06cb39a"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_and_fast_desk/reconstruction_000436.npy",
+                "prediction_sha256": "ab82bc7d54773afe1707eb57cc10c59f71c7138a92bbaa29f811b67f3961e0a6",
+                "sample_index": 436,
+                "target_timestamp_s": 18.649634838104248,
+                "target_uint8_sha256": "1c480b37aadccce4fc8d18954f70766e6052baf4be0ef150db2af645d841a7b1"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_and_fast_desk/reconstruction_000872.npy",
+                "prediction_sha256": "7b95166dce19c082ba7b97c08b7f760ec10c97fbab5df189239b0283184228b8",
+                "sample_index": 872,
+                "target_timestamp_s": 37.14554190635681,
+                "target_uint8_sha256": "f5c4508d546f6d6d210709c843cd23fa0ff444bb93daecff9821610d9e72600c"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_and_fast_desk/reconstruction_001307.npy",
+                "prediction_sha256": "107375fb5456ccd5df3ad8920d49f976345e9783e7f0585397209b9f9d74b14c",
+                "sample_index": 1307,
+                "target_timestamp_s": 56.8702290058136,
+                "target_uint8_sha256": "52dd620e86381a7d7e97cb8182a13c3687cb7a966930c6dcce659ec33e4495ee"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_and_fast_desk/reconstruction_001743.npy",
+                "prediction_sha256": "5ff6a23483711f71c487d7f5cb31548f4adc789d3b6344578d0283c04639f738",
+                "sample_index": 1743,
+                "target_timestamp_s": 75.56235074996948,
+                "target_uint8_sha256": "9b13cb89702c1988a8a8358c6dee3cf2526cfc64c93da63c2ad311adf5794578"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              436,
+              872,
+              1307,
+              1743
+            ],
+            "scored_frame_count": 1743
+          },
+          "slow_hand": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.6854664772086674,
+              "mse_mean": 0.07686531415325168,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 11.25806246707671,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.3188855168913823
+            },
+            "num_frames_including_anchor": 901,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_hand/reconstruction_000001.npy",
+                "prediction_sha256": "3c1d47b1b6e3d0b18f36569f68714d0f4a0e27c9e613f1a98a4ebba36a03cc66",
+                "sample_index": 1,
+                "target_timestamp_s": 0.04308819770812988,
+                "target_uint8_sha256": "82682e8998f0cdcbac9e2f1dd40e13041a68ff22c9adfe9696e68fdf4bfc2c8a"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_hand/reconstruction_000225.npy",
+                "prediction_sha256": "1672dd9bf668846c88bfa9cac541a45513fe82673e0eab329ecb98d828b23259",
+                "sample_index": 225,
+                "target_timestamp_s": 9.540585279464722,
+                "target_uint8_sha256": "5711b761f359a238058e8559624420f6609519c13503dd87159c55ac715c2f17"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_hand/reconstruction_000450.npy",
+                "prediction_sha256": "b7ebb2c689beb3d81afa12d0aeb80b05865d471735fc7f9f37a2778abc3ec0ba",
+                "sample_index": 450,
+                "target_timestamp_s": 19.219017267227173,
+                "target_uint8_sha256": "f910139dc1c38a1e669194095374a4d6b8615312425270ecd2a72965e9d34430"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_hand/reconstruction_000675.npy",
+                "prediction_sha256": "60223c7d44c486204336b871f5f8dc3ac0ebe4004a5dc53dc909979842b20d93",
+                "sample_index": 675,
+                "target_timestamp_s": 29.10042428970337,
+                "target_uint8_sha256": "4356a4ab501736a7face6f4de3d044a469c7a7430aeb5314c95fbe6baa9f306e"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/slow_hand/reconstruction_000900.npy",
+                "prediction_sha256": "541dd49bca4e4444b8a5b4ad9dd7e8fffebded6f8ff21764599ff3ddeb6251e8",
+                "sample_index": 900,
+                "target_timestamp_s": 38.83505296707153,
+                "target_uint8_sha256": "689669fc3ed30b17ee3b9c7d88f60ec20ff4eac339003d90d5864ed9d6dc1534"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              225,
+              450,
+              675,
+              900
+            ],
+            "scored_frame_count": 900
+          },
+          "still_life": {
+            "initial_anchor_excluded": true,
+            "metrics": {
+              "lpips_alex_mean": 0.7112684798960114,
+              "mse_mean": 0.08544209946437449,
+              "psnr": {
+                "exact_match_frame_count": 0,
+                "mean_db": 10.79282897658455,
+                "mean_is_positive_infinity": false
+              },
+              "ssim_mean": 0.22610432400774966
+            },
+            "num_frames_including_anchor": 1194,
+            "pre_registered_preview_artifacts": [
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/still_life/reconstruction_000001.npy",
+                "prediction_sha256": "0ade0fed880f031ea0459c3e6a5e889cfeea01fe0c033f08111b29e2a9428e49",
+                "sample_index": 1,
+                "target_timestamp_s": 0.11231708526611328,
+                "target_uint8_sha256": "c018ed1a28f8a79ce1b0eaf34391cb035cb513d1510a067f2c6cf520325a6fd3"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/still_life/reconstruction_000299.npy",
+                "prediction_sha256": "6b861d3af83d6a1ce2f919a0f2e1df84de38915816a12657a5c44478e3f67e80",
+                "sample_index": 299,
+                "target_timestamp_s": 16.880141258239746,
+                "target_uint8_sha256": "224e976405c50c38a370f886be8ad33423a4e5de8ce88bf99ec9f9148c213fd2"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/still_life/reconstruction_000597.npy",
+                "prediction_sha256": "9f2a7f5efacf76c09fb194d037e455d320f6b69efd34d4a29cbfa38d27ed5c65",
+                "sample_index": 597,
+                "target_timestamp_s": 33.57770609855652,
+                "target_uint8_sha256": "669debeab1cad4b9673382ca4ae10d9707ceeb184eb02392593b731fd2a8c800"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/still_life/reconstruction_000895.npy",
+                "prediction_sha256": "b6b83ee9d51a2f7bf4c76c7d506fcced60f3afa1f2f9884b911501fe914010a2",
+                "sample_index": 895,
+                "target_timestamp_s": 50.54876089096069,
+                "target_uint8_sha256": "593acf1f3503d8cc1dcb76be9a950fe48ae414295ba5007ec3b3631ab937e179"
+              },
+              {
+                "prediction_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference/v2e_seed0/still_life/reconstruction_001193.npy",
+                "prediction_sha256": "ba0c75ce06261d96fdd9d626b0d5d4901cba0ae15cd37d9c73bd423a92ed2c36",
+                "sample_index": 1193,
+                "target_timestamp_s": 68.00105714797974,
+                "target_uint8_sha256": "5019c5bf87e027dcd754e6bacd3d14fd1ead3ef5a266ddf63ee1fd30533b1dec"
+              }
+            ],
+            "pre_registered_preview_indices": [
+              1,
+              299,
+              597,
+              895,
+              1193
+            ],
+            "scored_frame_count": 1193
+          }
+        },
+        "sequence_count": 14,
+        "total_scored_frames": 15498
+      }
+    },
+    "protocol": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/protocol/hqf_repair_pair_protocol.json",
+      "schema": "hqf_repair_pair_4800_development_protocol_v1",
+      "sha256": "71c34039d54788165becd5cfd503cb27b91d139830f3a5f2257925b994481765"
+    },
+    "real_data_used": true,
+    "real_scores_computed": true,
+    "real_scoring_enabled": true,
+    "run_manifest": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference_manifest_frozen.json",
+      "sha256": "d95e2a1080ffd9486b6eae14684483f425ae80bf50e47565a4dc9af77a22f467"
+    },
+    "safety_note": "Real scores, when present, are report-only and must not be used to tune generators, training, scenes, or select checkpoints.",
+    "schema": "hqf14_reconstruction_paired_real_score_v1",
+    "status": "real_hqf14_paired_scoring_completed"
+  },
+  "protocol": {
+    "schema": "hqf_repair_pair_4800_development_protocol_v1",
+    "status": "prepared_unscored",
+    "created_utc": "2026-11-07T16:25:36.513006+00:00",
+    "task": "reconstruction",
+    "methods": [
+      "eventgenesis",
+      "v2e"
+    ],
+    "seeds": [
+      0
+    ],
+    "expected_runs": 2,
+    "expected_sequence_runs": 28,
+    "real_scores_computed": false,
+    "real_scoring_enabled": false,
+    "authorization_required": true,
+    "real_test_exposure": "HQF14 previously seen development evaluation; not a blind final test",
+    "training_budget_note": "Both selected checkpoints update4800; safely stopped parent training is incomplete",
+    "dataset_role": {
+      "primary": "HQF all14 registered sequences",
+      "extension": "HS-ERGB separate protocol, not implemented here"
+    },
+    "hqf_root": "/home/zhaoyuhan/Eventbased_WAM/data/sim2real/stage5/20261021-hqf14-memmap-v3",
+    "model_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/event_cnn_minimal",
+    "evreal_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/EVREAL",
+    "repository": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo",
+    "campaign": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2",
+    "sequences": [
+      "bike_bay_hdr",
+      "boxes",
+      "desk",
+      "desk_fast",
+      "desk_hand_only",
+      "desk_slow",
+      "engineering_posters",
+      "high_texture_plants",
+      "poster_pillar_1",
+      "poster_pillar_2",
+      "reflective_materials",
+      "slow_and_fast_desk",
+      "slow_hand",
+      "still_life"
+    ],
+    "runs": [
+      {
+        "run_id": "eventgenesis_seed0",
+        "method": "eventgenesis",
+        "seed": 0,
+        "checkpoint": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/eventgenesis/synthetic_best.pt",
+          "size_bytes": 171429967,
+          "sha256": "6ecce87e995bfd214b564584470927cc8fde0ac7e5a12aae8578bddea94c8192"
+        },
+        "selection_record": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/eventgenesis/synthetic_best.json",
+          "size_bytes": 472,
+          "sha256": "e76fd0ae05a44aa7a387c1dcb45beaf7fc48e5f27daf464e127c9b0b23136931"
+        },
+        "safe_stop_summary": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/eventgenesis/run_summary.json",
+          "size_bytes": 3262,
+          "sha256": "fc183c5c8b18e5c8e31d4bc34ef6509c8b97d852a0059d0e6250bdfc785741ad"
+        },
+        "scope_receipt": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/scope_reduction_20261108/final_receipt.json",
+          "size_bytes": 29900,
+          "sha256": "779b563b92c07e1871a237d1a9eca7e7c836e7038b11027b2b031b92c3f831f7"
+        },
+        "initial_state_sha256": "48426d94f4159592155eda873d4e71e2f06439c10eade990de5979231ed07a0f",
+        "checkpoint_updates": 4800,
+        "training_stopped_update": 5264,
+        "full_training_complete": false
+      },
+      {
+        "run_id": "v2e_seed0",
+        "method": "v2e",
+        "seed": 0,
+        "checkpoint": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/v2e/synthetic_best.pt",
+          "size_bytes": 171429967,
+          "sha256": "904a887ce46cddb1fe590aa48fe714cb1d5c4fbc3d50df24b168de7559783102"
+        },
+        "selection_record": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/v2e/synthetic_best.json",
+          "size_bytes": 463,
+          "sha256": "f60b39f314419a747c5f6c9b9335dffe35d3b7df685d0e7e4f195f7e11f33095"
+        },
+        "safe_stop_summary": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/training/seed0/v2e/run_summary.json",
+          "size_bytes": 3219,
+          "sha256": "5ca630ab03d768fd788b4e05a5d96722e39b161ae2cfe165090a25fdb1bef015"
+        },
+        "scope_receipt": {
+          "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/scope_reduction_20261108/final_receipt.json",
+          "size_bytes": 29900,
+          "sha256": "779b563b92c07e1871a237d1a9eca7e7c836e7038b11027b2b031b92c3f831f7"
+        },
+        "initial_state_sha256": "48426d94f4159592155eda873d4e71e2f06439c10eade990de5979231ed07a0f",
+        "checkpoint_updates": 4800,
+        "training_stopped_update": 5306,
+        "full_training_complete": false
+      }
+    ],
+    "inherited_protocol": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/protocol/hqf_14_reconstruction_test_frozen_20261024_v1.json",
+      "size_bytes": 16876,
+      "sha256": "46656bbf0b02e3cddc79b9957cde9092b33bba0ecca48a7687c0e733cab97494"
+    },
+    "data_manifest": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/20261021-hqf14-manifest-validation-v3/hqf_14_file_manifest_v3.json",
+      "size_bytes": 79485,
+      "sha256": "76e19db296be055135fa7446a4da68b704a1c573dd7f2b8f06ce599ddc1a3add"
+    },
+    "training_recipe": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-recon-sigmoid-formal-v2/sources/training_recipe.json",
+      "size_bytes": 14410,
+      "sha256": "cf04fa50cd833a21b2a1cae7127acff8678317b9535e0adc99fc7c0eb5d0013a"
+    },
+    "downstream_source_bundle": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/manifests/downstream_source_bundle.json",
+      "size_bytes": 215687,
+      "sha256": "828bccdaf0b046b56ee2b8c8230ebc3651b8ccfc16652ae7ea9a3f739dbabdb9"
+    },
+    "source_verification": {
+      "EVREAL": {
+        "repository": "EVREAL",
+        "commit": "398f03551b7f5d150ae10aa89e4e731557fce240",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 480,
+        "bytes_verified": 3749310,
+        "tree_sha256": "584e7f85ff3002d3ceb9c1a2e6b79ab9e1cc6793f58f06ddb36ec7aeb58ed1f5"
+      },
+      "event_cnn_minimal": {
+        "repository": "event_cnn_minimal",
+        "commit": "78aa471a66593f55e349303563997297fbc816e8",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 121,
+        "bytes_verified": 1365090,
+        "tree_sha256": "5933c2b155b20b2a2d39e70367017653f23cfbccb5d24bc079f3fa31f1b328c0"
+      }
+    },
+    "evaluation_sources": {
+      "infer_hqf_e2vid_candidate.py": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/scripts/infer_hqf_e2vid_candidate.py",
+        "size_bytes": 36843,
+        "sha256": "662d2819c3aa5f6fa3c4f35ed82fb19fde39be0b59076f49da664e2e59f7af56"
+      },
+      "score_hqf14_reconstruction.py": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/scripts/score_hqf14_reconstruction.py",
+        "size_bytes": 49741,
+        "sha256": "841cfbf27a7f881982a75ddd29965d76c5193a75836daa94fa9eca58dec5160e"
+      },
+      "verify_pinned_source.py": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/scripts/verify_pinned_source.py",
+        "size_bytes": 2736,
+        "sha256": "0d96c38cb84d844eb933bed0148abb295c4d5e098b90b286f0ffc1f150cd991d"
+      },
+      "evaluate_synthetic_reconstruction_fixture.py": {
+        "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-stage9-hqf15-v1/repo/benchmark/sim2real/scripts/evaluate_synthetic_reconstruction_fixture.py",
+        "size_bytes": 19354,
+        "sha256": "91551d33c25e22804854bd3514df1be8a5cfe61f16f2be517b47215f8c20a093"
+      }
+    },
+    "bridge_source": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/sources/hqf_repair_pair_bridge.py",
+      "size_bytes": 27126,
+      "sha256": "4aec0d0ef8ca88c7c0eb1fe1ae7cc3905aff87431b68253d69729965a7bc8f04"
+    },
+    "inherited_contract": {
+      "time_alignment": {
+        "event_window": "EVREAL MemMapDataset receives end-exclusive offsets; each model input slice is events with previous image timestamp < t <= current reference image timestamp. The first interval begins at event offset 0, and no event after the current image is included.",
+        "first_endpoint": "the first image initializes sequence time and recurrent state but is not passed through the model or scored; every later endpoint uses exactly the events in (previous_image_timestamp,current_image_timestamp] with no future event",
+        "nonmonotonic_source_images": "Apply data_integrity.nonmonotonic_endpoint_rule before endpoint association and event-only inference; no timestamps are fabricated.",
+        "pinned_EVREAL_legacy_difference": "The pinned EVREAL bag_to_npy helper computes searchsorted(..., right)-1 but its MemMapDataset consumes the value as an exclusive event offset, omitting one event at each endpoint. This adapter uses searchsorted(..., right) end-exclusive offsets to implement the registered (previous,current] interval exactly; the dataset/model/metric interface remains pinned.",
+        "reference_endpoint": "reference image timestamp",
+        "sequence_end": "include the final reference endpoint exactly once"
+      },
+      "photometry_and_metrics": {
+        "LPIPS_AlexNet_input": "repeat the grayscale [0,1] prediction and reference into 3 channels, then map linearly to [-1,1] for the pinned PerceptualSimilarity AlexNet network",
+        "MSE_input": "native grayscale float32 [0,1]",
+        "PSNR_input": "native grayscale float32 [0,1], data_range=1; exact match is +infinity",
+        "SSIM_input": "native grayscale float32 [0,1], data_range=1",
+        "aggregation": "arithmetic mean over evaluated frames within each sequence; then equal arithmetic mean over all 14 sequences",
+        "brightness_or_histogram_fit_to_real_GT": false,
+        "checkpoint_selection_uses_real_data": false,
+        "evaluated_endpoint_set": "all retained, strictly increasing HQF event endpoints after the first image boundary (indices 1..N-1) in each of the 14 sequences; the first image has no preceding event window and is excluded from model input and metrics; no output-selected frame subset",
+        "metric_values_per_frame": true,
+        "model_output_and_reference_range": "float32 [0,1] on the same native grayscale pixel grid",
+        "prediction_mapping": "clip the raw E2VID grayscale output to [0,1] once before metrics and preview export; no per-frame min-max, brightness fit, or histogram fit",
+        "primary_metric": "LPIPS-AlexNet",
+        "raw_model_output_recording": "retain finite raw min/max for audit; metrics use a deterministic clamp to [0,1]",
+        "secondary_metrics": [
+          "SSIM",
+          "PSNR",
+          "MSE"
+        ],
+        "sequence_weights": "equal; never proportional to frame count"
+      },
+      "raw_bag_contract": {
+        "event_polarity_encoding": "0=OFF, 1=ON",
+        "event_topic": "/dvs/events",
+        "extension": ".bag",
+        "native_sensor_hw": [
+          180,
+          240
+        ],
+        "reference_image_topic": "/dvs/image_raw",
+        "source_time_unit": "ROS header timestamp seconds"
+      },
+      "data_integrity": {
+        "known_raw_data_exception": {
+          "evidence": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_source_timing_audit_summary.json",
+          "header_time_backward_jump_from_previous_s": 2147.396356,
+          "raw_bag_manifest": "benchmark/sim2real/evidence/S5/20261021-recon-flow-localization/hqf_raw_download_manifest.json",
+          "retained_image_message_count_expected": 1266,
+          "sequence": "engineering_posters",
+          "source_image_index_zero_based": 528,
+          "source_image_message_count": 1267
+        },
+        "nonmonotonic_endpoint_rule": "Before inference, omit the offending reference target and its endpoint when its header timestamp is <= the last retained timestamp. Preserve the event stream unchanged; the next retained endpoint consumes all events since the previous retained endpoint. Record original source index, header timestamp, bag record timestamp, and image payload hash. Apply the rule without inspecting model outputs or metric values.",
+        "score_gate": "The 2026-10-24 user execution instruction freezes the already-reviewed v3 source-order/time-integrity rule for one first HQF evaluation. No score-based tuning, subset selection, or checkpoint selection is permitted.",
+        "score_gate_research_review_source": "reviews/recon_flow_localization_20261019/REVIEW.md",
+        "sequence_coverage": "All 14 registered HQF sequences remain in the dataset-level aggregate; only source frames that fail the fixed monotonic timestamp integrity rule are omitted.",
+        "source_image_order": "Preserve ROS bag record order. Use sensor_msgs/Image header.stamp as the image endpoint timestamp; do not sort frames or impute replacement timestamps.",
+        "strict_time_rule": "Retain a frame only when its header timestamp is strictly greater than the previous retained frame timestamp."
+      },
+      "model": {
+        "architecture": "pinned event_cnn_minimal E2VIDRecurrent",
+        "geometry": "pad native 180x240 using the pinned E2VID CropParameters, run inference, crop output back to the exact native raster",
+        "inference_input": "events only, five signed temporal bins between reference-frame endpoints",
+        "model_args_source": "configs/stage4_corrected_v2_flowdt1_seed0.json::reconstruction.model_args",
+        "model_args_source_sha256": "6fc6d28673689868fa18b76be4c1f4af1d84da0cad287cbf596801cb7ca6610d",
+        "output_range_rule": "raw output is checked finite and logged, then clipped once to [0,1] before all metric calculations",
+        "public_pretrained_checkpoint_substitution": false,
+        "sequence_start": "reset recurrent state once at the first retained image, use that image only as the temporal boundary, then make the first model call on events from (t0,t1]; never carry state across sequences",
+        "weights": "new corrected-Stage5 synthetic-best checkpoint, selected only by synthetic LPIPS-VGG validation"
+      }
+    },
+    "pre_registered_preview_indices": {
+      "bike_bay_hdr": {
+        "num_frames_including_anchor": 2431,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          608,
+          1215,
+          1822,
+          2430
+        ]
+      },
+      "boxes": {
+        "num_frames_including_anchor": 540,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          135,
+          270,
+          404,
+          539
+        ]
+      },
+      "desk": {
+        "num_frames_including_anchor": 1491,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          373,
+          745,
+          1117,
+          1490
+        ]
+      },
+      "desk_fast": {
+        "num_frames_including_anchor": 724,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          181,
+          362,
+          542,
+          723
+        ]
+      },
+      "desk_hand_only": {
+        "num_frames_including_anchor": 467,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          117,
+          233,
+          349,
+          466
+        ]
+      },
+      "desk_slow": {
+        "num_frames_including_anchor": 1434,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          359,
+          717,
+          1075,
+          1433
+        ]
+      },
+      "engineering_posters": {
+        "num_frames_including_anchor": 1266,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          317,
+          633,
+          949,
+          1265
+        ]
+      },
+      "high_texture_plants": {
+        "num_frames_including_anchor": 1090,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          273,
+          545,
+          817,
+          1089
+        ]
+      },
+      "poster_pillar_1": {
+        "num_frames_including_anchor": 998,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          250,
+          499,
+          748,
+          997
+        ]
+      },
+      "poster_pillar_2": {
+        "num_frames_including_anchor": 613,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          153,
+          306,
+          459,
+          612
+        ]
+      },
+      "reflective_materials": {
+        "num_frames_including_anchor": 619,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          155,
+          309,
+          463,
+          618
+        ]
+      },
+      "slow_and_fast_desk": {
+        "num_frames_including_anchor": 1744,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          436,
+          872,
+          1307,
+          1743
+        ]
+      },
+      "slow_hand": {
+        "num_frames_including_anchor": 901,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          225,
+          450,
+          675,
+          900
+        ]
+      },
+      "still_life": {
+        "num_frames_including_anchor": 1194,
+        "rule": "pre-inference fixed 0/25/50/75/100 percent positions over inferable sample indices 1..N-1; deduplicated; never output-selected",
+        "sample_indices": [
+          1,
+          299,
+          597,
+          895,
+          1193
+        ]
+      }
+    },
+    "selection": "both pre-existing update4800 synthetic_best.pt checkpoints, fixed before HQF; no real selection",
+    "score_identity_policy": "actual method_seed identifiers; no pretending other methods are V2E",
+    "aggregation": "frame means within sequence; equal14 sequence means; single seed development evaluation, no seed variance estimate",
+    "no_real_feedback_to_training_or_generator": true
+  },
+  "authorization": {
+    "schema": "hqf_repair_development_authorization_v1",
+    "authorized": true,
+    "task": "reconstruction",
+    "protocol_sha256": "71c34039d54788165becd5cfd503cb27b91d139830f3a5f2257925b994481765",
+    "source_user_instruction": "Use the two existing equal-step checkpoints for one HQF real evaluation of the repair; no long training; keep flow and pose progressing.",
+    "research_verification_note": "Explicit current user instruction supersedes the earlier fifteen-complete-run final-table gate only for this single-seed development evaluation. All14 original sequences and metric arithmetic retained. Both synthetic-selected checkpoints at update4800; do not select based on HQF.",
+    "no_feedback_to_training_or_selection": true,
+    "utc": "2026-11-07T16:26:26.472924+00:00"
+  },
+  "runtime_preflight": {
+    "status": "passed",
+    "real_data_used": false,
+    "actual_checkpoint_sha256": "6ecce87e995bfd214b564584470927cc8fde0ac7e5a12aae8578bddea94c8192",
+    "output_frames_per_case": 3,
+    "native_shape": [
+      180,
+      240
+    ],
+    "reference_pixel_change_does_not_change_predictions": true,
+    "identical_pair_mse": 0,
+    "identical_pair_ssim": 1,
+    "identical_pair_psnr_positive_infinity": true,
+    "identical_pair_lpips": 0.0,
+    "source_sha256": "f03457305751119e2d81c2fac5039a7b0738b62edce3cbbe06ee4e86c4f5b827"
+  },
+  "prediction_range_audit": {
+    "captured_utc": "2026-11-07T16:58:43.407553+00:00",
+    "purpose": "report-only output diagnostics; no selection or training",
+    "per_arm": {
+      "eventgenesis_seed0": {
+        "per_sequence": {
+          "bike_bay_hdr": {
+            "frames": 2430,
+            "mean_brightness": 0.4640336644613219,
+            "mean_spatial_std": 0.06173023969221234,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "boxes": {
+            "frames": 539,
+            "mean_brightness": 0.44207123840474943,
+            "mean_spatial_std": 0.07138891161175907,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk": {
+            "frames": 1490,
+            "mean_brightness": 0.5357273300941661,
+            "mean_spatial_std": 0.0528412900867098,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk_fast": {
+            "frames": 723,
+            "mean_brightness": 0.4987105572304773,
+            "mean_spatial_std": 0.06581637478760209,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk_hand_only": {
+            "frames": 466,
+            "mean_brightness": 0.5415150101038658,
+            "mean_spatial_std": 0.03197739086116763,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk_slow": {
+            "frames": 1433,
+            "mean_brightness": 0.5162924022874337,
+            "mean_spatial_std": 0.05885677575733362,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "engineering_posters": {
+            "frames": 1265,
+            "mean_brightness": 0.41334006219969055,
+            "mean_spatial_std": 0.05750074526885797,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "high_texture_plants": {
+            "frames": 1089,
+            "mean_brightness": 0.4585992219069825,
+            "mean_spatial_std": 0.03637360609720069,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "poster_pillar_1": {
+            "frames": 997,
+            "mean_brightness": 0.4245207676741991,
+            "mean_spatial_std": 0.04968394850335938,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "poster_pillar_2": {
+            "frames": 612,
+            "mean_brightness": 0.43912401765279074,
+            "mean_spatial_std": 0.04270165009487432,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "reflective_materials": {
+            "frames": 618,
+            "mean_brightness": 0.4063939799242469,
+            "mean_spatial_std": 0.06652728418436471,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "slow_and_fast_desk": {
+            "frames": 1743,
+            "mean_brightness": 0.5271450033454195,
+            "mean_spatial_std": 0.038644373235182466,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "slow_hand": {
+            "frames": 900,
+            "mean_brightness": 0.5031420709789114,
+            "mean_spatial_std": 0.05100004892197202,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "still_life": {
+            "frames": 1193,
+            "mean_brightness": 0.383956794989823,
+            "mean_spatial_std": 0.058227661411029634,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          }
+        },
+        "frames": 15498,
+        "equal_sequence_mean": {
+          "mean_brightness": 0.4681837229467199,
+          "mean_spatial_std": 0.05309073575097327,
+          "flat_frame_fraction": 0.0,
+          "near_black_frame_fraction": 0.0
+        },
+        "frame_weighted_flat_fraction": 0.0,
+        "frame_weighted_near_black_fraction": 0.0
+      },
+      "v2e_seed0": {
+        "per_sequence": {
+          "bike_bay_hdr": {
+            "frames": 2430,
+            "mean_brightness": 0.4613484585535529,
+            "mean_spatial_std": 0.036426116910615036,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "boxes": {
+            "frames": 539,
+            "mean_brightness": 0.4456830686873302,
+            "mean_spatial_std": 0.04573155978486047,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk": {
+            "frames": 1490,
+            "mean_brightness": 0.47021523899494494,
+            "mean_spatial_std": 0.0721111026093203,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk_fast": {
+            "frames": 723,
+            "mean_brightness": 0.45478635661340827,
+            "mean_spatial_std": 0.06382781933327066,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk_hand_only": {
+            "frames": 466,
+            "mean_brightness": 0.5133042142704594,
+            "mean_spatial_std": 0.03947847861571956,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "desk_slow": {
+            "frames": 1433,
+            "mean_brightness": 0.5062111818184172,
+            "mean_spatial_std": 0.06418753882695862,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "engineering_posters": {
+            "frames": 1265,
+            "mean_brightness": 0.4553007268299283,
+            "mean_spatial_std": 0.0348873010680902,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "high_texture_plants": {
+            "frames": 1089,
+            "mean_brightness": 0.4483351372362324,
+            "mean_spatial_std": 0.037809149901299036,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "poster_pillar_1": {
+            "frames": 997,
+            "mean_brightness": 0.4672504211550865,
+            "mean_spatial_std": 0.030163883108972247,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "poster_pillar_2": {
+            "frames": 612,
+            "mean_brightness": 0.4802797418858564,
+            "mean_spatial_std": 0.023879421760437357,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "reflective_materials": {
+            "frames": 618,
+            "mean_brightness": 0.45180606842999405,
+            "mean_spatial_std": 0.029926980267169234,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "slow_and_fast_desk": {
+            "frames": 1743,
+            "mean_brightness": 0.47160083711353734,
+            "mean_spatial_std": 0.05416921022261229,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "slow_hand": {
+            "frames": 900,
+            "mean_brightness": 0.4755325795376137,
+            "mean_spatial_std": 0.047729268264484453,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          },
+          "still_life": {
+            "frames": 1193,
+            "mean_brightness": 0.410337570635006,
+            "mean_spatial_std": 0.04678498572676703,
+            "flat_frame_fraction": 0.0,
+            "near_black_frame_fraction": 0.0
+          }
+        },
+        "frames": 15498,
+        "equal_sequence_mean": {
+          "mean_brightness": 0.4651422572686691,
+          "mean_spatial_std": 0.04479377260004118,
+          "flat_frame_fraction": 0.0,
+          "near_black_frame_fraction": 0.0
+        },
+        "frame_weighted_flat_fraction": 0.0,
+        "frame_weighted_near_black_fraction": 0.0
+      }
+    }
+  },
+  "historical_selection": {
+    "eventgenesis": {
+      "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/reconstruction/seed0/eventgenesis/synthetic_best.pt",
+      "epoch": 200,
+      "optimizer_update": 12000,
+      "selection_source": "synthetic validation only",
+      "sha256": "d13a2a90630e38e9fada13bf28be0aa837fcdd31649ac7c9b51cc29a2d696b9e",
+      "size_bytes": 171428367,
+      "synthetic_validation_lpips_vgg": 0.2709310594946146,
+      "synthetic_validation_temporal_consistency": 0.008164968632627279
+    },
+    "v2e": {
+      "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/reconstruction/seed0/v2e/synthetic_best.pt",
+      "epoch": 190,
+      "optimizer_update": 11400,
+      "selection_source": "synthetic validation only",
+      "sha256": "fd18e3c6a034588f97d5a4266b29b68b1451eda3f8e016ba6a05bcbae2475a38",
+      "size_bytes": 171428367,
+      "synthetic_validation_lpips_vgg": 0.3320503868162632,
+      "synthetic_validation_temporal_consistency": 0.007751900557195768
+    }
+  },
+  "source_manifest": {
+    "evaluation_support.py": "1a3ed85459a8b5987205113c5e9fb3142e02edfd1cff1b81b874e85ca2984a43",
+    "hqf_repair_pair_bridge.py": "4aec0d0ef8ca88c7c0eb1fe1ae7cc3905aff87431b68253d69729965a7bc8f04",
+    "hqf_repair_runtime_preflight.py": "f03457305751119e2d81c2fac5039a7b0738b62edce3cbbe06ee4e86c4f5b827",
+    "run_hqf_pair_reserved.py": "acb80db83454b2b84662fccb96ad6d61eb531ab80d84414cec795f656bc7f98c"
+  },
+  "bridge_preservation_checks": {
+    "parent_sha256": "0cda3a62c88d7d33bc6398d4f14e33f5d86f05d92a9f2ecd01c01e5e21db3c55",
+    "checks": {
+      "inspect_data": true,
+      "verify_downstream_sources": true,
+      "load_scorer": true,
+      "validate_inference_contract": true,
+      "preflight_metric_assets": true,
+      "score_existing_unchanged_except_inventory_status": true
+    }
+  },
+  "server_files": {
+    "results/score.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/score.json",
+      "size_bytes": 38913325,
+      "sha256": "41c3b9f998060421bcff5915ce5624eadb1d0a905152935d4a5511bca4dae942"
+    },
+    "results/per_sequence_scores.csv": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/per_sequence_scores.csv",
+      "size_bytes": 7477,
+      "sha256": "63626afbc5a8252162e4067a257df4f671da8e830a97460c1fe7ec9f8efa40f4"
+    },
+    "results/run_manifest.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/run_manifest.json",
+      "size_bytes": 57247,
+      "sha256": "3d629f3a07d0be23925f7574de0b981e06d7bd2b7f5847670cfda704e55ac86a"
+    },
+    "results/inference_manifest_frozen.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/results/inference_manifest_frozen.json",
+      "size_bytes": 56983,
+      "sha256": "d95e2a1080ffd9486b6eae14684483f425ae80bf50e47565a4dc9af77a22f467"
+    },
+    "protocol/hqf_repair_pair_protocol.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/protocol/hqf_repair_pair_protocol.json",
+      "size_bytes": 18845,
+      "sha256": "71c34039d54788165becd5cfd503cb27b91d139830f3a5f2257925b994481765"
+    },
+    "prediction_range_audit.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/prediction_range_audit.json",
+      "size_bytes": 7776,
+      "sha256": "dba38709a0595be98dfa5f993fceec344563c9abcecd2952b6d18b18814ef533"
+    }
+  },
+  "diagnostic_sources": {
+    "finish_hqf_evaluation.py": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/diagnostic_sources/finish_hqf_evaluation.py",
+      "size_bytes": 3567,
+      "sha256": "8e31b668a330232519467906d18d123420c295cdaecbfea53fd130db90e879c4"
+    },
+    "audit_prediction_range.py": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-hqf-repair-pair4800-v2/diagnostic_sources/audit_prediction_range.py",
+      "size_bytes": 2219,
+      "sha256": "97915be0ae7638b2b05a84a1347598f4f0530d53a9e758c9c2140fe5fcf73fe9"
+    }
+  },
+  "earlier_preflight_failure": "Attempt1 rejected a malformed SHA pin before any real inference or GPU reservation. Attempt1 files and failed preparation log retained; native sigmoid fixture had passed. Attempt2 pins both machine-verified64-character digests.",
+  "training_updates_during_this_evaluation": 0,
+  "long_training_started": false
+}
