@@ -122,3 +122,4 @@ class SparseEventSensor:
         (self.root/'packet_audit.json').write_text(json.dumps(self.packet_audit))
         (self.root/'event_samples.json').write_text(json.dumps(self.tracker.samples))
         (self.root/'estimator_states.json').write_text(json.dumps(self.tracker.diagnostics))
+        (self.root/'grasp_hypothesis_events.json').write_text(json.dumps(getattr(self.tracker,'hold_events',[])))

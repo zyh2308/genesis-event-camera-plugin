@@ -115,7 +115,8 @@ def main():
                     runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),event_control=args.event_control,
                     RGB_frame_budget=1 if args.rgb_initialize else 0,control_depth_frame_budget=1 if args.rgbd_initialize else 0,initialization_only=args.initialization_only,initialization_probe=args.initialization_probe,
                     initialization_available_at_reset=args.rgb_initialize,presentation_camera_images_not_used_by_policy=True,
-                    stop_event_capture_after_estimated_grasp=args.stop_events_after_grasp)
+                    stop_event_capture_after_estimated_grasp=args.stop_events_after_grasp,
+                    revocable_grasp=os.environ.get('CATCHIT_REVOCABLE_GRASP')=='1')
     (args.output/'protocol.json').write_text(json.dumps(manifest,indent=2))
     try:
         for episode,seed in enumerate(seeds):

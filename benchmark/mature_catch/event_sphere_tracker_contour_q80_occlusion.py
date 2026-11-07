@@ -5,6 +5,7 @@ published learned catching policy. It is not a learned-perception comparison.
 """
 from collections import deque
 import math
+import os
 
 import cv2
 import numpy as np
@@ -43,6 +44,9 @@ class EventSphereTracker:
         self.K=np.asarray(K,dtype=float);self.W,self.H=map(int,resolution_wh);self.radius=float(radius_m)
         self.pending=deque();self.samples=[];self.diagnostics=[];self.last_event_time=-np.inf
         self.attached_offset=None;self.near_hand_count=0
+        self.revocable_grasp=os.environ.get("CATCHIT_REVOCABLE_GRASP")=="1"
+        self.hand_history=deque(maxlen=64);self.hold_checked_sample_t=-np.inf
+        self.hold_contradictions=[];self.hold_events=[];self.hold_rearm_s=-np.inf
 
     def push(self,events,available_s,packet_time_s,camera_to_world):
         self.pending.append(dict(events=np.asarray(events),available_s=float(available_s),end_s=float(packet_time_s),T=np.asarray(camera_to_world,dtype=float)))
@@ -118,12 +122,35 @@ class EventSphereTracker:
         return dict(t=time_s,position=world.tolist(),uv=candidate['uv'].tolist(),radius_px=candidate['radius_px'],
                     quality=float(quality),available_s=packet['available_s'],maximum_event_s=float(events[:,0].max()))
 
+    def _check_assumed_grasp(self,now_s):
+        if not self.revocable_grasp or self.attached_offset is None:return
+        for sample in self.samples:
+            if sample['t']<=self.hold_checked_sample_t+1e-9:continue
+            self.hold_checked_sample_t=sample['t']
+            if now_s-sample['t']>.08 or sample['quality']<8:continue
+            poses=list(self.hand_history)
+            points=np.array([(T@np.r_[self.attached_offset,1.])[:3] for t,T in poses])
+            times=np.array([t for t,T in poses])
+            expected=np.array([np.interp(sample['t'],times,points[:,axis]) for axis in range(3)])
+            origin=np.asarray(sample['camera_origin']);ray=np.asarray(sample['position'])-origin;ray/=np.linalg.norm(ray)
+            rel=expected-origin
+            error_px=float(np.linalg.norm(np.cross(rel,ray))*self.K[0,0]/max(np.linalg.norm(rel),.1))
+            limit=max(8.,.75*sample['radius_px'])
+            if error_px>limit:self.hold_contradictions.append(sample['t'])
+            else:self.hold_contradictions=[]
+            if len(self.hold_contradictions)>=2 and self.hold_contradictions[-1]-self.hold_contradictions[-2]<=.05:
+                self.hold_events.append(dict(time_s=float(now_s),kind='assumed_grasp_revoked',bearing_error_px=error_px,GT_contact_used=False))
+                self.attached_offset=None;self.near_hand_count=0;self.hold_rearm_s=now_s+.12;self.hold_contradictions=[]
+                return
+
     def observe(self,now_s,hand_pose,hand_joint_positions):
+        self.hand_history.append((float(now_s),np.asarray(hand_pose).copy()))
         while self.pending and self.pending[0]['available_s']<=now_s+1e-9:
             packet=self.pending.popleft();sample=self._detect(packet)
             if sample is not None:
                 self.samples.append(sample);self.last_event_time=max(self.last_event_time,sample['maximum_event_s'])
         state=self._predict(now_s)
+        self._check_assumed_grasp(now_s)
         if self.attached_offset is not None:
             T=np.asarray(hand_pose);world=(T@np.r_[self.attached_offset,1.])[:3]
             result=dict(time_s=float(now_s),position=world,velocity=np.zeros(3),source='event_acquisition_then_proprioceptive_grasp_propagation',
@@ -134,8 +161,12 @@ class EventSphereTracker:
         if state['fit_error_m']>.12:return None
         T=np.asarray(hand_pose);distance=float(np.linalg.norm(state['position']-T[:3,3]))
         closing=float(np.linalg.norm(hand_joint_positions))>.8
-        self.near_hand_count=self.near_hand_count+1 if distance<.18 and closing else 0
-        if self.near_hand_count>=2:self.attached_offset=(np.linalg.inv(T)@np.r_[state['position'],1.])[:3]
+        self.near_hand_count=self.near_hand_count+1 if distance<.18 and closing and now_s>=self.hold_rearm_s else 0
+        if self.near_hand_count>=2:
+            self.attached_offset=(np.linalg.inv(T)@np.r_[state['position'],1.])[:3]
+            self.hold_checked_sample_t=self.samples[-1]['t'] if self.samples else now_s
+            self.hold_contradictions=[]
+            self.hold_events.append(dict(time_s=float(now_s),kind='assumed_grasp_started',GT_contact_used=False))
         state.update(source='known_radius_event_contour_and_causal_motion_fit',maximum_event_s=self.last_event_time,fresh_event=now_s-state['latest_s']<=.04)
         self.diagnostics.append({k:(v.tolist() if isinstance(v,np.ndarray) else v) for k,v in state.items()})
         return state
