@@ -1,0 +1,35 @@
+import datetime,hashlib,json,pathlib,shutil,subprocess,sys
+p=pathlib.Path(__file__).parent
+data=json.loads((p/'result_summary.json').read_text())
+assert data['pairing']['passed']
+for m,w in data['workers'].items():
+    assert w['manager_completion']['status']=='complete' and w['resource_release']['status']=='released'
+    for name,digest in w['source_manifest'].items():assert hashlib.sha256((p/name).read_bytes()).hexdigest()==digest,(m,name)
+assert subprocess.run([sys.executable,str(p/'export_analysis.py')],check=False).returncode==0
+repo=pathlib.Path('/home/科研/Eventbased_WAM/repositories/gec-mainline-resume-20261105')
+out=repo/'benchmark/sim2real/reviews/recon_activation_budget_20261108';out.mkdir(exist_ok=False)
+shutil.copytree(p/'analysis',out/'analysis')
+sources=out/'sources';sources.mkdir()
+for n in ['activation_budget_diagnostic.py','recon_short_diagnostic.py','run_activation_eventgenesis.py','run_activation_v2e.py','metric_source_binding.json','source_manifest.json','build_runners.py','collect_results.py','collect_when_done.py','export_analysis.py','package_report.py']:
+    shutil.copyfile(p/n,sources/n)
+(out/'evidence').mkdir();shutil.copyfile(p/'result_summary.json',out/'evidence/result_summary.json')
+lines=['# 重建输出激活与训练步数：合成配对短检','',
+    '本轮仅做合成诊断，没有HQF/E-POSE/MVSEC真实推理或评分，没有启动正式长训。两方法×两激活、seed0、每臂600步，共2,400次主诊断更新；另外保留独立单步预检记录。仿真器核心、事件、物理轨迹/标签、噪声及遮挡规则未修改。','',
+    '主比较为同一8条独立验证rollout、每条全部200帧的clipped LPIPS-Alex；VGG、SSIM、PSNR、MSE和结构/梯度诊断完整报告。首5帧后的195帧另作敏感性分析，不和旧口径混用。','',
+    '[完整分析、表格和图](analysis/README.md) · [各时间点CSV](analysis/all_timepoints.csv) · [逐rollout](analysis/per_rollout.csv) · [全部轻量证据](evidence/result_summary.json)','',
+    '## 执行与配对核验','',
+    '- 四臂从同一注册参数初始化开始；原Adam、loss、有效batch2×40、采样索引和实际标签/增强序列保持相同。跨生成器事件不要求相同；同一生成器内两激活的事件摘要必须相同。','- 新诊断采样RNG固定70000，是独立配对cohort，不能冒充旧正式训练的前600步。一次连续训练到600；验证前后保存恢复Python/NumPy/Torch/CUDA RNG。','- 每一步检查30个有限梯度张量、76次有效TC调用及非零梯度。不会因线性臂变黑/平坦而提前排除，只在非有限数值等安全错误时停止。','- 检查点含参数、optimizer、RNG和游标；实际核验CPU读回参数SHA与RNG，optimizer计数从运行对象核对。本轮未声称做过独立进程或完整optimizer恢复训练核验。','- 现存4,800步与5,264/5,306步权重只重评、不续训；原线性12,000/11,400步仅作历史参考，不是等预算激活控制。','- 4,800步是历史VGG最佳点，之后局部回升可能有选最优后的偏差；原连续训练完整VGG历史与按时间固定的末5点趋势一起保留。','',
+    '| 方法 | 每臂主更新 | 完整检查点 | 与原正式VGG口径重评差值 | 资源 |','|---|---:|---|---:|---|']
+for m,w in data['workers'].items():
+    lines.append(f"| {m} | 600 | 20 / 300 / 600 | {w['formal_metric_crosscheck']['difference']:+.3g} | {w['resource_release']['status']} |")
+lines+=['','两组均已结束，GPU预约由本轮管理器释放。光流、位姿原任务未修改或暂停。完整训练日志和权重仍在服务器，路径、大小和SHA在证据中；仓库只存轻量结果与可复核源码。','',
+    '## 预检与边界','',
+    '首次准备在评分实现SHA绑定检查处被拒绝，没有主诊断更新；随后改为自动读取此前核验清单的源文件指纹。第二版发现“无归一化”在锁定配置中用字符串`none`表示，而诊断断言误要求Python None；修正的是诊断判断，未改模型。修复后预检实际执行单步训练及六帧验证，第三版V2E另被其他会话GPU预约阻止，待其释放后在独立第四版运行。所有失败和资源记录保留，不作模型优劣结果。','',
+    '本轮最多支持同预算短程的激活/优化效应及既存轨迹局部学习趋势。不能证明永久容量上限，不能分解HQF退步的全部原因，也不会据此自动发起长训或挑选真实检查点。','']
+(out/'README.md').write_text('\n'.join(lines).rstrip()+'\n')
+status=repo/'benchmark/sim2real/sim2real_status.md'
+status.write_text('<!-- reconstruction-activation-budget-20261108 -->\n> 重建输出激活×训练进度的合成短诊断已完成：两方法、seed0、两激活、每臂600步；没有新增真实评分或长训。所有配对检查通过，GPU预约已释放。详见[完整诊断结果](reviews/recon_activation_budget_20261108/README.md)。\n\n'+status.read_text())
+for f in out.rglob('*.md'):f.write_text(f.read_text().rstrip()+'\n')
+index={str(f.relative_to(out)):dict(size_bytes=f.stat().st_size,sha256=hashlib.sha256(f.read_bytes()).hexdigest()) for f in sorted(out.rglob('*')) if f.is_file()}
+(out/'artifact_index.json').write_text(json.dumps(dict(created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),files=index),indent=2)+'\n')
+print('PACKAGED',out,'files',len(index))

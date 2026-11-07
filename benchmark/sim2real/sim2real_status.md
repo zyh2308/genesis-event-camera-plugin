@@ -1,3 +1,6 @@
+<!-- reconstruction-activation-budget-20261108 -->
+> 重建输出激活×训练进度的合成短诊断已完成：两方法、seed0、两激活、每臂600步；没有新增真实评分或长训。所有配对检查通过，GPU预约已释放。详见[完整诊断结果](reviews/recon_activation_budget_20261108/README.md)。
+
 <!-- hqf-repair-20261108 -->
 > 2026-11-08 01:58 JST：两组seed0、第4,800步HQF真实开发测试已完成，未新增训练；全部14序列、每组15,498帧，GPU预约已释放。前后结果保留旧权重预算差异，不作为严格修复因果量或多seed排名。详见[真实测试结果](reviews/hqf_repair_pair_20261108/README.md)。
 
