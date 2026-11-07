@@ -116,7 +116,9 @@ def main():
                     RGB_frame_budget=1 if args.rgb_initialize else 0,control_depth_frame_budget=1 if args.rgbd_initialize else 0,initialization_only=args.initialization_only,initialization_probe=args.initialization_probe,
                     initialization_available_at_reset=args.rgb_initialize,presentation_camera_images_not_used_by_policy=True,
                     stop_event_capture_after_estimated_grasp=args.stop_events_after_grasp,
-                    revocable_grasp=os.environ.get('CATCHIT_REVOCABLE_GRASP')=='1')
+                    revocable_grasp=os.environ.get('CATCHIT_REVOCABLE_GRASP')=='1',
+                    reject_partial_contours=os.environ.get('CATCHIT_REJECT_PARTIAL_CONTOURS')=='1',
+                    event_flight_fit=os.environ.get('CATCHIT_EVENT_FLIGHT_FIT')=='1')
     (args.output/'protocol.json').write_text(json.dumps(manifest,indent=2))
     try:
         for episode,seed in enumerate(seeds):
@@ -125,7 +127,7 @@ def main():
             obs,info=env.reset();initial=dict(position=env.object_pos3d.tolist(),velocity=env.object_vel6d.tolist(),gravity=env.Dcmm.model.opt.gravity.tolist(),release_time_s=float(env.object_static_time))
             if args.event_control:
                 runtime={}
-                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else []):
+                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else [])+['event_sphere_tracker_rgbd_base','event_bearing_flight']:
                     module=sys.modules[name];path=Path(module.__file__).resolve()
                     assert path.parent==Path(__file__).resolve().parent,(name,str(path))
                     runtime[name]=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest())

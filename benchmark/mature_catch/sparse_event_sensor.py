@@ -123,3 +123,4 @@ class SparseEventSensor:
         (self.root/'event_samples.json').write_text(json.dumps(self.tracker.samples))
         (self.root/'estimator_states.json').write_text(json.dumps(self.tracker.diagnostics))
         (self.root/'grasp_hypothesis_events.json').write_text(json.dumps(getattr(self.tracker,'hold_events',[])))
+        (self.root/'front_end_quality.json').write_text(json.dumps(dict(partial_contour_rejections=getattr(self.tracker,'partial_rejections',0))))
