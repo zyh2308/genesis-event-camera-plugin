@@ -12,6 +12,29 @@ from event_sphere_tracker_contour_q80_occlusion import sphere_from_edge_pixels
 cv2.setNumThreads(2)
 
 
+def foreground_outline(image, center, radius):
+    center=np.asarray(center,dtype=float);height,width=image.shape[:2]
+    x0=max(0,int(center[0]-2.3*radius));y0=max(0,int(center[1]-2.3*radius))
+    x1=min(width,int(center[0]+2.3*radius)+1);y1=min(height,int(center[1]+2.3*radius)+1)
+    patch=np.asarray(image[y0:y1,x0:x1],dtype=float);yy,xx=np.mgrid[y0:y1,x0:x1]
+    distance=np.hypot(xx+.5-center[0],yy+.5-center[1])
+    annulus=patch[(distance>1.5*radius)&(distance<2.2*radius)]
+    if len(annulus)<20:return None
+    background=np.median(annulus,axis=0)
+    scatter=float(np.median(np.linalg.norm(annulus-background,axis=1)))
+    threshold=max(3.,4*scatter)
+    mask=((np.linalg.norm(patch-background,axis=2)>threshold)&(distance<1.45*radius)).astype(np.uint8)
+    _,labels,stats,_=cv2.connectedComponentsWithStats(mask,8)
+    cy=int(np.clip(round(center[1]-.5)-y0,0,mask.shape[0]-1));cx=int(np.clip(round(center[0]-.5)-x0,0,mask.shape[1]-1))
+    label=int(labels[cy,cx])
+    if label==0 or stats[label,cv2.CC_STAT_AREA]<15:return None
+    contours,_=cv2.findContours((labels==label).astype(np.uint8),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    points=max(contours,key=cv2.contourArea).reshape(-1,2).astype(float)+[x0+.5,y0+.5]
+    points=cv2.convexHull(points.astype(np.float32)).reshape(-1,2).astype(float)
+    if len(points)<8:return None
+    return dict(points=points,background_scatter=scatter,threshold_RGB_units=threshold,foreground_pixels=int(stats[label,cv2.CC_STAT_AREA]))
+
+
 def detect_sphere(image, intrinsics, camera_to_world, radius_m):
     gray = cv2.cvtColor(np.asarray(image, dtype=np.uint8), cv2.COLOR_RGB2GRAY)
     smooth = cv2.GaussianBlur(gray, (3, 3), .6)
@@ -33,6 +56,12 @@ def detect_sphere(image, intrinsics, camera_to_world, radius_m):
             fit = sphere_from_edge_pixels(selected, K, radius_m)
             if fit is None or fit['angle_bins'] < 10:
                 continue
+            outline=foreground_outline(image,fit['uv'],fit['radius_px'])
+            refinement='Canny edge fallback'
+            if outline is not None:
+                refined=sphere_from_edge_pixels(outline['points'],K,radius_m)
+                if refined is not None and refined['angle_bins']>=10 and .75*fit['radius_px']<refined['radius_px']<1.35*fit['radius_px']:
+                    fit=refined;refinement='estimated RGB foreground convex silhouette'
             world = (T @ np.r_[fit['camera_position'], 1.])[:3]
             if not (-.8 < world[0] < .8 and 1.8 < world[1] < 2.9
                     and .35 < world[2] < 1.95):
@@ -51,7 +80,7 @@ def detect_sphere(image, intrinsics, camera_to_world, radius_m):
             candidates.append(dict(position=world.tolist(), uv=fit['uv'].tolist(),
                                    radius_px=fit['radius_px'],
                                    residual_px=fit['residual_px'],
-                                   contrast=contrast, score=score))
+                                   contrast=contrast, score=score,refinement=refinement,radius_uncertainty_px=max(.35,fit['residual_px'])))
     if not candidates:
         return dict(valid=False, candidates=[], source='single actual RGB image')
     best = max(candidates, key=lambda c: c['score'])

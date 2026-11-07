@@ -24,7 +24,7 @@
 
 ## 运行与证据
 
-服务器根目录：`/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a`。g1/g3 共享该目录；每次记录实际运行节点和 GPU UUID。`hybrid_v8_job.json`、`hybrid_v8_commands.json`、对应日志和结果为完整命令与运行证据。各 `source_versions` 为不可变部署快照。
+服务器根目录：`/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a`。g1/g3 共享该目录；每次记录实际运行节点和 GPU UUID。`hybrid_v11_job.json`、`hybrid_v11_commands.json`、对应日志和结果为完整命令与运行证据。各 `source_versions` 为不可变部署快照。
 
 `SOURCE_RECEIPT.json` 保存实际部署文件 SHA256；`FROZEN_EVENT_PROFILE.json` 是冻结参数的内容副本，原始配置路径和文件哈希见 receipt。实际事件 worker 每次核验 17 个冻结核心文件。
 
@@ -40,4 +40,6 @@ CUDA 的额外适配仅分组执行相同时间采样，保留全部时间点、
 - `rgb_sphere_initialization.py`：只接受图像与相机参数的球体初始化。
 - `event_sphere_tracker.py` / `event_sphere_tracker_kalman.py`：静止与运动状态估计。
 
-当前状态：三条件真实闭环在运行，尚未将新方案宣称为接取成功。旧纯事件失败、单帧测距误差、所有成功与失败均保留。最新结果将单独写入 `RESULTS.md`。
+当前状态：正常照明的已知开发来球出现首条完整事件跟踪接取成功；高速与逆光仍失败。逐条结果、同来球初始化消融与全部原始证据见 `results/first_event_catch_20261107/README.md`。v9 的计划模块与实际加载路径存在差异，已保留该记录并用逐模块路径/哈希核验的 v11 候选复测；不得把该成功归因于新轮廓算法。
+
+部署时必须实际物化所选源文件，不能用指向旧版本的入口脚本符号链接。Python 会把入口的实际目录加入模块搜索路径，可能覆盖 PYTHONPATH 的新候选。每集 reset 后生成 `loaded_module_receipt.json` 并检查实际加载位置。世界重力是共同场景配置，不是每集目标运动标签；三条件共享其使用规则。

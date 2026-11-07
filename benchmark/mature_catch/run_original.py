@@ -119,6 +119,13 @@ def main():
             np.random.seed(seed);random.seed(seed);torch.manual_seed(seed)
             folder=args.output/f'episode_{episode:03d}';folder.mkdir(exist_ok=False)
             obs,info=env.reset();initial=dict(position=env.object_pos3d.tolist(),velocity=env.object_vel6d.tolist(),gravity=env.Dcmm.model.opt.gravity.tolist(),release_time_s=float(env.object_static_time))
+            if args.event_control:
+                runtime={}
+                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']:
+                    module=sys.modules[name];path=Path(module.__file__).resolve()
+                    assert path.parent==Path(__file__).resolve().parent,(name,str(path))
+                    runtime[name]=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+                (args.output/'loaded_module_receipt.json').write_text(json.dumps(runtime,indent=2))
             if args.initialization_probe:
                 detection=env.sensor.initialization
                 probe=dict(seed=seed,scope='single RGB initialization probe, no physics rollout',initialization=detection,

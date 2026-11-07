@@ -29,7 +29,10 @@ class EventSphereTracker(MotionFilter):
         sample = dict(position=detection['position'],
                       camera_origin=detection['camera_origin'],
                       radius_px=detection['radius_px'])
-        self.static_covariance = self._measurement_cov(sample)[0]
+        R,n=self._measurement_cov(sample)
+        ratio=float(detection.get('radius_uncertainty_px',.65))/.65
+        radial=float(n@R@n)
+        self.static_covariance = R+(ratio*ratio-1)*radial*n[:,None]*n[None,:]
         self.static_latest_s = float(time_s)
 
     def _start_motion(self, sample):
@@ -78,11 +81,10 @@ class EventSphereTracker(MotionFilter):
                     continue
                 self.motion_suspicion = []
                 if mahal <= 25:
-                    gain = np.linalg.solve(S, self.static_covariance).T
-                    self.static_position += gain @ innovation
-                    A = np.eye(3) - gain
-                    self.static_covariance = A @ self.static_covariance @ A.T + gain @ R @ gain.T
-                    self.static_covariance += np.eye(3) * 1e-8
+                    # Keep the one-frame world position while the target is held.
+                    # Event contour radii have correlated quantization error;
+                    # repeated static detections validate visibility and onset,
+                    # rather than overpowering the image's initial range.
                     self.static_latest_s = sample['t']
                     self.static_measurements += 1
             if self.motion_onset_s is None:

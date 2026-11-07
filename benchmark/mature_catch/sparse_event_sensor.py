@@ -27,6 +27,7 @@ class SparseEventSensor:
         self.env=env;self.camera=env.sensor_camera;self.root=Path(output);self.root.mkdir(exist_ok=True)
         self.K=array(self.camera.intrinsics).astype(float)
         self.tracker=EventSphereTracker(self.K,self.camera.res,radius)
+        self.tracker.gravity=np.asarray(env.Dcmm.model.opt.gravity,dtype=float).copy()
         self.chunks=[];self.packet_audit=[];self.frame_index=0;self.worker=None;self.h=None
         self.initialization_only=os.environ.get('CATCHIT_INITIALIZATION_ONLY')=='1'
         self.initialization_probe=os.environ.get('CATCHIT_INITIALIZATION_PROBE')=='1'
@@ -41,7 +42,7 @@ class SparseEventSensor:
             T=array(self.camera.transform).astype(float);T[:3,1:3]*=-1
             detection=detect_sphere(rgb,self.K,T,radius)
             self.initialization=dict(detection,time_s=0.,available_s=0.,RGB_frames_read=1,
-                                     RGB_available_at_reset=True,lighting=os.environ['CATCHIT_LIGHTING'])
+                                     RGB_available_at_reset=True,lighting=os.environ['CATCHIT_LIGHTING'],public_world_gravity_m_s2=self.tracker.gravity.tolist())
             (self.root/'initialization.json').write_text(json.dumps(self.initialization,indent=2))
             self.initialization_failed=not detection['valid']
             if detection['valid']:self.tracker.initialize_rgb(detection,time_s=0.,available_s=0.)
