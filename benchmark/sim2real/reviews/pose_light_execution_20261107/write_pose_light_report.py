@@ -1,0 +1,99 @@
+"""Write an evidence-backed, scoped research update from the verified snapshot."""
+import argparse
+import json
+from pathlib import Path
+import random
+import statistics
+import zipfile
+
+
+def average(rows,arm,key):
+    return statistics.mean(r[arm][key] for r in rows)
+
+
+def interval(rows,key):
+    groups={}
+    for row in rows:
+        groups.setdefault(row['sequence'],[]).append(row['candidate'][key]-row['original'][key])
+    values=[statistics.mean(v) for v in groups.values()]
+    rng=random.Random(20261107)
+    draws=sorted(statistics.mean(rng.choices(values,k=len(values))) for _ in range(4000))
+    return [100*draws[100],100*draws[3899]]
+
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--root',type=Path,required=True)
+    args=p.parse_args()
+    with zipfile.ZipFile(args.root/'pose_light_evidence_20261107T061542Z_metrics.zip') as z:
+        real=json.loads(z.read('REAL_DIAGNOSTIC.json'))['results']
+        physical=json.loads(z.read('RADIANCE_interpolated.json'))['results']
+        external=json.loads(z.read('EXTERNAL_ARTIFACTS.json'))
+    lines=['# 位姿低光照配对短检与下一轮部署',
+        '',
+        '已完成干净续训、通用增强、一致性约束、冻结模型约束、单 seed 三维位置损失和权重插值对照。小幅权重插值通过原有合成压力检查，但真实 E-POSE 改善有限，最低光照组仍未获得可用的 EventGenesis 位姿成功率。正式模型暂不替换。新的物理低光照补算和配对短训管线已部署。',
+        '',
+        '## 研究结论',
+        '',
+        '通用增强可以大幅修复人工扰动下的深度预测，却损害正常场景的定位能力。EventGenesis 三 seed 强扰动平均深度误差从干净续训的 51.60 cm 降到一致性模型的 12.65 cm，但正常输入成功率从 27.34% 降到 19.62%。冻结父模型约束和本次单 seed 三维位置损失没有消除这一取舍，不能据此推广为方法无效。',
+        '',
+        '粗网格插值只有零插值满足合成开发集约束。随后在同一开发集补查更小比例，选中统一的 0.0625。选比例时未读取本轮真实评分。六组模型在另 96 条合成轨迹上均满足正常成功率下降不超过 2 个百分点，并改善两档人工扰动下的深度误差，10/10 项检查通过。EventGenesis 正常成功率的三个变化为 -1.04、-0.78、-1.56 个百分点。该 96 条轨迹此前已用于诊断，不是新的未见最终测试集。',
+        '',
+        '真实亮度干预与人工加噪并不等价。在预先指定的 4 条独立于训练的合成轨迹上，原 EventGenesis 模型从正常亮度的 4.74 cm 深度误差上升到八分之一亮度的 12.06 cm，成功率从 33.33% 降到 7.29%；V2E 分别为 4.92→8.57 cm、32.29%→31.25%。这个小规模光照干预重现了值得关注的泛化问题，但不能外推总体排名。辐照度倍数不对应真实 lux。',
+        '',
+        '## 冻结候选的真实数据诊断',
+        '',
+        '18 条 E-POSE 木块序列各取预先登记的 64 个均匀窗口，三个 seed。下表沿用历史主表的 16 条序列分组，仅用于可比性；这些序列已经查看，因此全部属于开发诊断。这里按序列等权、再对 seed 平均，不能与此前全帧加权结果直接混算。中心/深度候选与对照共用原有旋转预测，以隔离该分支的作用。成功率为 ADD-S 小于物体直径 10% 的比例。',
+        '',
+        '| 训练事件 | 分组 | 深度 MAE 原→候选/cm | 位姿成功率 原→候选/% | 中心误差 原→候选/px |',
+        '|---|---|---:|---:|---:|']
+    real_table=[]
+    for method in ('eventgenesis','v2e'):
+        for group,label in [('all16','全部16序列'),('gl','正常光照'),('ml','中等光照'),('ll','最低光照')]:
+            rows=[r for r in real if r['tag'].startswith(method+'_') and r['group']=='untouched_primary'
+                  and (group=='all16' or r['sequence'].endswith('_'+group))]
+            vals={k:[average(rows,a,k) for a in ('original','candidate')] for k in ('depth_mae_m','success','center_px')}
+            lines.append(f"| {method} | {label} | {100*vals['depth_mae_m'][0]:.2f}→{100*vals['depth_mae_m'][1]:.2f} | {100*vals['success'][0]:.2f}→{100*vals['success'][1]:.2f} | {vals['center_px'][0]:.2f}→{vals['center_px'][1]:.2f} |")
+            real_table.append(dict(method=method,group=group,metrics=vals))
+        overall=[r for r in real if r['tag'].startswith(method+'_') and r['group']=='untouched_primary']
+        ci=interval(overall,'success')
+        lines.append(f"\n{method} 的成功率变化按序列配对重采样的条件 95% 区间为 [{ci[0]:.2f}, {ci[1]:.2f}] 个百分点。此区间不充分估计随机种子总体的不确定性。\n")
+        if method=='eventgenesis':
+            lines.extend(['| 训练事件 | 分组 | 深度 MAE 原→候选/cm | 位姿成功率 原→候选/% | 中心误差 原→候选/px |',
+                          '|---|---|---:|---:|---:|'])
+    lines.extend(['',
+        '这次两种生成器都受益，V2E 改善更大。EventGenesis 的最低光照组仍是 0%，因此不能声称已解决真实域差距，也不能把合成压力检查通过写成真实泛化优势。',
+        '',
+        '## 插值模型的物理光照交叉检查',
+        '',
+        '| 训练事件 | 物理亮度 | 深度 MAE 干净续训→插值/cm | 成功率 干净续训→插值/% |',
+        '|---|---|---:|---:|'])
+    for method in ('eventgenesis','v2e'):
+        for condition in ('normal','half','eighth'):
+            rows=[r for r in physical if r['method']==method and r['condition']==condition]
+            def val(arm,metric):return 100*statistics.mean(r['scores'][arm][metric] for r in rows)
+            lines.append(f"| {method} | {condition} | {val('clean','depth_mae_m'):.2f}→{val('interpolated','depth_mae_m'):.2f} | {val('clean','success'):.2f}→{val('interpolated','success'):.2f} |")
+    lines.extend(['',
+        '## 下一轮已部署的工作',
+        '',
+        '在 g1 GPU 5 启动物理低光照数据补算与后续短训，管理进程 PID 4015076。运行根目录为 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1`。从原 96 条训练轨迹按等距序号选 8 条，补算半亮度和八分之一亮度事件。不会把上面的 4 条验证轨迹拿去训练。',
+        '',
+        '数据完成后先用实际生成的合成配对数据做烟雾检查，再自动启动两种生成器各三个 seed 的对照短训。两个分支分别为正常辅助 batch 与物理降亮度辅助 batch，均保留全部原训练窗口、相同初始化来源、采样/增强顺序、计算预算和冻结教师约束。每分支 6 epoch、288 次更新。详见 [物理低光照短训协议](POSE_PHYSICAL_LIGHT_TRAIN_PROTOCOL.md)。这项工作仍在补算阶段，不是已完成训练。',
+        '',
+        '本管线只报告合成结果，不自动重复 E-POSE 评分。4 条光照验证轨迹仅支持探索性判断。深度门禁通过后仍需核验完整位姿成功率，不能自动把新模型升级为正式模型。冻结 core 和传感器参数保持原样。光流 GPU 3/4 的既有队列没有更改，重建结果未覆盖。',
+        '',
+        '## 证据与失败记录',
+        '',
+        '- 指标快照 `pose_light_evidence_20261107T061542Z_metrics.zip`，本地逐项验证 13 个成员的大小和 SHA256。`verification.json` 记录校验，`synthetic_metrics.csv` 和 `summary.json` 保存可直接检查的合成结果。',
+        '- 三种子增强、冻结约束、单 seed 三维位置和粗网格结果保留。粗网格没有获得可用非零候选；未降低 2 个百分点的正常成功率门槛。',
+        '- 插值模型物理评分首轮因干净对照权重位于父实验目录而退出 1。使用独立评分源码、显式父目录和六组父权重 SHA256 核查后，另建输出重跑，退出 0。真实诊断退出 0。原失败文件未覆盖。',
+        '- GPU 1 的一次启动被另一项目有效预约拦截，未占卡、未修改他人预约。重试使用本轮粗网格任务释放的 GPU 0。临时 GPU 0/1 作业已释放，本轮 GPU 5 长任务结束后也自动释放。',
+        f"- 完整 253 项原始证据保留在 `{external['full_archive_path']}`，SHA256 `{external['sha256']}`。Git 中的 review 证据包保留历史源码、日志及紧凑结果，215 个成员已逐项核对大小和 SHA256；metrics 包另有 13 项核对记录。目录中的源码是后续物理短训版本，历史精确版本以各作业 `sources/source_manifest.json` 及完整证据包为准。",
+        '',
+        '人工扰动增强、物理光照干预、真实诊断是三个不同的实验口径。本文保留其区别。新一轮真实诊断不能再被称为独立最终测试；论文需要预先冻结新的独立测试对象或采集序列。',
+        ''])
+    (args.root/'README.md').write_text('\n'.join(lines))
+    (args.root/'real_diagnostic_summary.json').write_text(json.dumps(real_table,indent=2)+'\n')
+
+
+if __name__=='__main__':main()
