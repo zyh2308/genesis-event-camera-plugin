@@ -14,4 +14,6 @@
 
 本管线不启动真实 E-POSE 评分。先核验合成深度和完整位姿指标，冻结候选后再决定一次真实诊断。木块真实序列已被此前研究查看，新结果只能属于开发诊断。
 
-运行目录为 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1`。使用 g1 GPU 5，UUID 和实际 PID 见 `launch.json`、`live.json`。使用项目原子预约，结束后自动释放，不占用空进程。
+首轮 v1 的两个事件生成 worker 在同一张 24GB 卡上发生显存不足，其中一个 worker 完成了 4 条轨迹。失败日志和部分结果保持原样，v1 自动释放了自己的预约。v2 将两种生成器的事件补算均改为单 worker，生成算法、噪声、采样和训练配置不变。
+
+当前运行目录为 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2`。使用 g1 GPU 5，UUID 和实际 PID 见 `launch.json`、`live.json`。使用项目原子预约，结束后自动释放，不占用空进程。

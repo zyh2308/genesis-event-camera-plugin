@@ -15,6 +15,7 @@ def main():
     names=['20261107-pose-light-'+s+'-v1' for s in ('robustness','anchor','geometry','interpolation','interpolation-refined')]
     names.append('20261107-pose-light-interpolation-refined-v2')
     names.append('20261107-pose-physical-light-train-v1')
+    names.append('20261107-pose-physical-light-train-v2')
     stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     output=base/('pose_light_evidence_'+stamp+'.zip')
     files={}

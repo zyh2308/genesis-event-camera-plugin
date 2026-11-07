@@ -43,7 +43,7 @@ def main():
         print('TRAIN_LIGHT_PHYSICAL_READY',level,len(rows),flush=True)
         for script in ('replay_new_events.py','replay_v2e_parallel.py'):
             subprocess.run([sys.executable,'-u',str(sources/script),'--campaign',str(folder),
-                            '--kind','pose','--workers','2'],check=True)
+                            '--kind','pose','--workers','1'],check=True)
     shared.dump(args.out/'completion.json',dict(status='complete',real_data_used=False,selected=selected,levels=shared.LEVELS))
 
 

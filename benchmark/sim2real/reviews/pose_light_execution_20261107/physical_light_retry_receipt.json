@@ -1,0 +1,101 @@
+{
+  "captured_utc": "2026-11-07T06:25:41.703309+00:00",
+  "original": {
+    "root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1",
+    "failure": {
+      "status": "failed",
+      "completed": [],
+      "error": "Traceback (most recent call last):\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1/sources/run_pose_light_study.py\", line 152, in main\n    assert child.returncode == 0, (label,child.returncode)\n           ^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('radiance_train', 1)\n",
+      "utc": "2026-11-07T06:20:22.363160+00:00"
+    },
+    "release": {
+      "owner": "sim-to-real research chat",
+      "host": "g1",
+      "gpu_index": 5,
+      "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+      "run_id": "20261107-pose-physical-light-train-v1",
+      "pid": 4015076,
+      "process_start_ticks": "92193625",
+      "status": "released",
+      "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1",
+      "started_utc": "2026-11-07T06:15:12.281930+00:00",
+      "purpose": "paired synthetic pose robustness",
+      "current_job": null,
+      "heartbeat_utc": "2026-11-07T06:20:17.283808+00:00",
+      "released_utc": "2026-11-07T06:20:22.364027+00:00",
+      "completed": []
+    },
+    "worker_error": "Traceback (most recent call last):\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/replay_new_events.py\", line 78, in <module>\n    cursor['i']=k;scene.cur_t=float(times[k]);events=np.asarray(plugin.capture(),dtype=np.float64)\n                                                                ^^^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/physics_plugin.py\", line 327, in capture\n    frames, timestamps = self.interpolator.interpolate(\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/physics_interpolator.py\", line 901, in interpolate\n    pair_frames, pair_times = solve(a, b)\n                              ^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/physics_interpolator.py\", line 875, in solve\n    return self._interpolate_pair(*pair_args(a, b))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/physics_interpolator.py\", line 458, in _interpolate_pair\n    batch = depth_aware_bidirectional_warp_projected_batch_torch(\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/torch_physics.py\", line 597, in depth_aware_bidirectional_warp_projected_batch_torch\n    result1 = flatten_endpoint(frame1, depth1, uv1, z1, valid1, surface_id1)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/torch_physics.py\", line 584, in flatten_endpoint\n    result = _splat_projected_coverage_batch_torch(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core/genesis_event_plugin/torch_physics.py\", line 483, in _splat_projected_coverage_batch_torch\n    label_min.scatter_reduce_(0, idx_t, label[take], reduce=\"amin\", include_self=True)\n                                        ~~~~~^^^^^^\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 230.00 MiB. GPU 0 has a total capacity of 23.46 GiB of which 199.88 MiB is free. Including non-PyTorch memory, this process has 11.43 GiB memory in use. Process 4015330 has 11.84 GiB memory in use. Of the allocated memory 10.58 GiB is allocated by PyTorch, and 628.65 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n",
+    "completed_events": 4
+  },
+  "retry": {
+    "root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2",
+    "launch": {
+      "pid": 4019782,
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/sources/run_pose_light_study.py",
+        "--root",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2",
+        "--campaign",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+        "--gpu-index",
+        "5",
+        "--gpu-uuid",
+        "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+        "--physical-validation",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance"
+      ],
+      "utc": "2026-11-07T06:24:26.804492+00:00"
+    },
+    "preflight": {
+      "status": "passed",
+      "cpu_fit_preflight": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1/preflight.json",
+      "trainer_hash_unchanged": true,
+      "all_sources_compiled": true,
+      "deployment_only": "one event replay worker instead of two for each method",
+      "real_data_used": false
+    },
+    "source_manifest": {
+      "pose_light_robustness.py": "bccc8e057eec4b506029eeb14c9e4d6c90ddef2d2240b2b6e4da9367b26308c7",
+      "prepare_pose_radiance_pairs.py": "0526adbb228a1787cbd1fb35ded40173775e4034a1516f7561a26bbea901068e",
+      "prepare_pose_train_radiance.py": "498e6caa5241e5962c52c7b8f6dee287c7d8c94bf7ff85dbd8ecc503b5b65f64",
+      "pose_physical_light_adaptation.py": "9bc3b25e8de473d41bd7fe8e4dc06a9b41d9457759df32d7ae450632fb91d611",
+      "run_pose_light_study.py": "336748037ad7296beb860a262cb29bf493b42c4864ebf069e64b679709f9329b"
+    },
+    "live": {
+      "owner": "sim-to-real research chat",
+      "host": "g1",
+      "gpu_index": 5,
+      "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+      "run_id": "20261107-pose-physical-light-train-v2",
+      "pid": 4019782,
+      "process_start_ticks": "92249096",
+      "status": "running",
+      "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2",
+      "started_utc": "2026-11-07T06:24:27.016865+00:00",
+      "purpose": "paired synthetic pose robustness",
+      "current_job": {
+        "phase": "radiance_train",
+        "argv": [
+          "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+          "-u",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/sources/prepare_pose_train_radiance.py",
+          "--campaign",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+          "--out",
+          "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/radiance_train"
+        ],
+        "started_utc": "2026-11-07T06:24:27.088756+00:00",
+        "status": "running",
+        "pid": 4019789
+      },
+      "heartbeat_utc": "2026-11-07T06:25:39.068391+00:00"
+    },
+    "running": true,
+    "gpu_status": "5, GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885, 12622 MiB, 54 %"
+  },
+  "quality_rules_unchanged": true,
+  "change": "isolated retry with one replay worker per method; frozen core, profiles and trainer unchanged"
+}

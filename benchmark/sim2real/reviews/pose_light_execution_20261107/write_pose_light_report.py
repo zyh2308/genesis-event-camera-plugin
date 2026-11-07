@@ -29,6 +29,10 @@ def main():
         real=json.loads(z.read('REAL_DIAGNOSTIC.json'))['results']
         physical=json.loads(z.read('RADIANCE_interpolated.json'))['results']
         external=json.loads(z.read('EXTERNAL_ARTIFACTS.json'))
+    retry_path=args.root/'physical_light_retry_receipt.json'
+    retry=json.loads(retry_path.read_text()) if retry_path.exists() else None
+    deployment_pid=retry['retry']['launch']['pid'] if retry else 4015076
+    deployment_root=retry['retry']['root'] if retry else '/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1'
     lines=['# 位姿低光照配对短检与下一轮部署',
         '',
         '已完成干净续训、通用增强、一致性约束、冻结模型约束、单 seed 三维位置损失和权重插值对照。小幅权重插值通过原有合成压力检查，但真实 E-POSE 改善有限，最低光照组仍未获得可用的 EventGenesis 位姿成功率。正式模型暂不替换。新的物理低光照补算和配对短训管线已部署。',
@@ -76,7 +80,7 @@ def main():
     lines.extend(['',
         '## 下一轮已部署的工作',
         '',
-        '在 g1 GPU 5 启动物理低光照数据补算与后续短训，管理进程 PID 4015076。运行根目录为 `/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v1`。从原 96 条训练轨迹按等距序号选 8 条，补算半亮度和八分之一亮度事件。不会把上面的 4 条验证轨迹拿去训练。',
+        f'在 g1 GPU 5 启动物理低光照数据补算与后续短训，当前管理进程 PID {deployment_pid}。运行根目录为 `{deployment_root}`。从原 96 条训练轨迹按等距序号选 8 条，补算半亮度和八分之一亮度事件。不会把上面的 4 条验证轨迹拿去训练。',
         '',
         '数据完成后先用实际生成的合成配对数据做烟雾检查，再自动启动两种生成器各三个 seed 的对照短训。两个分支分别为正常辅助 batch 与物理降亮度辅助 batch，均保留全部原训练窗口、相同初始化来源、采样/增强顺序、计算预算和冻结教师约束。每分支 6 epoch、288 次更新。详见 [物理低光照短训协议](POSE_PHYSICAL_LIGHT_TRAIN_PROTOCOL.md)。这项工作仍在补算阶段，不是已完成训练。',
         '',
@@ -88,6 +92,7 @@ def main():
         '- 三种子增强、冻结约束、单 seed 三维位置和粗网格结果保留。粗网格没有获得可用非零候选；未降低 2 个百分点的正常成功率门槛。',
         '- 插值模型物理评分首轮因干净对照权重位于父实验目录而退出 1。使用独立评分源码、显式父目录和六组父权重 SHA256 核查后，另建输出重跑，退出 0。真实诊断退出 0。原失败文件未覆盖。',
         '- GPU 1 的一次启动被另一项目有效预约拦截，未占卡、未修改他人预约。重试使用本轮粗网格任务释放的 GPU 0。临时 GPU 0/1 作业已释放，本轮 GPU 5 长任务结束后也自动释放。',
+        '- 物理训练数据补算 v1 因两个事件 worker 在同一张 24GB GPU 上显存不足而退出 1。原失败和已完成的 4 条轨迹保留。v2 改为每种生成器单 worker，训练脚本哈希不变。新部署证据和实际源码清单见 `physical_light_retry_receipt.json`；早前 `summary.json` 是 06:15 UTC 的历史快照，其 v1 running 状态不代表当前状态。',
         f"- 完整 253 项原始证据保留在 `{external['full_archive_path']}`，SHA256 `{external['sha256']}`。Git 中的 review 证据包保留历史源码、日志及紧凑结果，215 个成员已逐项核对大小和 SHA256；metrics 包另有 13 项核对记录。目录中的源码是后续物理短训版本，历史精确版本以各作业 `sources/source_manifest.json` 及完整证据包为准。",
         '',
         '人工扰动增强、物理光照干预、真实诊断是三个不同的实验口径。本文保留其区别。新一轮真实诊断不能再被称为独立最终测试；论文需要预先冻结新的独立测试对象或采集序列。',
