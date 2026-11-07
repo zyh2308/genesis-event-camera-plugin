@@ -32,7 +32,10 @@ class EventSphereTracker(MotionFilter):
         R,n=self._measurement_cov(sample)
         ratio=float(detection.get('radius_uncertainty_px',.65))/.65
         radial=float(n@R@n)
-        self.static_covariance = R+(ratio*ratio-1)*radial*n[:,None]*n[None,:]
+        if 'range_std_m' in detection:
+            self.static_covariance=R+(float(detection['range_std_m'])**2-radial)*n[:,None]*n[None,:]
+        else:self.static_covariance = R+(ratio*ratio-1)*radial*n[:,None]*n[None,:]
+        self.initialization_label=('one RGB-D frame at time 0' if detection.get('initialization_mode')=='single_frame_RGBD' else 'one RGB frame at time 0')
         self.static_latest_s = float(time_s)
 
     def _start_motion(self, sample):
@@ -92,12 +95,12 @@ class EventSphereTracker(MotionFilter):
                             velocity=np.zeros(3), acceleration=np.zeros(3), latest_s=float(self.static_latest_s),
                             n=self.static_measurements, fit_error_m=0.,
                             motion_phase='static_prediction',
-                            initialization='one RGB frame at time 0')
+                            initialization=self.initialization_label)
         result = super()._predict(time_s)
         if result is not None:
             result.update(motion_phase='event_tracked_flight',
                           motion_onset_s=float(self.motion_onset_s),
-                          initialization='one RGB frame at time 0')
+                          initialization=self.initialization_label)
         return result
 
     def observe(self, now_s, hand_pose, hand_joint_positions):
@@ -115,7 +118,7 @@ class EventSphereTracker(MotionFilter):
             if now_s - self.static_latest_s > 1.0:
                 return None
             latest_event = float(self.last_event_time) if np.isfinite(self.last_event_time) else None
-            state.update(source='single_RGB_initialized_static_target_prediction',
+            state.update(source=('single_RGBD_initialized_static_target_prediction' if self.rgb_initialization.get('initialization_mode')=='single_frame_RGBD' else 'single_RGB_initialized_static_target_prediction'),
                          maximum_event_s=latest_event,
                          fresh_event=self.static_measurements > 0 and now_s-self.static_latest_s <= .04,
                          RGB_frame_time_s=self.rgb_initialization['time_s'],

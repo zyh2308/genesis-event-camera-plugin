@@ -28,10 +28,12 @@ def main():
     parser.add_argument('--sensor-probe',action='store_true')
     parser.add_argument('--event-control',action='store_true')
     parser.add_argument('--rgb-initialize',action='store_true')
+    parser.add_argument('--rgbd-initialize',action='store_true')
     parser.add_argument('--initialization-probe',action='store_true')
     parser.add_argument('--initialization-only',action='store_true')
     parser.add_argument('--stop-events-after-grasp',action='store_true')
     args=parser.parse_args();args.source=args.source.resolve();args.output=args.output.resolve()
+    if args.rgbd_initialize:args.rgb_initialize=True
     args.output.mkdir(parents=True,exist_ok=True)
     os.chdir(args.source);sys.path.insert(0,str(args.source));sys.path.insert(0,str(args.source/'gym_dcmm'))
     import numpy as np
@@ -48,7 +50,8 @@ def main():
     if args.initialization_probe or args.initialization_only:assert args.rgb_initialize
     os.environ.update(CATCHIT_LIGHTING=args.lighting,CATCHIT_BACKGROUND_WALL='1' if args.background_wall else '0',
                       CATCHIT_SENSOR_PROBE='1' if args.sensor_probe else '0',CATCHIT_EVENT_CONTROL='1' if args.event_control else '0',
-                      CATCHIT_RGB_INITIALIZE='1' if args.rgb_initialize else '0',CATCHIT_INITIALIZATION_PROBE='1' if args.initialization_probe else '0',
+                      CATCHIT_RGB_INITIALIZE='1' if args.rgb_initialize else '0',
+                      CATCHIT_RGBD_INITIALIZE='1' if args.rgbd_initialize else '0',CATCHIT_INITIALIZATION_PROBE='1' if args.initialization_probe else '0',
                       CATCHIT_INITIALIZATION_ONLY='1' if args.initialization_only else '0',
                       CATCHIT_STOP_EVENTS_AFTER_GRASP='1' if args.stop_events_after_grasp else '0')
     if args.sphere_radius is not None:os.environ['CATCHIT_SPHERE_RADIUS']=str(args.sphere_radius)
@@ -99,7 +102,7 @@ def main():
         return renderer.render().copy()
     result=[];start=time.monotonic()
     manifest=dict(source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
-        backend=getattr(env,'physics_backend','MuJoCo original reproduction; NOT Genesis'),observation=('one actual RGB frame at reset, then events + original proprioception' if args.rgb_initialize else 'event-only known-radius front end + original proprioception') if args.event_control else 'original GT + original noise',
+        backend=getattr(env,'physics_backend','MuJoCo original reproduction; NOT Genesis'),observation=(('one actual RGB-D frame at reset, then events + original proprioception' if args.rgbd_initialize else 'one actual RGB frame at reset, then events + original proprioception') if args.rgb_initialize else 'event-only known-radius front end + original proprioception') if args.event_control else 'original GT + original noise',
         inference_methods='verbatim AST from original PPO evaluator',checkpoint_sha256=hashlib.sha256(weights.read_bytes()).hexdigest(),
         timestep=float(env.Dcmm.model.opt.timestep),steps_per_policy=20,env_time=2.5,seeds=seeds,
         success='original evaluator: truncated at env_time > 2.5s; terminated means failure',
@@ -110,7 +113,7 @@ def main():
     manifest['horizontal_speed_m_s']=args.horizontal_speed
     manifest.update(sphere_radius_m=args.sphere_radius,lighting=args.lighting,background_wall=args.background_wall,
                     runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),event_control=args.event_control,
-                    RGB_frame_budget=1 if args.rgb_initialize else 0,initialization_only=args.initialization_only,initialization_probe=args.initialization_probe,
+                    RGB_frame_budget=1 if args.rgb_initialize else 0,control_depth_frame_budget=1 if args.rgbd_initialize else 0,initialization_only=args.initialization_only,initialization_probe=args.initialization_probe,
                     initialization_available_at_reset=args.rgb_initialize,presentation_camera_images_not_used_by_policy=True,
                     stop_event_capture_after_estimated_grasp=args.stop_events_after_grasp)
     (args.output/'protocol.json').write_text(json.dumps(manifest,indent=2))
@@ -121,7 +124,7 @@ def main():
             obs,info=env.reset();initial=dict(position=env.object_pos3d.tolist(),velocity=env.object_vel6d.tolist(),gravity=env.Dcmm.model.opt.gravity.tolist(),release_time_s=float(env.object_static_time))
             if args.event_control:
                 runtime={}
-                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']:
+                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else []):
                     module=sys.modules[name];path=Path(module.__file__).resolve()
                     assert path.parent==Path(__file__).resolve().parent,(name,str(path))
                     runtime[name]=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest())

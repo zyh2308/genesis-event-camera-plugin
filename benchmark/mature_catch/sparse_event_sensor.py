@@ -37,12 +37,19 @@ class SparseEventSensor:
             import imageio.v2 as imageio
             from rgb_sphere_initialization import detect_sphere
             self.env.update_sensor_pose()
-            rgb=array(self.camera.render(rgb=True,depth=False,segmentation=False,radiance=False,force_render=True)[0])
+            use_depth=os.environ.get('CATCHIT_RGBD_INITIALIZE')=='1'
+            initial_outputs=self.camera.render(rgb=True,depth=use_depth,segmentation=False,radiance=False,force_render=True)
+            rgb=array(initial_outputs[0])
             imageio.imwrite(self.root/'initial_rgb.png',rgb)
             T=array(self.camera.transform).astype(float);T[:3,1:3]*=-1
-            detection=detect_sphere(rgb,self.K,T,radius)
+            if use_depth:
+                from rgbd_sphere_initialization import initialize_sphere_rgbd
+                initial_depth=array(initial_outputs[1])
+                np.save(self.root/'initial_depth_camera_z.npy',initial_depth)
+                detection=initialize_sphere_rgbd(rgb,initial_depth,self.K,T,radius)
+            else:detection=detect_sphere(rgb,self.K,T,radius)
             self.initialization=dict(detection,time_s=0.,available_s=0.,RGB_frames_read=1,
-                                     RGB_available_at_reset=True,lighting=os.environ['CATCHIT_LIGHTING'],public_world_gravity_m_s2=self.tracker.gravity.tolist())
+                                     RGB_available_at_reset=True,control_depth_frames_read=int(use_depth),depth_frame_time_s=0. if use_depth else None,lighting=os.environ['CATCHIT_LIGHTING'],public_world_gravity_m_s2=self.tracker.gravity.tolist())
             (self.root/'initialization.json').write_text(json.dumps(self.initialization,indent=2))
             self.initialization_failed=not detection['valid']
             if detection['valid']:self.tracker.initialize_rgb(detection,time_s=0.,available_s=0.)

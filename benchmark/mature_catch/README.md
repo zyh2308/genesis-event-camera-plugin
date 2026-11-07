@@ -24,7 +24,7 @@
 
 ## 运行与证据
 
-服务器根目录：`/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a`。g1/g3 共享该目录；每次记录实际运行节点和 GPU UUID。`hybrid_v11_job.json`、`hybrid_v11_commands.json`、对应日志和结果为完整命令与运行证据。各 `source_versions` 为不可变部署快照。
+服务器根目录：`/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a`。g1/g3 共享该目录；每次记录实际运行节点和 GPU UUID。`rgbd_v1_job.json`、`rgbd_v1_commands.json`、对应日志和结果为完整命令与运行证据。各 `source_versions` 为不可变部署快照。
 
 `SOURCE_RECEIPT.json` 保存实际部署文件 SHA256；`FROZEN_EVENT_PROFILE.json` 是冻结参数的内容副本，原始配置路径和文件哈希见 receipt。实际事件 worker 每次核验 17 个冻结核心文件。
 
@@ -40,6 +40,8 @@ CUDA 的额外适配仅分组执行相同时间采样，保留全部时间点、
 - `rgb_sphere_initialization.py`：只接受图像与相机参数的球体初始化。
 - `event_sphere_tracker.py` / `event_sphere_tracker_kalman.py`：静止与运动状态估计。
 
-当前状态：正常照明的已知开发来球出现首条完整事件跟踪接取成功；高速与逆光仍失败。逐条结果、同来球初始化消融与全部原始证据见 `results/first_event_catch_20261107/README.md`。v9 的计划模块与实际加载路径存在差异，已保留该记录并用逐模块路径/哈希核验的 v11 候选完成复测（三条件均失败，见 `results/front_end_v11_recheck_20261107/`）；不得把该成功归因于新轮廓算法。
+当前状态：用户已批准首帧 RGB-D 初始化，随后只用事件及机器人自身状态。新候选在 g3 做三个条件与初始化消融，结果尚待收齐。旧单帧 RGB 方案的成功和失败见既有 results 目录；没有把首帧测距改善当作完整接取改善。
 
 部署时必须实际物化所选源文件，不能用指向旧版本的入口脚本符号链接。Python 会把入口的实际目录加入模块搜索路径，可能覆盖 PYTHONPATH 的新候选。每集 reset 后生成 `loaded_module_receipt.json` 并检查实际加载位置。世界重力是共同场景配置，不是每集目标运动标签；三条件共享其使用规则。
+
+最新输入方案详见 `docs/plans/2026-11-07-single-frame-rgbd-initialization.md`（仓库根目录下）。使用 `--rgbd-initialize` 启用首帧 RGB-D；旧 `--rgb-initialize` 保留作对照。深度只由控制前端在 reset 消费一次，插件内部重建所需几何深度仍与控制器隔离。初始化保存 `initial_depth_camera_z.npy` 与 `control_depth_frames_read=1`，不读取目标真值或 GT 分割。该深度为理想 Genesis 观测，不宣称已标定的 RealSense 传感器表现。

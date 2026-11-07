@@ -1,0 +1,167 @@
+{
+  "source_receipt": {
+    "source": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a/source_versions/64b22894fd7d",
+    "parent": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/catchit_20261107a/source_versions/a2674975def6",
+    "protocol": "one actual RGB-D initialization, then events and original proprioception only",
+    "scope": "initialization-only intervention; same event filter, controller, scene, scorer and frozen core",
+    "files": {
+      "rgb_sphere_initialization.py": "d01c671344956838ce3f2033c7d22e70851c3b753ff938fd0109d3dec96aa44f",
+      "sparse_event_sensor.py": "b37c9daf4f70823217c8c45223bdf276505ba0e793e48e01d79b63cdb9975a57",
+      "event_sphere_tracker.py": "743b15f9c925c85572edde8dbae7e74190c10aebadafe88e264befbfabb1116f",
+      "run_original.py": "434c9ca0eb48de35f00d0c75154052e355f552468d9970e7cbdb94c791ea520c",
+      "event_sphere_tracker_kalman.py": "73de2f56cfdff173010c1da668898723303994e597af6ae9be98af24efcd4363",
+      "event_sphere_tracker_contour_q80_occlusion.py": "dadc3c3932f587fcfc708880b29557e860c378c2f905bebb25180b7a3c5b7097",
+      "event_worker.py": "845bbe40784457f9dd68acc0c6b0d485bc85a45d85dc16d5d5ee91a099ad4ea5",
+      "run_gpu_stage_split_cpu.py": "16263bf90ba02ca9e7021e87bff2116362b26655a8112bc21135d41466b08d55",
+      "test_temporal_executor_16.py": "38ad83860a0b1213780484087819128de336579672e2845adf6491ce8f5036c3",
+      "bounded_torch_executor.py": "67cced1b53e23c44d3ed16d948f39f24b6bb07be8434e718b687e6cab95b6716",
+      "genesis_adapter.py": "301eb760c9b4ed7c6f98af2a454cdcd91a1c015db98242a323bf180c0a3b9930",
+      "event_wire.py": "a0837ea5852b98bc98bd2f90e0647aef6c8e2213040bbaf39817b6136800fb9c",
+      "rgbd_sphere_initialization.py": "496299905c790ef4f324b8b74c277291bd056b7f8cbbe80b156e18d1858e6d41",
+      "test_rgbd_initialization.py": "0e6fc14d595d7aa85af3a11a0ce231ee1d2e5634e4720787fd73915649d9b75d",
+      "test_sphere_geometry.py": "edfd95c1b4849a2a95d6d97c937ebb8ec41c211af26cbbaa7c8943906a4b167e",
+      "test_hybrid_state.py": "1ddbdd171dcf9aa228ea93965a21245556b6b2c365d1cfb8db265afa93766cdd"
+    }
+  },
+  "unit_checks": {
+    "test_sphere_geometry.py": {
+      "exit_code": 0,
+      "stdout": "{\"status\": \"PASS\", \"cases\": [{\"center\": [0.0, 0.0, 2.0], \"error_m\": 7.994050264693571e-15}, {\"center\": [0.35, -0.25, 1.7], \"error_m\": 7.897528804554417e-13}, {\"center\": [-0.2, 0.15, 0.65], \"error_m\": 5.275745451589655e-11}]}\n",
+      "stderr": ""
+    },
+    "test_hybrid_state.py": {
+      "exit_code": 0,
+      "stdout": "{\"status\": \"PASS\", \"scope\": \"state-estimator unit checks, no physics\", \"static_velocity_zero\": true, \"motion_detected_from_measurements\": true, \"motion_onset_s\": 0.6300000000000001, \"post_grasp_actor_inputs_independent_of_event_updates\": true}\n",
+      "stderr": ""
+    },
+    "test_rgbd_initialization.py": {
+      "exit_code": 0,
+      "stdout": "{\"status\": \"PASS\", \"cases\": [{\"centre\": [0.2, -0.3, 2.5], \"position_error_m\": 8.656224951809525e-15, \"interior_samples\": 29}, {\"centre\": [-0.4, 0.1, 1.5], \"position_error_m\": 5.993148011758445e-15, \"interior_samples\": 81}, {\"centre\": [0.0, 0.0, 1.0], \"position_error_m\": 6.843874359417885e-16, \"interior_samples\": 188}], \"blank_depth_rejected\": true, \"known_radius_surface_to_centre_correct\": true}\n",
+      "stderr": ""
+    }
+  },
+  "cached_validation": {
+    "scope": "CPU check of existing same-state rendered RGB and camera-z depth; no new capture or control rollout; GT used only after estimation to check camera contract",
+    "cases": [
+      {
+        "cached_case": "hybrid_normal_v11",
+        "RGB_only_error_mm": 46.95346173235638,
+        "RGBD_error_mm": 1.4175825619839462,
+        "initialization": {
+          "valid": true,
+          "position": [
+            0.222735819737674,
+            2.4008007633661244,
+            1.5252785457551825
+          ],
+          "uv": [
+            361.20709435842696,
+            58.38751822405004
+          ],
+          "radius_px": 7.898026206088767,
+          "residual_px": 0.19011107944022054,
+          "contrast": 40.0,
+          "score": 1016.7577273234051,
+          "refinement": "estimated RGB foreground convex silhouette",
+          "radius_uncertainty_px": 0.35,
+          "candidates": [
+            {
+              "position": [
+                0.21850936631932974,
+                2.3526527504675245,
+                1.5235912732959207
+              ],
+              "uv": [
+                361.20709435842696,
+                58.38751822405004
+              ],
+              "radius_px": 7.898026206088767,
+              "residual_px": 0.19011107944022054,
+              "contrast": 40.0,
+              "score": 1016.7577273234051,
+              "refinement": "estimated RGB foreground convex silhouette",
+              "radius_uncertainty_px": 0.35
+            }
+          ],
+          "source": "single actual RGB-D frame; RGB proposal and interior camera-z depth",
+          "camera_origin": [
+            0.0,
+            -0.136623352766037,
+            1.4363584518432617
+          ],
+          "RGB_only_position": [
+            0.21850936631932974,
+            2.3526527504675245,
+            1.5235912732959207
+          ],
+          "initialization_mode": "single_frame_RGBD",
+          "depth_convention": "linear camera-z metres",
+          "depth_interior_samples": 41,
+          "depth_range_mad_m": 0.0003777057563176811,
+          "range_std_m": 0.01,
+          "depth_sensor_model": "ideal Genesis depth; not real-device calibration"
+        }
+      },
+      {
+        "cached_case": "hybrid_backlit_v11",
+        "RGB_only_error_mm": 9.36244024483319,
+        "RGBD_error_mm": 1.948444508734082,
+        "initialization": {
+          "valid": true,
+          "position": [
+            0.22391534307798347,
+            2.4006898198287274,
+            1.5245465166002092
+          ],
+          "uv": [
+            361.36211773725944,
+            58.52106698724326
+          ],
+          "radius_px": 7.755879407400323,
+          "residual_px": 0.3373839424377101,
+          "contrast": 232.0,
+          "score": 4404.760957042908,
+          "refinement": "estimated RGB foreground convex silhouette",
+          "radius_uncertainty_px": 0.35,
+          "candidates": [
+            {
+              "position": [
+                0.22460791320293746,
+                2.4085378104039328,
+                1.5248192850974265
+              ],
+              "uv": [
+                361.36211773725944,
+                58.52106698724326
+              ],
+              "radius_px": 7.755879407400323,
+              "residual_px": 0.3373839424377101,
+              "contrast": 232.0,
+              "score": 4404.760957042908,
+              "refinement": "estimated RGB foreground convex silhouette",
+              "radius_uncertainty_px": 0.35
+            }
+          ],
+          "source": "single actual RGB-D frame; RGB proposal and interior camera-z depth",
+          "camera_origin": [
+            0.0,
+            -0.136623352766037,
+            1.4363584518432617
+          ],
+          "RGB_only_position": [
+            0.22460791320293746,
+            2.4085378104039328,
+            1.5248192850974265
+          ],
+          "initialization_mode": "single_frame_RGBD",
+          "depth_convention": "linear camera-z metres",
+          "depth_interior_samples": 38,
+          "depth_range_mad_m": 0.0005093364596862049,
+          "range_std_m": 0.01,
+          "depth_sensor_model": "ideal Genesis depth; not real-device calibration"
+        }
+      }
+    ],
+    "passed": true
+  }
+}
