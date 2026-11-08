@@ -1,0 +1,71 @@
+{
+  "sources": {
+    "base": {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\contact_paired25\\CONTACT_PAIRED_COMPARISON.json",
+      "sha256": "953b993d6f69672fef4d7ac6e9cfa34d467e23fa984619b5d6f00a751677df76"
+    },
+    "shared_fit": {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\contact_paired25_flightfit\\CONTACT_PAIRED_COMPARISON.json",
+      "sha256": "d8fc52a31bcf69807bcc763b7bc2ab447979a1c65b393fbcf101395410ef1b12"
+    }
+  },
+  "actual_plotted_rows": 24,
+  "paired_cases": [
+    "v01_normal25",
+    "v02_normal25",
+    "v03_normal25",
+    "v04_normal25",
+    "v05_normal25",
+    "v06_normal25"
+  ],
+  "paired_seeds": {
+    "v01_normal25": 2026110831,
+    "v02_normal25": 2026110832,
+    "v03_normal25": 2026110833,
+    "v04_normal25": 2026110834,
+    "v05_normal25": 2026110835,
+    "v06_normal25": 2026110836
+  },
+  "fixed_parameters": {
+    "camera_pitch_degrees": 7,
+    "endpoint_hz": 25,
+    "policy": "unchanged original pretrained",
+    "contact": "combined selected by GT only",
+    "event_core": "unchanged frozen sparse path",
+    "init": "one rendered RGB-D frame then events/proprioception"
+  },
+  "changed_only_declared_parameter": "causal_flight_fit_enabled, common to both methods",
+  "outcomes": [
+    {
+      "stage": "base",
+      "method": "ours",
+      "n": 6,
+      "verified_catches": 2
+    },
+    {
+      "stage": "base",
+      "method": "v2e",
+      "n": 6,
+      "verified_catches": 5
+    },
+    {
+      "stage": "shared_fit",
+      "method": "ours",
+      "n": 6,
+      "verified_catches": 4
+    },
+    {
+      "stage": "shared_fit",
+      "method": "v2e",
+      "n": 6,
+      "verified_catches": 5
+    }
+  ],
+  "GT_or_init_only_pooled": false,
+  "all_ours_v2e_successes_and_failures_retained": true,
+  "outputs": {
+    "25Hz共同估计器对照_结果.png": "8377bbbb3aec72b7bd7bda7be58f1edc0f65458120b10002b107982f023b1989",
+    "25Hz共同估计器对照_结果.pdf": "1cc156efe7741a3581bf6a1f79b50300639fc53a5f992f759e15a818b1ae7b2d",
+    "25Hz共同估计器对照_逐条.csv": "ff79d599cac93d4d50a80e2f3c4907a86c204a412285e28fe0b6a980adb4466a"
+  }
+}

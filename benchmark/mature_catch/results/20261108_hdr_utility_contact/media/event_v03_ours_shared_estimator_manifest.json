@@ -1,0 +1,187 @@
+{
+  "title": "事件闭环｜共同估计改进，同一来球",
+  "case": "v03_normal25",
+  "sources": {
+    "left": {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\event_demo_v03\\ours_before\\whole_and_hand.mp4",
+      "sha256": "9e90d011f1f2cac972f688e9cce5b036ceb119ae891b876cf2b5865932c5198f",
+      "manifest_path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\event_demo_v03\\ours_before\\manifest.json",
+      "manifest_sha256": "0c63548ea7584cae5c6cc4be36f61d327c3110abdf25f6065b24fc77318b8a9b",
+      "manifest": {
+        "source_run": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/hdr_utility_diagnosis_20261108a/contact_paired25/cases/v03_normal25/ours",
+        "episode": 0,
+        "physics": "archived actual Genesis trajectory; renderer-only replay, no new physics rollout",
+        "GT_used_for_camera": false,
+        "camera_tracks": "robot hand proprioception only",
+        "maximum_allowed_replay_position_error_m": 1e-05,
+        "frames": 34,
+        "checks": [
+          0.8000000000000006,
+          1.356000000000001,
+          1.356000000000001,
+          1.356000000000001
+        ],
+        "source_event_control": true,
+        "time_start_s": 0.04000000000000002,
+        "time_end_s": 1.356000000000001,
+        "wall_s": 55.85685332195135
+      },
+      "frame_times_source": "40 ms full control intervals; exact terminal time from source manifest"
+    },
+    "right": {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\event_demo_v03\\ours_flightfit\\whole_and_hand.mp4",
+      "sha256": "8e8fdacd68ea1efcc953fa71119a4d6a35d0c9d45ed360566aa93298cb66011f",
+      "manifest_path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\event_demo_v03\\ours_flightfit\\manifest.json",
+      "manifest_sha256": "d02d7be7ff6cb572a72db503a57e437ace38fe05590056da16262ea801e6c640",
+      "manifest": {
+        "source_run": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/hdr_utility_diagnosis_20261108a/contact_paired25_flightfit/cases/v03_normal25/ours",
+        "episode": 0,
+        "physics": "archived actual Genesis trajectory; renderer-only replay, no new physics rollout",
+        "GT_used_for_camera": false,
+        "camera_tracks": "robot hand proprioception only",
+        "maximum_allowed_replay_position_error_m": 1e-05,
+        "frames": 63,
+        "checks": [
+          0.8000000000000006,
+          1.360000000000001,
+          1.440000000000001,
+          2.3999999999999573
+        ],
+        "source_event_control": true,
+        "time_start_s": 0.04000000000000002,
+        "time_end_s": 2.519999999999944,
+        "wall_s": 53.58370668196585
+      },
+      "frame_times_source": "40 ms full control intervals; exact terminal time from source manifest"
+    }
+  },
+  "aggregate_results": {
+    "ours_before": "2/6",
+    "ours_after": "4/6"
+  },
+  "aggregate_scope": "All six paired development cases, not an independent formal test or selected-success subset",
+  "aggregate_source": "Root verified actual six-case experiment results; demo source manifests identify representative v03 trajectories",
+  "event_control": true,
+  "simulation": "Archived actual g3 Genesis physics, local video composition only",
+  "source_video_preserved": true,
+  "transforms": {
+    "crop_xywh": [
+      640,
+      0,
+      640,
+      480
+    ],
+    "playback_speed": 0.5,
+    "source_clock_start_s": 0.04,
+    "clock": "Reset-relative control-state timestamps; short final step uses exact source terminal time",
+    "output_clock": "40 ms source-state samples; each displayed twice at25fps",
+    "sampling": "Last available source frame, never a future source frame",
+    "interpolation": "none",
+    "terminated_side": "Hold last frame; explicit ended banner and true terminal timestamp",
+    "image_recoloring": false
+  },
+  "verification": {
+    "ffprobe": {
+      "event_v03_ours_shared_estimator.mp4": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1320,
+            "height": 740,
+            "r_frame_rate": "25/1",
+            "duration": "5.040000",
+            "nb_frames": "126",
+            "nb_read_frames": "126"
+          }
+        ],
+        "format": {
+          "duration": "5.040000"
+        }
+      },
+      "event_v03_ours_shared_estimator.gif": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "gif",
+            "width": 1100,
+            "height": 616,
+            "r_frame_rate": "25/2",
+            "duration": "5.040000",
+            "nb_frames": "63",
+            "nb_read_frames": "63"
+          }
+        ],
+        "format": {
+          "duration": "5.040000"
+        }
+      }
+    },
+    "gif_loop": 0,
+    "gif_frames": 63,
+    "gif_duration_ms": 5040
+  },
+  "outputs": [
+    {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\media\\event_v03_ours_shared_estimator.mp4",
+      "sha256": "3df3e5af315d646c4ebcdb45c40f2d395985ce3345d5b86762fd6a49d634f5b9",
+      "size_bytes": 1040772
+    },
+    {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\media\\event_v03_ours_shared_estimator.gif",
+      "sha256": "ac2838d2723ed67147f3e007d51d8642cbf896a02a69f20ce2b90dc52ffdc5c6",
+      "size_bytes": 5683602
+    },
+    {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\media\\event_v03_ours_shared_estimator_poster.png",
+      "sha256": "84d676ff2b8e847a99936d717f5b6bb7cfd63cfd58101647e9c885d6ce37969d",
+      "size_bytes": 291110
+    }
+  ],
+  "commands": {
+    "mp4": [
+      "C:\\Users\\zhaoyuhan\\miniconda3\\envs\\genesis\\Lib\\site-packages\\imageio_ffmpeg\\binaries\\ffmpeg-win-x86_64-v7.1.exe",
+      "-y",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-f",
+      "rawvideo",
+      "-pix_fmt",
+      "rgb24",
+      "-s",
+      "1320x740",
+      "-r",
+      "25",
+      "-i",
+      "-",
+      "-an",
+      "-c:v",
+      "libx264",
+      "-crf",
+      "18",
+      "-preset",
+      "medium",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\media\\event_v03_ours_shared_estimator.mp4"
+    ],
+    "gif": [
+      "C:\\Users\\zhaoyuhan\\miniconda3\\envs\\genesis\\Lib\\site-packages\\imageio_ffmpeg\\binaries\\ffmpeg-win-x86_64-v7.1.exe",
+      "-y",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-i",
+      "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\media\\event_v03_ours_shared_estimator.mp4",
+      "-filter_complex",
+      "fps=12.5,scale=1100:-2:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a",
+      "-loop",
+      "0",
+      "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\media\\event_v03_ours_shared_estimator.gif"
+    ]
+  },
+  "script_sha256": "e0ec6c9bdb9661befd938540b9206f2fa657808db714cbf6215c67818c293481"
+}

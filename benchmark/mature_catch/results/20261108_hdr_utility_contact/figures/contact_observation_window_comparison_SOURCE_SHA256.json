@@ -1,0 +1,103 @@
+{
+  "scope": "24 actual actor rollouts: six matched, already-observed development cases x2event sources x2common observers; not independent testing",
+  "sources": {
+    "whole_packet": {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\contact_paired25_flightfit\\CONTACT_PAIRED_COMPARISON.json",
+      "sha256": "d8fc52a31bcf69807bcc763b7bc2ab447979a1c65b393fbcf101395410ef1b12"
+    },
+    "window10ms": {
+      "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\contact_paired25_windows10\\CONTACT_PAIRED_COMPARISON.json",
+      "sha256": "20da61f8e39b7bae6ec2b67230720760494f50dfe2cad7c7b7f7dfde5f43525f"
+    }
+  },
+  "actual_actor_episodes": 24,
+  "cases": [
+    "v01_normal25",
+    "v02_normal25",
+    "v03_normal25",
+    "v04_normal25",
+    "v05_normal25",
+    "v06_normal25"
+  ],
+  "seeds": {
+    "v01_normal25": 2026110831,
+    "v02_normal25": 2026110832,
+    "v03_normal25": 2026110833,
+    "v04_normal25": 2026110834,
+    "v05_normal25": 2026110835,
+    "v06_normal25": 2026110836
+  },
+  "fixed_parameters": {
+    "camera_pitch_degrees": 7,
+    "endpoint_hz": 25,
+    "policy": "unchanged original pretrained",
+    "contact": "combined selected by GT only",
+    "event_core": "unchanged frozen sparse path",
+    "init": "one rendered RGB-D frame then events/proprioception",
+    "causal_flight_fit_enabled": true
+  },
+  "sole_intended_common_frontend_change": "observation_window_ms:0(default whole-packet detector) ->10",
+  "shared_flight_fit_enabled": true,
+  "no_GT_or_initialization_only_episodes_pooled": true,
+  "all_successes_and_failures_retained": true,
+  "declared_physics_and_score_fixed": true,
+  "source_receipt_check": {
+    "available": [
+      true,
+      true
+    ],
+    "checked_fields": [
+      "checkpoint_sha256",
+      "core_files",
+      "profile_sha256",
+      "v2e_checkpoint_sha256"
+    ],
+    "sources": [
+      {
+        "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\contact_paired25_flightfit\\EVALUATION_PROTOCOL.json",
+        "sha256": "576a8487603a3206598388d4e2141b7b6d7396fcdc86a2e0d731214106d7eb9e"
+      },
+      {
+        "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\delivery_local\\contact_paired25_windows10\\EVALUATION_PROTOCOL.json",
+        "sha256": "e84b0f55f923e58890967d6b4fdf9687bb28be38e16b9a6fb5197d0925fc575d"
+      }
+    ]
+  },
+  "outcomes": [
+    {
+      "observer": "whole_packet",
+      "method": "ours",
+      "episodes": 6,
+      "verified_catches": 4
+    },
+    {
+      "observer": "whole_packet",
+      "method": "v2e",
+      "episodes": 6,
+      "verified_catches": 5
+    },
+    {
+      "observer": "window10ms",
+      "method": "ours",
+      "episodes": 6,
+      "verified_catches": 6
+    },
+    {
+      "observer": "window10ms",
+      "method": "v2e",
+      "episodes": 6,
+      "verified_catches": 2
+    }
+  ],
+  "script": {
+    "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\robot_closed_loop_reuse_20261107\\advantage_diagnosis_20261108\\policy_review\\plot_actual_observation_window_comparison.py",
+    "sha256": "87c16adcaecf0ca745f5f5fad0978ec4eeee9d1b559b599156e651a8e0fef1b1"
+  },
+  "outputs": {
+    "contact_observation_window_comparison.png": "932218bc83f5542185583f84a729b0ad5de6f867b06c3a6d56253a7d5af22797",
+    "contact_observation_window_comparison.pdf": "b374cbd15d5e3613ee02acc3ce47ae2ad15b1cce70250dbd3e1413db2530b26e",
+    "contact_observation_window_comparison_episodes.csv": "812115be159011d074bc766804dd77d9fcb76ceeb92c6d2c01c216ce7dfbd4db",
+    "contact_observation_window_comparison_READOUT_ZH.md": "b4839a3063347735c703c08155cfdc674d467ebb878b97b00aeedf1aaf90a88b"
+  },
+  "post_generation_readout": "Independent concise interpretation; explicitly Genesis simulated closed-loop outcomes; both original and10ms results retained"
+}

@@ -1,0 +1,208 @@
+{
+  "checked": "2026-11-08",
+  "scope": "Primary papers and official repositories; no software executed or SSH; selected source lines only",
+  "repos": [
+    {
+      "repo": "uzh-rpg/event-based_object_catching_anymal",
+      "branch": "master",
+      "commit": "dd40bb8a362d3f327f396736d9bcff6dc1e16cb5",
+      "tree_sha": "51a7aa8a04aad1a4f4fb50f42607d500cc31456a"
+    },
+    {
+      "repo": "ZJU-FAST-Lab/FAST-Dynamic-Vision",
+      "branch": "main",
+      "commit": "a2a77f0daca4fbebde642d90e8a869875f60b5f0",
+      "tree_sha": "432640645dd3ff5c67241e449adec9cd96a622fb"
+    }
+  ],
+  "files": [
+    {
+      "url": "https://github.com/uzh-rpg/event-based_object_catching_anymal/blob/master/rpg_dynamic_obstacle_detection/parameters/parameters.yaml",
+      "blob_sha": "ed2dab260a1eab9e7335231267e6b20104f442fd",
+      "selected_lines": [
+        {
+          "line": 2,
+          "text": "update_frequency: 200"
+        },
+        {
+          "line": 3,
+          "text": "update_frequency_velocity: 55"
+        },
+        {
+          "line": 9,
+          "text": "visualization_update_frequency: 100"
+        },
+        {
+          "line": 20,
+          "text": "  frame_size: 35"
+        },
+        {
+          "line": 21,
+          "text": "  min_step_size: 1"
+        },
+        {
+          "line": 73,
+          "text": "  check_time: 0.10"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/uzh-rpg/event-based_object_catching_anymal/blob/master/rpg_ransac_parabola/src/parabola_ransac_node.py",
+      "blob_sha": "b9791e73caa0a98e0f3d7721b22573fd418d7be9",
+      "selected_lines": [
+        {
+          "line": 55,
+          "text": "        self.bboxes_buffer_len = 50"
+        },
+        {
+          "line": 57,
+          "text": "        self.time_window_oldest = 2.5"
+        },
+        {
+          "line": 62,
+          "text": "        self.max_skipped_detections = 5"
+        },
+        {
+          "line": 65,
+          "text": "        self.ball_pub_rate = 100"
+        },
+        {
+          "line": 69,
+          "text": "        self.point_distance_threshold = 0.05"
+        },
+        {
+          "line": 94,
+          "text": "            if self.skipped_detection_num >= self.max_skipped_detections:"
+        },
+        {
+          "line": 95,
+          "text": "                # rospy.loginfo(f\"More than {self.max_skipped_detections} skipped detections, reinitializing...\")"
+        },
+        {
+          "line": 110,
+          "text": "                if min_dist > self.point_distance_threshold:"
+        },
+        {
+          "line": 118,
+          "text": "                if len(self.points_4d) > self.bboxes_buffer_len:"
+        },
+        {
+          "line": 130,
+          "text": "        if len(self.points_4d) < 2:"
+        },
+        {
+          "line": 319,
+          "text": "            time = float(timestamp.nsecs)/10e9 + float(timestamp.secs) - self.start_time"
+        },
+        {
+          "line": 321,
+          "text": "            self.start_time = float(timestamp.nsecs)/10e9 + float(timestamp.secs)"
+        },
+        {
+          "line": 330,
+          "text": "    rospy.Timer(rospy.Duration(1.0/ransac_tracker.ball_pub_rate), ransac_tracker.publish_ball_state)"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/uzh-rpg/event-based_object_catching_anymal/blob/master/rpg_dynamic_obstacle_detection/src/dvs_handler.cpp",
+      "blob_sha": "a74fcb835593894c7ac02981a4a3503139409227",
+      "selected_lines": [
+        {
+          "line": 180,
+          "text": "  const size_t frame_size_ms = rpg_dynamic_obstacle_detection::param<int>("
+        },
+        {
+          "line": 182,
+          "text": "  const size_t min_step_size_ms = rpg_dynamic_obstacle_detection::param<int>("
+        },
+        {
+          "line": 184,
+          "text": "  frame_size_ = static_cast<double>(frame_size_ms / 1000.0);"
+        },
+        {
+          "line": 185,
+          "text": "  min_step_size_ = static_cast<double>(min_step_size_ms / 1000.0);"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/ZJU-FAST-Lab/FAST-Dynamic-Vision/blob/main/src/event-detector/src/tracker.cpp",
+      "blob_sha": "8b25bd685115421009e09d161c2e0f67b3e66996",
+      "selected_lines": [
+        {
+          "line": 22,
+          "text": "  kNewObjThresTime = 0.3;  // 30 milliseconds"
+        },
+        {
+          "line": 23,
+          "text": "  KNewObjThresDis = 200;  // 400 pixels"
+        },
+        {
+          "line": 130,
+          "text": "  if (IsNewObj(point_in_plane)) {"
+        },
+        {
+          "line": 159,
+          "text": "        if (obj_count > 4) {"
+        },
+        {
+          "line": 247,
+          "text": "inline bool TrackSingleObj::IsNewObj("
+        },
+        {
+          "line": 250,
+          "text": "      ros::Duration(kNewObjThresTime)) {  // over than 10 milliseconds"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/uzh-rpg/event-based_object_catching_anymal/blob/master/rpg_dynamic_obstacle_detection/src/dynamic_obstacle_detection.cpp",
+      "blob_sha": "27cbd16f89ca3c5d3efb2aa76b8c4dedc50bbef5",
+      "selected_lines": [
+        {
+          "line": 49,
+          "text": "  update_timer_ = nh_.createTimer(ros::Rate(update_frequency_),"
+        },
+        {
+          "line": 321,
+          "text": "  update_frequency_ = param<int>(pnh_, \"update_frequency\", 100);"
+        }
+      ]
+    }
+  ],
+  "papers": [
+    {
+      "title": "Event-based Agile Object Catching with a Quadrupedal Robot",
+      "paper": "https://arxiv.org/html/2303.17479v1",
+      "lab_pdf": "https://rpg.ifi.uzh.ch/docs/ICRA23_Forrai.pdf",
+      "video": "https://youtu.be/FpsVB8EO54M",
+      "sections": [
+        "III two-shot latency",
+        "IV-A ballistic RANSAC/known size",
+        "V evaluation"
+      ]
+    },
+    {
+      "title": "EV-Catcher: High-Speed Object Catching Using Low-latency Event-based Neural Networks",
+      "paper": "https://arxiv.org/html/2304.07200v1",
+      "author_page": "https://ziyunclaudewang.github.io/ev-catcher/",
+      "sections": [
+        "IV-A driver 10ms /12 BEHI",
+        "V Figure5 120ms accumulation",
+        "V-C 120shots 81%"
+      ],
+      "official_code_release_verified": false
+    },
+    {
+      "title": "FAST-Dynamic-Vision",
+      "paper": "https://arxiv.org/html/2103.05903v1",
+      "sections": [
+        "IV-C1 temporal/spatial correspondence",
+        "IV-C3 asynchronous event-depth trajectory fit"
+      ],
+      "not_catching_success_precedent": true
+    }
+  ],
+  "decision": "100ms is our cadence-derived candidate, not a directly copied standard or guarantee."
+}
