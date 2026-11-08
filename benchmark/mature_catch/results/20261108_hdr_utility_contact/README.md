@@ -1,8 +1,10 @@
 # 公共抓持场景校准与事件闭环检查
 
 <!-- CURRENT_OVERVIEW -->
-最新实际完成：共同10ms前端下，Ours 6/6、V2E 2/6；同六条开发来球全部保留。旧整包前端V2E领先的结果也完整列出。固定配置后的41–46新种子、24回合确认尚无完整评分。
+独立新六条在25Hz下：Ours 4/6、V2E 3/6；停止更新1/6，带噪状态参考4/6（不是保证上界）。同六条12.5Hz追加对照：Ours 5/6、V2E 0/6。此前开发集6/6对2/6单列，不与新集池化。小样本支持这套稀疏输入配置下的任务效用，不是普遍排名。全部成功和失败保留，本轮不再扩大条件。
 <!-- END_CURRENT_OVERVIEW -->
+
+
 
 
 
@@ -81,13 +83,49 @@
 
 源图像仍25Hz，子窗继承原包到达时间，不提前控制，不增加RGB-D/HDR预算。原权重、冻结事件核心、共同场景与飞行拟合不变；50ms运动确认规则未改，不含measurement-bootstrap候选。
 
-## 固定配置后的未见来球确认
+## 固定配置后的独立新六条确认
 
-未用过的41–46种子、六条新来球×Ours/V2E/停止后续更新/GT参考共24回合已在g3启动，代码85c979e，尚无完整结果。配置固定，不再按这批结果调参或选种子。
+24回合已完整归档，原始事件/窗口因果审计全部PASS；运行代码85c979e。新集仅Ours多成功一条，不能把开发集多成功四条当作新集优势，也不将两批池化。
 
-实际目录`contact_windows10_unseen25`；协议SHA256：`af63a4d8594a1eeae26c914d0da2c38519d8cc4b859d3809e94f33e565b8f1a8`。当前不填入任何未完成分数。学界先例和本轮结果索引见[primary文献与当前状态](reviews/hdr_audit/PRIMARY_LITERATURE_AND_CURRENT_STATUS.md)。
+| 独立新集输入方法 | 严格成功 | 角色 |
+|---|---:|---|
+| Ours | 4/6 | 主要事件对照 |
+| V2E | 3/6 | 主要事件对照 |
+| 首帧后停止事件更新 | 1/6 | 因果输入消融 |
+| 原任务带噪GT状态参考 | 4/6 | 物理可行性参考，不是保证上界 |
 
-旧缓存子窗诊断、生产提取一致性、文献先例与GT数据流审查均已归档在reviews/forensics与reviews/policy_review。production_observation10_cache和bootstrap_cached8的SUMMARY.json由原服务端results/SUMMARY.json精确portable提取，内容未修改；完整大JSON和raw仍在服务器。12.5Hz原生离线一致性已通过，12.5Hz物理回合尚未运行。
+![独立新六条四种输入](figures/contact_windows10_unseen25_four_inputs.png)
+
+冻结配置后未再根据新集调整场景、估计器、阈值、生成器或原策略。带噪参考使用原任务自己的含噪状态输入，不是完美oracle；它失败的回合也可能被事件方法接住，不能当成功率上界。
+
+实际目录`contact_windows10_unseen25`；协议SHA256：`af63a4d8594a1eeae26c914d0da2c38519d8cc4b859d3809e94f33e565b8f1a8`。学界先例和本轮结果索引见[primary文献与当前状态](reviews/hdr_audit/PRIMARY_LITERATURE_AND_CURRENT_STATUS.md)。
+
+### 10ms实际演示：同时展示成功与反例
+
+- [开发来球v01](media/window10_dev_v01_side_by_side.mp4) · [GIF](media/window10_dev_v01_side_by_side.gif)：Ours成功、V2E失败；开发集完整6/6对2/6。
+- [独立来球u01](media/window10_unseen_u01_side_by_side.mp4) · [GIF](media/window10_unseen_u01_side_by_side.gif)：Ours成功、V2E失败；独立集完整4/6对3/6。
+- [独立反例u02](media/window10_unseen_u02_counterexample.mp4) · [GIF](media/window10_unseen_u02_counterexample.gif)：Ours失败、V2E成功；反例保留。
+
+以上来自`event_demo_window10`真实控制轨迹的实际Genesis渲染重放；不是新的物理回合。每版media manifest含原始回合、裁剪/拼接规则和文件哈希。少量原始视频与manifest一并保留，大raw仍按服务器索引。
+
+旧缓存子窗诊断、生产提取一致性、文献先例与GT数据流审查均已归档在reviews/forensics与reviews/policy_review。production_observation10_cache和bootstrap_cached8的SUMMARY.json由原服务端results/SUMMARY.json精确portable提取，内容未修改；完整大JSON和raw仍在服务器。
+
+## 12.5Hz：既定低源采样率收尾
+
+12.5Hz实际12配对已完整归档：Ours 5/6，V2E 0/6。
+
+| 同六条来球的源图像频率 | Ours | V2E |
+|---|---:|---:|
+| 25Hz | 4/6 | 3/6 |
+| 12.5Hz | 5/6 | 0/6 |
+
+![两种源图像频率的真实结果](figures/contact_cadence25_vs12p5.png)
+
+使用同41–46来球、Ours/V2E各六次，不引入新种子或新参数搜索。相比25Hz仅源图像采样率改为12.5Hz；10ms观察窗、50ms两观测确认、因果飞行拟合、共同物理、原权重和冻结核心仍固定，代码85c979e。原生V2E80倍插帧接口一致性已通过。init_only与含噪GT两个参考组沿用旧25Hz对照，不新增其回合，不混入本组成功率；每个事件回合原有的首帧RGB-D初始化不变。这是同批来球的采样率对照，不再称新未见泛化；本轮完成后不继续扩大条件。
+
+实际trace确认六条12.5Hz V2E均进入moving事件跟踪，不能将0/6归结为50ms确认规则完全阻止起动。不同来源的具体后续误差尚未单独归因。timing补充区分历史事件时刻、原包到达和真正控制采用时间，不把高分辨事件时间戳当提前控制。
+
+[最后12.5Hz u01真实配对演示](media/cadence12p5_u01_side_by_side.mp4)
 
 Bootstrap共享初始化候选仅为独立缓存探索：早期位置6/8改善但Ours有两条退化，速度无一致收益，未切默认、未与10ms主线组合。详见reviews/hdr_audit/BOOTSTRAP_ACTUAL_REVIEW.md。
 
