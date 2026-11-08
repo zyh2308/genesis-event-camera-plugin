@@ -1,0 +1,87 @@
+{
+  "schema": "pose_factor_archive_independent_audit_v1",
+  "status": "passed",
+  "evidence_index_sha256": "fb90e83594d997be1c75302e6f5c4cb984f6afaeda12fc93945faf431508e426",
+  "local_evidence_files_verified": 29,
+  "source_manifest_members_verified": 28,
+  "source_groups": {
+    "geometry": {
+      "member_count": 3,
+      "manifest_sha256": "0d294e5fe988bcb52f71732917ee1b5001f86a1adc9dbdccbd45553986db9294"
+    },
+    "diagnostic": {
+      "member_count": 6,
+      "manifest_sha256": "9e604e49ae861ab3831d641cd8c6d57d506017b060ebd30ee7a0b23f80e8771b"
+    },
+    "teacher_projection_v2": {
+      "member_count": 19,
+      "manifest_sha256": "8eb1c06786258ff08c78844024b6a5f6565b05d948d3764db28c7e62dd478d0c"
+    }
+  },
+  "native_cells": 54,
+  "matched_three_seed_mean_cells": 18,
+  "matched_csv_rows": 18,
+  "geometry_macro_cells": 630,
+  "oracle_C1_cells": 6,
+  "all_GT_success_macro_cells": 54,
+  "all_GT_success_percent": 100,
+  "geometry_parity_checks_recomputed": 1890,
+  "geometry_parity_max_abs_error": 2.7504788280285908e-08,
+  "scoped_native_clean384_cells": 18,
+  "scopes_separated": true,
+  "flow": {
+    "arms": 4,
+    "additional_updates_each": 200,
+    "windows_each": 528,
+    "process_exit_code": 0,
+    "checks_passed": 3,
+    "checks_failed": 9,
+    "quality_gate_passed": false,
+    "paired_replay_and_init_verified": true,
+    "differences": [
+      {
+        "method": "eventgenesis",
+        "metrics": {
+          "all_physical_valid": {
+            "control": 0.2685617914215419,
+            "census": 0.29789897341640925,
+            "delta": 0.029337181994867345,
+            "relative_worse_percent": 10.923810807032819
+          },
+          "common_event_active_valid": {
+            "control": 0.3324801234882725,
+            "census": 0.3360922338430978,
+            "delta": 0.003612110354825282,
+            "relative_worse_percent": 1.0864139236139048
+          }
+        }
+      },
+      {
+        "method": "v2e",
+        "metrics": {
+          "all_physical_valid": {
+            "control": 0.2727458198534447,
+            "census": 0.279291340708144,
+            "delta": 0.006545520854699283,
+            "relative_worse_percent": 2.399861108124912
+          },
+          "common_event_active_valid": {
+            "control": 0.3290171126355216,
+            "census": 0.32932096066585403,
+            "delta": 0.0003038480303324542,
+            "relative_worse_percent": 0.0923502209044802
+          }
+        }
+      }
+    ]
+  },
+  "gt_oracles_are_diagnostic_only": true,
+  "new_real_scores": false,
+  "scope_limitations": [
+    "No SSH or GPU inference or training was performed by this audit.",
+    "Raw 3456 predictions and 40320 per-window diagnostic records remain server-only; their indexed SHA links are checked, not their bytes or per-window geometry independently replayed locally.",
+    "1890 checks are recomputed from archived scalar parity/native tables; per-rollout actual entries are not independently reconstructed from server-only raw predictions.",
+    "Candidate smoke/study added after this index snapshot is outside this audit."
+  ],
+  "audit_script_sha256": "3af762381dc7f4f880f43b0ecfe972c4f1bc4995c1b599667bc48fe59860048a"
+}

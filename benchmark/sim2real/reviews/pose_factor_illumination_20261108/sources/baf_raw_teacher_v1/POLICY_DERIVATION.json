@@ -1,0 +1,21 @@
+{
+  "schema": "pose_raw_teacher_policy_derivation_v1",
+  "original_file": "pose_priority_policy.py",
+  "original_sha256": "e1883b68715ecf067a9f4dccbd7a61af5f5dc26b557e061859f4066e7de8d38c",
+  "derived_file": "raw_teacher_policy.py",
+  "derived_sha256": "9e713cc63aefe10c53b27505101f1a4271483a20a1657b5c64ca2de838d9aa04",
+  "replacements": [
+    {
+      "old": "x, y = self.shared.affine(normal[idx], target[idx], rng)",
+      "new": "x, raw_teacher_x, y = self.native.matched_affine(normal[idx], self.raw_normal[idx], target[idx], rng)",
+      "count": 1
+    },
+    {
+      "old": "reference = teacher(x)",
+      "new": "reference = teacher(raw_teacher_x)",
+      "count": 1
+    }
+  ],
+  "reverse_replacement_restores_original_exact_bytes": true,
+  "other_source_bytes_unchanged": true
+}

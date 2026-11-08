@@ -1,0 +1,93 @@
+{
+  "schema": "zero_update_teacher_depth_factor_independent_audit_v1",
+  "status": "passed",
+  "teacher_target": {
+    "status": "passed",
+    "index_sha256": "4d15b8f542097a4bb725655856dc1953962bced2a225de19d1f05ab1a686f8b9",
+    "files_verified": 14,
+    "manifest_members_verified": 5,
+    "rows_recomputed": 1728,
+    "per_seed_macros_recomputed": 36,
+    "three_seed_means_recomputed": 12,
+    "source_init_states_bound": 6,
+    "raw_to_native_pixel_max_abs_recompute_error": 0.0,
+    "TRAIN_normal_teacher_means": {
+      "eventgenesis": {
+        "raw_teacher_center_error_px": 2.72453156016659,
+        "baf_teacher_center_error_px": 8.362473630797822,
+        "teacher_target_shift_px": 7.411628169415505
+      },
+      "v2e": {
+        "raw_teacher_center_error_px": 4.260381837181016,
+        "baf_teacher_center_error_px": 17.106679528954476,
+        "teacher_target_shift_px": 16.280509133376604
+      }
+    },
+    "CPU_tests": {
+      "initial_attempt": "failed_wrong_test_module_name_preserved",
+      "retry": "4/4 passed"
+    },
+    "optimizer_updates": 0,
+    "GPU_used": false,
+    "real_data_used": false,
+    "model_role": "source_init_teacher_not_C1_endpoint",
+    "limitation": "Local raw UV/errors and summaries recomputed. Source-init state/file SHA associations cross-checked in receipts; server-only weight bytes not loaded by this audit. Dark teacher responses are diagnostic, not historical dark KD training targets."
+  },
+  "depth_factor": {
+    "status": "passed",
+    "index_sha256": "f10cfa0234a687f1984f8d7fbf43d62d90356c5c440a1c9f5831dbbb65e1fe33",
+    "files_verified": 4,
+    "per_window_factor_records_recomputed": 1152,
+    "per_seed_condition_macros_recomputed": 18,
+    "three_seed_condition_means_recomputed": 6,
+    "source_z_decode_tolerance_m": 2e-06,
+    "source_z_decode_max_abs_m": 1.6294543647710213e-07,
+    "mixed_exp_max_abs_m": 0.0,
+    "EventGenesis_half": {
+      "C0": {
+        "depth_mae_cm": 2.934290485453365,
+        "depth_bias_cm": -0.634023457176356
+      },
+      "C1": {
+        "depth_mae_cm": 3.5939172709637845,
+        "depth_bias_cm": -0.6368524736730938
+      },
+      "C0_size_C1_shape": {
+        "depth_mae_cm": 3.129141334971087,
+        "depth_bias_cm": -0.5589083912857268
+      },
+      "C1_size_C0_shape": {
+        "depth_mae_cm": 3.4433577300507485,
+        "depth_bias_cm": -0.7073062100983817
+      }
+    },
+    "EventGenesis_dark": {
+      "C0": {
+        "depth_mae_cm": 11.542858919990572,
+        "depth_bias_cm": -10.907081890262035
+      },
+      "C1": {
+        "depth_mae_cm": 6.3750421045095305,
+        "depth_bias_cm": -5.009862038648992
+      },
+      "C0_size_C1_shape": {
+        "depth_mae_cm": 11.480378329842958,
+        "depth_bias_cm": -10.790427919159823
+      },
+      "C1_size_C0_shape": {
+        "depth_mae_cm": 6.797263646479353,
+        "depth_bias_cm": -5.095384304833794
+      }
+    },
+    "EventGenesis_half_C1_minus_C0": {
+      "depth_mae_cm": 0.6596267855104196,
+      "depth_bias_cm": -0.002829016496737835
+    },
+    "source_predictions_sha256": "2405d6c59edefb70bb4c3e5a3025ccf19d7f6d9ed3cfb8838fafb9975e24ab02",
+    "optimizer_updates": 0,
+    "new_model_forward": 0,
+    "real_data_used": false,
+    "limitation": "Controlled crossing of two models predicted output factors, not unique weight-level causal attribution or an accepted deployable method. Original 3456 prediction bytes remain server-only; their SHA receipt binding, not full byte provenance, was independently verified locally."
+  },
+  "audit_script_sha256": "2cb686f6fab5e648bb6e04177dd58bdc4bc065acd4324e4fffd9f2c5388ee1ad"
+}

@@ -1,0 +1,1780 @@
+{
+  "method": "eventgenesis",
+  "seed": 0,
+  "arm": "C1",
+  "legacy_arm": "physical_supervised",
+  "branch": "depth",
+  "training_windows": 32,
+  "conditions": [
+    "normal",
+    "half",
+    "eighth"
+  ],
+  "model_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/study/eventgenesis_seed0_physical_supervised.pt",
+  "model_file_sha256": "61af93c4a37832198e4b9e7eaf2f5ae2124c57f9608a84ff0a56b3ce81d3dfa4",
+  "model_state_before_sha256": "0a71cd36fa840d7c2e3d6abf64b53ab438b90882eae2542aa741efb556233498",
+  "model_state_after_sha256": "0a71cd36fa840d7c2e3d6abf64b53ab438b90882eae2542aa741efb556233498",
+  "teacher_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-physical-light-train-v2/physical_adaptation/eventgenesis_seed0_clean_control.pt",
+  "teacher_file_sha256": "11977eb1c943a91fdc7b7f337c4d95d30121a8832f8ef48bb8b63672c377e977",
+  "teacher_state_sha256": "51ad10681c0d06a97eee703b527b4d94ee60579903f3c90e508e33dc836edd85",
+  "source_training_record": {
+    "method": "eventgenesis",
+    "seed": 0,
+    "arm": "physical_supervised",
+    "branch": "depth",
+    "updates": 288,
+    "source_state_sha256": "51ad10681c0d06a97eee703b527b4d94ee60579903f3c90e508e33dc836edd85",
+    "final_state_sha256": "0a71cd36fa840d7c2e3d6abf64b53ab438b90882eae2542aa741efb556233498",
+    "teacher_unchanged": true,
+    "labels_sha256": "456131a3b6dc7bcf5c6048184f6dfbe7bb6269a7a168259aa51f937f65e7c160",
+    "exposure": {
+      "normal": 9174,
+      "half": 6903,
+      "eighth": 2271
+    },
+    "independent_model_optimizer_rebuild": true,
+    "optimizer_state_equal": true,
+    "checkpoint_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study/training_evidence/eventgenesis_seed0_physical_supervised_depth_training_state.pt",
+    "checkpoint_sha256": "efd12bb01b4ce7cfbc4f16153ad7c6a3c7179e9c7592ca65414696e32d6d591c",
+    "reused_immutable_control": true,
+    "new_optimizer_updates": 0,
+    "canonical_arm": "physical_supervised",
+    "original_model": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study/eventgenesis_seed0_physical_supervised.pt",
+      "size_bytes": 632601,
+      "sha256": "61af93c4a37832198e4b9e7eaf2f5ae2124c57f9608a84ff0a56b3ce81d3dfa4"
+    },
+    "original_log": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study/training_evidence/eventgenesis_seed0_physical_supervised_depth.jsonl",
+      "size_bytes": 252157,
+      "sha256": "5aaa4b751e969b0251c5fa55c8ec0da8b8c1ac1658d00c8b1fcedcea0ec78b38"
+    },
+    "original_receipt": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study/training_evidence/eventgenesis_seed0_physical_supervised_depth_receipt.json",
+      "size_bytes": 851,
+      "sha256": "a388d072225ba8f1cc3494f6a7fb413186265815f7d4e7ac610d4aa211de9d5a"
+    },
+    "label_and_augmentation_replay_exact": true
+  },
+  "parameter_inventory": [
+    {
+      "name": "features.0.weight",
+      "shape": [
+        24,
+        3,
+        5,
+        5
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.1.weight",
+      "shape": [
+        24
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.1.bias",
+      "shape": [
+        24
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.3.weight",
+      "shape": [
+        24,
+        24,
+        3,
+        3
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.4.weight",
+      "shape": [
+        24
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.4.bias",
+      "shape": [
+        24
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.6.weight",
+      "shape": [
+        40,
+        24,
+        5,
+        5
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.7.weight",
+      "shape": [
+        40
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.7.bias",
+      "shape": [
+        40
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.9.weight",
+      "shape": [
+        40,
+        40,
+        3,
+        3
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.10.weight",
+      "shape": [
+        40
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.10.bias",
+      "shape": [
+        40
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.12.weight",
+      "shape": [
+        64,
+        40,
+        5,
+        5
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.13.weight",
+      "shape": [
+        64
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.13.bias",
+      "shape": [
+        64
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.15.weight",
+      "shape": [
+        64,
+        64,
+        3,
+        3
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.16.weight",
+      "shape": [
+        64
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "features.16.bias",
+      "shape": [
+        64
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "center.weight",
+      "shape": [
+        1,
+        64,
+        1,
+        1
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "center.bias",
+      "shape": [
+        1
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "size.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "size.0.bias",
+      "shape": [
+        64
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "size.2.weight",
+      "shape": [
+        2,
+        64
+      ],
+      "requires_grad": true
+    },
+    {
+      "name": "size.2.bias",
+      "shape": [
+        2
+      ],
+      "requires_grad": true
+    }
+  ],
+  "parameter_inventory_sha256": "0ad8d453986bc0c4070cb6db67f6a1b278f4b9ff58ff42a9415494f4b845c2e9",
+  "losses_and_gradients": {
+    "normal/center": {
+      "loss": 2.8567209243774414,
+      "gradients": {
+        "full": {
+          "norm": 0.8904146468378591,
+          "sha256": "a33f6fb4440be07ff1bbeb2bef80f3a6f79832eb6d640d7d1288ac67ff390bd0",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 0.8769789348954807,
+          "sha256": "552b020e62f6a56c461ac6d0d2ebd26fa04effd130795ba3107af2e4ec21dd5d",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.15409799172272626,
+          "sha256": "0bed9241faf6f9ba7876ca19f263a291e4c4001f185b827a3899b0a2c75ed426",
+          "elements": 65
+        },
+        "size": {
+          "norm": 0.0,
+          "sha256": "f4731838b7bdbf1dcdbd10e51a896f2a2d492cebee3924041e67631160050f50",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 20,
+        "unused_trainable_names": [
+          "size.0.weight",
+          "size.0.bias",
+          "size.2.weight",
+          "size.2.bias"
+        ],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "normal/size": {
+      "loss": 0.016845928505063057,
+      "gradients": {
+        "full": {
+          "norm": 3.021714866723299,
+          "sha256": "3ab4fe10a7dec75c6fb468b0700f1f077143e224dd8c088da86c740fbb283f1c",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 1.9155267585727087,
+          "sha256": "d2902b2dc50072a08699344f9f0c78623495be7f1d6d7a2c94d6611a3f2e7c71",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.1821546919229709,
+          "sha256": "803b4105a5123123ec64566dde297c03c4dd1554cfac0b1c595cf49e86204682",
+          "elements": 65
+        },
+        "size": {
+          "norm": 2.3298793190161127,
+          "sha256": "c460a7a47ff238b27c761d965d2912de30b2132e2bd01833db09c512411529ea",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "normal/shape": {
+      "loss": 0.0031929307151585817,
+      "gradients": {
+        "full": {
+          "norm": 0.44933118986863546,
+          "sha256": "39f159c1d9306da679cf9268a250bb83738e8ff89e4df1b39da2060cb251c0e9",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 0.31838550262798626,
+          "sha256": "af801aab02fac99cd0746292f18576c57e457c4598ab3cf3a04866d0c18fe759",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.019180157561502435,
+          "sha256": "91e48897a3189921ce0050bfabbd79970cc3f557d4a0ed3fc8fc9f24a7440a81",
+          "elements": 65
+        },
+        "size": {
+          "norm": 0.3164827190558816,
+          "sha256": "9520973ce793844b78cdbf7d2a4a62ae6bc724d0bda8d55ba11253aea0197592",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "normal/logdepth": {
+      "loss": 0.022423435002565384,
+      "gradients": {
+        "full": {
+          "norm": 4.152247211124305,
+          "sha256": "07e2eb2a8466ea0fac04f8177625f4cbc8b89a18275c348b1ead0ca3f229cc59",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 2.315743427522228,
+          "sha256": "d4fe2a894e82869fa45449bebcb83c42df8869b593edf5a2bed41725281fc47c",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.16949934084089482,
+          "sha256": "dc5e35239f2450a8fe1803bd87a998a9b72b6fc86cb1b134030b4bab369c506e",
+          "elements": 65
+        },
+        "size": {
+          "norm": 3.4423479274517925,
+          "sha256": "c172fc5100b263305850fed9071f3ee6127671f4a9e4df83b4c2ea13ae16b8bd",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "normal/supervised": {
+      "loss": 2.8991832733154297,
+      "gradients": {
+        "full": {
+          "norm": 6.811135048668595,
+          "sha256": "9d453b48b4aa94b164299d027ec31f3e6f2805beb71fc079435d8e2b274cecec",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 4.361579230899127,
+          "sha256": "03fe2acc86b6097ae6ace690f567bc390aeb66e9095d7f2a651eb70af725c360",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.3464827843053245,
+          "sha256": "6fd6be97e63fbe09dbf51ed2dfd769459d2ca713c8554ed788ea0345ba2b753c",
+          "elements": 65
+        },
+        "size": {
+          "norm": 5.219974803001555,
+          "sha256": "418ffa0d95429169e66cd0cd713cfac3efe98d09066e5bc13e1dc28e32be8ec9",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "half/center": {
+      "loss": 2.868433713912964,
+      "gradients": {
+        "full": {
+          "norm": 1.2166236890473427,
+          "sha256": "f8f0ae455397a996177391ea4f6acb9d56b70afaa07e336d10fcb4efde981c93",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 1.1936431011011281,
+          "sha256": "f84b4236151645c1490ebf65c6061a2fc11003edd596f941b923a0aecbb6c997",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.23534941670810888,
+          "sha256": "6fdb8527e66c3edfdc165279fdd3dda47c349c740479d65af0bdf050dda40ebd",
+          "elements": 65
+        },
+        "size": {
+          "norm": 0.0,
+          "sha256": "f4731838b7bdbf1dcdbd10e51a896f2a2d492cebee3924041e67631160050f50",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 20,
+        "unused_trainable_names": [
+          "size.0.weight",
+          "size.0.bias",
+          "size.2.weight",
+          "size.2.bias"
+        ],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "half/size": {
+      "loss": 0.022197777405381203,
+      "gradients": {
+        "full": {
+          "norm": 2.878407795957912,
+          "sha256": "950d241d86da2673bad87f7515b9ac17ded7b14270166ba3d3bfed2866a2a944",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 1.9272988433113374,
+          "sha256": "5232bd93a432f55f66ce73b8afaf7186f8ec7542b3558a44cff9a33232733a38",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.15800888616570732,
+          "sha256": "a4f1208c3d307f8d7084617f894780af75dc65556392504cbc5bf5075ba74279",
+          "elements": 65
+        },
+        "size": {
+          "norm": 2.132084379262399,
+          "sha256": "dcf5aa9ce22f1714d8fe94d0156f72a06ba2841e6d1ac0824b8ee4e8de2e05a5",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "half/shape": {
+      "loss": 0.0021384311839938164,
+      "gradients": {
+        "full": {
+          "norm": 0.3512549093461358,
+          "sha256": "ba95b7175158bee0e5ba1cbf02839a253216353cd6def9ce585bf930edad97f1",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 0.22918681716982994,
+          "sha256": "15facdfeb03e72d1e11eca16d7128e40d82fa09c97546c454cb90d6506ca1f93",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.010577868901895557,
+          "sha256": "d462f06e0ae81449452a32cfe7a3de817c3e67c5181cbc8de8f4076dc8676041",
+          "elements": 65
+        },
+        "size": {
+          "norm": 0.2659727859477716,
+          "sha256": "2e8b7fbc36a809279546932a2c596dda1b1dcd8472d301cd62bf414ef69e946b",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "half/logdepth": {
+      "loss": 0.026968274265527725,
+      "gradients": {
+        "full": {
+          "norm": 3.896437666913772,
+          "sha256": "39373863b7aeb237802b79e9be169427e287174b648d42fe5dc3c278bac15c2d",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 2.2691512390890485,
+          "sha256": "9d7ab4bd96cc37b169b8226004af63171c47f210d45ee9e2eacc15470bff58ed",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.15344500522808613,
+          "sha256": "9019c6ce8fa9e50d5ad1169670e930fcd2ee1a5ff9bda800862dd70d63f73206",
+          "elements": 65
+        },
+        "size": {
+          "norm": 3.1638005273176804,
+          "sha256": "c00a51df464b1d1193922c2178869967066853ee8c2e3e2e7e5e16d0c1e06823",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "half/supervised": {
+      "loss": 2.9197380542755127,
+      "gradients": {
+        "full": {
+          "norm": 6.60634770197139,
+          "sha256": "3e7071d14fa256064f61a6a70a6609bc39c0f32115647938b6a3c155ef4f94e9",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 4.536571740977271,
+          "sha256": "6d5bbc1459c71e790462e644d63d68f47edd01fa63206fe661f5e3902b2f9a65",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.3160405456092932,
+          "sha256": "3cff58080beb5aa892f5174d906e567490ac6fb79b31a51a1b0f3fc576a8340b",
+          "elements": 65
+        },
+        "size": {
+          "norm": 4.792020990338006,
+          "sha256": "12699f07dbb83e1eccb641dce21539c46ea8b3c743a8b1a62862ea027c4fc94e",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "eighth/center": {
+      "loss": 2.992934226989746,
+      "gradients": {
+        "full": {
+          "norm": 3.4390254558117235,
+          "sha256": "e2a6958444147565186820408fb7ba7382e94af6ae2a8a25968650d3107275ef",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 3.4259713448648426,
+          "sha256": "cf2c39e5f9b8605bb79ddbf2f8c14f35f7db156ee34c77275d9b5a0ab2c583f8",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.2993600338823088,
+          "sha256": "b743efb8bb677ae56ce003fe70157fab8ba02212390e5d08e7e89fecad2abb35",
+          "elements": 65
+        },
+        "size": {
+          "norm": 0.0,
+          "sha256": "f4731838b7bdbf1dcdbd10e51a896f2a2d492cebee3924041e67631160050f50",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 20,
+        "unused_trainable_names": [
+          "size.0.weight",
+          "size.0.bias",
+          "size.2.weight",
+          "size.2.bias"
+        ],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "eighth/size": {
+      "loss": 0.06660379469394684,
+      "gradients": {
+        "full": {
+          "norm": 3.8439253966593254,
+          "sha256": "027d2fec928b03ab9db4999b1d26e07713d17394f6438ec9819ab10bdf9bc342",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 2.996863996209408,
+          "sha256": "434954af5ff98348751bcf47ebd34716aaaa7d7a29d4c706bad894469b1e1c02",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.20407422354386548,
+          "sha256": "cfc9b1730ed6a6c4ca894d7e735e9caae496dc6c65df1fad9a2df3e9ea80c605",
+          "elements": 65
+        },
+        "size": {
+          "norm": 2.3985250373075724,
+          "sha256": "ff044376a978992a904805329044c1fc49845a01a8b3a75566bcfc3110fb2881",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "eighth/shape": {
+      "loss": 0.00670743128284812,
+      "gradients": {
+        "full": {
+          "norm": 0.5740889364719298,
+          "sha256": "48ed17ebf227a2d2c42c4053f5650bd0f638a8b16132ae94a0e3acfddc1c27cd",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 0.34279220916942177,
+          "sha256": "fda7921e4ed9a9964aa99b680770e3c561d149e4a492a0b10f8a9cc644c34938",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.022199377553310983,
+          "sha256": "ff69309908d039cb14e5652e92dd6b51119135ebbff57719d1c7dcf0536ffedb",
+          "elements": 65
+        },
+        "size": {
+          "norm": 0.45997695154047086,
+          "sha256": "5b1debcaabdd715db2cca4f2b1cf88eaf2f60d5a9a4161606529b9f706951174",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "eighth/logdepth": {
+      "loss": 0.0643310695886612,
+      "gradients": {
+        "full": {
+          "norm": 3.4948808706068313,
+          "sha256": "c33c9d0c9efe40529245aa6aa69ea03127fdf2cc89c06ca3b0cfbc82a98de0d5",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 2.7017589430729205,
+          "sha256": "1f6a28a34f48b5c9ffb4453846aa595b0c10ecd8cecfa46d81aecb632b4b95f3",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.16139257262443107,
+          "sha256": "aa19d5686d35adbdd35ee4dfd9bf292ebb88e76183f3997b9ece0daa93955dea",
+          "elements": 65
+        },
+        "size": {
+          "norm": 2.211027668474715,
+          "sha256": "8fd35171ef5fef834530d21d49a9b3c4b4a6844133caa665cecf7aa956301bdb",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "eighth/supervised": {
+      "loss": 3.1305766105651855,
+      "gradients": {
+        "full": {
+          "norm": 9.06551570851677,
+          "sha256": "c5e9aa0b6f2b0e27d4f2ee500ce269fc815ca30bcceff6b75d3a779ef5679e96",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 8.093508885284166,
+          "sha256": "3b9664b2a963244d437cd74d08702141dcb6c2b67a2cd3d5536b68aea18201d7",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.37401543485189126,
+          "sha256": "eef92aea2dc4e91eb87b61c2e7192aff2bd9146dde41316e19399c90674f3ad6",
+          "elements": 65
+        },
+        "size": {
+          "norm": 4.066792524789425,
+          "sha256": "474cfae834d6c227bffa7014ac11723765b7beb2170deafd921953c1ef4b83f3",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    },
+    "normal_teacher": {
+      "loss": 0.013325294479727745,
+      "actual_weight": 2.0,
+      "gradients": {
+        "full": {
+          "norm": 3.673600533545976,
+          "sha256": "710e77de9d84748ebe7c608cf13a26022c5c6ae84539e2205d444a3cc8b22122",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 2.1048822053650444,
+          "sha256": "31ddec366c85dbc07aa4f59dd188044e422d81b49fd2bb6545e008a5c3781d0d",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.20361438288340306,
+          "sha256": "26da3672f2954149266183b088b0b6f12288a1ff841f1e53afcf0c3a9d60a85c",
+          "elements": 65
+        },
+        "size": {
+          "norm": 3.0038896392327517,
+          "sha256": "9b266a335b68eb81dcb501d3c797308d104b5fe7f99632eab5aa75eae341fd55",
+          "elements": 8386
+        }
+      },
+      "gradient_metadata": {
+        "named_parameters": 24,
+        "trainable_parameters": 24,
+        "nonNone_gradient_tensors": 24,
+        "unused_trainable_names": [],
+        "frozen_names": [],
+        "finite": true
+      }
+    }
+  },
+  "mixture": {
+    "weights": {
+      "normal": 0.5,
+      "half": 0.375,
+      "eighth": 0.125,
+      "normal_teacher": 2.0
+    },
+    "physical_expected": {
+      "full": {
+        "norm": 6.797159663377369,
+        "sha256": "04719baba5f123d206d3886bafc52ff9924e70e563012c74214ff4eb19ddbe27",
+        "elements": 155211
+      },
+      "features": {
+        "norm": 4.713534563124123,
+        "sha256": "ab4e1e3caba2eec6a216ce8143a6ef41e61b09bfd37c3cd54e8c96d38028557b",
+        "elements": 146760
+      },
+      "center": {
+        "norm": 0.3214969452828245,
+        "sha256": "357a936fa7c2fe4689158b4607d1214048c377bf63fc4c37c2f724f9c294806d",
+        "elements": 65
+      },
+      "size": {
+        "norm": 4.886779218038442,
+        "sha256": "3628ca2166606e731344fd857a7ff926008d34173f63c2d2f4e4db04d501ecb0",
+        "elements": 8386
+      }
+    },
+    "normal_teacher_weighted": {
+      "full": {
+        "norm": 7.347201067091952,
+        "sha256": "b8d849cc9cb673b4dc70be61efab95df0e0ca2c09367f51cc8d359ca88b196bc",
+        "elements": 155211
+      },
+      "features": {
+        "norm": 4.209764410730089,
+        "sha256": "d65399317a1cf746d19679887d9ae6d6421f9250b23d33833613dfafc8ab3a5d",
+        "elements": 146760
+      },
+      "center": {
+        "norm": 0.4072287657668061,
+        "sha256": "ff0318448e9541f49bb8594d106855cdead24508ce5ad4b00f10a13c76fa48c3",
+        "elements": 65
+      },
+      "size": {
+        "norm": 6.007779278465503,
+        "sha256": "3da7d03984a6cb11275da7d6a7892ec373af0dab17148af86a7dcbf3b674cd98",
+        "elements": 8386
+      }
+    },
+    "actual_expected_mixture": {
+      "full": {
+        "norm": 2.2833270015138085,
+        "sha256": "181e4d90959813baa524690576f8885b2aae716f144194591e1dead6168fdd31",
+        "elements": 155211
+      },
+      "features": {
+        "norm": 1.7173020128123708,
+        "sha256": "19bb85b38fed86f9ab9382c50154c970b272b3e6fc6ee61a79ca2d223a37ef88",
+        "elements": 146760
+      },
+      "center": {
+        "norm": 0.2653415453222593,
+        "sha256": "eb4c95c1552691d1f64dfc66f411be7e0314b88eb1a4485f60372438f246ef97",
+        "elements": 65
+      },
+      "size": {
+        "norm": 1.481232546549871,
+        "sha256": "395883d18e66542add4750add0403f7d05d1c8b0a6bf5604c137a871f475abd5",
+        "elements": 8386
+      }
+    },
+    "cancellation_ratio": {
+      "full": 0.16143020140847653,
+      "features": 0.1924514709015316,
+      "center": 0.364117172344682,
+      "size": 0.13596076858233377
+    },
+    "comparisons": {
+      "physical_vs_teacher": {
+        "full": {
+          "left_norm": 6.797159663377369,
+          "right_norm": 7.347201067091952,
+          "dot": -47.48458040693946,
+          "cosine": -0.9508307274641081,
+          "target_directional_derivative_for_negative_left_gradient": 47.48458040693946
+        },
+        "features": {
+          "left_norm": 4.713534563124123,
+          "right_norm": 4.209764410730089,
+          "dot": -18.49519913420275,
+          "cosine": -0.9320828632747239,
+          "target_directional_derivative_for_negative_left_gradient": 18.49519913420275
+        },
+        "center": {
+          "left_norm": 0.3214969452828245,
+          "right_norm": 0.4072287657668061,
+          "dot": -0.09939470891006957,
+          "cosine": -0.7591856093993189,
+          "target_directional_derivative_for_negative_left_gradient": 0.09939470891006957
+        },
+        "size": {
+          "left_norm": 4.886779218038442,
+          "right_norm": 6.007779278465503,
+          "dot": -28.88998656382664,
+          "cosine": -0.9840352431944314,
+          "target_directional_derivative_for_negative_left_gradient": 28.88998656382664
+        }
+      },
+      "physical_vs_normal": {
+        "full": {
+          "left_norm": 6.797159663377369,
+          "right_norm": 6.811135048668595,
+          "dot": 45.806564262765775,
+          "cosine": 0.9894201613147231,
+          "target_directional_derivative_for_negative_left_gradient": -45.806564262765775
+        },
+        "features": {
+          "left_norm": 4.713534563124123,
+          "right_norm": 4.361579230899127,
+          "dot": 20.221213250131953,
+          "cosine": 0.9835959845493553,
+          "target_directional_derivative_for_negative_left_gradient": -20.221213250131953
+        },
+        "center": {
+          "left_norm": 0.3214969452828245,
+          "right_norm": 0.3464827843053245,
+          "dot": 0.10854137547200013,
+          "cosine": 0.9743989544912518,
+          "target_directional_derivative_for_negative_left_gradient": -0.10854137547200013
+        },
+        "size": {
+          "left_norm": 4.886779218038442,
+          "right_norm": 5.219974803001555,
+          "dot": 25.47680963716183,
+          "cosine": 0.9987433878535149,
+          "target_directional_derivative_for_negative_left_gradient": -25.47680963716183
+        }
+      },
+      "teacher_vs_normal": {
+        "full": {
+          "left_norm": 7.347201067091952,
+          "right_norm": 6.811135048668595,
+          "dot": -48.93873181417702,
+          "cosine": -0.9779379380553993,
+          "target_directional_derivative_for_negative_left_gradient": 48.93873181417702
+        },
+        "features": {
+          "left_norm": 4.209764410730089,
+          "right_norm": 4.361579230899127,
+          "dot": -17.75913665185818,
+          "cosine": -0.9672089144682802,
+          "target_directional_derivative_for_negative_left_gradient": 17.75913665185818
+        },
+        "center": {
+          "left_norm": 0.4072287657668061,
+          "right_norm": 0.3464827843053245,
+          "dot": -0.12072743031099542,
+          "cosine": -0.855629693977991,
+          "target_directional_derivative_for_negative_left_gradient": 0.12072743031099542
+        },
+        "size": {
+          "left_norm": 6.007779278465503,
+          "right_norm": 5.219974803001555,
+          "dot": -31.058867732007844,
+          "cosine": -0.9903831526175623,
+          "target_directional_derivative_for_negative_left_gradient": 31.058867732007844
+        }
+      },
+      "actual_expected_mixture_vs_normal": {
+        "full": {
+          "left_norm": 2.2833270015138085,
+          "right_norm": 6.811135048668595,
+          "dot": -3.132167551411243,
+          "cosine": -0.2013990335614166,
+          "target_directional_derivative_for_negative_left_gradient": 3.132167551411243
+        },
+        "features": {
+          "left_norm": 1.7173020128123708,
+          "right_norm": 4.361579230899127,
+          "dot": 2.4620765982737707,
+          "cosine": 0.3287086367118312,
+          "target_directional_derivative_for_negative_left_gradient": -2.4620765982737707
+        },
+        "center": {
+          "left_norm": 0.2653415453222593,
+          "right_norm": 0.3464827843053245,
+          "dot": -0.01218605483899532,
+          "cosine": -0.13254892607811142,
+          "target_directional_derivative_for_negative_left_gradient": 0.01218605483899532
+        },
+        "size": {
+          "left_norm": 1.481232546549871,
+          "right_norm": 5.219974803001555,
+          "dot": -5.582058094846018,
+          "cosine": -0.7219426501342145,
+          "target_directional_derivative_for_negative_left_gradient": 5.582058094846018
+        }
+      },
+      "projected_teacher_mixture_vs_normal": {
+        "full": {
+          "left_norm": 7.167937078222951,
+          "right_norm": 6.811135048668595,
+          "dot": 43.94663199824066,
+          "cosine": 0.9001438555301655,
+          "target_directional_derivative_for_negative_left_gradient": -43.94663199824066
+        },
+        "features": {
+          "left_norm": 5.836864636616397,
+          "right_norm": 4.361579230899127,
+          "dot": 23.244915489938037,
+          "cosine": 0.9130710723484883,
+          "target_directional_derivative_for_negative_left_gradient": -23.244915489938037
+        },
+        "center": {
+          "left_norm": 0.43328865911257747,
+          "right_norm": 0.3464827843053245,
+          "dot": 0.09936995773109607,
+          "cosine": 0.6619057021284162,
+          "target_directional_derivative_for_negative_left_gradient": -0.09936995773109607
+        },
+        "size": {
+          "left_norm": 4.137945638727606,
+          "right_norm": 5.219974803001555,
+          "dot": 20.60234655057152,
+          "cosine": 0.9538135780386074,
+          "target_directional_derivative_for_negative_left_gradient": -20.60234655057152
+        }
+      },
+      "physical_vs_half": {
+        "full": {
+          "left_norm": 6.797159663377369,
+          "right_norm": 6.60634770197139,
+          "dot": 44.71683702894815,
+          "cosine": 0.9958230575928504,
+          "target_directional_derivative_for_negative_left_gradient": -44.71683702894815
+        },
+        "features": {
+          "left_norm": 4.713534563124123,
+          "right_norm": 4.536571740977271,
+          "dot": 21.21410338034925,
+          "cosine": 0.9920880118520917,
+          "target_directional_derivative_for_negative_left_gradient": -21.21410338034925
+        },
+        "center": {
+          "left_norm": 0.3214969452828245,
+          "right_norm": 0.3160405456092932,
+          "dot": 0.09950655927456911,
+          "cosine": 0.979336758873181,
+          "target_directional_derivative_for_negative_left_gradient": -0.09950655927456911
+        },
+        "size": {
+          "left_norm": 4.886779218038442,
+          "right_norm": 4.792020990338006,
+          "dot": 23.403227089324325,
+          "cosine": 0.9993884287840964,
+          "target_directional_derivative_for_negative_left_gradient": -23.403227089324325
+        }
+      },
+      "teacher_vs_half": {
+        "full": {
+          "left_norm": 7.347201067091952,
+          "right_norm": 6.60634770197139,
+          "dot": -46.19171372316191,
+          "cosine": -0.9516576045287718,
+          "target_directional_derivative_for_negative_left_gradient": 46.19171372316191
+        },
+        "features": {
+          "left_norm": 4.209764410730089,
+          "right_norm": 4.536571740977271,
+          "dot": -17.72329770620717,
+          "cosine": -0.9280234643188033,
+          "target_directional_derivative_for_negative_left_gradient": 17.72329770620717
+        },
+        "center": {
+          "left_norm": 0.4072287657668061,
+          "right_norm": 0.3160405456092932,
+          "dot": -0.07960052874011395,
+          "cosine": -0.6184928759047759,
+          "target_directional_derivative_for_negative_left_gradient": 0.07960052874011395
+        },
+        "size": {
+          "left_norm": 6.007779278465503,
+          "right_norm": 4.792020990338006,
+          "dot": -28.38881548821463,
+          "cosine": -0.9860855433535018,
+          "target_directional_derivative_for_negative_left_gradient": 28.38881548821463
+        }
+      },
+      "actual_expected_mixture_vs_half": {
+        "full": {
+          "left_norm": 2.2833270015138085,
+          "right_norm": 6.60634770197139,
+          "dot": -1.474876694213763,
+          "cosine": -0.09777462817227245,
+          "target_directional_derivative_for_negative_left_gradient": 1.474876694213763
+        },
+        "features": {
+          "left_norm": 1.7173020128123708,
+          "right_norm": 4.536571740977271,
+          "dot": 3.4908056741420883,
+          "cosine": 0.4480755134351896,
+          "target_directional_derivative_for_negative_left_gradient": -3.4908056741420883
+        },
+        "center": {
+          "left_norm": 0.2653415453222593,
+          "right_norm": 0.3160405456092932,
+          "dot": 0.019906030534455135,
+          "cosine": 0.23737589156703232,
+          "target_directional_derivative_for_negative_left_gradient": -0.019906030534455135
+        },
+        "size": {
+          "left_norm": 1.481232546549871,
+          "right_norm": 4.792020990338006,
+          "dot": -4.9855883988903065,
+          "cosine": -0.702383762797183,
+          "target_directional_derivative_for_negative_left_gradient": 4.9855883988903065
+        }
+      },
+      "projected_teacher_mixture_vs_half": {
+        "full": {
+          "left_norm": 7.167937078222951,
+          "right_norm": 6.60634770197139,
+          "dot": 44.48392944771604,
+          "cosine": 0.9393934580358587,
+          "target_directional_derivative_for_negative_left_gradient": -44.48392944771604
+        },
+        "features": {
+          "left_norm": 5.836864636616397,
+          "right_norm": 4.536571740977271,
+          "dot": 25.294111308240577,
+          "cosine": 0.9552389455598357,
+          "target_directional_derivative_for_negative_left_gradient": -25.294111308240577
+        },
+        "center": {
+          "left_norm": 0.43328865911257747,
+          "right_norm": 0.3160405456092932,
+          "dot": 0.12217629317825153,
+          "cosine": 0.8922094517060422,
+          "target_directional_derivative_for_negative_left_gradient": -0.12217629317825153
+        },
+        "size": {
+          "left_norm": 4.137945638727606,
+          "right_norm": 4.792020990338006,
+          "dot": 19.067641846297203,
+          "cosine": 0.9615978711700812,
+          "target_directional_derivative_for_negative_left_gradient": -19.067641846297203
+        }
+      },
+      "physical_vs_eighth": {
+        "full": {
+          "left_norm": 6.797159663377369,
+          "right_norm": 9.06551570851677,
+          "dot": 52.234267777645854,
+          "cosine": 0.8476870037457511,
+          "target_directional_derivative_for_negative_left_gradient": -52.234267777645854
+        },
+        "features": {
+          "left_norm": 4.713534563124123,
+          "right_norm": 8.093508885284166,
+          "dot": 33.21210148054905,
+          "cosine": 0.8705882721878052,
+          "target_directional_derivative_for_negative_left_gradient": -33.21210148054905
+        },
+        "center": {
+          "left_norm": 0.3214969452828245,
+          "right_norm": 0.37401543485189126,
+          "dot": 0.09419710689779175,
+          "cosine": 0.7833776711508335,
+          "target_directional_derivative_for_negative_left_gradient": -0.09419710689779175
+        },
+        "size": {
+          "left_norm": 4.886779218038442,
+          "right_norm": 4.066792524789425,
+          "dot": 18.92796919019901,
+          "cosine": 0.9524217080059048,
+          "target_directional_derivative_for_negative_left_gradient": -18.92796919019901
+        }
+      },
+      "teacher_vs_eighth": {
+        "full": {
+          "left_norm": 7.347201067091952,
+          "right_norm": 9.06551570851677,
+          "dot": -45.54657482932186,
+          "cosine": -0.6838191881408774,
+          "target_directional_derivative_for_negative_left_gradient": 45.54657482932186
+        },
+        "features": {
+          "left_norm": 4.209764410730089,
+          "right_norm": 8.093508885284166,
+          "dot": -23.755153347567777,
+          "cosine": -0.6972093428438653,
+          "target_directional_derivative_for_negative_left_gradient": 23.755153347567777
+        },
+        "center": {
+          "left_norm": 0.4072287657668061,
+          "right_norm": 0.37401543485189126,
+          "dot": -0.07344636381623286,
+          "cosine": -0.48221678868268575,
+          "target_directional_derivative_for_negative_left_gradient": 0.07344636381623286
+        },
+        "size": {
+          "left_norm": 6.007779278465503,
+          "right_norm": 4.066792524789425,
+          "dot": -21.71797511793785,
+          "cosine": -0.8889009001723307,
+          "target_directional_derivative_for_negative_left_gradient": 21.71797511793785
+        }
+      },
+      "actual_expected_mixture_vs_eighth": {
+        "full": {
+          "left_norm": 2.2833270015138085,
+          "right_norm": 9.06551570851677,
+          "dot": 6.6876929483239955,
+          "cosine": 0.3230841836207193,
+          "target_directional_derivative_for_negative_left_gradient": -6.6876929483239955
+        },
+        "features": {
+          "left_norm": 1.7173020128123708,
+          "right_norm": 8.093508885284166,
+          "dot": 9.456948132981275,
+          "cosine": 0.6804049748719291,
+          "target_directional_derivative_for_negative_left_gradient": -9.456948132981275
+        },
+        "center": {
+          "left_norm": 0.2653415453222593,
+          "right_norm": 0.37401543485189126,
+          "dot": 0.02075074308155888,
+          "cosine": 0.20909270172185457,
+          "target_directional_derivative_for_negative_left_gradient": -0.02075074308155888
+        },
+        "size": {
+          "left_norm": 1.481232546549871,
+          "right_norm": 4.066792524789425,
+          "dot": -2.790005927738837,
+          "cosine": -0.4631587395042631,
+          "target_directional_derivative_for_negative_left_gradient": 2.790005927738837
+        }
+      },
+      "projected_teacher_mixture_vs_eighth": {
+        "full": {
+          "left_norm": 7.167937078222951,
+          "right_norm": 9.06551570851677,
+          "dot": 60.37271957944269,
+          "cosine": 0.9290819881837318,
+          "target_directional_derivative_for_negative_left_gradient": -60.37271957944269
+        },
+        "features": {
+          "left_norm": 5.836864636616397,
+          "right_norm": 8.093508885284166,
+          "dot": 43.59148525425669,
+          "cosine": 0.9227524290708802,
+          "target_directional_derivative_for_negative_left_gradient": -43.59148525425669
+        },
+        "center": {
+          "left_norm": 0.43328865911257747,
+          "right_norm": 0.37401543485189126,
+          "dot": 0.11756408818116157,
+          "cosine": 0.7254505810062173,
+          "target_directional_derivative_for_negative_left_gradient": -0.11756408818116157
+        },
+        "size": {
+          "left_norm": 4.137945638727606,
+          "right_norm": 4.066792524789425,
+          "dot": 16.663670237004844,
+          "cosine": 0.9902249507920207,
+          "target_directional_derivative_for_negative_left_gradient": -16.663670237004844
+        }
+      },
+      "normal_vs_half": {
+        "full": {
+          "left_norm": 6.811135048668595,
+          "right_norm": 6.60634770197139,
+          "dot": 44.51100574542316,
+          "cosine": 0.9892054229212079,
+          "target_directional_derivative_for_negative_left_gradient": -44.51100574542316
+        },
+        "features": {
+          "left_norm": 4.361579230899127,
+          "right_norm": 4.536571740977271,
+          "dot": 19.434460696521782,
+          "cosine": 0.9822022942629853,
+          "target_directional_derivative_for_negative_left_gradient": -19.434460696521782
+        },
+        "center": {
+          "left_norm": 0.3464827843053245,
+          "right_norm": 0.3160405456092932,
+          "dot": 0.10116884886158667,
+          "cosine": 0.9238944215869982,
+          "target_directional_derivative_for_negative_left_gradient": -0.10116884886158667
+        },
+        "size": {
+          "left_norm": 5.219974803001555,
+          "right_norm": 4.792020990338006,
+          "dot": 24.97537620003979,
+          "cosine": 0.9984467790212145,
+          "target_directional_derivative_for_negative_left_gradient": -24.97537620003979
+        }
+      },
+      "normal_vs_eighth": {
+        "full": {
+          "left_norm": 6.811135048668595,
+          "right_norm": 9.06551570851677,
+          "dot": 47.353254261051184,
+          "cosine": 0.7668983868486352,
+          "target_directional_derivative_for_negative_left_gradient": -47.353254261051184
+        },
+        "features": {
+          "left_norm": 4.361579230899127,
+          "right_norm": 8.093508885284166,
+          "dot": 27.372830361849054,
+          "cosine": 0.7754237381728434,
+          "target_directional_derivative_for_negative_left_gradient": -27.372830361849054
+        },
+        "center": {
+          "left_norm": 0.3464827843053245,
+          "right_norm": 0.37401543485189126,
+          "dot": 0.08462317791136095,
+          "cosine": 0.6530074633682683,
+          "target_directional_derivative_for_negative_left_gradient": -0.08462317791136095
+        },
+        "size": {
+          "left_norm": 5.219974803001555,
+          "right_norm": 4.066792524789425,
+          "dot": 19.89580072129076,
+          "cosine": 0.9372188159765895,
+          "target_directional_derivative_for_negative_left_gradient": -19.89580072129076
+        }
+      },
+      "half_vs_eighth": {
+        "full": {
+          "left_norm": 6.60634770197139,
+          "right_norm": 9.06551570851677,
+          "dot": 48.75918337186626,
+          "cosine": 0.8141463516560229,
+          "target_directional_derivative_for_negative_left_gradient": -48.75918337186626
+        },
+        "features": {
+          "left_norm": 4.536571740977271,
+          "right_norm": 8.093508885284166,
+          "dot": 30.233534773607822,
+          "cosine": 0.8234254673640654,
+          "target_directional_derivative_for_negative_left_gradient": -30.233534773607822
+        },
+        "center": {
+          "left_norm": 0.3160405456092932,
+          "right_norm": 0.37401543485189126,
+          "dot": 0.09173219934314697,
+          "cosine": 0.7760495979313169,
+          "target_directional_derivative_for_negative_left_gradient": -0.09173219934314697
+        },
+        "size": {
+          "left_norm": 4.792020990338006,
+          "right_norm": 4.066792524789425,
+          "dot": 18.433916398915294,
+          "cosine": 0.9459036150145546,
+          "target_directional_derivative_for_negative_left_gradient": -18.433916398915294
+        }
+      }
+    },
+    "projected_teacher_diagnostic": {
+      "full_space_removed_negative_coefficient": -1.027774082325582,
+      "projection": "T_projected=T-min(dot(T,P)/dot(P,P),0)*P; P=.5*N+.375*H+.125*D; T=2*normal_teacher",
+      "same_coefficient_all_prefixes": true,
+      "projected_teacher": {
+        "full": {
+          "norm": 2.2755092766058422,
+          "sha256": "e2a14902e9f613f00a49041d7236767387bf27e40490d24d0960257680a6101d",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 1.7812991268357965,
+          "sha256": "3d9f7436d824a1057675cb41052b9a74352bcfeac1df1a59ac5444090b489f9e",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.2659062772513799,
+          "sha256": "2e1d38c7b10ca99de3bfb5d5863d9d8b10eb10c20042af34979d7df4fca286ad",
+          "elements": 65
+        },
+        "size": {
+          "norm": 1.3907586923588098,
+          "sha256": "3cf38c2964c07311fefb167dc4ce5e188f369c8434a90101d6a0f2a197f147a7",
+          "elements": 8386
+        }
+      },
+      "projected_mixture": {
+        "full": {
+          "norm": 7.167937078222951,
+          "sha256": "60e8506edb477904e1bf1ea838997cb1189e87ea5fcf4f04e1749b03c51b0fbc",
+          "elements": 155211
+        },
+        "features": {
+          "norm": 5.836864636616397,
+          "sha256": "fc2c466984b61fe47e5e5b9d65633501ac8a0c89329dc6b31383994c235e33e1",
+          "elements": 146760
+        },
+        "center": {
+          "norm": 0.43328865911257747,
+          "sha256": "9f2e1921400cdbd9f05751034fc197f24205265e4c866d321307acfebabfab45",
+          "elements": 65
+        },
+        "size": {
+          "norm": 4.137945638727606,
+          "sha256": "7aa92a165abf567191f86f020f9d76d05488aa93f9cb5aa4664540294c484ae7",
+          "elements": 8386
+        }
+      },
+      "optimizer_updates": 0,
+      "training_treatment_registered": false
+    }
+  },
+  "component_comparisons": {
+    "normal/center_vs_logdepth": {
+      "full": {
+        "left_norm": 0.8904146468378591,
+        "right_norm": 4.152247211124305,
+        "dot": 0.8356402240440923,
+        "cosine": 0.22601842252038143,
+        "target_directional_derivative_for_negative_left_gradient": -0.8356402240440923
+      },
+      "features": {
+        "left_norm": 0.8769789348954807,
+        "right_norm": 2.315743427522228,
+        "dot": 0.8441827467626475,
+        "cosine": 0.4156778375109107,
+        "target_directional_derivative_for_negative_left_gradient": -0.8441827467626475
+      },
+      "center": {
+        "left_norm": 0.15409799172272626,
+        "right_norm": 0.16949934084089482,
+        "dot": -0.008542522718555254,
+        "cosine": -0.3270552688584411,
+        "target_directional_derivative_for_negative_left_gradient": 0.008542522718555254
+      },
+      "size": {
+        "left_norm": 0.0,
+        "right_norm": 3.4423479274517925,
+        "dot": 0.0,
+        "cosine": null,
+        "target_directional_derivative_for_negative_left_gradient": -0.0
+      }
+    },
+    "normal/size_vs_logdepth": {
+      "full": {
+        "left_norm": 3.021714866723299,
+        "right_norm": 4.152247211124305,
+        "dot": 7.578293516324221,
+        "cosine": 0.6039969403545553,
+        "target_directional_derivative_for_negative_left_gradient": -7.578293516324221
+      },
+      "features": {
+        "left_norm": 1.9155267585727087,
+        "right_norm": 2.315743427522228,
+        "dot": 2.9965954874651737,
+        "cosine": 0.675537493168297,
+        "target_directional_derivative_for_negative_left_gradient": -2.9965954874651737
+      },
+      "center": {
+        "left_norm": 0.1821546919229709,
+        "right_norm": 0.16949934084089482,
+        "dot": 0.028007549252622804,
+        "cosine": 0.907124157016317,
+        "target_directional_derivative_for_negative_left_gradient": -0.028007549252622804
+      },
+      "size": {
+        "left_norm": 2.3298793190161127,
+        "right_norm": 3.4423479274517925,
+        "dot": 4.553690479606424,
+        "cosine": 0.567773760371211,
+        "target_directional_derivative_for_negative_left_gradient": -4.553690479606424
+      }
+    },
+    "normal/shape_vs_logdepth": {
+      "full": {
+        "left_norm": 0.44933118986863546,
+        "right_norm": 4.152247211124305,
+        "dot": 0.9094691802073112,
+        "cosine": 0.48745914072590335,
+        "target_directional_derivative_for_negative_left_gradient": -0.9094691802073112
+      },
+      "features": {
+        "left_norm": 0.31838550262798626,
+        "right_norm": 2.315743427522228,
+        "dot": 0.29129188325997396,
+        "cosine": 0.3950796486543568,
+        "target_directional_derivative_for_negative_left_gradient": -0.29129188325997396
+      },
+      "center": {
+        "left_norm": 0.019180157561502435,
+        "right_norm": 0.16949934084089482,
+        "dot": -0.0013958356190520722,
+        "cosine": -0.4293525952490043,
+        "target_directional_derivative_for_negative_left_gradient": 0.0013958356190520722
+      },
+      "size": {
+        "left_norm": 0.3164827190558816,
+        "right_norm": 3.4423479274517925,
+        "dot": 0.6195731325663894,
+        "cosine": 0.5687060021817696,
+        "target_directional_derivative_for_negative_left_gradient": -0.6195731325663894
+      }
+    },
+    "normal/teacher_vs_logdepth": {
+      "full": {
+        "left_norm": 3.673600533545976,
+        "right_norm": 4.152247211124305,
+        "dot": -14.891671188775897,
+        "cosine": -0.9762663197064836,
+        "target_directional_derivative_for_negative_left_gradient": 14.891671188775897
+      },
+      "features": {
+        "left_norm": 2.1048822053650444,
+        "right_norm": 2.315743427522228,
+        "dot": -4.756476428871397,
+        "cosine": -0.9758141517247803,
+        "target_directional_derivative_for_negative_left_gradient": 4.756476428871397
+      },
+      "center": {
+        "left_norm": 0.20361438288340306,
+        "right_norm": 0.16949934084089482,
+        "dot": -0.03405895984873862,
+        "cosine": -0.9868585646561492,
+        "target_directional_derivative_for_negative_left_gradient": 0.03405895984873862
+      },
+      "size": {
+        "left_norm": 3.0038896392327517,
+        "right_norm": 3.4423479274517925,
+        "dot": -10.101135800055761,
+        "cosine": -0.976858080555013,
+        "target_directional_derivative_for_negative_left_gradient": 10.101135800055761
+      }
+    },
+    "half/center_vs_logdepth": {
+      "full": {
+        "left_norm": 1.2166236890473427,
+        "right_norm": 3.896437666913772,
+        "dot": 1.1044761971484012,
+        "cosine": 0.23298735940844764,
+        "target_directional_derivative_for_negative_left_gradient": -1.1044761971484012
+      },
+      "features": {
+        "left_norm": 1.1936431011011281,
+        "right_norm": 2.2691512390890485,
+        "dot": 1.1218329262044124,
+        "cosine": 0.4141810718366901,
+        "target_directional_derivative_for_negative_left_gradient": -1.1218329262044124
+      },
+      "center": {
+        "left_norm": 0.23534941670810888,
+        "right_norm": 0.15344500522808613,
+        "dot": -0.017356729056011346,
+        "cosine": -0.48062017964676335,
+        "target_directional_derivative_for_negative_left_gradient": 0.017356729056011346
+      },
+      "size": {
+        "left_norm": 0.0,
+        "right_norm": 3.1638005273176804,
+        "dot": 0.0,
+        "cosine": null,
+        "target_directional_derivative_for_negative_left_gradient": -0.0
+      }
+    },
+    "half/size_vs_logdepth": {
+      "full": {
+        "left_norm": 2.878407795957912,
+        "right_norm": 3.896437666913772,
+        "dot": 7.012070136944059,
+        "cosine": 0.6252104035651057,
+        "target_directional_derivative_for_negative_left_gradient": -7.012070136944059
+      },
+      "features": {
+        "left_norm": 1.9272988433113374,
+        "right_norm": 2.2691512390890485,
+        "dot": 3.122429495825902,
+        "cosine": 0.7139702856194314,
+        "target_directional_derivative_for_negative_left_gradient": -3.122429495825902
+      },
+      "center": {
+        "left_norm": 0.15800888616570732,
+        "right_norm": 0.15344500522808613,
+        "dot": 0.021028638367810822,
+        "cosine": 0.8673150539060313,
+        "target_directional_derivative_for_negative_left_gradient": -0.021028638367810822
+      },
+      "size": {
+        "left_norm": 2.132084379262399,
+        "right_norm": 3.1638005273176804,
+        "dot": 3.8686120027503472,
+        "cosine": 0.5735109212712647,
+        "target_directional_derivative_for_negative_left_gradient": -3.8686120027503472
+      }
+    },
+    "half/shape_vs_logdepth": {
+      "full": {
+        "left_norm": 0.3512549093461358,
+        "right_norm": 3.896437666913772,
+        "dot": 0.6776116650548827,
+        "cosine": 0.49509750507150224,
+        "target_directional_derivative_for_negative_left_gradient": -0.6776116650548827
+      },
+      "features": {
+        "left_norm": 0.22918681716982994,
+        "right_norm": 2.2691512390890485,
+        "dot": 0.19539243438734055,
+        "cosine": 0.3757116551860281,
+        "target_directional_derivative_for_negative_left_gradient": -0.19539243438734055
+      },
+      "center": {
+        "left_norm": 0.010577868901895557,
+        "right_norm": 0.15344500522808613,
+        "dot": -0.0005680388535104217,
+        "cosine": -0.3499670088561821,
+        "target_directional_derivative_for_negative_left_gradient": 0.0005680388535104217
+      },
+      "size": {
+        "left_norm": 0.2659727859477716,
+        "right_norm": 3.1638005273176804,
+        "dot": 0.48278726952105255,
+        "cosine": 0.5737325811742702,
+        "target_directional_derivative_for_negative_left_gradient": -0.48278726952105255
+      }
+    },
+    "half/teacher_vs_logdepth": {
+      "full": {
+        "left_norm": 3.673600533545976,
+        "right_norm": 3.896437666913772,
+        "dot": -13.91678414170815,
+        "cosine": -0.9722528583651083,
+        "target_directional_derivative_for_negative_left_gradient": 13.91678414170815
+      },
+      "features": {
+        "left_norm": 2.1048822053650444,
+        "right_norm": 2.2691512390890485,
+        "dot": -4.635216289924811,
+        "cosine": -0.9704625147578049,
+        "target_directional_derivative_for_negative_left_gradient": 4.635216289924811
+      },
+      "center": {
+        "left_norm": 0.20361438288340306,
+        "right_norm": 0.15344500522808613,
+        "dot": -0.030679996235989614,
+        "cosine": -0.981960669422104,
+        "target_directional_derivative_for_negative_left_gradient": 0.030679996235989614
+      },
+      "size": {
+        "left_norm": 3.0038896392327517,
+        "right_norm": 3.1638005273176804,
+        "dot": -9.25088785554735,
+        "cosine": -0.9733977749476742,
+        "target_directional_derivative_for_negative_left_gradient": 9.25088785554735
+      }
+    },
+    "eighth/center_vs_logdepth": {
+      "full": {
+        "left_norm": 3.4390254558117235,
+        "right_norm": 3.4948808706068313,
+        "dot": 5.317113616605642,
+        "cosine": 0.4423929254883374,
+        "target_directional_derivative_for_negative_left_gradient": -5.317113616605642
+      },
+      "features": {
+        "left_norm": 3.4259713448648426,
+        "right_norm": 2.7017589430729205,
+        "dot": 5.340805124272046,
+        "cosine": 0.5770007900699611,
+        "target_directional_derivative_for_negative_left_gradient": -5.340805124272046
+      },
+      "center": {
+        "left_norm": 0.2993600338823088,
+        "right_norm": 0.16139257262443107,
+        "dot": -0.023691507666403787,
+        "cosine": -0.49036033751639546,
+        "target_directional_derivative_for_negative_left_gradient": 0.023691507666403787
+      },
+      "size": {
+        "left_norm": 0.0,
+        "right_norm": 2.211027668474715,
+        "dot": 0.0,
+        "cosine": null,
+        "target_directional_derivative_for_negative_left_gradient": -0.0
+      }
+    },
+    "eighth/size_vs_logdepth": {
+      "full": {
+        "left_norm": 3.8439253966593254,
+        "right_norm": 3.4948808706068313,
+        "dot": 10.015515678419254,
+        "cosine": 0.7455314835406821,
+        "target_directional_derivative_for_negative_left_gradient": -10.015515678419254
+      },
+      "features": {
+        "left_norm": 2.996863996209408,
+        "right_norm": 2.7017589430729205,
+        "dot": 6.952900098070263,
+        "cosine": 0.8587215412007405,
+        "target_directional_derivative_for_negative_left_gradient": -6.952900098070263
+      },
+      "center": {
+        "left_norm": 0.20407422354386548,
+        "right_norm": 0.16139257262443107,
+        "dot": 0.027118464728702947,
+        "cosine": 0.8233668957756314,
+        "target_directional_derivative_for_negative_left_gradient": -0.027118464728702947
+      },
+      "size": {
+        "left_norm": 2.3985250373075724,
+        "right_norm": 2.211027668474715,
+        "dot": 3.035497115620289,
+        "cosine": 0.5723891475273736,
+        "target_directional_derivative_for_negative_left_gradient": -3.035497115620289
+      }
+    },
+    "eighth/shape_vs_logdepth": {
+      "full": {
+        "left_norm": 0.5740889364719298,
+        "right_norm": 3.4948808706068313,
+        "dot": -0.5373159483130945,
+        "cosine": -0.2678046892181012,
+        "target_directional_derivative_for_negative_left_gradient": 0.5373159483130945
+      },
+      "features": {
+        "left_norm": 0.34279220916942177,
+        "right_norm": 2.7017589430729205,
+        "dot": -0.04416490199731571,
+        "cosine": -0.04768697021382315,
+        "target_directional_derivative_for_negative_left_gradient": 0.04416490199731571
+      },
+      "center": {
+        "left_norm": 0.022199377553310983,
+        "right_norm": 0.16139257262443107,
+        "dot": 0.0019607261288897317,
+        "cosine": 0.5472585992429779,
+        "target_directional_derivative_for_negative_left_gradient": -0.0019607261288897317
+      },
+      "size": {
+        "left_norm": 0.45997695154047086,
+        "right_norm": 2.211027668474715,
+        "dot": -0.49511177244466853,
+        "cosine": -0.4868251483378704,
+        "target_directional_derivative_for_negative_left_gradient": 0.49511177244466853
+      }
+    },
+    "eighth/teacher_vs_logdepth": {
+      "full": {
+        "left_norm": 3.673600533545976,
+        "right_norm": 3.4948808706068313,
+        "dot": -10.934077128881428,
+        "cosine": -0.8516434821615776,
+        "target_directional_derivative_for_negative_left_gradient": 10.934077128881428
+      },
+      "features": {
+        "left_norm": 2.1048822053650444,
+        "right_norm": 2.7017589430729205,
+        "dot": -4.7667098611436955,
+        "cosine": -0.8381935680171685,
+        "target_directional_derivative_for_negative_left_gradient": 4.7667098611436955
+      },
+      "center": {
+        "left_norm": 0.20361438288340306,
+        "right_norm": 0.16139257262443107,
+        "dot": -0.027096013605379405,
+        "cosine": -0.8245431820340251,
+        "target_directional_derivative_for_negative_left_gradient": 0.027096013605379405
+      },
+      "size": {
+        "left_norm": 3.0038896392327517,
+        "right_norm": 2.211027668474715,
+        "dot": -6.140271254132354,
+        "cosine": -0.9245053033546551,
+        "target_directional_derivative_for_negative_left_gradient": 6.140271254132354
+      }
+    }
+  },
+  "optimizer_updates": 0,
+  "Adam_direction_computed": false,
+  "affine_applied": false,
+  "cohort_labels_sha256": "bf96f964cd7f17e6b3a846ae74a95d9134f65e0f13a5bae9d705287ada295b13",
+  "expected_mixture_recipe": "C1/slow expected illumination mixture evaluated at each endpoint; at C0 this is a counterfactual, not its normal-only historical objective",
+  "interpretation": "Positive gradient cosine implies local negative-left-gradient lowers the right task to first order, not an actual AdamW step; conflict at trained endpoints may be a regularized equilibrium. Projection is a numerical TRAIN-only diagnostic, not a registered treatment."
+}

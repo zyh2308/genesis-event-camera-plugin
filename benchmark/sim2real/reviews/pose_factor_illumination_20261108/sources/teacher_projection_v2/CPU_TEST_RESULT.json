@@ -1,0 +1,33 @@
+{
+  "schema": "pose_depth_teacher_projection_cpu_preflight_v2",
+  "status": "passed",
+  "tests": 13,
+  "policy_tests": 3,
+  "projection_tests": 7,
+  "actual_schema_admission_tests": 3,
+  "command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_teacher_projection_policy",
+    "test_projection",
+    "test_admission"
+  ],
+  "elapsed_seconds": 12.293967760997475,
+  "stdout": "",
+  "stderr": "test_contract_rejects_scope_expansion_and_lr_or_center_changes (test_teacher_projection_policy.PolicyTests) ... ok\ntest_reused_controls_and_candidate_center_have_unique_immutable_evidence (test_teacher_projection_policy.PolicyTests) ... ok\ntest_ten_actual_smoke_updates_and_exact_C1_center_reuse (test_teacher_projection_policy.PolicyTests) ... ok\ntest_bad_scope_shapes_and_nonfinite_fail_without_clipping (test_projection.Projection) ... ok\ntest_fp64_projection_does_not_cast_huge_coefficient_to_fp32 (test_projection.Projection) ... ok\ntest_negative_teacher_removes_only_parallel_component (test_projection.Projection) ... ok\ntest_no_parameter_input_or_grad_field_mutation_and_no_graph (test_projection.Projection) ... ok\ntest_one_global_coefficient_is_not_per_tensor_clipping (test_projection.Projection) ... ok\ntest_positive_or_orthogonal_teacher_is_bitwise_unchanged (test_projection.Projection) ... ok\ntest_zero_physical_and_unused_slots_preserve_teacher (test_projection.Projection) ... ok\ntest_actual_forward_and_train_schema_positive (test_admission.Admission) ... ok\ntest_each_missing_or_true_isolation_field_rejected (test_admission.Admission) ... ok\ntest_original_v1_failure_is_reproducible_and_not_hidden (test_admission.Admission) ... ok\n\n----------------------------------------------------------------------\nRan 13 tests in 5.057s\n\nOK\n",
+  "GPU_used": false,
+  "project_data_read": false,
+  "real_data_used": false,
+  "actual_micro_optimizer_updates_and_recovery": true,
+  "candidate_centers_reused_C1_unchanged": true,
+  "source_controls_files_unchanged": true,
+  "v1_schema_bug_reproduced_and_preserved": true,
+  "scientific_policy_and_projection_unchanged_from_v1": true,
+  "phase_runtime_bounds_seconds": {
+    "smoke": 1200,
+    "study": 3600
+  }
+}
