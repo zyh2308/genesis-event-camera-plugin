@@ -1,0 +1,60 @@
+{
+  "real_data_used": false,
+  "smoke": true,
+  "seeds": [
+    0
+  ],
+  "epochs": 1,
+  "lr": 0.00015,
+  "teacher_clean_weight": 2,
+  "paired_teacher_weight": 0,
+  "final_center": "independent trained localizer",
+  "localizer_epochs": 1,
+  "total_optimizer_updates_per_fit": 2,
+  "arms": [
+    "clean_control",
+    "physical_supervised",
+    "paired_consistency"
+  ],
+  "training": "all original train windows plus one matched auxiliary batch per step; all 96 original training trajectories at half/eighth radiance",
+  "source_sha256": "2cba8a4661eebdbd58d46b9023af436fb1c978806da090565be7d0a4fb131d19",
+  "real_evaluation": "disabled; unchanged original thirty illumination and eight confirmation checks",
+  "validation": "96 previously inspected synthetic trajectories and four disjoint relit validation trajectories",
+  "gate": "each seed clean ADD-S success decline <=2pp; each seed improves depth at half and eighth physical radiance and never lowers relit pose success; both methods",
+  "native_source_sha256": "85951e6d43e59140b81d7303370a6b252fec902dc065ff17bb30faf8e4fc6186",
+  "native_main_ast_sha256": "ec9a7c720fd219a9d64b1b2bc91c3200802d857a06f6dcab605e11071e737b6c",
+  "native_main_and_evaluation_unchanged": true,
+  "policy": "frozen_features_head_only",
+  "canonical_arm_mapping": {
+    "clean_control": "clean_control",
+    "physical_supervised": "physical_supervised",
+    "paired_consistency": "frozen_features"
+  },
+  "candidate_legacy_slot": "paired_consistency",
+  "candidate_canonical_name": "frozen_features",
+  "actual_half_teacher_weight": 0,
+  "candidate_trainable": "center and size heads in depth branch; center head only in localizer branch",
+  "features": "weights and buffers fixed to source teacher; eval mode (including any BN stats)",
+  "auxiliary_half_probability": 0.75,
+  "expected_supervision_fractions": {
+    "normal": 0.5,
+    "half": 0.375,
+    "eighth": 0.125
+  },
+  "controls": "fresh one-update smoke only",
+  "prior_completion": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study/completion.json",
+    "size_bytes": 4717612,
+    "sha256": "6540c8e62b3606376641590fa267bf90111e889e279213ab4f6a8537c2cc2ac0"
+  },
+  "prior_execution_receipt": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study/priority_execution_receipt.json",
+    "size_bytes": 40522,
+    "sha256": "e74399d0d9e54b39afe33e087c41a5349b2df5fb162e8f16214477da16497f51"
+  },
+  "diagnostic": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-frozen-features-v1/sources/forgetting_diagnostic.json",
+    "size_bytes": 173596,
+    "sha256": "f89f02cfa4f66aa095692263ac1eb31a4d41d11828c8ea3aa060064e84dfa25e"
+  }
+}
