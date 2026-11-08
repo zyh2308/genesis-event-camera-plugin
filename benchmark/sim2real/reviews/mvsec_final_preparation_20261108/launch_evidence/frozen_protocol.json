@@ -1,0 +1,107 @@
+{
+  "schema": "stage9_mvsec_dt1_protocol_v2",
+  "status": "frozen_by_research_review",
+  "real_scores_authorized": true,
+  "required_sequences": [
+    "indoor_flying1",
+    "indoor_flying2",
+    "indoor_flying3",
+    "outdoor_day1"
+  ],
+  "evaluation_sequences": [
+    "indoor_flying1",
+    "indoor_flying2",
+    "indoor_flying3",
+    "outdoor_day1"
+  ],
+  "missing_required_sequences": [],
+  "complete_required_scope": true,
+  "result_scope": "required_four_sequence_final",
+  "methods": [
+    "eventgenesis",
+    "v2e",
+    "vid2e",
+    "film_esim",
+    "rife_esim"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "training_budget_updates": 8910,
+  "dt": 1,
+  "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+  "selected_weights": "completed Stage9 synthetic_best only; no real feedback",
+  "flow_unit": "px_per_interval",
+  "event_window": "(APS timestamp[i],APS timestamp[i+1]]",
+  "input": "same native260x346 real events,5Gaussian equal-count slices,center-pad352; event-only model input",
+  "primary_roi_native_yxyx": [
+    0,
+    260,
+    0,
+    346
+  ],
+  "legacy_rois_native_yxyx": {
+    "indoor_flying1": [
+      2,
+      258,
+      45,
+      301
+    ],
+    "indoor_flying2": [
+      2,
+      258,
+      45,
+      301
+    ],
+    "indoor_flying3": [
+      2,
+      258,
+      45,
+      301
+    ],
+    "outdoor_day1": [
+      2,
+      192,
+      45,
+      301
+    ]
+  },
+  "primary_mask": "finite nonzero GT AND identical common real-event support",
+  "secondary": "fixed legacy256 ROI, same mask rule, always reported; not selected by scores",
+  "metrics": [
+    "aee_px_per_interval",
+    "outlier_3px_and_5pct_percent",
+    "zero_flow_aee_px_per_interval"
+  ],
+  "empty_support": "keep index/denominator metadata; undefined score, never fabricated zero",
+  "aggregation": "per-window then equal-sequence; seed mean/sampleSD and paired sequence-cluster CI; no four-sequence aggregate while outdoor missing",
+  "registration_sha256": "6bc2318b9ea49a61c14d42675596088fa7972d2dd4149a3057de8cf68fe6e5a1",
+  "source_scripts": {
+    "adapter": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/scripts/run_mvsec_candidate_inference.py",
+      "sha256": "0247d1d32b47c8a5e6c4b9f7120a85758f43d8cac27e56e6c7ab7c5888e02cd4"
+    },
+    "metrics": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/scripts/stage4_mvsec_dt1_metrics.py",
+      "sha256": "06b4265b6ef4d980c1d5edd552801d67c6920d7235953bf93b1cf90081546698"
+    },
+    "model_compat": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/compat/steflow_align_corners.py",
+      "sha256": "0f7290aa45b8ba020c03d2d26b64a0cc213ccec7536e386bce186e4d0446393e"
+    }
+  },
+  "no_real_data_model_selection": true,
+  "aggregation_implementation": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v1/aggregation_kernel.py",
+    "sha256": "160144b79ff01ef17728294f751625e28e908b307400fa80a5bb0366dd6100c7",
+    "contract_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v1/aggregation_contract.json",
+    "contract_sha256": "d1f18ac76ad09fdbfc7b39635c9366d389a848a29f2d5e707f55f07c2d61662e"
+  },
+  "numerical_preflight": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-forward-probe-gpu5-v1/numerical_preflight.json",
+    "sha256": "22859be8c9619860cb8448e06bca3cd528594b361c360c40f7f41b0c5b7798ee",
+    "source_candidate_manifest_sha256": "67ca5ba8728f7e30617ea523e5a9f4c65f63a1818e87ce872cae5f07cd5d37ae"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "stage9_mvsec_frozen_aggregation_v1",
+  "kernel_file": "aggregation_kernel.py",
+  "scope": "Frozen mathematical aggregation only; no real scores were read during implementation",
+  "methods": ["eventgenesis", "v2e", "vid2e", "film_esim", "rife_esim"],
+  "seeds": [0, 1, 2],
+  "sequence_order": ["indoor_flying1", "indoor_flying2", "indoor_flying3", "outdoor_day1"],
+  "primary_roi": "full_native",
+  "secondary_roi": "legacy_roi",
+  "input_contract": "Each value is the already frozen per-window-then-per-sequence metric from one result.json. The future parser must bind original result fields, frozen hashes, all registered windows, scored/empty counts, and ROI before calling this kernel. No window/pixel values are accepted as independently sampled observations.",
+  "metrics": {
+    "aee_px_per_interval": {"role": "primary", "lower_is_better": true, "unit": "px_per_actual_APS_interval"},
+    "outlier_3px_and_5pct_percent": {"role": "secondary", "lower_is_better": true, "unit": "percent", "definition": "EPE > 3 px AND EPE > 0.05 * GT_magnitude"},
+    "zero_flow_aee_px_per_interval": {"role": "common_reference", "unit": "px_per_actual_APS_interval", "identical_across_methods_and_seeds_required": true}
+  },
+  "point_estimate": {
+    "within_method_seed": "Arithmetic mean of four sequence-level values, with equal sequence weight",
+    "within_method": "Arithmetic mean of the three paired seed estimates",
+    "seed_dispersion": "Sample standard deviation of the three seed estimates, numpy.std(ddof=1)",
+    "window_or_pixel_weighting": false
+  },
+  "paired_ci": {
+    "comparisons": ["eventgenesis-v2e", "eventgenesis-vid2e", "eventgenesis-film_esim", "eventgenesis-rife_esim"],
+    "difference_sign": "EventGenesis minus comparator; negative favors EventGenesis for AEE and outlier",
+    "first_average": "For each sequence, average the three paired seed differences while retaining all three seeds in that cluster",
+    "sampling_unit": "sequence",
+    "sequence_clusters": 4,
+    "draws_per_bootstrap": 4,
+    "replacement": true,
+    "bootstrap_replicates": 10000,
+    "rng": "numpy.random.default_rng",
+    "rng_seed": 20261108,
+    "index_generation": "rng.integers(0,4,size=(10000,4)); one shared index array for every comparison and metric within each ROI call",
+    "interval": "Two-sided percentile95% confidence interval of the resampled cluster mean",
+    "quantiles": [0.025, 0.975],
+    "quantile_method": "linear",
+    "conditional_on_observed_three_seeds": true,
+    "resample_windows": false,
+    "resample_seeds": false,
+    "only_four_clusters_disclosed": true,
+    "all_four_comparisons_reported": true,
+    "significance_stars": false,
+    "multiple_comparison_significance_claim": false
+  },
+  "fail_closed": [
+    "Any missing or extra method, seed, sequence or metric rejects the full table",
+    "Any nonnumeric, boolean or nonfinite input rejects the full table",
+    "Negative AEE/zero-flow or outlier outside[0,100] rejects the full table",
+    "Any zero-flow difference across methods or seeds rejects the full table",
+    "All four sequences are mandatory; no indoor-only final aggregate"
+  ],
+  "real_scores_read": false,
+  "training_or_model_selection_changed": false
+}

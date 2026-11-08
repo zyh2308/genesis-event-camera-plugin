@@ -1,0 +1,822 @@
+{
+  "schema": "mvsec_synthetic_forward_equivalence_v1",
+  "status": "passed",
+  "thresholds": {
+    "max_abs_px": 0.001,
+    "rms_px": 0.0001
+  },
+  "fixture_seed": 20261108,
+  "flow_unit": "px_per_interval",
+  "dtype": "float32",
+  "comparison_domain": "all native260x346 pixels and both flow components, no GT/event mask; padded diagnostics separate",
+  "real_data_read": false,
+  "real_scores_computed": false,
+  "training_started": false,
+  "GPU_used": true,
+  "scoring_authorization_created": false,
+  "checkpoints": {
+    "eventgenesis/seed0": {
+      "checkpoint_sha256": "9b3662727b2e8de9810535633271069fa816f338ad2e0bbc5eb5e03062d2717e",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.3213367462158203e-07,
+          "rms_px": 7.989679381845658e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.3213367462158203e-07,
+          "padded_rms_px": 7.354586696624935e-08,
+          "reference_prediction_sha256": "a5c417b8626bf8d18a2d513cc0d0a18b31676231afdc5a5db14a37ff2896b189",
+          "adapter_prediction_sha256": "b22e5299a76b165207130d49bef6bdc186ff2c44f9a215dcdeea7f7185f07e2b"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 3.814697265625e-06,
+          "rms_px": 4.816719489041573e-07,
+          "passed": true,
+          "padded_max_abs_px": 3.814697265625e-06,
+          "padded_rms_px": 4.3660405189505125e-07,
+          "reference_prediction_sha256": "933fa95036622238c250411131c353aed099f96784336b9e86b438b6edcb9029",
+          "adapter_prediction_sha256": "6208f5ebec9638ce2a9d857160b22d871581c03fe3227e63aa20bed380457dc5"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "v2e/seed0": {
+      "checkpoint_sha256": "2a7270b1159b9b444b556639a8201762ab25612dfe3ff6163c4f0bdd2b93d774",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 5.960464477539062e-07,
+          "rms_px": 1.0050502572710113e-07,
+          "passed": true,
+          "padded_max_abs_px": 1.7881393432617188e-06,
+          "padded_rms_px": 1.7434521297713964e-07,
+          "reference_prediction_sha256": "b786dfbe00ee3644ae481c163e7e68628c46c11c012c6a62fcd3f7820150e006",
+          "adapter_prediction_sha256": "a083f98863757f01fe594563ba61c2de611872a8d531b94b9806c3061382139a"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.2649765014648438e-06,
+          "rms_px": 2.776695269888611e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.2649765014648438e-06,
+          "padded_rms_px": 2.5615909116161555e-07,
+          "reference_prediction_sha256": "2754f7b11c3ad6340f0cec796505a559b4110f442b83e2d10121267242188766",
+          "adapter_prediction_sha256": "693c738abf044d55ce516ea050ff3d6b152b39d0bf88678e944a93fe9dbe6c01"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "vid2e/seed0": {
+      "checkpoint_sha256": "50d104604910f6ca0291e48011c000e91ca3210888fcb0f2fe75d4ea360225c7",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.470348358154297e-07,
+          "rms_px": 8.982349019201262e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.470348358154297e-07,
+          "padded_rms_px": 8.398459429137509e-08,
+          "reference_prediction_sha256": "c483b54094f93592e8bce433fa5f457fcaef44bf198e23ac131cc6f6a091f531",
+          "adapter_prediction_sha256": "ceb073a45899cdfa0c16fda2a396fab66e27cf4d8e70a8410c42f1311b62a368"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 3.337860107421875e-06,
+          "rms_px": 4.4366316858196743e-07,
+          "passed": true,
+          "padded_max_abs_px": 3.337860107421875e-06,
+          "padded_rms_px": 4.140533888047146e-07,
+          "reference_prediction_sha256": "6cf64b2c614af1fa2c2d3abe3d95970cd310bdf7e25144b92c5018309a944c46",
+          "adapter_prediction_sha256": "7c2a9fb0f24d253705465bc1a8d52a7e7f6b8d37eb0503f1af0c290c50c88ff4"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "film_esim/seed0": {
+      "checkpoint_sha256": "c58cc173062ebfc3a5010373dfb9816582d27c966fc2cd54605c6e92af848516",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 5.21540641784668e-07,
+          "rms_px": 8.716155528824523e-08,
+          "passed": true,
+          "padded_max_abs_px": 7.599592208862305e-07,
+          "padded_rms_px": 8.861664632537159e-08,
+          "reference_prediction_sha256": "ed6dd44265821ea103dfb1b54a175796f9efc709a35d6a67057de742cbd709cb",
+          "adapter_prediction_sha256": "391ce0a3d443b34c24960c078a87b53eafa42607c03655a2c647eb3c4551f4a8"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.0265579223632812e-06,
+          "rms_px": 2.5553278584010835e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.0265579223632812e-06,
+          "padded_rms_px": 2.4156373049856505e-07,
+          "reference_prediction_sha256": "c9aa43bc8d63fe6a2cd5fa7735dd2a8b6d005e0fcdf3aaf14d17e41fb543fcd1",
+          "adapter_prediction_sha256": "d17edc26098673762687e8cbf1c611bdbe8d8ae8374d02be9539a8e3e5eb4586"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "rife_esim/seed0": {
+      "checkpoint_sha256": "47f34ba62fb71aee8d7711d5600cf40baae9f79b4957226a130065fe564a2bc3",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.3958425521850586e-07,
+          "rms_px": 8.383494362288957e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.76837158203125e-07,
+          "padded_rms_px": 7.945097708372972e-08,
+          "reference_prediction_sha256": "a901135c4d6a4485219290b74a210f89e5f91cef8a4a7e1e0597de384cd0d3be",
+          "adapter_prediction_sha256": "68034a2fcdfaa89e08dbfa8dc8a54d4ec7b7c2828e69a278aad2e9e234137590"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.8908252716064453e-06,
+          "rms_px": 3.6641345268587724e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.8908252716064453e-06,
+          "padded_rms_px": 3.396635208054862e-07,
+          "reference_prediction_sha256": "ac561a6c6ebb2fd6c59f82ad100536cb018de89ac5a58d8b0588dba8a16b3c30",
+          "adapter_prediction_sha256": "5169a8e6e6b010914fd06f35341f000bfd1b92b32a2a43108a96fa5335d21340"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "eventgenesis/seed1": {
+      "checkpoint_sha256": "4d39015abf06b7b408b1c371e36fc220d530742d942e068b006f4825a3778dbe",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.76837158203125e-07,
+          "rms_px": 7.099527241077371e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.76837158203125e-07,
+          "padded_rms_px": 6.512745627089702e-08,
+          "reference_prediction_sha256": "062e90804eb23c2b9c034f850a5dc93a687095e568038c9445be791c78ce4585",
+          "adapter_prediction_sha256": "51ccc2dabc0d31b2b402071cd0796a33283561b76841d37bb8b6ad5ac25cc5dd"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 3.0994415283203125e-06,
+          "rms_px": 4.6029615452314087e-07,
+          "passed": true,
+          "padded_max_abs_px": 3.0994415283203125e-06,
+          "padded_rms_px": 4.496583349291782e-07,
+          "reference_prediction_sha256": "59b529a3deb9a02c26fb3ff34ca2b6e7d0f39c260c2a7425208612055fd9ff19",
+          "adapter_prediction_sha256": "daf2b9fbec96264818e5fd6de8b90d97dfd731fd3287856aee12ae6448ed57fa"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "v2e/seed1": {
+      "checkpoint_sha256": "166f346af89c51bf513a1bea07e9aa73e1f9b00016a60c2fd96d2dd51c4e8157",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 5.364418029785156e-07,
+          "rms_px": 1.0414312767201406e-07,
+          "passed": true,
+          "padded_max_abs_px": 1.1324882507324219e-06,
+          "padded_rms_px": 1.2980479864262735e-07,
+          "reference_prediction_sha256": "cae83a1392f691985a035d5454242c72512ec921cbccd4cfc6b06ff38cb3a640",
+          "adapter_prediction_sha256": "8c2397ab04ea395f9232afa1a85bad111ade69c2e27282ace0077c736f863e54"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.384185791015625e-06,
+          "rms_px": 3.23942573653242e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.384185791015625e-06,
+          "padded_rms_px": 3.222507548956632e-07,
+          "reference_prediction_sha256": "b5e6491a151c92b16be460696b1cccc3cad5fb0da106fa8ced021e066b1b73fb",
+          "adapter_prediction_sha256": "5399d4a8cf5e7da97cd1869b2e6ef42bfb3bde4a2d47937a062384621a86904e"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "vid2e/seed1": {
+      "checkpoint_sha256": "5b95c3625038a930e67518159d8d88cabe8c524a7258ab50c3dfb965af09bab2",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 3.948807716369629e-07,
+          "rms_px": 7.595152441056334e-08,
+          "passed": true,
+          "padded_max_abs_px": 3.948807716369629e-07,
+          "padded_rms_px": 7.170404889107128e-08,
+          "reference_prediction_sha256": "f51eb15cb141e4472d28a1b0be485c018e7e15f7a15ad4ea65db067f41033bf6",
+          "adapter_prediction_sha256": "92fac8a940c855d79f7d84dc7e29d892e0449001492f873866e6203a5710817c"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.2351741790771484e-06,
+          "rms_px": 3.496155689863224e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.384185791015625e-06,
+          "padded_rms_px": 3.457858246790564e-07,
+          "reference_prediction_sha256": "41b296f691ae538455a48a477611537e13ff366b3b7d6efedd6d70db7964474f",
+          "adapter_prediction_sha256": "ea2ad615e5905b3ce4e239ec36a8f663c09bb8008e4da441d2f872d09eca5b09"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "film_esim/seed1": {
+      "checkpoint_sha256": "f551295b75de9f5c3ba1f2785ad1f7602dac60ffbc3e8cd4ee7adf52c8ba6601",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 3.650784492492676e-07,
+          "rms_px": 7.101444204702238e-08,
+          "passed": true,
+          "padded_max_abs_px": 3.650784492492676e-07,
+          "padded_rms_px": 6.700621567109643e-08,
+          "reference_prediction_sha256": "3c2464f3d5201a680d1e42dcfd844adb8631349f29f3c0f8f0b294e24a6ad24b",
+          "adapter_prediction_sha256": "18540f3b13fee0b48d467d6bdeb98be07be88c3b16b77051299f916fc537391c"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 1.9073486328125e-06,
+          "rms_px": 2.910235456017366e-07,
+          "passed": true,
+          "padded_max_abs_px": 1.9073486328125e-06,
+          "padded_rms_px": 2.7503182803783623e-07,
+          "reference_prediction_sha256": "55380a4206ccfcadac14901d374c2985cf5fd4f6af4aaafded1870de1967d15d",
+          "adapter_prediction_sha256": "2502428d408aeecae80156c9dae60114d654928c9e35d39cbd9f8dee1349fcc4"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "rife_esim/seed1": {
+      "checkpoint_sha256": "cf38b240b0225f9f24ea4b32f85cc51cd04d4e309f42bdbd08d982125d0f6190",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 3.8743019104003906e-07,
+          "rms_px": 7.303577424842279e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.172325134277344e-07,
+          "padded_rms_px": 6.922964174383699e-08,
+          "reference_prediction_sha256": "35a5ed36819e0fc29b96ed3eeb8cc89ae4aac818c06255f32a6cd8d3723a7770",
+          "adapter_prediction_sha256": "717910eb1973f793ddea466ddb0dd0f74f47a38b61cb1218ebd959f58e49ffab"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.6226043701171875e-06,
+          "rms_px": 3.769438298879177e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.6226043701171875e-06,
+          "padded_rms_px": 3.824971439956051e-07,
+          "reference_prediction_sha256": "5262e2492587bd5386159a84a9a81fc2a1f2dd02fbfd73d544c6cd3286b9a58b",
+          "adapter_prediction_sha256": "e2a936644caba5e2d5bc7255c6002cc55a62abeaa4bafff8ec2847b3f00d2472"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "eventgenesis/seed2": {
+      "checkpoint_sha256": "7d570d11992ebfbb4a64d43692826258f7e0a78f2123bcc0a9021f12c581fcd8",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.377216100692749e-07,
+          "rms_px": 7.905427098304013e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.377216100692749e-07,
+          "padded_rms_px": 7.084141064462799e-08,
+          "reference_prediction_sha256": "53b2f414b62f199faa548b70dbb662eaf37f73d8bccdf4e97244dd395693dc34",
+          "adapter_prediction_sha256": "0846bddb42ec38b53994b379c882fe78b71ce3a59924a1700f377580980c2040"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.1457672119140625e-06,
+          "rms_px": 3.9255493404553184e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.294778823852539e-06,
+          "padded_rms_px": 3.728772829259234e-07,
+          "reference_prediction_sha256": "22d3b51d20605608c1c69d640e24118eed878e295ca004fc4c3d15dfcdfb4157",
+          "adapter_prediction_sha256": "a6ae4e76785cbba875389f45862326b720b58e36b2d9e8d55ae83f3d4035d563"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "v2e/seed2": {
+      "checkpoint_sha256": "dc0b61caed6df04700a25c24be558e5476e89683c3b42a8489fa35473ed2a5e7",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 6.258487701416016e-07,
+          "rms_px": 1.1470725953526219e-07,
+          "passed": true,
+          "padded_max_abs_px": 1.1920928955078125e-06,
+          "padded_rms_px": 1.3318176177833033e-07,
+          "reference_prediction_sha256": "50b62db7c9fc2ea3e01e741ed6a37013d09d25fcd167a2638f2f6bf616ee8f42",
+          "adapter_prediction_sha256": "346f1ac8e51acf2e7f455c36b98291672433694d04db22acf8c7766938a66176"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 1.9073486328125e-06,
+          "rms_px": 2.6638991403118844e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.6226043701171875e-06,
+          "padded_rms_px": 2.893497567886434e-07,
+          "reference_prediction_sha256": "97e1a66a1898242fe7a1d7bb5d4b17e1f5c4b40b3f26384d4ec09ce998d8a937",
+          "adapter_prediction_sha256": "1aec53a7ed112a3b33281d82559ce02c8e2a922dc49dc466d883929411df59a6"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "vid2e/seed2": {
+      "checkpoint_sha256": "ec14fd4ccb38013368da6517029c57e36b1ba99ea72db5cada48288fbce09695",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.470348358154297e-07,
+          "rms_px": 8.84837635217009e-08,
+          "passed": true,
+          "padded_max_abs_px": 5.066394805908203e-07,
+          "padded_rms_px": 8.348797162107619e-08,
+          "reference_prediction_sha256": "9e985d5f3ad04aea6031404d9a3b0117cc7340a680349f7c1efbbb77c6204574",
+          "adapter_prediction_sha256": "b368ef8384f1b72d6522937106e6be96d5c17ac978cf560ea8c5883fea2a69bf"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 2.384185791015625e-06,
+          "rms_px": 3.5557365224552654e-07,
+          "passed": true,
+          "padded_max_abs_px": 2.384185791015625e-06,
+          "padded_rms_px": 3.318504907648485e-07,
+          "reference_prediction_sha256": "c235c5ba1ad0b557340090b30c91d0bcb4fced1572e9a7c139e10e61b11eb9c5",
+          "adapter_prediction_sha256": "26c72668c4fa711c69bf89c7757105b9d85e598e4f2be46d94cb961a0a697479"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "film_esim/seed2": {
+      "checkpoint_sha256": "b75eb018f30de61054c589a2582f35ea70bf2fefb3df4515814b130ff561e39d",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.377216100692749e-07,
+          "rms_px": 8.195724885138057e-08,
+          "passed": true,
+          "padded_max_abs_px": 4.377216100692749e-07,
+          "padded_rms_px": 7.327342446606105e-08,
+          "reference_prediction_sha256": "d45a2cb33bce704476cf6d8e02257b0c6418b103a5ddb895fa032762a967369d",
+          "adapter_prediction_sha256": "4a00b94866ae86ad3620c6f71c1f27f9a8bb887e5dfc6a7bfb40e2b479b2b38e"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 1.430511474609375e-06,
+          "rms_px": 2.2812366628206204e-07,
+          "passed": true,
+          "padded_max_abs_px": 1.430511474609375e-06,
+          "padded_rms_px": 2.0849813359677304e-07,
+          "reference_prediction_sha256": "fbaef409759b5a953796db1016ecbaf09f3d39d7a2877f9a2420235016897742",
+          "adapter_prediction_sha256": "f0eae82f98dad377140ea1c6960a0cd281a594e0c60bfde6e26038da84a232d3"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    },
+    "rife_esim/seed2": {
+      "checkpoint_sha256": "cf85beae33db0a6e65fece1c05424cb0f6f527870f209d96192771228e527595",
+      "cases": [
+        {
+          "case_id": "sparse_gaussian_counts",
+          "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+          "max_abs_px": 4.153698682785034e-07,
+          "rms_px": 8.595942778417336e-08,
+          "passed": true,
+          "padded_max_abs_px": 5.252659320831299e-07,
+          "padded_rms_px": 8.176896301799804e-08,
+          "reference_prediction_sha256": "2723246d1235d9a5aeeb881eb84f75dc3ab9446a8d29717596b41f5e07ccccd3",
+          "adapter_prediction_sha256": "227221f298d6b79ce53789b0b6043cfe806a4f1922f093c254a582c30bc2f4d5"
+        },
+        {
+          "case_id": "structured_gaussian_counts",
+          "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+          "max_abs_px": 1.5497207641601562e-06,
+          "rms_px": 2.1388290839214695e-07,
+          "passed": true,
+          "padded_max_abs_px": 1.5497207641601562e-06,
+          "padded_rms_px": 2.0096224677870506e-07,
+          "reference_prediction_sha256": "cf2b54576fb46b16f666de612f3802bbf699a4d61445a4fb85203753dab8f864",
+          "adapter_prediction_sha256": "785739e19a31dd7b8c8023dea1b80ce343fca5b2684155b9a9ad02fba6331c9c"
+        }
+      ],
+      "passed": true,
+      "model_commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+      "model_source_verification": {
+        "repository": "STE-FlowNet",
+        "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+        "verification": "manifest_file_sha256_and_tree_sha256",
+        "files_verified": 14,
+        "bytes_verified": 205744,
+        "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+      },
+      "training_compatibility": {
+        "upstream_hashes": {
+          "multiscaleloss.py": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+          "models/STEFlow.py": "eaf1f02ba5addc319c9736307960172cb2e3693a714d536d2bad478c0964c785"
+        },
+        "loss_warp": "2*x/(W-1)-1 with align_corners=True",
+        "model_flow_warp": "STE norm_grid 2*x/(W-1)-1 with align_corners=True",
+        "augmentation": "unchanged: pixel-center normalized grid with align_corners=False"
+      }
+    }
+  },
+  "sources": {
+    "reference": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/benchmark/sim2real/scripts/run_steflow_stage2_pilot.py",
+      "sha256": "167a88520162d06a7b1973eb4fcca64cf73680d50a8f583a60f953f27a0dd48a",
+      "size_bytes": 27246
+    },
+    "adapter": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/scripts/run_mvsec_candidate_inference.py",
+      "sha256": "0247d1d32b47c8a5e6c4b9f7120a85758f43d8cac27e56e6c7ab7c5888e02cd4",
+      "size_bytes": 41152
+    },
+    "extracted_reference_function_sha256": {
+      "_MemoryEfficientSpatialCorrelation": "68b47a52b9a622015644213171b1f9c48751cf3d3f19f8f1c21b8f977cb033bb",
+      "pure_torch_spatial_correlation": "b1c43f3ef2a5d2875101d73b239a58c17393e9a320dba5c849dec9a3acd091f1"
+    },
+    "extracted_adapter_function_sha256": {
+      "center_pad_event_volume": "f80d55dcebcd9b5f068a1d555fd10eeb580d18353cbebc676f8a08470e0a8193",
+      "crop_flow_to_sensor": "23b84f81b11a8d026bdf16030c7713bc90a2259c471ef0b97f6919aa516a4758",
+      "strict_model_output_to_hw": "0e6fd630fd65a9024821a9cdb7e1f033a69d233ab8836f763a9c1f534102e9f2",
+      "_torch_corr_extension_compat": "e7f40c0ec14a1de3d6bdd558e856afe6c0c8ad70cb85f9ee1b63a28f09a9d347"
+    },
+    "compat": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/compat/steflow_align_corners.py",
+      "sha256": "0f7290aa45b8ba020c03d2d26b64a0cc213ccec7536e386bce186e4d0446393e",
+      "size_bytes": 3511
+    },
+    "probe_script": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-forward-probe-gpu5-v1/probe_synthetic_forward_equivalence.py",
+      "sha256": "12a166df66f902e571d079ae2ace119a08276dda63d52568cdf7553affdaf7d7"
+    }
+  },
+  "fp64_oracle": {
+    "status": "passed",
+    "passed": true,
+    "dtype": "float64",
+    "shape": [
+      1,
+      3,
+      6,
+      7
+    ],
+    "base_seed": 20261108,
+    "max_abs_threshold": 1e-12,
+    "reference_max_abs": 0.0,
+    "adapter_max_abs": 0.0,
+    "reference_adapter_max_abs": 0.0
+  },
+  "fixtures": [
+    {
+      "case_id": "sparse_gaussian_counts",
+      "base_seed": 20261108,
+      "native_shape": [
+        2,
+        260,
+        346,
+        5
+      ],
+      "input_shape": [
+        1,
+        2,
+        352,
+        352,
+        5
+      ],
+      "native_sha256": "3da52d59698cf34825d01a7434627b1c5f722bcae3c0e294868a10f82b77c2b3",
+      "input_sha256": "70e969ed378bc233de0fa943e80d63ba1b17641f86dce7c70acb7e1948b710ce",
+      "native_min": 0.0,
+      "native_max": 10.984655380249023,
+      "nonzero_fraction": 0.02451089373054691
+    },
+    {
+      "case_id": "structured_gaussian_counts",
+      "base_seed": 20261108,
+      "native_shape": [
+        2,
+        260,
+        346,
+        5
+      ],
+      "input_shape": [
+        1,
+        2,
+        352,
+        352,
+        5
+      ],
+      "native_sha256": "5f73a75996b48490cdab2e22dc059bcdc91ec2ab6ac857060c730dee701856c7",
+      "input_sha256": "3320f9dd6d11b9ed7bf1492c68533a84be1d900dfd9cadb8d29836ac3b7ca444",
+      "native_min": 0.00017158949049189687,
+      "native_max": 6.486536502838135,
+      "nonzero_fraction": 1.0
+    }
+  ],
+  "manifest": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/cpu_preparation/matrix_preparation/manifest_candidate.json",
+    "sha256": "67ca5ba8728f7e30617ea523e5a9f4c65f63a1818e87ce872cae5f07cd5d37ae",
+    "size_bytes": 24394
+  },
+  "manifest_sha256": "67ca5ba8728f7e30617ea523e5a9f4c65f63a1818e87ce872cae5f07cd5d37ae",
+  "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+  "gpu_name": "NVIDIA TITAN RTX",
+  "tf32": false,
+  "eval_mode": true,
+  "inference_mode": true,
+  "model_source": {
+    "repository": "STE-FlowNet",
+    "commit": "eb4498c4126788c8ee8c8cbfabfbe9b5b77548f6",
+    "verification": "manifest_file_sha256_and_tree_sha256",
+    "files_verified": 14,
+    "bytes_verified": 205744,
+    "tree_sha256": "99f719b925e92d71fd10d97c29ae011a16440df56923f80c54d9b5dd128af80a"
+  },
+  "elapsed_seconds": 71.85389645397663
+}

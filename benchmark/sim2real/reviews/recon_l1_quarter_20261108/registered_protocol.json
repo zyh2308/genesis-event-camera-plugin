@@ -1,0 +1,52 @@
+{
+  "methods": [
+    "eventgenesis",
+    "v2e"
+  ],
+  "seeds": [
+    0
+  ],
+  "arms": [
+    "control",
+    "photometric"
+  ],
+  "arm_count": 2,
+  "auxiliary_l1_weight": 0.25,
+  "auxiliary_edge_weight": 0,
+  "start_update": 4800,
+  "end_update": 5100,
+  "additional_updates_per_arm": 300,
+  "total_main_optimizer_updates": 1200,
+  "native_loss": {
+    "LPIPS_VGG_weight": 1.0,
+    "temporal_weight": 2.0
+  },
+  "primary_subset": "all200",
+  "secondary_subset": "tail195",
+  "rollouts": 8,
+  "frames_per_rollout": 200,
+  "unchanged_primary_gate_count": 9,
+  "no_long_queue": true,
+  "no_real_scoring": true,
+  "hypothesis_not_published_optimum": true,
+  "protocol_sha256": "7f3b400205be412b6e281d6c7e4aa9c4a005b82c477f1c574bfddf41b3b63f68",
+  "output_parent_root_name": "20261108-recon-l1-quarter-paired-gpu2-v1",
+  "worker_output_subdirectories": [
+    "eventgenesis",
+    "v2e"
+  ],
+  "gpu_index": 2,
+  "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+  "gpu_model": "V100S 32GB",
+  "execution": "serial_on_one_device",
+  "worker_sequence": [
+    "smoke_eventgenesis",
+    "smoke_v2e",
+    "study_eventgenesis",
+    "study_v2e"
+  ],
+  "overall_timeout_seconds": 7200,
+  "smoke_optimizer_updates": 4,
+  "resource_change_only": true,
+  "previous_resource_failure_preserved": true
+}

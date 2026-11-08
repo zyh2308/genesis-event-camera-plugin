@@ -1,3 +1,7 @@
+> 2026-11-08 VPN恢复后的最新部署：[首轮重建完整结果](reviews/recon_photometry_detail_20261108/FIRST_SHORT_TRAIN_RESULT.md)；[L1=0.25配对短训](reviews/recon_l1_quarter_20261108/README.md)在GPU2运行；[MVSEC四序列8500窗/15权重正式测试](reviews/mvsec_final_preparation_20261108/README.md)已在GPU5启动，最终真实成绩待完整矩阵完成。位姿光照门槛仍14/30，新真实评分关闭。
+
+> 2026-11-08恢复核验：[六分支完整短训结果](reviews/recon_photometry_detail_20261108/FIRST_SHORT_TRAIN_RESULT.md)。EventGenesis光度/感知/细节均改善，V2E感知与细节保护失败，共同配方不采用；下一轮仍限短训。光流15/15完成，MVSEC正确GT重传中；位姿门槛14/30。以下记录以各自时间为准。
+
 > 2026-11-08 最新研究核查：[三线状态与短训](reviews/recon_photometry_detail_20261108/CURRENT_STATUS.md)。光流15/15训练完成；位姿光照门槛14/30；重建300步配对优化已部署但完整分数未取得。g1连接重置及一次重试超时后停止连接，当前短训状态未能刷新。以下旧记录以其自身时间为准。
 
 <!-- reconstruction-activation-budget-20261108 -->
