@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse,atexit,hashlib,json,os,subprocess,time
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);p.add_argument('--v2e-source',type=Path,required=True);p.add_argument('--endpoint-hz',type=int,choices=[100,50,25],default=100);a=p.parse_args();a.output.mkdir(exist_ok=False)
+    p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);p.add_argument('--v2e-source',type=Path,required=True);p.add_argument('--endpoint-hz',type=float,choices=[100,50,25,12.5],default=100);a=p.parse_args();a.output.mkdir(exist_ok=False)
     gpu=os.environ['EGL_DEVICE_ID'];uuid=subprocess.check_output(['nvidia-smi','-i',gpu,'--query-gpu=uuid','--format=csv,noheader'],text=True).strip();os.environ['CUDA_VISIBLE_DEVICES']=uuid
     import sys;sys.path.insert(0,str(a.v2e_source))
     import h5py,numpy as np,torch
@@ -16,7 +16,8 @@ def main():
     minimum=minimum_v2e_upsampling(a.endpoint_hz)
     fixture=Path('/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/visual_fast_paired_20261108a/paired_evaluation/cases/s02_normal/v2e/migration_audit/sensor_episode_000/sparse_hdr_endpoints.h5')
     with h5py.File(fixture,'r') as h:
-        indices=100+np.arange(3)*(100//a.endpoint_hz);gray=h['native_ldr_gray8'][indices];times=h['time_s'][indices]
+        stride=int(round(100/a.endpoint_hz));assert abs(stride*a.endpoint_hz-100)<1e-9
+        indices=100+np.arange(3)*stride;gray=h['native_ldr_gray8'][indices];times=h['time_s'][indices]
     src=a.output/'input';dest=a.output/'official_frames';src.mkdir();dest.mkdir()
     for i,frame in enumerate(gray):np.save(src/f'{i:03d}.npy',frame)
     checkpoint=a.v2e_source/'input/SuperSloMo39.ckpt'
