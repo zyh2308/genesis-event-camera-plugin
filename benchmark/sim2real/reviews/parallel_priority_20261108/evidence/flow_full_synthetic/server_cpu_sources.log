@@ -1,0 +1,27 @@
+test_contract_rejects_wrong_device_scope_or_partial_seed (test_readonly_contract.Readonly.test_contract_rejects_wrong_device_scope_or_partial_seed) ... ok
+test_empty_support_is_null (test_readonly_contract.Readonly.test_empty_support_is_null) ... ok
+test_equal_window_then_rollout_not_pixel_weighted (test_readonly_contract.Readonly.test_equal_window_then_rollout_not_pixel_weighted) ... ok
+test_fixed_common_mask_and_motion_bins (test_readonly_contract.Readonly.test_fixed_common_mask_and_motion_bins) ... ok
+test_full_scope_checkpoint_hashes_and_paired_manifests (test_readonly_contract.Readonly.test_full_scope_checkpoint_hashes_and_paired_manifests) ... ok
+test_no_optimizer_or_backward (test_readonly_contract.Readonly.test_no_optimizer_or_backward) ... ok
+test_reused_region_functions_byte_exact (test_readonly_contract.Readonly.test_reused_region_functions_byte_exact) ... ERROR
+
+======================================================================
+ERROR: test_reused_region_functions_byte_exact (test_readonly_contract.Readonly.test_reused_region_functions_byte_exact)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-flow-full-synthetic-readonly-v1/sources/test_readonly_contract.py", line 43, in test_reused_region_functions_byte_exact
+    p=Path(__file__).resolve().parent;self.assertEqual((p/'flow_synthetic_diagnostic.py').read_bytes(),(p.parent/'flow_priority_20261108/flow_synthetic_diagnostic.py').read_bytes())
+                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/pathlib.py", line 1050, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-flow-full-synthetic-readonly-v1/flow_priority_20261108/flow_synthetic_diagnostic.py'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.015s
+
+FAILED (errors=1)

@@ -1,3 +1,5 @@
+> 2026-11-08 18:32 JST 空卡追加：[九卡实际部署](reviews/parallel_priority_20261108/README.md)。g3三张4090重建完整预算继续；g1 GPU3光流采样短训、GPU4位姿冻结features短检、GPU2/5固定MVSEC；新空出GPU0/1两张3090已安全准入，补跑五方法三seed完整528窗的只读合成分解表，不改变原训练。位姿新候选EG seed0/1各两分支完成288更新，全30+8结果尚待完成。
+
 > 2026-11-08 18:19 JST 最新执行：[三线并行部署与证据](reviews/parallel_priority_20261108/README.md)。重建按最新授权恢复五方法×三seed完整预算，在g3三张4090运行，156/156门禁通过；真实范围仅事后选定HQF三序列开发子集，不替代HQF14。g1 GPU3运行光流采样配对短训，GPU4运行位姿冻结features启动检查及后继短检；上一轮位姿20/30仍未采用，新E-POSE评分关闭。原MVSEC固定矩阵在GPU2/5继续，未用其新分数选择优化。以下保留历史快照。
 
 > 2026-11-08 最新核验：[长连接恢复与三线进展](reviews/recon_photometry_detail_20261108/RECOVERED_CONNECTION_PROGRESS.md)。L1=0.25配对短训已完成：EventGenesis 9/9、V2E 8/9，仍未共同通过，不启动重建长训。光流15/15训练完成，MVSEC正确室外数据已完整校验；固定四序列8500窗真实测试改为GPU2跑seed0/1、GPU5跑seed2，每seed全部五方法同卡。位姿门槛仍14/30，新真实评分关闭。下方为保留的时间快照。
