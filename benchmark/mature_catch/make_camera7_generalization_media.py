@@ -23,11 +23,14 @@ def load_frames(record,media):
 
 def panel(canvas,draw,record,frames,initialization_failed,index,x,y):
     i=min(index,len(frames)-1);canvas.paste(frames[i],(x,y))
-    result=record['result'];ended=index/25.>result['sim_time']+1e-8
-    label=('初始化失败，无物理执行' if initialization_failed else ('已结束，画面定格' if ended else f'{index/25.:.2f} s'))
+    result=record['result'];ended=index>=len(frames)
+    # Native recordings contain the reset frame followed by one frame per trace row.
+    trace=record.get('trace') or []
+    physical_time=(0. if index==0 else trace[min(index-1,len(trace)-1)]['t']) if trace else min(index/25.,result['sim_time'])
+    label=('初始化失败，无物理执行' if initialization_failed else ('已结束，画面定格' if ended else f'{physical_time:.2f} s'))
     draw.rectangle((x+4,y+4,x+384,y+33),fill='white');draw.text((x+12,y+6),label,font=small,fill=DARK)
     if ended or initialization_failed:
-        draw.rectangle((x+4,y+326,x+475,y+356),fill='white');draw.text((x+12,y+328),'失败完整保留；此后没有新的动作',font=small,fill=RED)
+        draw.rectangle((x+4,y+326,x+475,y+356),fill='white');draw.text((x+12,y+328),'回合已结束；此后没有新的动作',font=small,fill=GREEN if result['success'] else RED)
 
 def save_movie(frames,path,gif=False):
     with imageio.get_writer(path,fps=25,codec='libx264',quality=8,macro_block_size=None) as w:
