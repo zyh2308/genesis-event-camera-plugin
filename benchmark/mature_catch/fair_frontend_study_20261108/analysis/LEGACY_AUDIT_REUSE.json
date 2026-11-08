@@ -1,0 +1,21 @@
+{
+  "legacy_raw_auditor_sha256": "0875e31bdb49a78b4fe232186b99b8e20d1584795e74a50bfa68ecc9d90d39ce",
+  "adapted_raw_auditor_sha256": "f1edb234df11b6361fc48c374a2b70b8d715947db601f8b57d3255ea3a34af9d",
+  "original_window_helper_sha256": "d2d78bdce09f1c4abd726cccd8df7f2996eef8d264181a19847cc8e3e0f5337a",
+  "adaptations": [
+    [
+      "assert len(records)==spec['expected_episodes']",
+      "assert len(records)==sum(len(c['method_order']) for c in spec['cases'])"
+    ],
+    [
+      "for shard in [0,1]:",
+      "for shard in sorted({int(c['shard']) for c in spec['cases']}):"
+    ],
+    [
+      "and not p.name.endswith('.final.log')",
+      "and not p.name.endswith('.final.log') and not p.name.endswith('.supervisor.log')"
+    ]
+  ],
+  "raw_event_checks_changed": false,
+  "window_checks_changed": false
+}
