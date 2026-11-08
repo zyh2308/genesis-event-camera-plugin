@@ -1,13 +1,11 @@
-# 光度与细节配对短训：运行前协议及阶段快照
+# 合成重建光度与细节配对优化及三线阶段结果
 
-2026-11-08：两生成器各三臂、各额外300步的合成短训运行中；本提交不包含尚未产出的最终重建分数，不表示优化已通过。没有启动长训或本轮真实评分。
+最新结果、限制与恢复入口见 [CURRENT_STATUS.md](CURRENT_STATUS.md)。
 
-- PROTOCOL.md：结果观察前登记的预算、损失、采用门槛与预检修订。
-- LITERATURE.md：作者论文/代码依据及借鉴边界。
-- CODE_REVIEW.md：独立静态审查，不能替代实际运行收据。
-- CONTEXT_ANALYSIS.md / context_analysis.json：当前光流和位姿的已完成成果；光流15/15训练收齐；位姿光照门槛14/30，真实评分关闭。
-- scripts/：独立运行快照和离线收集/分析脚本，不覆盖冻结 simulator 或正式训练源文件。
+- **重建**：300步×3臂×2生成器已部署，最后核验控制臂289/300和300/300；完整合成效果尚未取回。SSH重置后唯一重试超时，当前任务状态未能刷新；不能宣称已经改善。
+- **光流**：15/15正式训练完成；合成EPE有用，暂未稳定优于V2E；室外GT断点内容不匹配，自动停止并保留，真实评分未做。
+- **位姿**：短训完成，暗光深度改善；其他条件退步，14/30项稳定性门槛通过，新真实评分关闭。
 
-g1 短训根：`/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-recon-photometry-detail-{eventgenesis,v2e}-v3/`。v1/v2 预检失败原样保留；v3 使用原 Trainer 函数，不宣称整段 CUDA 梯度逐位复现。
+PROTOCOL.md登记本轮预算和门槛；LITERATURE.md列出论文/作者代码依据；CODE_REVIEW.md为独立静态审查。CONTEXT_ANALYSIS.md、context_analysis.json及context_status.json保存已核实的光流/位姿分数。context_figures/提供PNG与PDF数据图；mvsec_resume_evidence/保留实际传输失败收据。
 
-MVSEC 室外数据正在从经核验的本地投影续传；训练完成不代表真实测试完成。全部新的合成结果与采用判断在训练完成后另行入库。
+scripts/为独立实验快照及只读收集/分析入口，没有改写冻结simulator或正式训练源。完整新结果仍等待服务器访问恢复后核验入库；本目录没有把阶段状态伪装成优化完成。

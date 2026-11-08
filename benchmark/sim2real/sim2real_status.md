@@ -1,3 +1,5 @@
+> 2026-11-08 最新研究核查：[三线状态与短训](reviews/recon_photometry_detail_20261108/CURRENT_STATUS.md)。光流15/15训练完成；位姿光照门槛14/30；重建300步配对优化已部署但完整分数未取得。g1连接重置及一次重试超时后停止连接，当前短训状态未能刷新。以下旧记录以其自身时间为准。
+
 <!-- reconstruction-activation-budget-20261108 -->
 > 重建输出激活×训练进度的合成短诊断已完成：两方法、seed0、两激活、每臂600步；没有新增真实评分或长训。所有配对检查通过，GPU预约已释放。详见[完整诊断结果](reviews/recon_activation_budget_20261108/README.md)。
 
