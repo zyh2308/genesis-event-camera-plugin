@@ -1,0 +1,100 @@
+"""Build the complete Windows handoff from measured final results only."""
+from pathlib import Path
+import csv,hashlib,html,json,shutil
+r=Path(__file__).resolve().parent;out=r/'delivery_local';old=out/'压力测试72回合'
+s=json.loads((out/'CADENCE_SUMMARY.json').read_text(encoding='utf-8'));o=json.loads((old/'SUMMARY.json').read_text(encoding='utf-8'))
+data=json.loads((r/'CADENCE_FINAL.json').read_text(encoding='utf-8'));assert data['complete'] and not data['violations'] and len(data['records'])==44
+for p in [out/'FINAL_AUDIT.json',old/'FINAL_AUDIT.json']:
+ d=json.loads(p.read_text(encoding='utf-8'));assert d['status']=='PASS'
+conditions={'normal100':'普通，100张/秒','normal50':'普通，50张/秒','normal25':'普通，25张/秒','backlit50':'逆光，50张/秒'};methods={'ours':'Ours','v2e':'V2E','init_only':'停止后续事件','state_reference':'原任务含噪状态参考'}
+table=['| 条件 | Ours | V2E | 停止后续事件 | 含噪状态参考 |','|---|---:|---:|---:|---:|']
+for c,label in conditions.items():
+ table.append('| '+label+' | '+' | '.join(str(s['by_condition'][c][m]['successes'])+'/4'+('（复用）' if s['by_condition'][c][m]['baseline_reused'] else '') for m in methods)+' |')
+oldtable=['| 条件 | Ours | V2E | 停止后续事件 | 含噪状态参考 |','|---|---:|---:|---:|---:|']
+for c,label in [('normal','普通'),('visual_fast','较强高速压力'),('backlit','高速＋逆光')]:oldtable.append('| '+label+' | '+' | '.join(str(o['by_condition'][c][m]['successes'])+'/6' for m in methods)+' |')
+conflicts=[{'case':x['case_id'],'method':x['mode']} for x in data['records'] if x['terminal_flag_conflict']]
+stage=[]
+for method,label in [('ours','Ours'),('v2e','V2E')]:
+ selected=[x for x in data['records'] if x['mode']==method];stage.append(label+'：'+str(sum(x['result'].get('hand_contact_steps',0)>0 for x in selected))+'/16回合有真实手部接触，'+str(sum(x['verified_catch'] for x in selected))+'/16最终留住球')
+stage_text='；'.join(stage)+'。多数失败表现为接触后未留住，接触和最终完成必须分别报告。下一轮优先检查接触前的三维距离/速度估计及保持触发时序；这些统计本身尚不能归因到某个具体模块。'
+report='''# 固定原权重的事件接取：稀疏输入配对验证
+
+## 这轮实际验证了什么
+
+保留 Catch It! 的移动底盘、机械臂、灵巧手和原接取策略权重。在 Genesis 中，球释放后，机器人根据事件估计的位置和速度移动、伸手、合手并尝试留住球。本轮没有训练模型，也没有修改冻结的事件仿真器。
+
+控制链是：Genesis场景 → Ours或V2E生成事件 → 同一个球体位置/速度估计器 → 同一个预训练接取策略 → 机器人动作 → 真实物理接触与留球评分。表中Ours/V2E指事件来源，接取策略权重是同一份。
+
+按照用户确认的方向，同一组物理来球分别只给事件生成器每秒100、50、25张图像；球速、500Hz物理更新和25Hz策略控制不变。6条归档轨迹的同一路径诊断中，发射后50–350ms窗口的每输入帧位移中位数为2.30、4.59、8.99像素；25Hz约是100Hz的3.90倍。这是更稀疏的输入，不把它包装成球速提高。
+
+## 新一轮结果：44个实际回合，4个全新seed
+
+TABLE
+
+普通光照的25张/秒条件下，两者本批均为2/4；100及50张/秒时V2E的完成数更高。稀疏输入下已有真实接取成功，但本轮没有证明Ours整体更优。逐条差异示例用于解释实验样貌，完整结果按全部预定seed计入。
+
+STAGE_READOUT
+
+同一seed的三个普通采样率使用相同发射条件和首帧初始化。闭环后，机器人动作与相机路径随各自估计自然分化。普通停止事件基线每seed只跑一次，因为此后没有事件，采样率不进入控制；含噪状态参考每seed只跑一次，因为光照和图像频率都不进入其策略。逆光停止事件基线单独跑。表中复用单元格不是新的独立试验，实际总数为32条事件回合＋12条基线回合＝44条。
+
+本轮检验在线事件生成和感知能否支持接取。4个seed足以观察可行性及具体失败，不能据此给生成器作稳定排名。“停止后续事件”用于检验持续更新的作用，不能代替持续RGB/RGB-D基线，也不能单独证明事件优于帧相机。
+
+## 怎样认定接住
+
+最终评价依据Genesis实际碰撞和留球状态。主要结果要求：达到原任务2.5秒时限、没有失败终止、过程中有真实手部碰撞接触，最后一个控制步仍有真实手部接触。仅仅碰到过球不算完成。原始runner的success字段实际上只保存到时限标志，可能与terminated同时为真；离线汇总明确保留两者，冲突回合按失败计，不修改原始结果。逐条CSV同时提供到时限、失败终止、最终接触和最终完成判定。这与旧Panda方块任务的0.5秒抬升标准不同。
+
+## 固定设置与公平性
+
+- 机器人：原项目MobileRangerMiniV2＋XArm6＋LEAP；已知尺寸球体半径40mm，物理由Genesis运行；MuJoCo只用于原模型运动学和逆解。
+- 相机：机身安装，相对原安装位沿原局部X轴偏转7°，640×480、垂直FOV58°。外部展示相机只录像，不进入控制。
+- 感知：每集开始只读一次真实渲染RGB-D作初始化，随后只用事件与机器人自身状态。两方法使用同一固定估计器，输入包在图像区间端点后10ms才可用，没有持续读取深度或球的真值位置。
+- Ours：冻结的原稀疏linear-HDR＋几何重建路径；没有替换为高频Direct-HDR事件。
+- V2E：原生SuperSloMo39及EventEmulator，读取同机位LDR灰度。100/50/25Hz分别至少10/20/40倍插帧，保留1ms配置的内部时间精度；原生文件接口与流式接口已逐元素验证。
+- 共同响应：阈值正负0.2、理想无噪声、无带宽限制；不是实物EVK4标定，也不声称代表V2E所有默认噪声设置。
+- 逆光来自实际Genesis场景灯光：环境光设为(0.01,0.01,0.01)，球后方点光源位于(0,3.8,1.8)m、强度100；强度是渲染器单位，未标定为照度。两事件方法使用同一灯光设置。
+- 改变输入频率会改变包等待时间，这是稀疏端点重建的实际因果约束。额外10ms延迟固定；可视化仅显示当时已到达的事件包。
+- 初始来球：四个新seed 2026110813–2026110816；横向约±0.35m、前方约2.35m、高约0.85m，速度约(向中心0.30、向机器人2.0、竖直3.2)m/s，逐条精确值见协议和CSV。该搭配参考原项目默认采样器，不能仅据此断言原权重训练时覆盖了所有组合。
+
+## 较早的压力组：完整保留72回合
+
+OLDTABLE
+
+这组使用另外6个新seed、固定100Hz输入。它的较强高速条件中，原任务含噪状态参考也只完成1/6，说明同时触及原策略的动作难度边界。因此它作为压力测试保留，不能把全部失败归因于事件生成质量。含噪状态参考并非最优控制上界，事件方法偶尔超过它不构成矛盾。普通组和新44回合采用不同来球分布，不跨组直接宣称采样率或光照收益。
+
+## 演示与逐条记录
+
+打开同目录`打开演示.html`，可查看新44回合的四条件、每seed对照、外部全景＋手部近景，以及较早72回合全部录像。全部成功和失败都在CSV和逐条录像中，没有只展示成功而删除失败。
+
+全景和手部特写来自实际归档物理状态的Genesis重渲染，没有另外生成成功动作。蓝圈为离线真实球位置标注，绿圈为控制时实际记录的感知估计；标注不进入控制。视频按模拟时间播放；它不是墙钟实时速度。提前结束的回合明确显示定格。
+
+原权重SHA256：`81585772adf9b368e299875a3dce29247e23c641d8294295bec07dfb6450aaf6`。
+冻结稀疏配置SHA256：`dbcf85fe3c86ae21972d4f5b79638018ca44f46a39b8cb1e14e8b6cff3a31a8a`。
+执行分支：`exp/robot-catch-fast-paired-20261108`；新44回合的运行代码为`e6778e2`，旧72回合为`80ed03c`。
+完整配置、17个core文件、运行源码与权重的运行后哈希检查见两组`FINAL_AUDIT.json`；全部raw events、HDR端点、控制trace、所有原生录像保留在g1：
+
+`/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/visual_fast_paired_20261108a/`
+
+其中新结果在`cadence_paired_evaluation/`，早期压力结果在`paired_evaluation/`；`RECOVERY_MAP.json`显式索引资源中断后重跑的目录。两次显存资源中断的部分结果和日志仍保存，按原配置独占显卡补跑；它们不算物理任务失败，也不额外计入116个有效回合。
+'''.replace('OLDTABLE','\n'.join(oldtable)).replace('TABLE','\n'.join(table)).replace('STAGE_READOUT',stage_text)
+(out/'实验设置与完整结果.md').write_text(report,encoding='utf-8')
+rows=list(csv.DictReader((out/'cadence_episode_results.csv').open(encoding='utf-8')));lookup={(x['case_id'],x['method']):x for x in rows}
+style='body{font:17px/1.65 "Microsoft YaHei",sans-serif;max-width:1440px;margin:30px auto;padding:0 24px;color:#203c50}h1{font-size:30px}img,video{max-width:100%}video{background:#152b3c;width:100%}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.card{border:1px solid #d5e3e9;padding:14px;border-radius:10px}a{color:#168078}.note{color:#526b7a}summary{cursor:pointer;font-weight:600;padding:12px;background:#edf5f6}'
+body='<!doctype html><meta charset="utf-8"><title>事件接取｜稀疏输入验证</title><style>'+style+'</style><h1>同一来球，更稀疏输入：机器人事件接取</h1><p>固定7°机位、估计器、原权重与冻结仿真器。新4个seed、44个实际回合；早期72个压力回合完整保留。</p><p><a href="实验设置与完整结果.md">实验设置与完整结果</a> · <a href="逐条44回合结果.csv">逐条44回合</a> · <a href="对照表_含明确复用的基线.csv">基线复用明细</a> · <a href="逐查询状态误差.csv">逐查询感知误差</a></p><img src="01_稀疏输入闭环结果.png"><img src="00_稀疏输入难度.png">'
+for name,label in [('difference25','25张/秒：Ours留住球、V2E掉球（差异示例）'),('cadence25','25张/秒：另一条来球，Ours未留住、V2E完成（反例）'),('cadence50','50张/秒：Ours未留住、V2E完成')]:
+ path=out/(name+'_demo.mp4')
+ if path.exists():body+='<h2>'+label+'</h2><video controls preload="metadata" src="'+path.name+'"></video><p class="note">蓝圈为离线真实球标注；右侧绿圈为实际控制估计。只显示当时已到达事件包，回合结束后定格。</p>'
+body+='<img src="04_接触与留球.png"><h2>全部44条回合的16组对照</h2><p class="note">每组依次：Ours、V2E、停止后续事件、含噪状态参考。带星号的基线复用；实际44条，不是64条。</p><video controls preload="none" src="all44_cadence_comparisons.mp4"></video><div class="grid">'
+for i,seed in enumerate(s['four_new_seeds'],1):
+ for c,label in conditions.items():
+  case=f'c{i:02d}_{c}';items=[m+('：完成' if lookup[(case,k)]['verified_catch']=='True' else '：未完成') for k,m in [('ours','Ours'),('v2e','V2E')]]
+  body+='<div class="card"><b>'+label+'｜'+str(seed)+'</b><p>'+html.escape('；'.join(items))+'</p><video controls preload="none" src="'+case+'_four_panels.mp4"></video></div>'
+body+='</div><img src="02_全部44回合.png"><img src="03_逐条感知误差.png"><details><summary>早期72回合：普通／更强高速／高速逆光（全部保留）</summary><p><a href="压力测试72回合/逐条结果.csv">逐条72回合CSV</a></p><img src="压力测试72回合/01_配对接取结果.png"><video controls preload="none" src="压力测试72回合/all_72_native_view_comparisons.mp4"></video><div class="grid">'
+for i in range(1,7):
+ for c,label in [('normal','普通'),('visual_fast','较强高速'),('backlit','高速逆光')]:body+='<div class="card"><b>'+label+'｜seed '+str(2026110806+i)+'</b><video controls preload="none" src="压力测试72回合/s'+f'{i:02d}_'+c+'_four_methods.mp4"></video></div>'
+body+='</div><img src="压力测试72回合/02_全部逐条结果.png"></details><p class="note">主要结果要求到原任务时限、未失败终止且末步仍有真实手部接触。只碰到过不算完成。视频按模拟时间播放，不声明墙钟实时。</p>'
+(out/'打开演示.html').write_text(body,encoding='utf-8')
+def manifest(folder):
+ files=[x for x in folder.rglob('*') if x.is_file() and x.name!='SHA256SUMS.local'];(folder/'SHA256SUMS.local').write_text('\n'.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.relative_to(folder).as_posix() for p in sorted(files))+'\n',encoding='utf-8')
+manifest(out)
+desktop=Path('C:/Users/zhaoyuhan/Desktop/高速视觉与稀疏输入验证_20261108');desktop.mkdir(exist_ok=True);shutil.copytree(out,desktop,dirs_exist_ok=True)
+assert (desktop/'打开演示.html').exists();print(desktop)
