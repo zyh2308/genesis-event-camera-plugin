@@ -31,6 +31,9 @@ class GenesisEnv(NativeEnv):
         self.event_endpoint_stride=endpoint_stride(self.event_endpoint_hz,float(self.Dcmm.model.opt.timestep))
         import genesis as gs
         self.gs=gs
+        from contact_calibration import profile_config
+        self.contact_profile_name=os.environ.get('CATCHIT_CONTACT_PROFILE','baseline')
+        self.contact_profile=profile_config(self.contact_profile_name)
         self.adapter_output=Path(os.environ['CATCHIT_ADAPTER_OUTPUT']);self.adapter_output.mkdir(parents=True,exist_ok=True)
         source=Path.cwd();tree=ET.ElementTree(ET.fromstring(self.Dcmm.model_xml_string));root=tree.getroot()
         root.find('compiler').set('meshdir',str(source/'assets/meshes'))
@@ -46,7 +49,7 @@ class GenesisEnv(NativeEnv):
             self.lighting_schedule=front_glare_schedule(os.environ.get('CATCHIT_FRONT_GLARE_PEAK','400'))
             vis.update(ambient_light=(.1,.1,.1),lights=[dict(type='directional',dir=(-1.,-1.,-1.),color=(1.,1.,1.),intensity=5.),
                 dict(type='point',pos=tuple(self.lighting_schedule['point_position']),color=(1.,1.,1.),intensity=0.)])
-        self.scene=gs.Scene(sim_options=gs.options.SimOptions(dt=float(self.Dcmm.model.opt.timestep),substeps=1),vis_options=gs.options.VisOptions(**vis),
+        self.scene=gs.Scene(sim_options=gs.options.SimOptions(dt=float(self.Dcmm.model.opt.timestep),substeps=self.contact_profile['substeps']),vis_options=gs.options.VisOptions(**vis),
             rigid_options=gs.options.RigidOptions(enable_self_collision=True,enable_neutral_collision=True,enable_mujoco_compatibility=True),show_viewer=False)
         # MuJoCo collides each mesh as its convex hull. Avoid Genesis splitting
         # concave target meshes into multiple collision pieces during migration.
@@ -86,6 +89,25 @@ class GenesisEnv(NativeEnv):
             if idx<0:raise RuntimeError('Unmapped collision geom '+str(geom.idx))
             self.geom_map[int(geom.idx)]=int(idx)
             self.geom_notes.append(dict(gs_geom=int(geom.idx),original_geom=int(idx),name=name,link=geom.link.name))
+        # Select hand collision bodies from the native semantic range. Match
+        # actual body and local position; imported mesh metadata names repeat
+        # across fingers and wheels and cannot identify individual geoms.
+        hand_geom_ids=[];hand_selection=[]
+        for geom in self.robot.geoms:
+            body=mujoco.mj_name2id(self.Dcmm.model,mujoco.mjtObj.mjOBJ_BODY,geom.link.name)
+            candidates=np.where((self.Dcmm.model.geom_bodyid==body)&((self.Dcmm.model.geom_contype!=0)|(self.Dcmm.model.geom_conaffinity!=0)))[0]
+            distances=np.linalg.norm(self.Dcmm.model.geom_pos[candidates]-np.asarray(geom._init_pos),axis=1)
+            nearest=candidates[np.isclose(distances,distances.min(),atol=1e-7,rtol=0)]
+            categories=[self.hand_start_id<=int(i)<self.object_id for i in nearest]
+            if min(distances)>1e-5 or len(set(categories))!=1:
+                raise RuntimeError('Ambiguous contact calibration collider: '+str((geom.idx,geom.link.name,nearest.tolist())))
+            if categories[0]:
+                hand_geom_ids.append(int(geom.idx))
+                hand_selection.append(dict(gs_geom=int(geom.idx),link=geom.link.name,native_geom_candidates=nearest.tolist()))
+        from contact_calibration import ContactCalibration
+        self.contact_calibration=ContactCalibration(self.robot,self.contact_profile_name,hand_geom_ids)
+        self.contact_calibration_audit=self.contact_calibration.apply()
+        self.contact_calibration_audit['selection']=hand_selection
         # All unnamed geoms live before the hand except the hand mounting geom.
         # The original model's named collision geoms map exactly; retain audit.
         self.actuator_dofs=[]
@@ -114,7 +136,10 @@ class GenesisEnv(NativeEnv):
         self.adapter_metadata=dict(joint_mapping=mapping,geometry_mapping=self.geom_notes,masses=masses,maximum_mass_delta_kg=mass_delta,physics_backend=self.physics_backend,
             controller='original per-step PID and IK, only physics stepping redirected',contacts='Genesis solver mapped to original geometry categories',
             original_mj_step_calls=0,maximum_kinematic_position_delta_m=0.,lighting=lighting,background_wall_collision=False,
-            lighting_schedule=self.lighting_schedule,lighting_trace_by_episode=self.lighting_traces)
+            lighting_schedule=self.lighting_schedule,lighting_trace_by_episode=self.lighting_traces,
+            contact_calibration=self.contact_calibration_audit,contact_profile=self.contact_profile,
+            contact_hand_selection=hand_selection,outer_physics_dt_s=float(self.Dcmm.model.opt.timestep),
+            effective_substep_dt_s=float(self.Dcmm.model.opt.timestep)/self.contact_profile['substeps'])
         def reject_native_step(*args,**kwargs):
             self.adapter_metadata['original_mj_step_calls']+=1
             raise RuntimeError('MuJoCo physics stepping forbidden in Genesis backend')
@@ -149,6 +174,9 @@ class GenesisEnv(NativeEnv):
         obs,info=super().reset()
         if self.gs_ready:
             self.episode_number+=1;self.scene.reset();self._gs_time=0.;self._gs_released=False;self._gs_step_count=0
+            self.contact_calibration_audit=self.contact_calibration.apply()
+            self.adapter_metadata['contact_calibration']=self.contact_calibration_audit
+            self._write_adapter_metadata()
             self._last_lighting_trace_key=None
             self.robot.set_qpos(self.Dcmm.data.qpos.copy(),zero_velocity=True)
             self.robot.set_dofs_velocity(self.Dcmm.data.qvel.copy())
