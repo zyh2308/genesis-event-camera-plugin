@@ -156,7 +156,7 @@ class GenesisEnv(NativeEnv):
         self.robot.control_dofs_force(force)
         self.scene.step();self._gs_time+=float(self.Dcmm.model.opt.timestep);self._sync_kinematics();self._gs_step_count+=1
         if self.sensor is not None and self._gs_step_count%5==0:self.sensor.capture(self._gs_time)
-        elif os.environ.get('CATCHIT_SENSOR_PROBE')=='1' and self._gs_step_count%20==0:self.capture_sensor_probe(self._gs_time)
+        elif os.environ.get('CATCHIT_SENSOR_PROBE')=='1' and self._gs_step_count%int(os.environ.get('CATCHIT_PROBE_STRIDE','20'))==0:self.capture_sensor_probe(self._gs_time)
 
     def update_sensor_pose(self):
         i=self.sensor_camera_id;T=np.eye(4);T[:3,:3]=self.Dcmm.data.cam_xmat[i].reshape(3,3);T[:3,3]=self.Dcmm.data.cam_xpos[i]

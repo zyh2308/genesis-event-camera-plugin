@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--gate-after-release',type=float,default=None,help='Diagnostic delay from each actual release; GT oracle only')
     parser.add_argument('--speed-scale',type=float,default=1.,help='Scale horizontal launch velocity only')
     parser.add_argument('--horizontal-speed',type=float,help='Use a specified horizontal speed inside the native task range')
+    parser.add_argument('--launch-config',type=Path,help='Task-only fixed launch position/velocity JSON; never exposed to perception')
     parser.add_argument('--backend',choices=['mujoco','genesis'],default='mujoco')
     parser.add_argument('--sphere-radius',type=float)
     parser.add_argument('--lighting',choices=['normal','backlit'],default='normal')
@@ -33,6 +34,7 @@ def main():
     parser.add_argument('--initialization-only',action='store_true')
     parser.add_argument('--stop-events-after-grasp',action='store_true')
     args=parser.parse_args();args.source=args.source.resolve();args.output=args.output.resolve()
+    launch_override=json.loads(args.launch_config.resolve().read_text()) if args.launch_config else None
     if args.rgbd_initialize:args.rgb_initialize=True
     args.output.mkdir(parents=True,exist_ok=True)
     os.chdir(args.source);sys.path.insert(0,str(args.source));sys.path.insert(0,str(args.source/'gym_dcmm'))
@@ -75,6 +77,10 @@ def main():
         if args.horizontal_speed is not None:
             env.object_vel6d[:2]*=args.horizontal_speed/np.linalg.norm(env.object_vel6d[:2])
         env.object_vel6d[:2]*=args.speed_scale
+        if launch_override is not None:
+            position=np.asarray(launch_override['position'],dtype=float);velocity=np.asarray(launch_override['velocity'],dtype=float)
+            assert position.shape==velocity.shape==(3,) and np.isfinite(position).all() and np.isfinite(velocity).all()
+            env.object_pos3d=position.copy();env.object_vel6d[:3]=velocity
     env.random_object_pose=sample_pose
     weights=args.source/'assets/models/catch_two_stage.pth'
     checkpoint=torch.load(weights,map_location='cpu',weights_only=False)
@@ -101,7 +107,7 @@ def main():
         renderer.update_scene(env.Dcmm.data,camera=camera)
         return renderer.render().copy()
     result=[];start=time.monotonic()
-    manifest=dict(source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
+    manifest=dict(launch_override=launch_override,sensor_probe_stride=int(os.environ.get('CATCHIT_PROBE_STRIDE','20')),source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
         backend=getattr(env,'physics_backend','MuJoCo original reproduction; NOT Genesis'),observation=(('one actual RGB-D frame at reset, then events + original proprioception' if args.rgbd_initialize else 'one actual RGB frame at reset, then events + original proprioception') if args.rgb_initialize else 'event-only known-radius front end + original proprioception') if args.event_control else 'original GT + original noise',
         inference_methods='verbatim AST from original PPO evaluator',checkpoint_sha256=hashlib.sha256(weights.read_bytes()).hexdigest(),
         timestep=float(env.Dcmm.model.opt.timestep),steps_per_policy=20,env_time=2.5,seeds=seeds,
