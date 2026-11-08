@@ -137,6 +137,7 @@ def main():
                     reject_partial_contours=os.environ.get('CATCHIT_REJECT_PARTIAL_CONTOURS')=='1',
                     event_flight_fit=os.environ.get('CATCHIT_EVENT_FLIGHT_FIT')=='1',
                     event_observation_window_ms=float(os.environ.get('CATCHIT_EVENT_OBSERVATION_WINDOW_MS','0')),
+                    event_confirmation_max_gap_ms=float(os.environ.get('CATCHIT_EVENT_CONFIRMATION_MAX_GAP_MS','50')),
                     sensor_pitch_offset_degrees=float(os.environ.get('CATCHIT_SENSOR_PITCH_DEG','0')))
     (args.output/'protocol.json').write_text(json.dumps(manifest,indent=2))
     try:
@@ -159,7 +160,12 @@ def main():
                 (folder/'initialization_probe.json').write_text(json.dumps(probe,indent=2));result.append(probe)
                 (args.output/'probe_results.json').write_text(json.dumps(result,indent=2));print(json.dumps(probe),flush=True);continue
             if args.rgb_initialize and env.sensor.initialization_failed:
-                failed=dict(episode=episode,seed=seed,success=False,steps=0,sim_time=0.,failure_reason='single RGB initialization failed',event_control=True)
+                failed=dict(episode=episode,seed=seed,success=False,terminated=False,steps=0,sim_time=0.,
+                    hand_contact_steps=0,first_touch=None,reward=0.,initial=initial,final_ee_distance=None,
+                    valid_event_polls=0,event_control=True,max_base_displacement_m=0.,
+                    failure_class='initialization_failure',failure_reason='single RGB-D initialization failed' if args.rgbd_initialize else 'single RGB initialization failed',
+                    task_failure_no_physics_steps=True)
+                (folder/'trace.json').write_text('[]')
                 (folder/'result.json').write_text(json.dumps(failed,indent=2));result.append(failed)
                 (args.output/'episodes.json').write_text(json.dumps(result,indent=2));print(json.dumps(failed),flush=True);continue
             rows=[];contacts=0;steps=0;reward_sum=0.;first_touch=None;previous_proprio=None;valid_event_polls=0

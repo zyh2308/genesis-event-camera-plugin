@@ -1,6 +1,7 @@
 """Evaluate a preregistered shard; every task failure is retained and continued."""
 import argparse,datetime,hashlib,json,os,signal,socket,subprocess,time
 from pathlib import Path
+from frontend_config import resolve_frontend
 
 child=None
 
@@ -37,11 +38,13 @@ def main():
             if output.exists():raise RuntimeError('Refuse to overwrite '+str(output))
             command=list(spec['template']);command+=['--output',str(output),'--seeds',str(case['seed']),'--launch-config',str(root/'launch_configs'/str(case['case_id']+'.json')),'--lighting',case['lighting']]
             env=dict(os.environ,CATCHIT_EVENT_GENERATOR='v2e' if method=='v2e' else 'ours',CATCHIT_EVENT_ENDPOINT_HZ=str(case['endpoint_hz']),CATCHIT_V2E_PARITY_RECEIPT=spec['v2e_parity_receipts'][str(case['endpoint_hz'])])
+            frontend=resolve_frontend(spec,case,method)
+            env.update(frontend)
             if method=='state_reference':command+=['--sensor-probe']
             else:
                 command+=['--event-control','--rgbd-initialize','--stop-events-after-grasp']
                 if method=='init_only':command+=['--initialization-only']
-            record={'case_id':case['case_id'],'condition':case['condition'],'seed':case['seed'],'method':method,'endpoint_hz':case['endpoint_hz'],'host':socket.gethostname(),'command':command,'output':str(output),'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+            record={'case_id':case['case_id'],'condition':case['condition'],'seed':case['seed'],'method':method,'endpoint_hz':case['endpoint_hz'],'frontend_overrides':frontend,'host':socket.gethostname(),'command':command,'output':str(output),'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
             (root/f'shard{a.shard}_running.json').write_text(json.dumps(record,indent=2));start=time.monotonic()
             with (root/f"{case['case_id']}_{method}.log").open('w') as log:
                 child=subprocess.Popen(command,cwd=spec['source'],env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)

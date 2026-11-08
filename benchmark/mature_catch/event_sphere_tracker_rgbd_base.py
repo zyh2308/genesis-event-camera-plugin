@@ -3,6 +3,7 @@
 The image is never refreshed. Motion onset is inferred from compensated event
 measurements, not from the simulator's release flag or target state.
 """
+import os
 import numpy as np
 
 from event_sphere_tracker_kalman import EventSphereTracker as MotionFilter
@@ -20,6 +21,12 @@ class EventSphereTracker(MotionFilter):
         self.motion_onset_s = None
         self.minimum_filter_measurements = 1
         self.minimum_filter_span_s = 0.
+        # One common benchmark setting governs tentative association and motion
+        # confirmation. The original 50 ms behavior remains the default.
+        gap_ms = float(os.environ.get('CATCHIT_EVENT_CONFIRMATION_MAX_GAP_MS', '50'))
+        if gap_ms not in (50., 100.):
+            raise ValueError('Confirmation gap supports only the registered 50/100 ms candidates')
+        self.confirmation_max_gap_s = gap_ms / 1000.
 
     def initialize_rgb(self, detection, time_s=0., available_s=0.):
         assert detection['valid']
@@ -45,7 +52,7 @@ class EventSphereTracker(MotionFilter):
             return prediction
         last = self.motion_suspicion[-1]
         dt = float(time_s - last['t'])
-        if not 0. <= dt <= .05:
+        if not 0. <= dt <= self.confirmation_max_gap_s:
             return prediction
         # A first motion observation can guide candidate association before
         # confirmation, while the public state remains the initialized static
@@ -89,7 +96,7 @@ class EventSphereTracker(MotionFilter):
                 suspicious = mahal > 25 and transverse > .010
                 if suspicious:
                     if (self.motion_suspicion and
-                            (sample['t'] - self.motion_suspicion[-1]['t'] > .05 or
+                            (sample['t'] - self.motion_suspicion[-1]['t'] > self.confirmation_max_gap_s or
                              float(innovation @ self.motion_suspicion[-1]['innovation']) < 0)):
                         self.motion_suspicion = []
                     self.motion_suspicion.append(dict(t=sample['t'], innovation=innovation))
