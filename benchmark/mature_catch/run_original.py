@@ -107,7 +107,7 @@ def main():
         renderer.update_scene(env.Dcmm.data,camera=camera)
         return renderer.render().copy()
     result=[];start=time.monotonic()
-    manifest=dict(launch_override=launch_override,sensor_probe_stride=int(os.environ.get('CATCHIT_PROBE_STRIDE','20')),source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
+    manifest=dict(event_generator=os.environ.get('CATCHIT_EVENT_GENERATOR','ours'),event_updates_disabled=args.initialization_only,launch_override=launch_override,sensor_probe_stride=int(os.environ.get('CATCHIT_PROBE_STRIDE','20')),source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
         backend=getattr(env,'physics_backend','MuJoCo original reproduction; NOT Genesis'),observation=(('one actual RGB-D frame at reset, then events + original proprioception' if args.rgbd_initialize else 'one actual RGB frame at reset, then events + original proprioception') if args.rgb_initialize else 'event-only known-radius front end + original proprioception') if args.event_control else 'original GT + original noise',
         inference_methods='verbatim AST from original PPO evaluator',checkpoint_sha256=hashlib.sha256(weights.read_bytes()).hexdigest(),
         timestep=float(env.Dcmm.model.opt.timestep),steps_per_policy=20,env_time=2.5,seeds=seeds,

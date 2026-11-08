@@ -33,6 +33,8 @@ class SparseEventSensor:
         self.initialization_probe=os.environ.get('CATCHIT_INITIALIZATION_PROBE')=='1'
         self.initialization=None;self.initialization_failed=False
         self.capture_suspension=None;self.skipped_post_grasp_queries=0
+        self.generator_method=os.environ.get('CATCHIT_EVENT_GENERATOR','ours')
+        assert self.generator_method in ('ours','v2e')
         if os.environ.get('CATCHIT_RGB_INITIALIZE')=='1':
             import imageio.v2 as imageio
             from rgb_sphere_initialization import detect_sphere
@@ -59,14 +61,16 @@ class SparseEventSensor:
         uuid=subprocess.check_output(['nvidia-smi','-i',gpu_index,'--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
         worker_env=dict(os.environ,CUDA_VISIBLE_DEVICES=uuid,PYTHONPATH=str(self.core),OMP_NUM_THREADS='2',MKL_NUM_THREADS='2',OPENBLAS_NUM_THREADS='2')
         self.log=(self.root/'event_worker.log').open('w')
-        self.worker=subprocess.Popen(['/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python','-u',str(Path(__file__).with_name('event_worker.py'))],
+        worker_name='event_worker.py' if self.generator_method=='ours' else 'v2e_event_worker.py'
+        self.worker=subprocess.Popen(['/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python','-u',str(Path(__file__).with_name(worker_name))],
             env=worker_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,bufsize=1024*1024)
         try:
             ready=decode(pickle.load(self.worker.stdout));assert ready['ready']
             (self.root/'worker_start.json').write_text(json.dumps(dict(pid=self.worker.pid,gpu_uuid=uuid,**ready),indent=2))
             self.h=h5py.File(self.root/'sparse_hdr_endpoints.h5','w');self.h.attrs['endpoint_rate_hz']=100.
             self.h.attrs['source']='actual sparse Genesis float32 scene-linear HDR; no dense reference in generation'
-            self.h.attrs['sensor_response']='unchanged frozen ideal sparse profile; not EVK4 calibration'
+            self.h.attrs['sensor_response']='frozen EventGenesis ideal profile' if self.generator_method=='ours' else 'native V2E SSM39 plus EventEmulator, controlled ideal noise settings; native uint8 LDR grayscale input'
+            self.h.attrs['event_generation_method']=self.generator_method
             self.capture(0.,reset=True)
         except BaseException:
             self.close();raise
@@ -78,21 +82,34 @@ class SparseEventSensor:
             if self.capture_suspension is None:self.capture_suspension=dict(time_s=float(t),reason='estimated grasp; controller already uses hand proprioception',GT_contact_used=False)
             self.skipped_post_grasp_queries+=1
             return
+        hdr_started=time.monotonic()
         hdr,depth,seg,_=self.camera.render(rgb=True,depth=True,segmentation=True,radiance=True,force_render=True)
+        hdr_capture_s=time.monotonic()-hdr_started;gray8=None;ldr_capture_s=0.
+        if self.generator_method=='v2e':
+            import cv2
+            ldr_started=time.monotonic()
+            ldr=array(self.camera.render(rgb=True,depth=False,segmentation=False,radiance=False,force_render=True)[0])
+            assert ldr.dtype==np.uint8
+            gray8=cv2.cvtColor(ldr,cv2.COLOR_RGB2GRAY)
+            ldr_capture_s=time.monotonic()-ldr_started
         T=array(self.camera.transform).astype(float);T[:3,1:3]*=-1
         poses=link_transforms(self.env.robot)
         if getattr(self.env,'background_wall',None) is not None:poses.update(link_transforms(self.env.background_wall))
         packet=dict(time_s=float(t),resolution_wh=self.camera.res,intrinsics=self.K,radiance=array(hdr).astype(np.float32),
                     depth=array(depth).astype(np.float32),segmentation=array(seg).astype(np.int32),camera_to_world_cv=T,object_poses=poses)
-        started=time.monotonic();pickle.dump(encode(dict(kind='reset' if reset else 'frame',packet=packet)),self.worker.stdin,protocol=5);self.worker.stdin.flush()
+        worker_packet=packet if self.generator_method=='ours' else dict(time_s=float(t),gray8=gray8)
+        started=time.monotonic();pickle.dump(encode(dict(kind='reset' if reset else 'frame',packet=worker_packet)),self.worker.stdin,protocol=5);self.worker.stdin.flush()
         reply=decode(pickle.load(self.worker.stdout));events=reply['events']
         available=float(t)+.010
         if len(events):self.chunks.append(events.copy())
         self.tracker.push(events,available_s=available,packet_time_s=t,camera_to_world=T)
         self.packet_audit.append(dict(time_s=float(t),available_s=available,events=len(events),worker_wall_s=reply['wall_s'],
-            transfer_and_worker_wall_s=time.monotonic()-started,endpoint_reads=reply['endpoint_reads'],dense_HDR_reads=0,renderer_calls_in_reconstruction=0))
+            transfer_and_worker_wall_s=time.monotonic()-started,endpoint_reads=reply['endpoint_reads'],dense_HDR_reads=0,renderer_calls_in_reconstruction=0,
+            method=self.generator_method,subframes=reply.get('subframes'),native_ldr_capture_s=ldr_capture_s,hdr_capture_s=hdr_capture_s,
+            hdr_used_only_for_audit=self.generator_method=='v2e',worker_input_keys=sorted(worker_packet)))
         data=dict(time_s=np.asarray(t),radiance=packet['radiance'],depth=packet['depth'],segmentation=packet['segmentation'],
                   camera_to_world_cv=T,object_poses=np.stack([poses[k] for k in sorted(poses)]))
+        if gray8 is not None:data['native_ldr_gray8']=gray8
         if 'segmentation_pose_ids' not in self.h:self.h.create_dataset('segmentation_pose_ids',data=sorted(poses))
         if 'intrinsics' not in self.h:self.h.create_dataset('intrinsics',data=self.K)
         for name,value in data.items():

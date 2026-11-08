@@ -1,5 +1,5 @@
 """Task-only V2E worker; accepts LDR grayscale and endpoint time, no scene GT."""
-import json,os,pickle,sys,time
+import hashlib,json,os,pickle,sys,time
 from pathlib import Path
 
 def main():
@@ -8,6 +8,7 @@ def main():
     from streaming_v2e import StreamingV2E
     proof=Path(os.environ['CATCHIT_V2E_PARITY_RECEIPT']);parity=json.loads(proof.read_text())
     assert parity['status']=='PASS'
+    assert hashlib.sha256(Path(__file__).with_name('streaming_v2e.py').read_bytes()).hexdigest()==parity['adapter_sha256']
     source=Path(os.environ['CATCHIT_V2E_SOURCE']);checkpoint=source/'input/SuperSloMo39.ckpt'
     generator=StreamingV2E(source,checkpoint)
     receipt=generator.receipt()
