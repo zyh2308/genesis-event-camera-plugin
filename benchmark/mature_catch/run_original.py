@@ -36,6 +36,11 @@ def main():
     parser.add_argument('--stop-events-after-grasp',action='store_true')
     args=parser.parse_args();args.source=args.source.resolve();args.output=args.output.resolve()
     launch_override=json.loads(args.launch_config.resolve().read_text()) if args.launch_config else None
+    event_reconstruction_mode=os.environ.get('CATCHIT_EVENT_RECONSTRUCTION_MODE','full')
+    if event_reconstruction_mode not in ('full','endpoint_only'):
+        parser.error('Unregistered event reconstruction mode')
+    if event_reconstruction_mode=='endpoint_only' and os.environ.get('CATCHIT_EVENT_GENERATOR','ours')!='ours':
+        parser.error('Endpoint-only ablation applies only to the frozen Ours response')
     if args.rgbd_initialize:args.rgb_initialize=True
     args.output.mkdir(parents=True,exist_ok=True)
     os.chdir(args.source);sys.path.insert(0,str(args.source));sys.path.insert(0,str(args.source/'gym_dcmm'))
@@ -116,7 +121,7 @@ def main():
         renderer.update_scene(env.Dcmm.data,camera=camera)
         return renderer.render().copy()
     result=[];start=time.monotonic()
-    manifest=dict(event_generator=os.environ.get('CATCHIT_EVENT_GENERATOR','ours'),event_updates_disabled=args.initialization_only,launch_override=launch_override,sensor_probe_stride=int(os.environ.get('CATCHIT_PROBE_STRIDE','20')),source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
+    manifest=dict(event_generator=os.environ.get('CATCHIT_EVENT_GENERATOR','ours'),event_reconstruction_mode=event_reconstruction_mode,event_updates_disabled=args.initialization_only,launch_override=launch_override,sensor_probe_stride=int(os.environ.get('CATCHIT_PROBE_STRIDE','20')),source=str(args.source),upstream_commit='b6af28c67586fc029f3ab43faf5d787e7d3a1609',
         backend=getattr(env,'physics_backend','MuJoCo original reproduction; NOT Genesis'),observation=(('one actual RGB-D frame at reset, then events + original proprioception' if args.rgbd_initialize else 'one actual RGB frame at reset, then events + original proprioception') if args.rgb_initialize else 'event-only known-radius front end + original proprioception') if args.event_control else 'original GT + original noise',
         inference_methods='verbatim AST from original PPO evaluator',checkpoint_sha256=hashlib.sha256(weights.read_bytes()).hexdigest(),
         timestep=float(env.Dcmm.model.opt.timestep),steps_per_policy=20,env_time=2.5,seeds=seeds,

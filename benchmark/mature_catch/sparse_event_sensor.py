@@ -36,6 +36,11 @@ class SparseEventSensor:
         self.capture_suspension=None;self.skipped_post_grasp_queries=0
         self.generator_method=os.environ.get('CATCHIT_EVENT_GENERATOR','ours')
         assert self.generator_method in ('ours','v2e')
+        self.reconstruction_mode=os.environ.get('CATCHIT_EVENT_RECONSTRUCTION_MODE','full')
+        if self.reconstruction_mode not in ('full','endpoint_only'):
+            raise ValueError('Unregistered event reconstruction mode')
+        if self.reconstruction_mode=='endpoint_only' and self.generator_method!='ours':
+            raise ValueError('Endpoint-only ablation applies only to the frozen Ours response')
         if os.environ.get('CATCHIT_RGB_INITIALIZE')=='1':
             import imageio.v2 as imageio
             from rgb_sphere_initialization import detect_sphere
@@ -62,11 +67,13 @@ class SparseEventSensor:
         uuid=subprocess.check_output(['nvidia-smi','-i',gpu_index,'--query-gpu=uuid','--format=csv,noheader'],text=True).strip()
         worker_env=dict(os.environ,CUDA_VISIBLE_DEVICES=uuid,PYTHONPATH=str(self.core),OMP_NUM_THREADS='2',MKL_NUM_THREADS='2',OPENBLAS_NUM_THREADS='2')
         self.log=(self.root/'event_worker.log').open('w')
-        worker_name='event_worker.py' if self.generator_method=='ours' else 'v2e_event_worker.py'
+        worker_name=('endpoint_event_worker.py' if self.reconstruction_mode=='endpoint_only' else 'event_worker.py') if self.generator_method=='ours' else 'v2e_event_worker.py'
         self.worker=subprocess.Popen(['/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python','-u',str(Path(__file__).with_name(worker_name))],
             env=worker_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,bufsize=1024*1024)
         try:
             ready=decode(pickle.load(self.worker.stdout));assert ready['ready']
+            if self.reconstruction_mode=='endpoint_only':
+                assert ready['reconstruction_mode']=='endpoint_only' and ready['intermediate_frames']==0
             (self.root/'worker_start.json').write_text(json.dumps(dict(pid=self.worker.pid,gpu_uuid=uuid,**ready),indent=2))
             self.h=h5py.File(self.root/'sparse_hdr_endpoints.h5','w');self.h.attrs['endpoint_rate_hz']=self.endpoint_hz
             self.h.attrs['source']='actual sparse Genesis float32 scene-linear HDR; no dense reference in generation'
@@ -99,15 +106,25 @@ class SparseEventSensor:
         packet=dict(time_s=float(t),resolution_wh=self.camera.res,intrinsics=self.K,radiance=array(hdr).astype(np.float32),
                     depth=array(depth).astype(np.float32),segmentation=array(seg).astype(np.int32),camera_to_world_cv=T,object_poses=poses)
         worker_packet=packet if self.generator_method=='ours' else dict(time_s=float(t),gray8=gray8)
+        if self.reconstruction_mode=='endpoint_only':
+            worker_packet={key:packet[key] for key in ('time_s','resolution_wh','intrinsics','radiance')}
         started=time.monotonic();pickle.dump(encode(dict(kind='reset' if reset else 'frame',packet=worker_packet)),self.worker.stdin,protocol=5);self.worker.stdin.flush()
         reply=decode(pickle.load(self.worker.stdout));events=reply['events']
+        if self.reconstruction_mode=='endpoint_only':
+            assert reply['reconstruction_mode']=='endpoint_only' and reply['intermediate_frames']==0
+            assert reply['endpoint_reads']==self.frame_index+1 and reply['dvs_update_calls']==self.frame_index
+            assert reply['packet_end_s']==float(t)
         available=float(t)+.010
         if len(events):self.chunks.append(events.copy())
         self.tracker.push(events,available_s=available,packet_time_s=t,camera_to_world=T)
         self.packet_audit.append(dict(time_s=float(t),available_s=available,events=len(events),worker_wall_s=reply['wall_s'],
             transfer_and_worker_wall_s=time.monotonic()-started,endpoint_reads=reply['endpoint_reads'],dense_HDR_reads=0,renderer_calls_in_reconstruction=0,
             method=self.generator_method,endpoint_rate_hz=self.endpoint_hz,subframes=reply.get('subframes'),native_ldr_capture_s=ldr_capture_s,hdr_capture_s=hdr_capture_s,
-            hdr_used_only_for_audit=self.generator_method=='v2e',worker_input_keys=sorted(worker_packet)))
+            hdr_used_only_for_audit=self.generator_method=='v2e',worker_input_keys=sorted(worker_packet),
+            reconstruction_mode=reply.get('reconstruction_mode',self.reconstruction_mode),
+            intermediate_frames=reply.get('intermediate_frames'),
+            dvs_update_calls=reply.get('dvs_update_calls'),
+            dvs_response_config_sha256=reply.get('dvs_response_config_sha256')))
         data=dict(time_s=np.asarray(t),radiance=packet['radiance'],depth=packet['depth'],segmentation=packet['segmentation'],
                   camera_to_world_cv=T,object_poses=np.stack([poses[k] for k in sorted(poses)]))
         if gray8 is not None:data['native_ldr_gray8']=gray8
