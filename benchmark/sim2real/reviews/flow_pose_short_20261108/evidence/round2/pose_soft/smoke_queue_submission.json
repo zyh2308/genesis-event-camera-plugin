@@ -1,0 +1,72 @@
+{
+  "job_id": "149_pose_feature_retention_smoke_20261108",
+  "phase": "pose_feature_retention_smoke",
+  "argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=60s",
+    "600s",
+    "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+    "-B",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/run_pose_feature_retention.py",
+    "--campaign",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+    "--prior-source-dir",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-two-branch-coverage-v1/sources",
+    "--prior-source-manifest-sha256",
+    "e237e55a02a359d224d9be3ba33c404100fd7a98509f2994e715c1d7c16e4502",
+    "--radiance-train",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-full-train-light-v1/radiance_train",
+    "--radiance-validation",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance",
+    "--prior-study",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study",
+    "--diagnostic",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-frozen-features-v1/sources/forgetting_diagnostic.json",
+    "--phase",
+    "smoke",
+    "--calibration",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/phase0/calibration.json",
+    "--calibration-sha256",
+    "0a899b8e7eb83518c3347f121ccfb458d1ffa55f5f5bc07e199ec50a94592ade",
+    "--out",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/smoke"
+  ],
+  "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261108_pose_feature_retention_queue/smoke",
+  "cwd": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources",
+  "env": {
+    "CUDA_VISIBLE_DEVICES": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "NVIDIA_TF32_OVERRIDE": "0",
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    "OMP_NUM_THREADS": "2",
+    "MKL_NUM_THREADS": "2"
+  },
+  "ready_files": [
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/source_manifest.json",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/server_cpu_tests.log"
+  ],
+  "after": [
+    "148_pose_feature_retention_calibrate_20261108"
+  ],
+  "source_sha256": {
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/CPU_TEST_RESULT.json": "ec57f521100b85d34c346508e68997bf0f8ce973def149b443b0ebfdd5319872",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/DEPLOYMENT.md": "896c5ae4f027e585b9d606bdd2681a9125b42afe180ed8415811baf65d22b230",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/PROTOCOL.md": "89a839b670ae4e12a0812c438b4302d8108021136629b23a8cd5f72538015a24",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/TRAINING_REGISTRATION.json": "311ff5c28fd0f0a9f7535ecc6b663d1d9237d8eadb93d828f3ae18b9998ccb46",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/build_policy.py": "d325afa022e1b2f04edd12159aac73b8ede4abf6135368b4cb734b245ed35f0d",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/build_worker.py": "126cd764bd19714d09c32a2b230e902f2d567c5ca39a15fbb03fd5c0571292d2",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/calibrate_feature_retention.py": "b75bc15c1768eef6ff69c9b40948b703a59892adcfbdfca06cee8a1295ae5e0e",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/calibration_contract.py": "dc67043f8ba07e75aea569ead558706bfa83697448d2c81751e1788ceacb7892",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/feature_retention.py": "a15cf114d0aee30420a0a828239c04dab419aec932a8e1ef533d23ffe970f810",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/pose_feature_retention_policy.py": "e116f9e66df2e8cc6027d6d7732bf88f2328323e4a045fd1f8896e870a8836c0",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/pose_priority_policy.py": "e1883b68715ecf067a9f4dccbd7a61af5f5dc26b557e061859f4066e7de8d38c",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/reuse_controls.py": "4b10aa7262088edc188866f938fd20c06c25a67f4953f9420f1d57bb7d9f9170",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/run_pose_feature_retention.py": "ab51ae1e9086fac9df4db660bbe7f11a85d8dfea8731a9ff98c9863caaf79378",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/test_feature_retention.py": "77cbde91ad00a5788765337cc645247731627e6f4de12fbaba3fe46e4972ccd8",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/test_pose_priority_policy.py": "0d1ece1be5d6f2ad99e9f859b137107d71def528ed2c63a7e8f7083dd9535618",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/worker_reference.py": "2cba8a4661eebdbd58d46b9023af436fb1c978806da090565be7d0a4fb131d19",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/sources/source_manifest.json": "ac597250c2b6313bef7414ceaf983b623c83ee7454d674051227a739d964f66c",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-feature-retention-v1/phase0/calibration.json": "0a899b8e7eb83518c3347f121ccfb458d1ffa55f5f5bc07e199ec50a94592ade"
+  }
+}

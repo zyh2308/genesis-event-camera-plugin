@@ -1,0 +1,216 @@
+{
+  "schema": "pose_input_contract_independent_local_audit_v1",
+  "status": "passed_with_scope_limits",
+  "input_record": {
+    "path": "/home/\u79d1\u7814/Eventbased_WAM/repositories/gec-mainline-resume-20261105/benchmark/sim2real/reviews/flow_pose_short_20261108/evidence/round2/pose_audit_v3/data_contract.json",
+    "sha256": "1118198779cbde1e60837796d896a83fb0b2c6a29f8f5c4c34a62916d8c84630",
+    "size_bytes": 1102549
+  },
+  "scope": "Independent local review of archived server receipt; no new server/GPU/model execution",
+  "coverage": {
+    "original_splits": {
+      "train": 96,
+      "validation": 32
+    },
+    "all96TRAIN_selected": true,
+    "nominal_windows": 1536,
+    "geometry_visibility_skipped": 7,
+    "effective_windows_each_method_each_brightness": 1529,
+    "independent_relit_validation_scope": "4 trajectories,64 windows per generator per brightness; not the full96 synthetic confirmation rollouts",
+    "subset96of384_hypothesis_supported": false
+  },
+  "geometry_time": {
+    "fresh_three_brightness_T_K_keys_UV_max_abs": 0.0,
+    "fresh_start_end_timestamps_equal": true,
+    "normal_NPZ_T_K_keys_max_abs": 0.0,
+    "normal_NPZ_normalized_UV_float32_conversion_max_abs": 5.9391632056815524e-08,
+    "unused_label_time_metadata_issues": [],
+    "caveat": "Do not claim every old NPZ geometry field is bitwise identical; normalized UV float32 conversion has small rounding."
+  },
+  "raw_to_NPZ": {
+    "eventgenesis": {
+      "executed": true,
+      "normal_npz_vs_fresh_base_max_abs": 0.0,
+      "mismatch_windows": 0,
+      "first_mismatches": [],
+      "equivalence": "exact arrays before the common deterministic area resize to128"
+    },
+    "v2e": {
+      "executed": true,
+      "normal_npz_vs_fresh_base_max_abs": 0.0,
+      "mismatch_windows": 0,
+      "first_mismatches": [],
+      "equivalence": "exact arrays before the common deterministic area resize to128"
+    }
+  },
+  "generator_metadata": {
+    "None_equality_not_used_as_proof": true,
+    "eventgenesis": {
+      "core_release": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+      "sensor_profile_sha256": "fbaa4b17b0ac0bc5dd8f20ac8827be9668d62af0a82988dea6332d2de3d7de2f",
+      "all_three_brightness_profile_headers_and_rollout_hashes_match": true,
+      "source_cadence_hz": 100,
+      "source_commit_None_explanation": "This generator schema uses core_release; generic source_commit is not its provenance field"
+    },
+    "v2e": {
+      "actual_official_source_commit": "cac638444557a224ba6ee5c29260916f152c00bd",
+      "actual_scientific_parameters_and_SSM_weight": {
+        "input_frame_rate": "100",
+        "auto_timestamp_resolution": "False",
+        "timestamp_resolution": ".000025",
+        "pos_thres": ".2",
+        "neg_thres": ".2",
+        "sigma_thres": ".03",
+        "cutoff_hz": "300",
+        "leak_rate_hz": ".01",
+        "leak_jitter_fraction": ".1",
+        "noise_rate_cov_decades": ".1",
+        "shot_noise_rate_hz": ".001",
+        "refractory_period": ".0005",
+        "dvs_emulator_seed": "42",
+        "weight_sha256": "d4d3070431eff774a1c27038930121ffeae59ede3a7d184118c539b443ea27cb"
+      },
+      "all_three_brightness_records_nonempty_and_equal": true,
+      "core_release_sensor_profile_None_explanation": "EG-specific fields are not applicable to official V2E. Nonempty V2E commit,13 scientific CLI parameters and SSM weight SHA were checked instead.",
+      "empty_source_cadence_list_explanation": "V2E schema does not expose that row field; official CLI input_frame_rate=100 explicitly records cadence."
+    }
+  },
+  "saturation": {
+    "maximum_fullframe_allZ_group_mean": {
+      "split": "train",
+      "method": "eventgenesis",
+      "level": "normal",
+      "depth_bin": "all_z",
+      "region": "full",
+      "channel": "TOTAL",
+      "windows": 1529,
+      "raw_ge8_window_equal_mean": 1.7208433019137056e-05
+    },
+    "maximum_fullframe_including_Zbins_group_mean": {
+      "split": "train",
+      "method": "eventgenesis",
+      "level": "normal",
+      "depth_bin": "z_lt0.5",
+      "region": "full",
+      "channel": "TOTAL",
+      "windows": 261,
+      "raw_ge8_window_equal_mean": 2.9983526096741167e-05
+    },
+    "model128_exact_one_rate_all_summary_groups": 0.0,
+    "scope": "Maxima are group window-equal means,not a maximum individual window. Count>=8 encodes to1 before interpolation; >8 differs. No exact-one pixels were reported at actual model128 input. This does not exclude compression,aliasing or blur,or establish a cause of pose error."
+  },
+  "bbox_density": [
+    {
+      "split": "train",
+      "method": "eventgenesis",
+      "level": "eighth",
+      "windows": 1529,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.12119070212053375
+    },
+    {
+      "split": "train",
+      "method": "eventgenesis",
+      "level": "half",
+      "windows": 1529,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.13361033391002347
+    },
+    {
+      "split": "train",
+      "method": "eventgenesis",
+      "level": "normal",
+      "windows": 1529,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.1349920123353945
+    },
+    {
+      "split": "train",
+      "method": "v2e",
+      "level": "eighth",
+      "windows": 1529,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.07555520502160394
+    },
+    {
+      "split": "train",
+      "method": "v2e",
+      "level": "half",
+      "windows": 1529,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.05874019293767934
+    },
+    {
+      "split": "train",
+      "method": "v2e",
+      "level": "normal",
+      "windows": 1529,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.05032862771798589
+    },
+    {
+      "split": "validation",
+      "method": "eventgenesis",
+      "level": "eighth",
+      "windows": 64,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.17747445893383504
+    },
+    {
+      "split": "validation",
+      "method": "eventgenesis",
+      "level": "half",
+      "windows": 64,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.17468797832756888
+    },
+    {
+      "split": "validation",
+      "method": "eventgenesis",
+      "level": "normal",
+      "windows": 64,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.1703642477673896
+    },
+    {
+      "split": "validation",
+      "method": "v2e",
+      "level": "eighth",
+      "windows": 64,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.10456043953514449
+    },
+    {
+      "split": "validation",
+      "method": "v2e",
+      "level": "half",
+      "windows": 64,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.08498846887906437
+    },
+    {
+      "split": "validation",
+      "method": "v2e",
+      "level": "normal",
+      "windows": 64,
+      "raw_TOTAL_nonzero_rate_window_equal_mean": 0.07459899269585465
+    }
+  ],
+  "bbox_limits": "GT projected CAD rectangle used only for diagnostics,not a visibility mask or model crop. Rates are window-equal within-region summaries. Train/4-validation-rollout and generator/brightness differences are descriptive,not causal conclusions.",
+  "exposure": {
+    "normal_draws_total": 9174,
+    "half_draws_total": 6880.5,
+    "eighth_draws_total": 2293.5,
+    "normal_visits_per_window": 6,
+    "half_expected_visits_per_window": 4.5,
+    "eighth_expected_visits_per_window": 1.5
+  },
+  "failure_and_serialization_provenance": {
+    "wrapper_sha256": "13e36c1cf1e6762df689f6b599fab1bf6af296271973278fd6be15604c8a392c",
+    "source_manifest_sha256": "b2c2fd7c7eab3a4fc74e4840b06f7b7033042b21ad2e9dd2b81f8c892e794467",
+    "original_v2_script_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-data-contract-v3/sources/audit_pose_data_contract_v2.py",
+    "original_v2_script_sha256": "ee07d66e459cad74b73520002e95f2ad7b4c353710426ffc3fe5efde46a3c06c",
+    "preserved_failure_partial": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-data-contract-v2/data_contract.json",
+      "sha256": "175fcf2b78df7735cb567b7bb452504fb3a46c75df91ffc99d38a0a81f59e5bf",
+      "size_bytes": 887369
+    },
+    "change": "numpy.generic.item / ndarray.tolist at JSON boundary only; all original statistics unchanged",
+    "allow_nan": false,
+    "preserved_original_failure": true
+  },
+  "limits": [
+    "v2 final JSON serialization failed and its original partial remains preserved;v3 recalculated all statistics with only NumPy-to-native JSON boundary conversion.",
+    "Manifest equality is provenance evidence,not a fresh independent code checkout/execution or proof of physically accurate sensor calibration.",
+    "No prediction problem is claimed solved;no new training or real scoring occurred."
+  ]
+}

@@ -1,0 +1,10 @@
+Initial CPU test run: 5/6 tests passed. The FP32 identity transform's maximum
+soft-Hamming residual was 1.2190019660351936e-08, slightly above a provisional
+1e-08 ideal-identity assertion, because grid_sample's normalized zero-flow grid
+does not return bitwise-identical FP32 pixels at every coordinate.
+
+The ideal-identity algebra test now explicitly uses FP64; its 1e-08 assertion
+was not loosened. The actual translated / affine-brightness / gamma controls,
+mask controls and multiscale controls remain FP32. This is a numerical unit
+fixture distinction, not a changed model, training/adoption gate, simulator
+rule or scientific claim. No training or real scoring was run.

@@ -1,0 +1,139 @@
+{
+  "schema": "steflow_native_mask_algebra_cpu_v1",
+  "status": "passed",
+  "source_path": "/mnt/c/Users/zhaoyuhan/Documents/ChatGPT/New project/docs/sim2real-research-2026-10-16/sources/STE-FlowNet/multiscaleloss.py",
+  "source_sha256": "ff401317e49ce37ae0f8e9bfd6b82f133549b4a0271be35095f74bdc50a439c0",
+  "source_unchanged": true,
+  "execution_device": "CPU FP32",
+  "torch_version": "2.9.1+cu128",
+  "cuda_shim": "Temporarily torch.Tensor.cuda(self,*args,**kwargs) returns self; restored in finally",
+  "coordinate_compatibility": "Temporarily grid_sample default align_corners=True, matching existing explicit compatibility; restored in finally",
+  "case_count": 8,
+  "all_gradient_differences_exactly_zero": true,
+  "results": [
+    {
+      "case": "inbounds",
+      "gradient_space": "predicted_flow",
+      "native_photo": 11.817865371704102,
+      "masked_residual_photo": 11.817865371704102,
+      "weighted_charbonnier_photo": 11.817865371704102,
+      "valid_fraction": 1.0,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 3.616555690765381
+    },
+    {
+      "case": "inbounds",
+      "gradient_space": "tiny_conv_parameters",
+      "native_photo": 11.817865371704102,
+      "masked_residual_photo": 11.817865371704102,
+      "weighted_charbonnier_photo": 11.817865371704102,
+      "valid_fraction": 1.0,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 0.11779426783323288
+    },
+    {
+      "case": "all_outbounds",
+      "gradient_space": "predicted_flow",
+      "native_photo": 57.45378112792969,
+      "masked_residual_photo": 0.24142678081989288,
+      "weighted_charbonnier_photo": 0.0,
+      "valid_fraction": 0.0,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 0.0
+    },
+    {
+      "case": "all_outbounds",
+      "gradient_space": "tiny_conv_parameters",
+      "native_photo": 57.45378112792969,
+      "masked_residual_photo": 0.24142678081989288,
+      "weighted_charbonnier_photo": 0.0,
+      "valid_fraction": 0.0,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 0.0
+    },
+    {
+      "case": "mixed_outbounds",
+      "gradient_space": "predicted_flow",
+      "native_photo": 25.970603942871094,
+      "masked_residual_photo": 5.257254600524902,
+      "weighted_charbonnier_photo": 5.16946268081665,
+      "valid_fraction": 0.6363636255264282,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 2.114741802215576
+    },
+    {
+      "case": "mixed_outbounds",
+      "gradient_space": "tiny_conv_parameters",
+      "native_photo": 25.970603942871094,
+      "masked_residual_photo": 5.257254600524902,
+      "weighted_charbonnier_photo": 5.16946268081665,
+      "valid_fraction": 0.6363636255264282,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 0.04521484300494194
+    },
+    {
+      "case": "near_boundary",
+      "gradient_space": "predicted_flow",
+      "native_photo": 18.052520751953125,
+      "masked_residual_photo": 10.7195405960083,
+      "weighted_charbonnier_photo": 10.697592735290527,
+      "valid_fraction": 0.9090909361839294,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 2.5950474739074707
+    },
+    {
+      "case": "near_boundary",
+      "gradient_space": "tiny_conv_parameters",
+      "native_photo": 18.052520751953125,
+      "masked_residual_photo": 10.7195405960083,
+      "weighted_charbonnier_photo": 10.697592735290527,
+      "valid_fraction": 0.9090909361839294,
+      "mask_requires_grad": true,
+      "mask_flow_gradient_maxabs": 0.0,
+      "residual_gradient_maxabs_difference": 0.0,
+      "weighted_gradient_maxabs_difference": 0.0,
+      "native_gradient_l2": 0.07388129830360413
+    }
+  ],
+  "nonsquare_negative_fixture": {
+    "shape_hw": [
+      9,
+      13
+    ],
+    "relevant_to_formal_square_training": false,
+    "status": "upstream_resize_width_height_reversed_observed",
+    "exception": "The expanded size of the tensor (13) must match the existing size (9) at non-singleton dimension 1.  Target sizes: [9, 13].  Tensor sizes: [13, 9]"
+  },
+  "conclusion": "SUM + hard binary warp mask: deleting invalid residual terms changes only loss constants; no flow or parameter gradient change in these cases. Mask-only is a negative control, not a training improvement.",
+  "limits": [
+    "CPU algebra probe, not a CUDA numerical/performance test or downstream quality result.",
+    "masked residual retains Charbonnier epsilon baseline at invalid pixels; post-Charbonnier weighting removes that baseline too; both have identical gradients.",
+    "Physical GT-invalid region includes geometry/occlusion and is not identical to predicted out-of-bounds.",
+    "Native cv2.resize uses (height,width), reversed for nonsquare arrays; formal256x256 and352x352 paths are unaffected; not claimed as the training root cause."
+  ],
+  "optimizer_updates": 0,
+  "real_data_used": false,
+  "pretrained_weights_loaded": false,
+  "SSH_connected": false
+}

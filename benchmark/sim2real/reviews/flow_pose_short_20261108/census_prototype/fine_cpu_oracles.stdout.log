@@ -1,0 +1,152 @@
+{
+  "schema": "flow_soft_census_fine_analytic_cpu_v1",
+  "device": "CPU FP32",
+  "curves": {
+    "identity": [
+      {
+        "predicted_dx": 0.9,
+        "loss": 758.9398803710938,
+        "gradient": -2845.005859375,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 0.95,
+        "loss": 573.8099975585938,
+        "gradient": -5039.7626953125,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 0.99,
+        "loss": 251.87493896484375,
+        "gradient": -12825.1318359375,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 1.0,
+        "loss": 135.98385620117188,
+        "gradient": 0.8815012574195862,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 1.01,
+        "loss": 243.64451599121094,
+        "gradient": 12347.482421875,
+        "support_fraction": 0.6499999761581421
+      },
+      {
+        "predicted_dx": 1.05,
+        "loss": 552.3240966796875,
+        "gradient": 4807.81640625,
+        "support_fraction": 0.6499999761581421
+      },
+      {
+        "predicted_dx": 1.1,
+        "loss": 727.4884033203125,
+        "gradient": 2649.29541015625,
+        "support_fraction": 0.6499999761581421
+      }
+    ],
+    "affine": [
+      {
+        "predicted_dx": 0.9,
+        "loss": 843.13427734375,
+        "gradient": -2415.00830078125,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 0.95,
+        "loss": 697.0697631835938,
+        "gradient": -3536.0146484375,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 0.99,
+        "loss": 551.2691650390625,
+        "gradient": -2365.40185546875,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 1.0,
+        "loss": 540.6076049804688,
+        "gradient": 494.81231689453125,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 1.01,
+        "loss": 537.1920166015625,
+        "gradient": 2819.87451171875,
+        "support_fraction": 0.6499999761581421
+      },
+      {
+        "predicted_dx": 1.05,
+        "loss": 679.7095947265625,
+        "gradient": 3242.79345703125,
+        "support_fraction": 0.6499999761581421
+      },
+      {
+        "predicted_dx": 1.1,
+        "loss": 811.7921752929688,
+        "gradient": 2171.63134765625,
+        "support_fraction": 0.6499999761581421
+      }
+    ],
+    "gamma": [
+      {
+        "predicted_dx": 0.9,
+        "loss": 774.657470703125,
+        "gradient": -2803.90185546875,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 0.95,
+        "loss": 595.3592529296875,
+        "gradient": -4726.90869140625,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 0.99,
+        "loss": 326.0921936035156,
+        "gradient": -8703.2099609375,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 1.0,
+        "loss": 265.36114501953125,
+        "gradient": 249.3014373779297,
+        "support_fraction": 0.6703125238418579
+      },
+      {
+        "predicted_dx": 1.01,
+        "loss": 316.1298828125,
+        "gradient": 8768.2177734375,
+        "support_fraction": 0.6499999761581421
+      },
+      {
+        "predicted_dx": 1.05,
+        "loss": 577.7324829101562,
+        "gradient": 4424.09814453125,
+        "support_fraction": 0.6499999761581421
+      },
+      {
+        "predicted_dx": 1.1,
+        "loss": 742.4899291992188,
+        "gradient": 2548.67333984375,
+        "support_fraction": 0.6499999761581421
+      }
+    ]
+  },
+  "true_displacement_px": 1.0,
+  "source_sha256": {
+    "soft_census.py": "7ceae6b8774322a12fac69ee8c2defff2368233eae024e0106c1e4e276f471e7",
+    "test_soft_census.py": "61691b69e3ef8aa13f278a2e09aa47e10f76bdc34fc23ed3c2f18f6a9ad72139",
+    "run_fine_cpu_oracles.py": "26c2b3ef9f7b393d87e389351b68ca67567948f868b2eb3efcd6c49edf479978"
+  },
+  "note": "Soft Census is approximately, not exactly, invariant. Loss at true geometry need not have exactly zero derivative. Predicted mask support changes discretely across image boundary crossings, so loss values with different support counts are not an unbiased optical-flow accuracy metric.",
+  "neighboring_signs_correct_at_point99_and1point01": true,
+  "no_claim_of_exact_unbiased_subpixel_optimum": true,
+  "optimizer_updates": 0,
+  "real_data_used": false,
+  "GT_masks_used": false,
+  "model_weights_loaded": false,
+  "shared_weight_calibrated": false
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "census_phase0_memory_estimate_v1",
+  "scope": "CPU saved-tensor inventory and conservative GPU estimate; not a GPU measurement",
+  "measured_CPU_batch": 1,
+  "scales_hw": [
+    [
+      256,
+      256
+    ],
+    [
+      128,
+      128
+    ],
+    [
+      64,
+      64
+    ],
+    [
+      32,
+      32
+    ]
+  ],
+  "patch_size": 7,
+  "unique_saved_storage_MiB": 84.66796875,
+  "logical_saved_tensor_MiB": 117.87109375,
+  "batch8_linear_saved_storage_estimate_MiB": 677.34375,
+  "one_feature_bundle_batch8_MiB": 130.15625,
+  "native_prior_peak_reported_MiB": 25566,
+  "expected_phase0_peak_range_GiB": [
+    27,
+    30
+  ],
+  "actual_GPU_phase0_peak_measured": false,
+  "guaranteed_to_fit_32GiB": false,
+  "explanation": "Extra Census saved graph about0.66GiB plus gradient vectors, temporaries and retained native graph. CUDA allocator/cuDNN/autograd peak can differ; phase0 and smoke must actually pass unchanged batch8.",
+  "optimizer_construction": "B.restore constructs Adam and scheduler, loads original model/Adam/scheduler/RNG; phase0 calls autograd.grad but never optimizer.step",
+  "phase0_optimizer_updates": 0,
+  "source_manifest_sha256": "45343592cc7eff1c86f64bafe0d91362f96371f84071daf19ae32cff9060ff04"
+}

@@ -1,0 +1,144 @@
+{
+  "schema": "flow_census_paired_short_v1",
+  "root": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-flow-census-paired-short-v1",
+  "methods": [
+    "eventgenesis",
+    "v2e"
+  ],
+  "seed": 0,
+  "arms": [
+    "native_control",
+    "census"
+  ],
+  "updates_per_arm": 200,
+  "effective_batch": 8,
+  "warm_update": 8910,
+  "smoke_updates_total": 4,
+  "main_updates_total": 800,
+  "real_data_used": false,
+  "real_scores_used": false,
+  "GT_flow_optimizer_supervision": false,
+  "sampling": "original_control_schedule_only",
+  "original_smoothness_coefficient": 10.0,
+  "patch_size": 7,
+  "calibration": {
+    "batches_per_method": 8,
+    "gradient_space": "all_requires_grad_parameters_zero_unused",
+    "native_non_none_expected": 70,
+    "formula": "1/median(norm_census/norm_native_photo)",
+    "train_only": true,
+    "GT_in_lambda": false
+  },
+  "source_input_descriptor_scope": "frozen_inputs describes old read-only source bindings, not the scope of this new declared short optimizer study",
+  "quality_gate": {
+    "primary_all_valid_improves": true,
+    "common_active_improves": true,
+    "maximum_relative_stratum_epe_increase": 0.05,
+    "both_generators_required": true
+  },
+  "downstream_source_bundle_sha256": "828bccdaf0b046b56ee2b8c8230ebc3651b8ccfc16652ae7ea9a3f739dbabdb9",
+  "original_pilot_sha256": "167a88520162d06a7b1973eb4fcca64cf73680d50a8f583a60f953f27a0dd48a",
+  "original_helper_sha256": "5340990638eecf0865d2a322e45cb903f990a9d4077cf047f7cb40b5de3f4319",
+  "original_soft_census_v1_sha256": "7ceae6b8774322a12fac69ee8c2defff2368233eae024e0106c1e4e276f471e7",
+  "raw_endpoint_domain": "strict finite [0,1] in NPZ",
+  "known_interpolated_endpoint_and_warp_domain": "8*dtypeeps check only, no clamp/no value or gradient changes",
+  "warm_before_reuse": {
+    "eventgenesis": null,
+    "v2e": null
+  },
+  "phase0_deadline_seconds": 1800,
+  "study_deadline_seconds": 7200,
+  "automatic_long_training_or_real_scoring": false,
+  "GT_direction_oracle": null,
+  "frozen_inputs": {
+    "schema": "flow_priority_synthetic_diagnostic_v1",
+    "campaign": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+    "recipe_sha256": "51b7c723c9c4f1022483136f244d1970496b74b6886ad08b2f09be7ee1f221da",
+    "frozen_simulator_core": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+    "methods": [
+      "eventgenesis",
+      "v2e"
+    ],
+    "seed": 0,
+    "training_source": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/benchmark/sim2real/scripts/train_steflow_stage9.py",
+    "training_source_sha256": "4da4438141afd76a929b2f90f6dcd521424692bc4d84fcf5fcbd619338fd8d8d",
+    "model_root": "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet",
+    "compat_source": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/sources/benchmark/sim2real/compat/steflow_align_corners.py",
+    "compat_sha256": "0f7290aa45b8ba020c03d2d26b64a0cc213ccec7536e386bce186e4d0446393e",
+    "methods_binding": {
+      "eventgenesis": {
+        "method": "eventgenesis",
+        "seed": 0,
+        "run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/eventgenesis",
+        "completed_updates": 8910,
+        "completion": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/eventgenesis/completion.json",
+        "completion_sha256": "2cabe3860d01f2d39b53c068890a99f26e548f62e2ec93276bde8bd50242420a",
+        "selected_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/eventgenesis/synthetic_best.pt",
+        "selected_checkpoint_sha256": "9b3662727b2e8de9810535633271069fa816f338ad2e0bbc5eb5e03062d2717e",
+        "selected_checkpoint_size_bytes": 580039339,
+        "last_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/eventgenesis/last.pt",
+        "last_checkpoint_sha256": "e945323767facd8de8764eea4bdc8626e8a34fbec4a8df68a3d5295ab974f1e8",
+        "initial_state_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+        "recipe_sha256": "51b7c723c9c4f1022483136f244d1970496b74b6886ad08b2f09be7ee1f221da",
+        "data_manifest": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/eventgenesis/flow/training_bank_manifest.json",
+        "data_manifest_sha256": "2aae1eef48168cb93ba9fc9d52942d7255cb88f9728c01bcb19d265ba2e088df",
+        "correlation_backend": "original_pytorch"
+      },
+      "v2e": {
+        "method": "v2e",
+        "seed": 0,
+        "run": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/v2e",
+        "completed_updates": 8910,
+        "completion": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/v2e/completion.json",
+        "completion_sha256": "a431aca081a43387dbe346a17582eda3b9cf126bc7033356273bc57194a55ba7",
+        "selected_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/v2e/synthetic_best.pt",
+        "selected_checkpoint_sha256": "2a7270b1159b9b444b556639a8201762ab25612dfe3ff6163c4f0bdd2b93d774",
+        "selected_checkpoint_size_bytes": 580039339,
+        "last_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/training/flow/seed0/v2e/last.pt",
+        "last_checkpoint_sha256": "e6f0b726a505d12a8163fa183ecc58f8a4895785f8e2743b99935ebd1f893274",
+        "initial_state_sha256": "acc6bbd11488a21868c5f147c7f397521480166c24914cc7988a6428d6ed71cf",
+        "recipe_sha256": "51b7c723c9c4f1022483136f244d1970496b74b6886ad08b2f09be7ee1f221da",
+        "data_manifest": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/adapters/v2e/flow/training_bank_manifest.json",
+        "data_manifest_sha256": "0597fd70c30f293c77573de5890bae52f07349afdb2bad6aca2db830d092c1e1",
+        "correlation_backend": "original_pytorch"
+      }
+    },
+    "validation_indices": [
+      0,
+      22,
+      43,
+      65
+    ],
+    "training_sample_indices": [
+      11,
+      44
+    ],
+    "augmentation_seed": 20261108,
+    "motion_bin_edges_px": [
+      0,
+      0.1,
+      0.5,
+      1,
+      2,
+      5
+    ],
+    "photo_alpha": 0.45,
+    "photo_epsilon": 0.001,
+    "gradient_space": "flow outputs, not model parameters",
+    "GPU_UUID": "GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd",
+    "GPU_index": 3,
+    "deadline_seconds": 600,
+    "no_optimizer_updates": true,
+    "no_real_data": true,
+    "real_scores_used": false,
+    "selection": "fixed synthetic_best seed0; no CP selection or real feedback",
+    "candidate_policy": "diagnose first; any later sampler/loss paired short ablation must be separately registered; no automatic training",
+    "flow_gt_role": "synthetic diagnostics/validation only, never optimizer supervision"
+  },
+  "protocol_sha256": "729af10f838c6dbc55cede7a9d1f8299d0957d615d00fb5faadc688fd62a4e6d",
+  "references": {
+    "UFlow_robust": "https://github.com/google-research/google-research/blob/master/uflow/uflow_utils.py#L573-L575",
+    "UFlow_census": "https://github.com/google-research/google-research/blob/master/uflow/uflow_utils.py#L1089-L1144"
+  },
+  "preparation_status": "CPU fixtures only; no actual server CPU admission,phase0,GPU smoke,study,lambda or validation result yet"
+}

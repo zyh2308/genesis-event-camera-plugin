@@ -1,0 +1,148 @@
+{
+  "schema": "flow_soft_census_analytic_cpu_oracles_v1",
+  "status": "passed",
+  "device": "CPU",
+  "torch_version": "2.9.1+cu128",
+  "source_sha256": {
+    "soft_census.py": "7ceae6b8774322a12fac69ee8c2defff2368233eae024e0106c1e4e276f471e7",
+    "test_soft_census.py": "61691b69e3ef8aa13f278a2e09aa47e10f76bdc34fc23ed3c2f18f6a9ad72139",
+    "run_cpu_oracles.py": "3ab0931eec1cf56505caafad3b8725ba01b9df25700b6d2028e0ce70cd90e8e0"
+  },
+  "rows": [
+    {
+      "condition": "identity",
+      "true_dx": 1.0,
+      "true_dy": 0.0,
+      "dtype": "float32",
+      "values": [
+        {
+          "predicted_dx": 0.0,
+          "census_pixel_sum": 1723.2059326171875,
+          "derivative_wrt_dx": -576.0438232421875,
+          "loss_support_fraction": 0.690625011920929
+        },
+        {
+          "predicted_dx": 0.5,
+          "census_pixel_sum": 1309.2615966796875,
+          "derivative_wrt_dx": -870.182373046875,
+          "loss_support_fraction": 0.6703125238418579
+        },
+        {
+          "predicted_dx": 1.0,
+          "census_pixel_sum": 135.98385620117188,
+          "derivative_wrt_dx": 0.8815012574195862,
+          "loss_support_fraction": 0.6703125238418579
+        },
+        {
+          "predicted_dx": 1.5,
+          "census_pixel_sum": 1249.5311279296875,
+          "derivative_wrt_dx": 865.9200439453125,
+          "loss_support_fraction": 0.6499999761581421
+        },
+        {
+          "predicted_dx": 2.0,
+          "census_pixel_sum": 1589.0487060546875,
+          "derivative_wrt_dx": 588.3433837890625,
+          "loss_support_fraction": 0.6499999761581421
+        }
+      ],
+      "correct_flow_has_smaller_loss_than_half_and_one_half": true,
+      "neighboring_gradients_move_toward_correct_flow": true
+    },
+    {
+      "condition": "affine",
+      "true_dx": 1.0,
+      "true_dy": 0.0,
+      "dtype": "float32",
+      "values": [
+        {
+          "predicted_dx": 0.0,
+          "census_pixel_sum": 1751.9820556640625,
+          "derivative_wrt_dx": -575.9210205078125,
+          "loss_support_fraction": 0.690625011920929
+        },
+        {
+          "predicted_dx": 0.5,
+          "census_pixel_sum": 1349.1273193359375,
+          "derivative_wrt_dx": -823.7532958984375,
+          "loss_support_fraction": 0.6703125238418579
+        },
+        {
+          "predicted_dx": 1.0,
+          "census_pixel_sum": 540.6076049804688,
+          "derivative_wrt_dx": 494.81231689453125,
+          "loss_support_fraction": 0.6703125238418579
+        },
+        {
+          "predicted_dx": 1.5,
+          "census_pixel_sum": 1291.6849365234375,
+          "derivative_wrt_dx": 826.8719482421875,
+          "loss_support_fraction": 0.6499999761581421
+        },
+        {
+          "predicted_dx": 2.0,
+          "census_pixel_sum": 1620.2359619140625,
+          "derivative_wrt_dx": 559.4517822265625,
+          "loss_support_fraction": 0.6499999761581421
+        }
+      ],
+      "correct_flow_has_smaller_loss_than_half_and_one_half": true,
+      "neighboring_gradients_move_toward_correct_flow": true
+    },
+    {
+      "condition": "gamma",
+      "true_dx": 1.0,
+      "true_dy": 0.0,
+      "dtype": "float32",
+      "values": [
+        {
+          "predicted_dx": 0.0,
+          "census_pixel_sum": 1729.2650146484375,
+          "derivative_wrt_dx": -573.3094482421875,
+          "loss_support_fraction": 0.690625011920929
+        },
+        {
+          "predicted_dx": 0.5,
+          "census_pixel_sum": 1317.1075439453125,
+          "derivative_wrt_dx": -859.1266479492188,
+          "loss_support_fraction": 0.6703125238418579
+        },
+        {
+          "predicted_dx": 1.0,
+          "census_pixel_sum": 265.36114501953125,
+          "derivative_wrt_dx": 249.3014373779297,
+          "loss_support_fraction": 0.6703125238418579
+        },
+        {
+          "predicted_dx": 1.5,
+          "census_pixel_sum": 1258.983642578125,
+          "derivative_wrt_dx": 863.4703369140625,
+          "loss_support_fraction": 0.6499999761581421
+        },
+        {
+          "predicted_dx": 2.0,
+          "census_pixel_sum": 1596.5897216796875,
+          "derivative_wrt_dx": 580.4667358398438,
+          "loss_support_fraction": 0.6499999761581421
+        }
+      ],
+      "correct_flow_has_smaller_loss_than_half_and_one_half": true,
+      "neighboring_gradients_move_toward_correct_flow": true
+    }
+  ],
+  "shared_census_weight_calibrated": false,
+  "shared_census_weight": null,
+  "optimizer_updates": 0,
+  "real_data_used": false,
+  "GT_masks_used": false,
+  "model_weights_loaded": false,
+  "SSH_connected": false,
+  "numerical_note": "Ideal-identity unit assertion uses FP64; translations/lighting tests and these recorded curves use FP32. No bitwise-zero FP32 identity claim.",
+  "limits": [
+    "Analytic 1px textured translation only, not learned prediction quality or sim-to-real evidence.",
+    "Soft Census is only approximately invariant to monotonic intensity transformations.",
+    "Constant patches are unobservable and have zero useful motion gradient; Census cannot create missing information.",
+    "Prediction/patch support is conservative; true physical occlusions are not resolved by this mask.",
+    "No actual TRAIN gradient calibration performed yet; coefficient must be fixed identically for both generators before a separately authorized short training."
+  ]
+}

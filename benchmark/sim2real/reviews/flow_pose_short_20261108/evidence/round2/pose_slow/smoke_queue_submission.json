@@ -1,0 +1,69 @@
+{
+  "job_id": "156_pose_slow_features_smoke_20261108",
+  "phase": "pose_slow_features_two_lr_smoke",
+  "argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=60s",
+    "600s",
+    "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+    "-B",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/run_pose_slow_features.py",
+    "--campaign",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1",
+    "--prior-source-dir",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-two-branch-coverage-v1/sources",
+    "--prior-source-manifest-sha256",
+    "e237e55a02a359d224d9be3ba33c404100fd7a98509f2994e715c1d7c16e4502",
+    "--radiance-train",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-full-train-light-v1/radiance_train",
+    "--radiance-validation",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261107-pose-light-robustness-v1/radiance",
+    "--prior-study",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-half-priority-v1/study",
+    "--diagnostic",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-frozen-features-v1/sources/forgetting_diagnostic.json",
+    "--phase",
+    "smoke",
+    "--out",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/smoke"
+  ],
+  "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261108_pose_slow_features_queue/smoke",
+  "cwd": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources",
+  "env": {
+    "CUDA_VISIBLE_DEVICES": "GPU-0602549d-5c0b-133e-63ab-a01d1f6a49d3",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "NVIDIA_TF32_OVERRIDE": "0",
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    "OMP_NUM_THREADS": "2",
+    "MKL_NUM_THREADS": "2"
+  },
+  "ready_files": [
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/source_manifest.json",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/server_cpu_tests.log",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-data-contract-v2/core_contract_recovered.json"
+  ],
+  "after": [
+    "150_pose_feature_retention_study_20261108"
+  ],
+  "source_sha256": {
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/slow_feature_optimizer.py": "33f3f02d33ee225d5ef31f1a2721419057207ca28426a0c3ac6a9d9635a998fe",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/pose_slow_features_policy.py": "e184854144d31c87f33a33dd14cbadadebb3f2d2560613b3ebc334a27f5da3fc",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/reuse_controls.py": "76d4a6aa95187994bf5db8a1696dc21284c5e89b6b6eaef25df04833cc58a106",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/run_pose_slow_features.py": "c4acd62b54169576307aec8f14bf60acb2ac41e57b69d1d94c7ab63354103573",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/smoke_contract.py": "2b1591fade61010de2b4e7caa2df170bab0c45eb451cb05e269891b5375cb3ca",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/pose_priority_policy.py": "e1883b68715ecf067a9f4dccbd7a61af5f5dc26b557e061859f4066e7de8d38c",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/test_pose_priority_policy.py": "0d1ece1be5d6f2ad99e9f859b137107d71def528ed2c63a7e8f7083dd9535618",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/test_slow_features.py": "d72911ca1232d56b895e9d8bfd0a1844eb123f4b5ef12f6f582c2f5cdeb67609",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/derive_policy.py": "a59315dbfe7deef5f4cc3d6d763e63922c9faccaf204aa3f597fe1fb32b1b781",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/derive_worker.py": "dc18eeb95b4a45efdb5fffdd229af853d3be8363c89bab1ba0910fc347f0544e",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/README.md": "666b7b415fcdac0050a09c0fb550e2610ef71af9bcbe9c53ff474bac7c55fc89",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/PROTOCOL.md": "f548d57b419d435b20a721ffa01a34ab6a1185739b2a5fd1673f1e655ffc7aa3",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/DERIVATION.md": "eaf82e9c806b5bc19ad4e6e21e13b2bbd40795618f24124aa83013cd1fe6672f",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/TRAINING_REGISTRATION.json": "0c0d13490ff8725c33a79a31802b6d0ba44342aa8aadedc71179061817388fc9",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/CPU_TEST_RESULT.json": "09ec657390fc1bb5d3268a72f7426d341c54c56d3df9e1d4d354826d4968ef8a",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/build_bundle.py": "0c4aa7dc5f329415c0ff8f8a388f79e6ad342f2b768cde37fe2df245fe95997f",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-slow-features-v1/sources/source_manifest.json": "545a63d348d2197d1e76e22d08937ffc6ddad9ef5435c5c0aae305aa921aa45c",
+    "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-data-contract-v2/core_contract_recovered.json": "f658c3ec79b15cb28d4148c0bd428a3613c13b70b2908f1efffeb3a035abf5d7"
+  }
+}

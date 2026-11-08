@@ -1,0 +1,10 @@
+First artifact-generation attempt preserved, before publishing any result JSON:
+
+RuntimeError: Algebra expectation failed; do not interpret as an improvement
+
+The extra post-Charbonnier weighted variant had used delta.square()+1e-6,
+whereas the actual native function constructs epsilon with torch.mul(1e-3,1e-3).
+Those FP32 primitives need not round identically. The reproducible version now
+uses the exact native torch.mul/torch.pow expression for that additional variant.
+The originally requested masked-residual comparison was unchanged. No native
+source was edited, no GPU was used, and no training/optimizer step was run.
