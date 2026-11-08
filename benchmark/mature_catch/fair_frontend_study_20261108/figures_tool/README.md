@@ -22,6 +22,14 @@
 
 成本 CSV 由 `../cost_design/build_cost_table.py` 从 `COST_RESULT.json` 生成。必须具备完整 .8 秒窗口、正确 scope、锁定前端、完整原生事件验证、相同 trace/source/policy 哈希。若输入含多张卡，须显式用 `--cost-gpu-uuid` 选出一张同卡且完整的数据。episode 的 wall_s 只参与 CSV/JSON 一致性检查，从不计算成本。
 
+历史显存不足不等于最终回合失败：如果 `all_actual_jobs_normal_exit=false`，只接受 `all_final_actor_attempts_normal_exit=true` 且历史故障保留的显式恢复分支。此时还必须校验 raw 清单与最终审计、DATA_COMPLETION_RECEIPT、原协议和不改算法/场景/seed 的 OOM 恢复清单互相绑定；全部注册 shard 有完整 claim，受中断 shard 由注册 replacement 完整重跑。缺失恢复凭据、未闭合调度或 raw 审计失败仍拒绝。
+
+成本 v3 还要求同组具有相同 `physics_reference_sha256` 与 `physics_reference_kind`，避免把跨主机漂移的物理轨迹混成一种工作量。`reference_trace_sha256` 是旧动作来源，`physics_reference_sha256` 是当前共同真实物理参考，二者可以不同；参考采集本身不算正式成本。
+
+成本 v4 区分 `raw_exact` 和 `task_functional` 两种等价合同，整条曲线必须只用一种。两种都要求 `functional_query_exact=true`、每次完整28次实际actor查询的payload指纹与有效收据一致、同一来源/帧率/前端的重复具有同一指纹；不同来源/帧率可以有不同指纹。`raw_exact` 还须原始事件精确一致；`task_functional` 允许原始事件不同，但必须如实保留该字段，图脚明确“actor输入/输出精确一致，raw events可能不同”，不能称为原始事件精确复现。成本窗口、native、同硬件、共同物理参考、无审计/详细仪表等条件不变。
+
+已交付开发图所用的旧 `8cc5cd88716d...` 源码原样保存在 `code_versions/make_fair_figures_8cc5cd88716d.py`；后续成本schema扩展不追改已交付图及其历史manifest。
+
 输入缺失、不完整、重复、前端在盲测途中改变或哈希不匹配时，退出码为 2、说明 NOT_READY，不生成占位结果。全部请求的数据先验完后再写图；不允许自动覆盖已有正式图。
 
 ## 命令

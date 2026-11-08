@@ -30,7 +30,10 @@ EPISODE_FIELDS = ('physical_case_id', 'seed', 'endpoint_hz', 'method', 'frontend
 COST_FIELDS = ('method', 'source_hz', 'frontend_id', 'repeat_id', 'simulated_s',
     'measured_wall_s', 'measurement_start_s', 'measurement_end_s', 'cost_scope',
     'complete_window', 'native_only', 'audit_included', 'primary_validated', 'instrumented',
-    'reference_trace_sha256', 'source_snapshot_sha256', 'policy_sha256', 'host', 'gpu_uuid')
+    'reference_trace_sha256', 'physics_reference_sha256', 'physics_reference_kind',
+    'source_snapshot_sha256', 'policy_sha256', 'host', 'gpu_uuid',
+    'equivalence_kind','functional_query_exact','raw_event_exact','actor_query_payload_sha256',
+    'actor_query_count','equivalence_receipt_sha256')
 COST_SCOPE = 'native_capture+generator+frontend+actor+common_physics'
 COLORS = dict(ours='#218d88', v2e='#c68049', init_only='#929eae', state_reference='#627e8b')
 NAMES = dict(ours='Ours', v2e='V2E', init_only='RGB-D initialization only', state_reference='Noisy-state reference')
@@ -127,10 +130,81 @@ def block(row):
     return row['physical_case_id'], row['seed']
 
 
+def recovered_completion(folder, marker):
+    """Accept retained OOM history only when the audited final schedule is closed."""
+    require(marker.get('all_actual_jobs_normal_exit') is False
+        and marker.get('all_final_actor_attempts_normal_exit') is True
+        and marker.get('historical_infrastructure_failures_retained') is True,
+        'Collector stage has unresolved infrastructure failures or lacks a closed recovery record')
+    names=['SHA256SUMS','FINAL_AUDIT.json','DATA_COMPLETION_RECEIPT.json',
+        'INFRASTRUCTURE_RECOVERY.json','EVALUATION_PROTOCOL.json']
+    paths={name:folder/name for name in names}
+    require(paths['SHA256SUMS'].is_file() and sha(paths['SHA256SUMS'])==marker.get('raw_manifest_sha256'),
+        'Recovered completion raw manifest hash mismatch')
+    manifest={}
+    for line in paths['SHA256SUMS'].read_text(encoding='utf-8-sig').splitlines():
+        if not line.strip(): continue
+        digest,relative=line.split(None,1); relative=relative.lstrip('*').strip()
+        require(relative not in manifest,'Duplicate artifact in recovered completion manifest')
+        manifest[relative]=digest
+    for name in names[1:]+['FAIR_STAGE_RESULTS.json','FAIR_EPISODES.csv']:
+        require(name in manifest and (folder/name).is_file() and sha(folder/name)==manifest[name],
+            f'Recovered completion artifact is missing or disagrees with raw manifest: {name}')
+    require(sha(paths['FINAL_AUDIT.json'])==marker.get('final_audit_sha256'), 'Recovered final raw audit hash mismatch')
+    audit=read_json(paths['FINAL_AUDIT.json']); receipt=read_json(paths['DATA_COMPLETION_RECEIPT.json'])
+    recovery=read_json(paths['INFRASTRUCTURE_RECOVERY.json']); protocol=read_json(paths['EVALUATION_PROTOCOL.json'])
+    count=integer(marker['actual_episodes'],'actual_episodes')
+    require(audit.get('status')=='PASS' and audit.get('raw_event_contract_and_packet_counts_pass') is True
+        and audit.get('all_defined_successes_and_failures_retained') is True and audit.get('episodes')==count,
+        'Recovered final actor set did not pass the complete raw audit')
+    require(receipt.get('status')=='PASS' and receipt.get('valid_completed_unique_episodes')==count
+        and receipt.get('actual_planned_actors')==count and receipt.get('frozen_source_policy_profile_hashes_verified') is True
+        and receipt.get('all_task_failures_retained') is True,'Recovered actor completion receipt is not complete')
+    require(recovery.get('schema')=='fair_workqueue_infra_recovery_v1'
+        and recovery.get('reason')=='cuda_out_of_memory'
+        and recovery.get('no_algorithm_scene_seed_configuration_changed') is True
+        and recovery.get('protocol_sha256')==sha(paths['EVALUATION_PROTOCOL.json']),
+        'Recovery is not the registered no-configuration-change OOM recovery')
+    scheduling=receipt.get('scheduling_audit',{}); declared=scheduling.get('infrastructure_recovery',{})
+    require(scheduling.get('mode')=='finite_registered_workqueue'
+        and declared.get('sha256')==sha(paths['INFRASTRUCTURE_RECOVERY.json'])
+        and all(declared.get(name)==recovery.get(name) for name in
+            ['registered_utc','reason','historical_failed_workers','replacement_worker_ids']),
+        'Completion schedule does not bind the exact archived recovery plan')
+    failed=recovery.get('historical_failed_workers',[]); replacements=recovery.get('replacement_worker_ids',[])
+    old=[row['worker_id'] for row in failed]; workers=scheduling.get('registered_workers',[])
+    require(bool(old) and bool(replacements) and len(old)==len(set(old))
+        and len(replacements)==len(set(replacements)) and not set(old)&set(replacements)
+        and len(workers)==len(set(workers)) and (set(old)|set(replacements))<=set(workers),
+        'Recovery worker registration is missing or ambiguous')
+    jobs=scheduling.get('worker_job_receipts',[]); by_worker={row['worker_id']:row for row in jobs}
+    require(len(by_worker)==len(jobs) and set(by_worker)==set(workers), 'Recovery schedule lacks registered worker job receipts')
+    selected=receipt.get('selected_normal_exit_job_receipts',[])
+    normal={(row['path'],row['sha256']) for row in selected}
+    expected_normal={(row['result'],row['result_sha256']) for worker,row in by_worker.items() if worker not in old}
+    require(len(normal)==len(selected) and normal==expected_normal and bool(normal),
+        'Final normal-exit worker receipts do not cover the full recovered schedule')
+    expected_shards={integer(case['shard'],'protocol shard') for case in protocol['cases']}
+    claims=scheduling.get('completed_claim_receipts',[]); by_shard={integer(row['shard'],'claim shard'):row for row in claims}
+    require(len(claims)==len(by_shard) and set(by_shard)==expected_shards
+        and set(receipt.get('all_shards_checked',[]))==expected_shards
+        and all(row['worker_id'] in workers for row in claims),
+        'Recovered schedule does not close every registered shard exactly once')
+    interrupted={integer(claim['shard'],'interrupted shard') for worker in failed for claim in worker.get('archived_failed_claims',[])}
+    require(bool(interrupted) and interrupted<=set(by_shard)
+        and all(by_shard[shard]['worker_id'] in replacements for shard in interrupted),
+        'Interrupted paired shards were not fully reassigned to registered replacement workers')
+    return dict(mode='closed_registered_oom_recovery', historical_failed_workers=old,
+        replacement_workers=replacements, closed_shards=len(expected_shards),
+        inputs=[paths[name] for name in names])
+
+
 def load_stage(folder, expected_stage):
     folder = Path(folder); marker = read_json(folder/'FAIR_COLLECTION_COMPLETE.json')
-    require(marker.get('status') == 'PASS' and marker.get('all_actual_jobs_normal_exit') is True
-            and marker.get('all_task_failures_retained') is True, 'Collector stage is incomplete or contains unresolved infrastructure failures')
+    require(marker.get('status') == 'PASS' and marker.get('all_task_failures_retained') is True,
+            'Collector stage is incomplete or contains unresolved infrastructure failures')
+    completion=(dict(mode='all_jobs_normal_exit',inputs=[]) if marker.get('all_actual_jobs_normal_exit') is True
+                else recovered_completion(folder,marker))
     data_path = folder/'FAIR_STAGE_RESULTS.json'; data = read_json(data_path)
     require(marker.get('results_sha256') == sha(data_path), 'Collector results hash does not match completion receipt')
     require(data.get('metadata', {}).get('stage') == expected_stage, f'Expected {expected_stage} collector stage')
@@ -141,8 +215,8 @@ def load_stage(folder, expected_stage):
     left, right = {key(r): r for r in rows}, {key(r): r for r in original}
     require(len(left) == len(rows) and len(right) == len(original), 'Duplicate physical block/rate/frontend/method actor')
     require(left == right, 'Collector CSV and JSON disagree')
-    return dict(folder=folder, rows=rows, marker=marker, metadata=data['metadata'],
-        inputs=[folder/'FAIR_COLLECTION_COMPLETE.json', folder/'FAIR_EPISODES.csv', data_path])
+    return dict(folder=folder, rows=rows, marker=marker, metadata=data['metadata'],completion=completion,
+        inputs=[folder/'FAIR_COLLECTION_COMPLETE.json', folder/'FAIR_EPISODES.csv', data_path]+completion['inputs'])
 
 
 def counts(rows):
@@ -269,6 +343,10 @@ def validate_cost(path, blind, gpu_uuid=None, minimum_repeats=3):
             reason = 'not_a_validated_native_measurement'
         elif boolean(row['audit_included'], 'audit_included') or boolean(row['instrumented'], 'instrumented'):
             reason = 'audit_or_instrumentation_workload'
+        elif not boolean(row['functional_query_exact'],'functional_query_exact'):
+            reason='actor_query_functional_mismatch'
+        elif row['equivalence_kind']=='raw_exact' and not boolean(row['raw_event_exact'],'raw_event_exact'):
+            reason='raw_exact_contract_not_met'
         if reason:
             excluded.append(dict(csv_line=line, method=method, source_hz=rate, reason=reason)); continue
         require(boolean(row['complete_window'], 'complete_window'), 'A selected native cost run ended before its full fixed window')
@@ -277,15 +355,30 @@ def validate_cost(path, blind, gpu_uuid=None, minimum_repeats=3):
         require(abs(start-.32) <= 1e-8 and abs(end-1.12) <= 1e-8 and abs(simulated-.8) <= 1e-8,
                 'Cost runs do not cover the registered identical0.32..1.12s window')
         require(wall > 0 and row['cost_scope'] == COST_SCOPE, 'Invalid native end-to-end cost scope/time')
+        require(row['equivalence_kind'] in ('raw_exact','task_functional'), 'Unknown cost equivalence contract')
+        require(integer(row['actor_query_count'],'actor_query_count')==28, 'Cost fingerprint must include all28 actual actor queries')
+        for name in ('actor_query_payload_sha256','equivalence_receipt_sha256'):
+            require(re.fullmatch(r'[a-fA-F0-9]{64}',row[name]) is not None, f'Invalid cost functional receipt: {name}')
         accepted.append(dict(method=method, source_hz=rate, frontend_id=row['frontend_id'], repeat_id=row['repeat_id'],
             wall_s_per_sim_s=wall/simulated, measured_wall_s=wall, simulated_s=simulated,
             host=row['host'], gpu_uuid=row['gpu_uuid'], reference_trace_sha256=row['reference_trace_sha256'],
-            source_snapshot_sha256=row['source_snapshot_sha256'], policy_sha256=row['policy_sha256']))
+            physics_reference_sha256=row['physics_reference_sha256'],physics_reference_kind=row['physics_reference_kind'],
+            source_snapshot_sha256=row['source_snapshot_sha256'], policy_sha256=row['policy_sha256'],
+            equivalence_kind=row['equivalence_kind'],functional_query_exact=True,
+            raw_event_exact=boolean(row['raw_event_exact'],'raw_event_exact'),
+            actor_query_payload_sha256=row['actor_query_payload_sha256'],actor_query_count=28,
+            equivalence_receipt_sha256=row['equivalence_receipt_sha256']))
     require(bool(accepted), 'No complete validated native fixed-window cost measurements')
-    for name in ['reference_trace_sha256', 'source_snapshot_sha256', 'policy_sha256']:
+    for name in ['reference_trace_sha256', 'physics_reference_sha256', 'source_snapshot_sha256', 'policy_sha256']:
         values = {r[name] for r in accepted}
         require(len(values) == 1 and re.fullmatch(r'[a-fA-F0-9]{64}', next(iter(values))) is not None,
                 f'Cost workload/source is inconsistent: {name}')
+    physical_kinds={r['physics_reference_kind'] for r in accepted}
+    require(len(physical_kinds)==1 and next(iter(physical_kinds)) in
+        ('public_recorded_fixed_archived_actions','legacy_utility_rollout'),
+        'Cost curve mixes physical reference kinds or includes record-only acquisition')
+    equivalence_kinds={r['equivalence_kind'] for r in accepted}
+    require(len(equivalence_kinds)==1, 'One cost curve cannot mix raw-exact and task-functional equivalence contracts')
     hardware = {(r['host'], r['gpu_uuid']) for r in accepted}
     require(len(hardware) == 1, 'Do not mix hardware in the cost curve; explicitly select one common GPU subset')
     groups = defaultdict(list)
@@ -296,12 +389,19 @@ def validate_cost(path, blind, gpu_uuid=None, minimum_repeats=3):
         for rate in blind['rates']:
             group = groups[method, rate]; ids = [r['repeat_id'] for r in group]
             require(len(ids) == len(set(ids)) and len(group) >= minimum_repeats, 'Missing/duplicate fixed-window cost repeats')
+            require(len({r['actor_query_payload_sha256'] for r in group})==1,
+                'Cost repeats within a method/rate/frontend do not have one exact actor-query fingerprint')
             values = [r['wall_s_per_sim_s'] for r in group]
             summaries.append(dict(method=method, source_hz=rate, frontend_id=blind['selected'][method], repeats=len(values),
                 mean_wall_s_per_sim_s=sum(values)/len(values), minimum=min(values), maximum=max(values),
-                cost_scope=COST_SCOPE, fixed_simulated_s=.8, episode_wall_time_used=False))
+                cost_scope=COST_SCOPE, fixed_simulated_s=.8, episode_wall_time_used=False,
+                physics_reference_sha256=group[0]['physics_reference_sha256'],physics_reference_kind=group[0]['physics_reference_kind'],
+                equivalence_kind=group[0]['equivalence_kind'],functional_query_exact=True,
+                all_repeats_raw_event_exact=all(r['raw_event_exact'] for r in group),
+                actor_query_payload_sha256=group[0]['actor_query_payload_sha256'],actor_query_count=28))
     return dict(summaries=summaries, accepted=accepted, excluded=excluded, hardware=list(hardware),
-        measurement_window_s=[.32, 1.12], episode_wall_time_used=False)
+        measurement_window_s=[.32, 1.12], episode_wall_time_used=False,
+        equivalence_kind=next(iter(equivalence_kinds)))
 
 
 def write_csv(path, rows):
@@ -416,12 +516,14 @@ def figure_cost(stage, blind, costs, cost_path, output):
     ax.set_ylabel('Blind verified catch success'); ax.legend(frameon=False)
     fig.suptitle('Task utility versus measured native pipeline cost', y=.98, fontsize=15, fontweight='bold')
     fig.subplots_adjust(left=.10, right=.97, top=.88, bottom=.24)
-    fig.text(.045, .045, 'Cost: matched hardware, fixed 0.32–1.12 s shadow workload; warm setup excluded. X: repeat mean and range.\nUtility: independent completed blind actors; Y: Wilson 95% intervals. Episode duration/wall time is never used for cost.', fontsize=8.8, color='#475569')
+    equivalent='raw-event and actor exact' if costs['equivalence_kind']=='raw_exact' else 'actor-input/output exact; raw events may differ'
+    fig.text(.045, .035, 'Cost: matched hardware, fixed 0.32–1.12 s shadow workload; warm setup excluded. X: repeat mean and range.\nUtility: completed blind actors; Y: Wilson 95% intervals. Episode wall time is never used for cost.\nEquivalence: '+equivalent+'.', fontsize=8.8, color='#475569')
     artifacts = save_figure(fig, output, 'blind_success_vs_cost'); plt.close(fig)
     table = output/'validated_cost_by_rate.csv'; write_csv(table, costs['summaries']); artifacts.append(table)
     exclusions = output/'cost_row_admission.json'; exclusions.write_text(json.dumps(dict(excluded=costs['excluded'], hardware=costs['hardware']), indent=2), encoding='utf-8', newline='\n'); artifacts.append(exclusions)
     manifest(output, 'blind_success_vs_cost', stage['inputs']+[blind['selection_path'], Path(cost_path)], artifacts,
         dict(hardware=costs['hardware'], cost_scope=COST_SCOPE, fixed_shadow_window=costs['measurement_window_s'],
+             equivalence_kind=costs['equivalence_kind'],actor_query_functional_exact=True,
              episode_wall_time_used=False, reference_utility_not_assigned_unmeasured_cost=True))
 
 

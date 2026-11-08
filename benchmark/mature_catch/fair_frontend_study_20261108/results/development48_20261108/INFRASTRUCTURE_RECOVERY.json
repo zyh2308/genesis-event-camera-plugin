@@ -1,0 +1,83 @@
+{
+  "schema": "fair_workqueue_infra_recovery_v1",
+  "registered_utc": "2026-11-08T15:34:03.675825+00:00",
+  "protocol_sha256": "517db3bef588eab95902d0afb05f47d892b4820601029990a98f591ee5c6ade5",
+  "reason": "cuda_out_of_memory",
+  "historical_failed_workers": [
+    {
+      "worker_id": "g1_gpu0_dev_aux1",
+      "job_file": "catchit_fair_frontend_validation_g1_gpu0_dev_aux1_20261108b.job.json",
+      "job_sha256": "500f97a3dae7f23eeeaf3326a46584461097e392efc413d109887b1d9db1638f",
+      "result_file": "catchit_fair_frontend_validation_g1_gpu0_dev_aux1_20261108b.result.json",
+      "result_sha256": "19317ef274010cf94cbbb1e08a6f69fc4f3e2d0c0f6c7be9d1c3e7db30e1adb8",
+      "progress_file": "workqueue/g1_gpu0_dev_aux1.progress.json",
+      "progress_sha256": "45ab084985d6b2eacec5306119db2553b3d4730b7f6b1bd6eeae1790e6070c74",
+      "archived_failed_claims": [
+        {
+          "shard": 4,
+          "claim_file": "infrastructure_failures/attempt0/shard004/claims/shard004.json",
+          "claim_sha256": "b0b85495cc1045f6ebb07866ebb510341c0514dcd6651baf697e88381c0278d6",
+          "archived_attempt_root": "infrastructure_failures/attempt0/shard004"
+        }
+      ]
+    },
+    {
+      "worker_id": "g1_gpu1_dev_aux1",
+      "job_file": "catchit_fair_frontend_validation_g1_gpu1_dev_aux1_20261108b.job.json",
+      "job_sha256": "8a24e213ac87b198128e11457ea8b9f4f7fa6e5b45ecec9d863b90828dc3f018",
+      "result_file": "catchit_fair_frontend_validation_g1_gpu1_dev_aux1_20261108b.result.json",
+      "result_sha256": "b4bfed1af2ef203c92eed8e3f8b9a3c591405a5e6981ee7f971335e6d600b9a5",
+      "progress_file": "workqueue/g1_gpu1_dev_aux1.progress.json",
+      "progress_sha256": "ee83c7cb7c7a4815ec1cbff08fd96a52d9980236983ee3c01e8e1e1bd993ec1e",
+      "archived_failed_claims": [
+        {
+          "shard": 8,
+          "claim_file": "infrastructure_failures/attempt0/shard008/claims/shard008.json",
+          "claim_sha256": "61d84d284704bdafbccd1b120a9c1cbb43d8e9fddc4500eb83fb9cabe24b70af",
+          "archived_attempt_root": "infrastructure_failures/attempt0/shard008"
+        }
+      ]
+    }
+  ],
+  "replacement_worker_ids": [
+    "g1_gpu0_dev_recovery2",
+    "g1_gpu1_dev_recovery2"
+  ],
+  "held_unexecuted_shards": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "no_algorithm_scene_seed_configuration_changed": true,
+  "recovery_rule": "Repeat the entire interrupted paired shard, preserving every old output. Resume all unexecuted registered shards. One actual worker per GPU; no outcome-based retries.",
+  "supersedes_manifest_sha256": "0b7c6f8fa02acbee54323258d1c6b3e8e43ad5f4785069efc310e19662d245bd",
+  "pre_actor_dispatch_failures": [
+    {
+      "worker_id": "g1_gpu0_dev_recovery1",
+      "classification": "pre_actor_dispatch_failure",
+      "actual_actors_started": 0,
+      "result_sha256": "e3d3aaaacf97ea341aba828c8dafcd794c46c8dfbdcfbec25c5a0be7ce09d3c3",
+      "error_log_sha256": "2e09e7fd1973ff14989c56dc1092bfc5dec3f0d7bba0227f9d9aa50935dd316f"
+    },
+    {
+      "worker_id": "g1_gpu1_dev_recovery1",
+      "classification": "pre_actor_dispatch_failure",
+      "actual_actors_started": 0,
+      "result_sha256": "8118659bfe074497665040d2e3645c802df7e627ba58b381614bbf4dc8b5b792",
+      "error_log_sha256": "9f8ce4eb5132a06897dc7f0d263c2a2e3045169e8285027778e58b2798659732"
+    }
+  ],
+  "dispatch_failure_archive": "infrastructure_failures/dispatch_recovery1"
+}

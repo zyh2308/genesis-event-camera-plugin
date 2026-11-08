@@ -44,8 +44,10 @@ def cost_rows():
         simulated_s=.8, measured_wall_s=.8*(repeat+1), measurement_start_s=.32,
         measurement_end_s=1.12, cost_scope=f.COST_SCOPE, complete_window='true',
         native_only='true', audit_included='false', primary_validated='true', instrumented='false',
-        reference_trace_sha256='a'*64, source_snapshot_sha256='b'*64, policy_sha256='c'*64,
-        host='fixture_host',gpu_uuid='GPU-fixture')
+        reference_trace_sha256='a'*64, physics_reference_sha256='d'*64,physics_reference_kind='public_recorded_fixed_archived_actions',
+        source_snapshot_sha256='b'*64, policy_sha256='c'*64,
+        host='fixture_host',gpu_uuid='GPU-fixture',equivalence_kind='raw_exact',functional_query_exact='true',
+        raw_event_exact='true',actor_query_payload_sha256='f'*64,actor_query_count=28,equivalence_receipt_sha256='1'*64)
         for method in f.METHODS for rate in f.BLIND_RATES for repeat in range(3)]
 
 
@@ -125,7 +127,8 @@ class FigureContracts(unittest.TestCase):
 
     def test_cost_partial_window_mixed_hardware_and_repeats_rejected(self):
         path=self.root/'cost.csv'
-        for field,value in [('complete_window','false'),('measurement_end_s',1.0),('gpu_uuid','GPU-other')]:
+        for field,value in [('complete_window','false'),('measurement_end_s',1.0),('gpu_uuid','GPU-other'),
+            ('physics_reference_sha256','e'*64),('physics_reference_kind','legacy_utility_rollout')]:
             rows=cost_rows();rows[0][field]=value;self.write_csv(path,rows)
             with self.assertRaises(f.DataError,msg=field):f.validate_cost(path,self.load_blind())
         rows=cost_rows()[:-1];self.write_csv(path,rows)
@@ -139,6 +142,19 @@ class FigureContracts(unittest.TestCase):
         self.write_csv(path,rows);result=f.validate_cost(path,self.load_blind())
         self.assertEqual(len(result['excluded']),1)
         self.assertEqual(result['excluded'][0]['reason'],'audit_or_instrumentation_workload')
+
+    def test_cost_v4_functional_contract_and_repeat_fingerprints(self):
+        path=self.root/'cost_v4.csv';rows=cost_rows()
+        for row in rows:row.update(equivalence_kind='task_functional',raw_event_exact='false')
+        self.write_csv(path,rows);result=f.validate_cost(path,self.load_blind())
+        self.assertEqual(result['equivalence_kind'],'task_functional')
+        self.assertTrue(all(not r['all_repeats_raw_event_exact'] for r in result['summaries']))
+        rows[0]['functional_query_exact']='false';self.write_csv(path,rows)
+        with self.assertRaises(f.DataError):f.validate_cost(path,self.load_blind())
+        rows[0]['functional_query_exact']='true';rows[0]['actor_query_payload_sha256']='2'*64;self.write_csv(path,rows)
+        with self.assertRaisesRegex(f.DataError,'actor-query fingerprint'):f.validate_cost(path,self.load_blind())
+        rows[0]['actor_query_payload_sha256']='f'*64;rows[0].update(equivalence_kind='raw_exact',raw_event_exact='true');self.write_csv(path,rows)
+        with self.assertRaisesRegex(f.DataError,'cannot mix'):f.validate_cost(path,self.load_blind())
 
     def test_completion_receipt_and_csv_json_integrity(self):
         rows=crossover()['rows'];data=dict(metadata=dict(stage='validation',actual_planned_actors=48),rows=rows)
@@ -166,6 +182,50 @@ class FigureContracts(unittest.TestCase):
             self.assertTrue((self.root/(prefix+'.pdf')).read_bytes().startswith(b'%PDF'))
             manifest=json.loads((self.root/(prefix+'_MANIFEST.json')).read_text(encoding='utf-8'))
             self.assertEqual(manifest['code_sha256'],f.sha(f.__file__))
+
+    def test_retained_oom_history_only_passes_with_closed_raw_audited_recovery(self):
+        rows=crossover()['rows'];data=dict(metadata=dict(stage='validation',actual_planned_actors=48),rows=rows)
+        f.write_csv(self.root/'FAIR_EPISODES.csv',rows)
+        (self.root/'FAIR_STAGE_RESULTS.json').write_text(json.dumps(data),encoding='utf-8')
+        protocol=dict(cases=[dict(shard=0),dict(shard=1)])
+        (self.root/'EVALUATION_PROTOCOL.json').write_text(json.dumps(protocol),encoding='utf-8')
+        failed=[dict(worker_id='old',archived_failed_claims=[dict(shard=0)])]
+        recovery=dict(schema='fair_workqueue_infra_recovery_v1',reason='cuda_out_of_memory',
+            no_algorithm_scene_seed_configuration_changed=True,registered_utc='2026-11-08T00:00:00+00:00',
+            protocol_sha256=f.sha(self.root/'EVALUATION_PROTOCOL.json'),historical_failed_workers=failed,replacement_worker_ids=['new'])
+        (self.root/'INFRASTRUCTURE_RECOVERY.json').write_text(json.dumps(recovery),encoding='utf-8')
+        declared=dict(recovery,sha256=f.sha(self.root/'INFRASTRUCTURE_RECOVERY.json'))
+        scheduling=dict(mode='finite_registered_workqueue',infrastructure_recovery=declared,
+            registered_workers=['old','new'],worker_job_receipts=[dict(worker_id='old',result='old.result',result_sha256='a'*64),
+                dict(worker_id='new',result='new.result',result_sha256='b'*64)],
+            completed_claim_receipts=[dict(shard=0,worker_id='new'),dict(shard=1,worker_id='new')])
+        receipt=dict(status='PASS',valid_completed_unique_episodes=48,actual_planned_actors=48,
+            frozen_source_policy_profile_hashes_verified=True,all_task_failures_retained=True,
+            selected_normal_exit_job_receipts=[dict(path='new.result',sha256='b'*64)],all_shards_checked=[0,1],scheduling_audit=scheduling)
+        audit=dict(status='PASS',episodes=48,raw_event_contract_and_packet_counts_pass=True,all_defined_successes_and_failures_retained=True)
+        marker=dict(status='PASS',actual_episodes=48,all_actual_jobs_normal_exit=False,all_final_actor_attempts_normal_exit=True,
+            historical_infrastructure_failures_retained=True,all_task_failures_retained=True,
+            results_sha256=f.sha(self.root/'FAIR_STAGE_RESULTS.json'))
+        def reseal():
+            (self.root/'DATA_COMPLETION_RECEIPT.json').write_text(json.dumps(receipt),encoding='utf-8')
+            (self.root/'FINAL_AUDIT.json').write_text(json.dumps(audit),encoding='utf-8')
+            names=['DATA_COMPLETION_RECEIPT.json','FINAL_AUDIT.json','EVALUATION_PROTOCOL.json',
+                'INFRASTRUCTURE_RECOVERY.json','FAIR_STAGE_RESULTS.json','FAIR_EPISODES.csv']
+            (self.root/'SHA256SUMS').write_text(''.join(f'{f.sha(self.root/name)}  {name}\n' for name in names),encoding='utf-8')
+            marker.update(raw_manifest_sha256=f.sha(self.root/'SHA256SUMS'),final_audit_sha256=f.sha(self.root/'FINAL_AUDIT.json'))
+            (self.root/'FAIR_COLLECTION_COMPLETE.json').write_text(json.dumps(marker),encoding='utf-8')
+        reseal();loaded=f.load_stage(self.root,'validation')
+        self.assertEqual(loaded['completion']['mode'],'closed_registered_oom_recovery')
+        self.assertEqual(loaded['completion']['closed_shards'],2)
+        # Merely changing "final normal" is insufficient if a claim is missing.
+        scheduling['completed_claim_receipts'].pop();reseal()
+        with self.assertRaisesRegex(f.DataError,'close every registered shard'):f.load_stage(self.root,'validation')
+        scheduling['completed_claim_receipts'].append(dict(shard=1,worker_id='new'))
+        audit['raw_event_contract_and_packet_counts_pass']=False;reseal()
+        with self.assertRaisesRegex(f.DataError,'complete raw audit'):f.load_stage(self.root,'validation')
+        audit['raw_event_contract_and_packet_counts_pass']=True
+        marker['all_final_actor_attempts_normal_exit']=False;reseal()
+        with self.assertRaisesRegex(f.DataError,'unresolved infrastructure'):f.load_stage(self.root,'validation')
 
 
 if __name__=='__main__': unittest.main()

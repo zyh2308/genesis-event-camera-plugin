@@ -8,6 +8,8 @@
 
 所有 plan 只接受完整 blind collector：结果/完成凭据/CSV 一致，32 个配对 seed、四档两来源及各一次的两种参考齐全；参考不进入本代表对照视频。来源各自锁定的前端必须与盲测记录和实际 actor protocol 一致。主标题固定为“盲测代表回合｜固定7°原权重”。
 
+完成检查与 figures_tool 共用 `load_stage`：历史 OOM 可以如实保留，但仅当最终回合全部正常、原始事件审计通过、恢复清单与完整注册调度互相哈希绑定时接受；不通过删除失败记录或忽略未完成任务来过关。
+
 ## 实录、时间与失败的处理
 
 - 正常执行用 `actor/episode_000/genesis.mp4`，同时下载完整 `trace.json`、`result.json` 与 actor 的 `protocol.json`。
