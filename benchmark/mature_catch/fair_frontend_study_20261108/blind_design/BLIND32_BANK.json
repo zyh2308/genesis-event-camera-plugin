@@ -1,0 +1,2558 @@
+{
+  "schema": "catchit_original_distribution_stratified_blind32_four_rates_v2",
+  "registered_utc": "2026-11-08T14:53:29.557142+00:00",
+  "planning_date": "2026-11-08",
+  "pre_execution_plan_revision": {
+    "supersedes_bank_sha256": "f57b8f6adea80f586f42cea3830fd343d8ef9dd822e8e53659376c1f1753736b",
+    "launch_parameters_unchanged": true,
+    "reason": "Pre-execution metadata-only revision: root selected full32/four rates and balanced forward/reverse condition order; launches unchanged. Superseded plans were not executed."
+  },
+  "purpose": "Independent broader paired test after separately budget-matched frontend tuning; no outcome-based case filtering or subsequent tuning",
+  "parameters_sha256": "37b729a522f0b4fa3b6454fed98e8f69a4cb4c24209cbad6d9b7636ff4acfbbb",
+  "generator_sha256": "6cb881172aa0aea84e086cd55245c68df945bde7a675bf292bc2d52e5b9b00f0",
+  "source": {
+    "upstream_commit": "b6af28c67586fc029f3ab43faf5d787e7d3a1609",
+    "module": "gym_dcmm/envs/DcmmVecEnv.py",
+    "module_sha256": "085b45272f111e87b18406ca7e17b32e969f1f328dc62758950d4e39a75e759d",
+    "config_sha256": "a5f648991f37d6cfdc213db417466e81c106911e91747cc8c94542a56923334a",
+    "function": "random_object_pose",
+    "function_ast_sha256": "8e8e11d9e9cdac40c786bcf0bb4e3308c3567902f736093a8b30e478fcc3fb1d",
+    "position_velocity_prefix_verified_exactly": true,
+    "RNG_note": "Distribution formulas and conditional offsets match pinned source. Parameter RNG is a separate preregistered stratified sampler, not a bitwise replay of upstream reset RNG."
+  },
+  "sampling": {
+    "factors": "x4 x height2 x horizontal_magnitude2 x y2 =32 equally weighted strata",
+    "shuffle_seed": 91574029,
+    "x_support_m": [
+      -0.5,
+      0.5
+    ],
+    "y_support_m": [
+      2.2,
+      2.5
+    ],
+    "height_mixture": {
+      "low": [
+        0.7,
+        1.0
+      ],
+      "high": [
+        1.0,
+        1.6
+      ],
+      "weights": [
+        0.5,
+        0.5
+      ]
+    },
+    "horizontal_magnitude_before_y_offset_m_s": [
+      1.0,
+      2.0
+    ],
+    "azimuth_degrees": [
+      75.0,
+      105.0
+    ],
+    "vertical_base_m_s": [
+      2.0,
+      2.5
+    ],
+    "conditional_offsets": "vy-=0.4 when y>2.25; vz+=1 when height<1.0; azimuth is independent of x, no lane or centre-directed correction",
+    "estimator_inputs_forbidden": [
+      "launch_config",
+      "object GT pose/velocity",
+      "actual release flag/time"
+    ]
+  },
+  "reset_randomization": {
+    "actual_values_not_generated_here": true,
+    "release_time_support_s": [
+      0.5,
+      0.75
+    ],
+    "world_gravity_z_support_m_s2": [
+      -10.31,
+      -9.31
+    ],
+    "mechanism": "Existing runner seeds the normal reset and calls original_random_pose first, then overrides position/velocity only. Original release/quaternion/gravity/PID/noise RNG sequence is retained.",
+    "audit": "Log actual reset release time and world gravity after runtime reset; require exact equality within every paired block. Public world gravity may remain a shared estimator input; release must be scoring-only.",
+    "coverage": "Release-time spread is not guaranteed by offline metadata. Report its observed span without replacing any seed."
+  },
+  "fixed_scene": {
+    "camera_pitch_degrees": 7,
+    "sphere_radius_m": 0.04,
+    "asset_initialization_seed": 1702,
+    "contact_profile": "combined",
+    "lighting": "normal",
+    "outer_physics_dt_s": 0.002,
+    "policy_hz": 25,
+    "initialization": "one actual rendered RGB-D frame; then events and robot proprioception",
+    "original_policy_unchanged": true,
+    "frozen_event_core_unchanged": true
+  },
+  "pinned_inputs": {
+    "checkpoint": "/home/zhaoyuhan/Eventbased_WAM/external_sources/Catch_It_b6af28c67586/assets/models/catch_two_stage.pth",
+    "checkpoint_sha256": "81585772adf9b368e299875a3dce29247e23c641d8294295bec07dfb6450aaf6",
+    "core_root": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_sparse_cuda_acceptance_20261102c/core",
+    "core_files": {
+      "adaptive_sampler.py": "e6843b71599c6afa3a8a4116871cbc9009a629b02f127324ce24024437826a3f",
+      "calibration.py": "e8183ea7c42d3bb99ea49b0e38e214791b7cefd08b92b7efa5152e5f9d1acbd3",
+      "camera_margin.py": "38647c5631a74e9ad9e78f64d9ade6c255d8a3af08d4a76a9cbe8f8113546dd8",
+      "camera_model.py": "9461602b987ed9a505f5e8d3c8628f6da25696a5708cb331d58dc2602883805c",
+      "dvs_emulator.py": "914dc83525ff96dc2c1a1373819de74491cfbb03007b65e8c93609f6cd1cf638",
+      "genesis_adapter.py": "a166317ea7a33fa6081af4f1098d1b7cebcfbd383544ee953a61771f05e5f0fa",
+      "interpolator.py": "af9bd273341b7ea4ffb4d9e6d14ab13829bb2a397d09991a3dcd73f4a339f6a3",
+      "noise_model.py": "2443fbd8af7b381c14dfa046873672399b5d0ee599ebdf8159a5ec13c49290c7",
+      "physics_interpolator.py": "d43f4f52c8f96e8215195eb073659320244302d1c83e6fbb729c1130dc438f2e",
+      "physics_plugin.py": "85226f8e0fa57c26512a77d76ee3444580ebe3566a4871682d1c108a1a449bba",
+      "physics_warp.py": "82d276d71c4e404a9b2a27fcc1dbd1a9ac099a1eea7172afcd357f5fa7d37e55",
+      "plugin.py": "4229f1399695c0fccc70fcd9e6724e37c6c057e2fca2771a31defaf490f2f579",
+      "radiometry.py": "749a48845f7580254d866551aaf00c43fe1693b3816ee7615f7b86accf8b12d0",
+      "readout.py": "fe264b8c602d82c964fdc5bc7ca9905634c79bdf2b78d3039fb55aa30f0814e0",
+      "recorder.py": "4c1064167bf890387a4c6eaab8ac538d42fb7f004988b025c836c3b67228ba6e",
+      "torch_physics.py": "91a10ee2438256343dc000ed816129b595dff304b10999f0f9ed8f7032eac1ad",
+      "__init__.py": "0fa1eaffa1b2e72c7d8fd0d24b00757e26639639f1d5eff49f83e279424e13dd"
+    },
+    "profile_file": "/home/zhaoyuhan/Eventbased_WAM/frozen_baselines/robot-sparse-cuda-r2-20261102/event_sparse_reconstruction_20261102.json",
+    "profile_sha256": "dbcf85fe3c86ae21972d4f5b79638018ca44f46a39b8cb1e14e8b6cff3a31a8a",
+    "v2e_checkpoint": "/home/zhaoyuhan/Eventbased_WAM/runs/robot_scenes/mature_catch/visual_fast_paired_20261108a/v2e_source_snapshot/input/SuperSloMo39.ckpt",
+    "v2e_checkpoint_sha256": "d4d3070431eff774a1c27038930121ffeae59ede3a7d184118c539b443ea27cb",
+    "v2e_source_files": {
+      "test_pipeline.py": "7327ee8594797c5f8bc2d7782700c50ba131c454fbf656466a50a320efcee412",
+      "setup.py": "b9daff88e94c6d33ab38026be5e0b39056e03da3e3613fbd101356464423eb53",
+      "v2e.py": "a6e746003cff5e62317e748f9c560c37b340f2177525cbb59c2c79f05e871965",
+      "v2ecore/slomo.py": "78be368ed9e6e4c9fba054c546d0402d7a44b75bba6fc8791f44ec96e4fbcf2d",
+      "v2ecore/model.py": "9f18e6a7849853cc67e4161e16cdb0e8312cd0a5062031ec401c419c433ab674",
+      "v2ecore/v2e_utils.py": "fbb0f8bbb906be0157293c103909859bb2bd70466411d6a6f6b4c6b7beee9e0f",
+      "v2ecore/renderer.py": "2adadeb7515188d37f912fff8210ff5c6fe1655101811ebff92e094544e962c7",
+      "v2ecore/dataloader.py": "ca83d72affd2bd0482cb9fd0fb9fda322bf8312a039e22aecedd0381491db88b",
+      "v2ecore/emulator_utils.py": "064cb7dcbf0cc300aa6cd3fb53c572fe3c119c6c50d87133539cb276bb628de9",
+      "v2ecore/emulator.py": "7944cec501c72f4a49e8a93331284e5e887021ca10866404471b4e03f25656e0",
+      "v2ecore/v2e_args.py": "711f53a35b658d2d8ec3042cfe3ed9d7b5412f0a7c46d7e439fa2f4a67205750",
+      "v2ecore/base_synthetic_input.py": "c1fe5d7d79e052da00088d94484cf326c1d0d23a7259b8ff12c1ff77c296698b",
+      "v2ecore/output/aedat4_output.py": "e9a744db22463649753ef3b1758d833d4357965131de5851abe85f6b7a51b8ff",
+      "v2ecore/output/aedat2_output.py": "8ae3764a40b6bb4ad448962b5e5b274fbe2d35f89a7512977b230f8fe30f9a50",
+      "v2ecore/output/ae_text_output.py": "80d132a7c16f0b7de1e1b2eb201201cbee3924898fbf7a37c1605836626905e5"
+    }
+  },
+  "frontend_lock": {
+    "status": "PENDING_BEFORE_FIRST_BLIND_RUN",
+    "keys": [
+      "ours@100",
+      "v2e@100",
+      "ours@50",
+      "v2e@50",
+      "ours@25",
+      "v2e@25",
+      "ours@12.5",
+      "v2e@12.5"
+    ],
+    "requirement": "Each selected frontend config and code hash, tuning-bank hash, candidate budget, and selected result must be frozen before any blind outcome. No blind outcomes may be used for selection."
+  },
+  "evaluation": {
+    "primary_source_rates_hz": [
+      100.0,
+      50.0,
+      25.0,
+      12.5
+    ],
+    "primary_methods": [
+      "ours",
+      "v2e"
+    ],
+    "references": [
+      "state_reference",
+      "init_only"
+    ],
+    "full_bank": {
+      "selected_this_run": true,
+      "blocks": 32,
+      "primary_episodes": 256,
+      "reference_episodes": 64,
+      "total_episodes": 320
+    },
+    "budget_preset_A": {
+      "selected_this_run": false,
+      "blocks": 16,
+      "rule": "Unused historical budget preset only; full32 was explicitly selected, so this must not become result-dependent early stopping",
+      "primary_episodes": 128,
+      "reference_episodes": 32,
+      "total_episodes": 160
+    },
+    "reference_reuse": "Run each reference once per block; reuse across source rates because it consumes no subsequent event stream. Do not count reuse as new episodes.",
+    "independence": "32 independent seed blocks, each repeated across eight primary conditions; cadence repetitions are not new independent cases.",
+    "primary_score": "Original2.5s horizon AND not terminated AND actual hand contact occurred AND final40ms controller step contains hand contact; retain all raw flags",
+    "retain": "All initialization failures, non-reachable throws, GT-policy failures and method failures remain in denominator; no GT filtering or fallback. Infrastructure retries preserve same seed/config and original attempt.",
+    "no_result_based_stop": true
+  },
+  "cases": [
+    {
+      "case_id": "blind_b001",
+      "seed": 1371082001,
+      "block_index": 1,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.7504013206370068,
+        0.40942068820663424,
+        0.6380619768282582,
+        0.5275913733032007,
+        0.9576871824255404,
+        0.1749667927391758,
+        0.5084009619674367
+      ],
+      "launch": {
+        "position": [
+          0.2504013206370068,
+          2.3228262064619907,
+          0.8582774119909602
+        ],
+        "velocity": [
+          0.3315669001873619,
+          -2.3294046996245745,
+          3.254200480983718
+        ]
+      },
+      "launch_config": "launch_configs/blind_b001.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b002",
+      "seed": 1371082002,
+      "block_index": 2,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.42354105237745265,
+        0.20647728940295695,
+        0.5552010901240607,
+        0.8031912706494126,
+        0.09182661868452807,
+        0.011412395753848559,
+        0.4799424783620406
+      ],
+      "launch": {
+        "position": [
+          -0.07645894762254735,
+          2.2619431868208872,
+          0.9409573811948237
+        ],
+        "velocity": [
+          0.2762785950340359,
+          -1.4562932846487802,
+          3.2399712391810205
+        ]
+      },
+      "launch_config": "launch_configs/blind_b002.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b003",
+      "seed": 1371082003,
+      "block_index": 3,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.18021181322123356,
+        0.6254262443991911,
+        0.2515036909229436,
+        0.869692617716261,
+        0.6343586646123972,
+        0.3233152238512981,
+        0.24856180746057321
+      ],
+      "launch": {
+        "position": [
+          -0.3197881867787664,
+          2.3876278733197576,
+          1.5218155706297565
+        ],
+        "velocity": [
+          0.150982100843393,
+          -2.0273698564919207,
+          2.1242809037302868
+        ]
+      },
+      "launch_config": "launch_configs/blind_b003.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b004",
+      "seed": 1371082004,
+      "block_index": 4,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.3980318138596178,
+        0.8732879882820148,
+        0.3289441182984885,
+        0.6367062476835355,
+        0.14347171347198978,
+        0.0014378102415210092,
+        0.9512001866243192
+      ],
+      "launch": {
+        "position": [
+          -0.10196818614038222,
+          2.4619863964846047,
+          1.3820237486101212
+        ],
+        "velocity": [
+          0.2951206595132798,
+          -1.5047313500752186,
+          2.47560009331216
+        ]
+      },
+      "launch_config": "launch_configs/blind_b004.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b005",
+      "seed": 1371082005,
+      "block_index": 5,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.5828196175050979,
+        0.3357075684722307,
+        0.938951765564159,
+        0.2386818563653762,
+        0.4344003872204338,
+        0.5252028158565297,
+        0.4074638036446947
+      ],
+      "launch": {
+        "position": [
+          0.08281961750509792,
+          2.3007122705416694,
+          0.7716045569096128
+        ],
+        "velocity": [
+          -0.018928032707042637,
+          -1.834275496700676,
+          3.2037319018223473
+        ]
+      },
+      "launch_config": "launch_configs/blind_b005.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b006",
+      "seed": 1371082006,
+      "block_index": 6,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.47530186241222283,
+        0.06823331293585733,
+        0.10511144294371644,
+        0.6669868930498308,
+        0.6541511304498405,
+        0.34821556356714023,
+        0.503666771421941
+      ],
+      "launch": {
+        "position": [
+          -0.02469813758777717,
+          2.2204699938807573,
+          1.4001921358298985
+        ],
+        "velocity": [
+          0.13132390162168045,
+          -1.6489299546164307,
+          2.2518333857109707
+        ]
+      },
+      "launch_config": "launch_configs/blind_b006.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b007",
+      "seed": 1371082007,
+      "block_index": 7,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.053705671221598444,
+        0.7251747585792024,
+        0.8673730584928003,
+        0.5336722213760547,
+        0.43204030771646473,
+        0.26002995179909216,
+        0.32577664686921104
+      ],
+      "launch": {
+        "position": [
+          -0.4462943287784016,
+          2.417552427573761,
+          0.8601016664128164
+        ],
+        "velocity": [
+          0.17945996113400778,
+          -1.8207510567564071,
+          3.1628883234346055
+        ]
+      },
+      "launch_config": "launch_configs/blind_b007.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b008",
+      "seed": 1371082008,
+      "block_index": 8,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.8554054669302763,
+        0.9500527623002402,
+        0.07238936999016282,
+        0.05051659955092058,
+        0.4575643056905986,
+        0.10923495482797907,
+        0.17279638824712373
+      ],
+      "launch": {
+        "position": [
+          0.3554054669302763,
+          2.4850158286900723,
+          1.0303099597305523
+        ],
+        "velocity": [
+          0.2961472348504612,
+          -1.827161700899286,
+          2.0863981941235616
+        ]
+      },
+      "launch_config": "launch_configs/blind_b008.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b009",
+      "seed": 1371082009,
+      "block_index": 9,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.6431464094715462,
+        0.26520263515322995,
+        0.8565106949274698,
+        0.9947096067050544,
+        0.9695985471053736,
+        0.1330217347861502,
+        0.04660754556564661
+      ],
+      "launch": {
+        "position": [
+          0.14314640947154622,
+          2.279560790545969,
+          0.9984128820115162
+        ],
+        "velocity": [
+          0.3761325562082704,
+          -2.33335013303846,
+          3.0233037727828234
+        ]
+      },
+      "launch_config": "launch_configs/blind_b009.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b010",
+      "seed": 1371082010,
+      "block_index": 10,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.8511900060264838,
+        0.1520579944979647,
+        0.42828224508619733,
+        0.6129669329029388,
+        0.7609942667746883,
+        0.8158603794148112,
+        0.07492644939188886
+      ],
+      "launch": {
+        "position": [
+          0.35119000602648376,
+          2.2456173983493897,
+          1.3677801597417631
+        ],
+        "velocity": [
+          -0.2899146168870072,
+          -1.7369658380430462,
+          2.0374632246959443
+        ]
+      },
+      "launch_config": "launch_configs/blind_b010.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b011",
+      "seed": 1371082011,
+      "block_index": 11,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.027894095612599368,
+        0.5211812215386703,
+        0.7282860799794301,
+        0.910356935654898,
+        0.8349402482636525,
+        0.7960935598286318,
+        0.3981811207995397
+      ],
+      "launch": {
+        "position": [
+          -0.47210590438740063,
+          2.356354366461601,
+          0.9731070806964693
+        ],
+        "velocity": [
+          -0.283340306203408,
+          -2.2129324271959043,
+          3.1990905603997697
+        ]
+      },
+      "launch_config": "launch_configs/blind_b011.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b012",
+      "seed": 1371082012,
+      "block_index": 12,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.05321924057258717,
+        0.06148339462226354,
+        0.022369956094799248,
+        0.5300358993608554,
+        0.034971504610659676,
+        0.7249680134775923,
+        0.2925409247148366
+      ],
+      "launch": {
+        "position": [
+          -0.4467807594274128,
+          2.2184450183866793,
+          1.3180215396165131
+        ],
+        "velocity": [
+          -0.12163064341758821,
+          -1.027799592302836,
+          2.1462704623574185
+        ]
+      },
+      "launch_config": "launch_configs/blind_b012.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b013",
+      "seed": 1371082013,
+      "block_index": 13,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.21845283654771055,
+        0.013034569248755457,
+        0.32366851667204627,
+        0.016996264833790242,
+        0.8025503758172552,
+        0.16788381495265903,
+        0.957282175033422
+      ],
+      "launch": {
+        "position": [
+          -0.2815471634522895,
+          2.2039103707746266,
+          1.0101977589002742
+        ],
+        "velocity": [
+          0.31187821609864547,
+          -1.775364704978122,
+          2.478641087516711
+        ]
+      },
+      "launch_config": "launch_configs/blind_b013.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b014",
+      "seed": 1371082014,
+      "block_index": 14,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.985218610641506,
+        0.6285584134052322,
+        0.9734725745076482,
+        0.2393129062453705,
+        0.07173362380277232,
+        0.5155985853417655,
+        0.3263503912059431
+      ],
+      "launch": {
+        "position": [
+          0.48521861064150595,
+          2.38856752402157,
+          0.7717938718736111
+        ],
+        "velocity": [
+          -0.008753180082087343,
+          -1.471697878241752,
+          3.1631751956029714
+        ]
+      },
+      "launch_config": "launch_configs/blind_b014.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b015",
+      "seed": 1371082015,
+      "block_index": 15,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.5844841842209387,
+        0.556816166871281,
+        0.46292113093084886,
+        0.7201447604566787,
+        0.45834781238899847,
+        0.4094172937477494,
+        0.11634968147597335
+      ],
+      "launch": {
+        "position": [
+          0.08448418422093873,
+          2.3670448500613843,
+          1.4320868562740072
+        ],
+        "velocity": [
+          0.06914204034894485,
+          -1.8567078362376455,
+          2.0581748407379865
+        ]
+      },
+      "launch_config": "launch_configs/blind_b015.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b016",
+      "seed": 1371082016,
+      "block_index": 16,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.5360637981084411,
+        0.5773851795841567,
+        0.573015908020672,
+        0.8781181477393147,
+        0.6674463843143501,
+        0.5114177486195706,
+        0.5515576114843471
+      ],
+      "launch": {
+        "position": [
+          0.03606379810844107,
+          2.373215553875247,
+          0.9634354443217943
+        ],
+        "velocity": [
+          -0.00996846735022496,
+          -2.067416586885739,
+          3.2757788057421737
+        ]
+      },
+      "launch_config": "launch_configs/blind_b016.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b017",
+      "seed": 1371082017,
+      "block_index": 17,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.517222966679545,
+        0.8213211745700868,
+        0.4207228258068902,
+        0.13254134369837167,
+        0.6327930242701494,
+        0.11720166042543323,
+        0.6942794069114999
+      ],
+      "launch": {
+        "position": [
+          0.017222966679545038,
+          2.446396352371026,
+          1.079524806219023
+        ],
+        "velocity": [
+          0.32507836050646965,
+          -2.0001053464180685,
+          2.34713970345575
+        ]
+      },
+      "launch_config": "launch_configs/blind_b017.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b018",
+      "seed": 1371082018,
+      "block_index": 18,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.5775328250522855,
+        0.9953270184264598,
+        0.7244570763736122,
+        0.21296366965237157,
+        0.07003141296799231,
+        0.8418418766474662,
+        0.5953769397296345
+      ],
+      "launch": {
+        "position": [
+          0.07753282505228554,
+          2.4985981055279383,
+          0.7638891008957114
+        ],
+        "velocity": [
+          -0.1905017803497165,
+          -1.4529369859691825,
+          3.2976884698648172
+        ]
+      },
+      "launch_config": "launch_configs/blind_b018.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b019",
+      "seed": 1371082019,
+      "block_index": 19,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.6464451016197064,
+        0.37324152473929867,
+        0.4176237023550536,
+        0.2795257340374433,
+        0.09694088858074607,
+        0.6340164300481053,
+        0.980407563825487
+      ],
+      "launch": {
+        "position": [
+          0.14644510161970636,
+          2.3119724574217897,
+          1.167715440422466
+        ],
+        "velocity": [
+          -0.0769101089823778,
+          -1.494241357368947,
+          2.4902037819127436
+        ]
+      },
+      "launch_config": "launch_configs/blind_b019.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b020",
+      "seed": 1371082020,
+      "block_index": 20,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.0816104295408489,
+        0.5539718734226807,
+        0.11526959352731825,
+        0.7229064686022647,
+        0.28620368813972397,
+        0.14229919478933717,
+        0.5271658722955738
+      ],
+      "launch": {
+        "position": [
+          -0.4183895704591511,
+          2.3661915620268044,
+          1.4337438811613588
+        ],
+        "velocity": [
+          0.23948938663167343,
+          -1.6637107109916465,
+          2.263582936147787
+        ]
+      },
+      "launch_config": "launch_configs/blind_b020.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b021",
+      "seed": 1371082021,
+      "block_index": 21,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.7538618758261473,
+        0.3665070286374115,
+        0.38924066033664145,
+        0.14508362774434536,
+        0.23201839731325202,
+        0.10866128559574928,
+        0.7107118894063493
+      ],
+      "launch": {
+        "position": [
+          0.2538618758261473,
+          2.3099521085912236,
+          1.0870501766466072
+        ],
+        "velocity": [
+          0.2506832566994851,
+          -1.6062450978672844,
+          2.3553559447031747
+        ]
+      },
+      "launch_config": "launch_configs/blind_b021.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b022",
+      "seed": 1371082022,
+      "block_index": 22,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.33599881346065247,
+        0.26314069613405033,
+        0.19636019099536312,
+        0.49550709514067914,
+        0.3170650021297071,
+        0.73557411718234,
+        0.3022550638283663
+      ],
+      "launch": {
+        "position": [
+          -0.16400118653934753,
+          2.278942208840215,
+          1.2973042570844076
+        ],
+        "velocity": [
+          -0.16204349302466428,
+          -1.7070585779540606,
+          2.151127531914183
+        ]
+      },
+      "launch_config": "launch_configs/blind_b022.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b023",
+      "seed": 1371082023,
+      "block_index": 23,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.8805158207358202,
+        0.6158310014461872,
+        0.6275629366995517,
+        0.604560033936089,
+        0.8509643487804665,
+        0.030286860540876592,
+        0.5837561055839764
+      ],
+      "launch": {
+        "position": [
+          0.38051582073582024,
+          2.3847493004338562,
+          0.8813680101808267
+        ],
+        "velocity": [
+          0.4506530580489161,
+          -2.1952662314340614,
+          3.291878052791988
+        ]
+      },
+      "launch_config": "launch_configs/blind_b023.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b024",
+      "seed": 1371082024,
+      "block_index": 24,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.3917800606697668,
+        0.30296374640950374,
+        0.9024094887445389,
+        0.9305783173896016,
+        0.7400702122639284,
+        0.045841920088406596,
+        0.702861265605603
+      ],
+      "launch": {
+        "position": [
+          -0.10821993933023322,
+          2.2908891239228515,
+          0.9791734952168805
+        ],
+        "velocity": [
+          0.4098941047460535,
+          -2.0911035351221594,
+          3.3514306328028014
+        ]
+      },
+      "launch_config": "launch_configs/blind_b024.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b025",
+      "seed": 1371082025,
+      "block_index": 25,
+      "stratum": {
+        "x_quartile": 2,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.7422145840509707,
+        0.09990937537682532,
+        0.32504041486045215,
+        0.4061397513123699,
+        0.8360486825883748,
+        0.4626565138996038,
+        0.649264219230356
+      ],
+      "launch": {
+        "position": [
+          0.24221458405097074,
+          2.2299728126130476,
+          1.243683850787422
+        ],
+        "velocity": [
+          0.03589797897715965,
+          -1.8356977147504057,
+          2.324632109615178
+        ]
+      },
+      "launch_config": "launch_configs/blind_b025.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b026",
+      "seed": 1371082026,
+      "block_index": 26,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.0244344105647952,
+        0.47726023362247016,
+        0.6193381200949288,
+        0.37735434925937594,
+        0.9206440674767755,
+        0.01843846024293172,
+        0.19485921530971184
+      ],
+      "launch": {
+        "position": [
+          -0.47556558943520477,
+          2.3431780700867413,
+          0.8132063047778127
+        ],
+        "velocity": [
+          0.4791656185183662,
+          -2.2599123484625947,
+          3.0974296076548558
+        ]
+      },
+      "launch_config": "launch_configs/blind_b026.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b027",
+      "seed": 1371082027,
+      "block_index": 27,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.46313884219307766,
+        0.5340957599085563,
+        0.774398269067754,
+        0.44256778878442193,
+        0.6470472654267421,
+        0.3127991813661767,
+        0.00973166180528573
+      ],
+      "launch": {
+        "position": [
+          -0.03686115780692234,
+          2.360228727972567,
+          0.8327703366353265
+        ],
+        "velocity": [
+          0.1611820917650877,
+          -2.0391415521070595,
+          3.004865830902643
+        ]
+      },
+      "launch_config": "launch_configs/blind_b027.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b028",
+      "seed": 1371082028,
+      "block_index": 28,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.26388896073466134,
+        0.9429447886859622,
+        0.21482779682804726,
+        0.7501928816798643,
+        0.7737376618981011,
+        0.9474000539922454,
+        0.676660563336269
+      ],
+      "launch": {
+        "position": [
+          -0.23611103926533866,
+          2.482883436605789,
+          1.4501157290079185
+        ],
+        "velocity": [
+          -0.41172252788547736,
+          -2.125291237231365,
+          2.3383302816681346
+        ]
+      },
+      "launch_config": "launch_configs/blind_b028.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b029",
+      "seed": 1371082029,
+      "block_index": 29,
+      "stratum": {
+        "x_quartile": 0,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.061412523184970896,
+        0.09469655857461312,
+        0.8335884061712873,
+        0.398240456090005,
+        0.41443273322394286,
+        0.806351565337473,
+        0.8018131655842309
+      ],
+      "launch": {
+        "position": [
+          -0.4385874768150291,
+          2.228408967572384,
+          0.8194721368270015
+        ],
+        "velocity": [
+          -0.22591082158837864,
+          -1.396275136749422,
+          3.4009065827921154
+        ]
+      },
+      "launch_config": "launch_configs/blind_b029.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b030",
+      "seed": 1371082030,
+      "block_index": 30,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "high",
+        "horizontal_magnitude_half": 1,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.8048045067230636,
+        0.627033831040487,
+        0.31916101924607193,
+        0.4552947699416978,
+        0.724945112540037,
+        0.9627158842014751,
+        0.48425782066251266
+      ],
+      "launch": {
+        "position": [
+          0.3048045067230636,
+          2.3881101493121464,
+          1.2731768619650188
+        ],
+        "velocity": [
+          -0.4138388293959063,
+          -2.074566530347477,
+          2.2421289103312563
+        ]
+      },
+      "launch_config": "launch_configs/blind_b030.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    },
+    {
+      "case_id": "blind_b031",
+      "seed": 1371082031,
+      "block_index": 31,
+      "stratum": {
+        "x_quartile": 3,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 0
+      },
+      "preset_half": "B",
+      "sampler_uniforms": [
+        0.8562132091836733,
+        0.21151665504915795,
+        0.8393888596207983,
+        0.7451710937563382,
+        0.22468211130452548,
+        0.9174064364000927,
+        0.2633890066350222
+      ],
+      "launch": {
+        "position": [
+          0.3562132091836733,
+          2.2634549965147475,
+          0.9235513281269014
+        ],
+        "velocity": [
+          -0.26553283043684767,
+          -1.5955494927896154,
+          3.131694503317511
+        ]
+      },
+      "launch_config": "launch_configs/blind_b031.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        }
+      ],
+      "reference_method_order": [
+        "state_reference",
+        "init_only"
+      ]
+    },
+    {
+      "case_id": "blind_b032",
+      "seed": 1371082032,
+      "block_index": 32,
+      "stratum": {
+        "x_quartile": 1,
+        "height_branch": "low",
+        "horizontal_magnitude_half": 0,
+        "y_half": 1
+      },
+      "preset_half": "A",
+      "sampler_uniforms": [
+        0.45660535622962545,
+        0.8428421459841626,
+        0.7986434404070144,
+        0.019921903832182952,
+        0.4542620139594948,
+        0.3180313550148276,
+        0.6387619633893156
+      ],
+      "launch": {
+        "position": [
+          -0.04339464377037455,
+          2.452852643795249,
+          0.7059765711496548
+        ],
+        "velocity": [
+          0.13835044391284448,
+          -1.847666107883529,
+          3.319380981694658
+        ]
+      },
+      "launch_config": "launch_configs/blind_b032.json",
+      "actual_release_time_s": null,
+      "actual_world_gravity_m_s2": null,
+      "primary_condition_order": [
+        {
+          "endpoint_hz": 100.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 12.5,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 25.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "v2e"
+        },
+        {
+          "endpoint_hz": 50.0,
+          "method": "ours"
+        },
+        {
+          "endpoint_hz": 100.0,
+          "method": "v2e"
+        }
+      ],
+      "reference_method_order": [
+        "init_only",
+        "state_reference"
+      ]
+    }
+  ]
+}
