@@ -1,0 +1,122 @@
+{
+  "schema": "pose_aux_mask_peak_export_independent_source_review_v2",
+  "status": "no_blocker_after_R1_R2_revision",
+  "review_mode": "local_source_archive_and_six_CPU_exporter_fixtures_no_SSH_no_GPU",
+  "zip": {
+    "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\outputs\\pose_aux_mask_center_20261109\\analysis\\lineage_peak_v2\\readonly_analysis_and_peak_export_v2.zip",
+    "sha256": "7d7cfa5181978edb375699abb9c3864fc2b1f47a4ef9f64aef22e4d81c836463",
+    "expected_sha256": "7d7cfa5181978edb375699abb9c3864fc2b1f47a4ef9f64aef22e4d81c836463"
+  },
+  "source_manifest_sha256": "ddabb32c317ef6ff36c95deb8a3ff06e7b875c2893cf1e2ba9a01f291942f082",
+  "expected_source_manifest_sha256": "ddabb32c317ef6ff36c95deb8a3ff06e7b875c2893cf1e2ba9a01f291942f082",
+  "archive_manifest_bytes_match": true,
+  "archive_leaf_checks": [
+    {
+      "file": "CPU_TEST_RESULT.json",
+      "sha256": "17e0f2a39bf60db59dd0adccc472f083ea565ca99e33a6985df3e53ea9565883",
+      "expected_sha256": "17e0f2a39bf60db59dd0adccc472f083ea565ca99e33a6985df3e53ea9565883",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "README.md",
+      "sha256": "c30e6c30512b4f8d1a960bb03739986fba28c01ed78d63992c687c88895b504d",
+      "expected_sha256": "c30e6c30512b4f8d1a960bb03739986fba28c01ed78d63992c687c88895b504d",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "V1_INDEPENDENT_REVIEW.json",
+      "sha256": "896aee418cdba3a549302ea87bc7a686bd8d8e0632a4434183cc5613ac84e38b",
+      "expected_sha256": "896aee418cdba3a549302ea87bc7a686bd8d8e0632a4434183cc5613ac84e38b",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "V2_ADMISSION_ADDENDUM.md",
+      "sha256": "1f8e16270ca6cc92a8673331e7fdb981d3337cf88408ec1a5a84879a96cf1ad6",
+      "expected_sha256": "1f8e16270ca6cc92a8673331e7fdb981d3337cf88408ec1a5a84879a96cf1ad6",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "export_candidate_peaks.py",
+      "sha256": "40cdc63bb5c6e70e576e9aa35a3064990a56f2a5d2fb96363bf5ec700cf712cf",
+      "expected_sha256": "40cdc63bb5c6e70e576e9aa35a3064990a56f2a5d2fb96363bf5ec700cf712cf",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "summarize_actual_results.py",
+      "sha256": "e605925344e09662d502b11f8e3e551c1b1fd0e4d0a21c9dad1a24659c2f62d2",
+      "expected_sha256": "e605925344e09662d502b11f8e3e551c1b1fd0e4d0a21c9dad1a24659c2f62d2",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "test_export_candidate_peaks.py",
+      "sha256": "ac9a8bfc565bbc4108e1bb5ac818619cca420ad9cadf5bc59247f9aeba923461",
+      "expected_sha256": "ac9a8bfc565bbc4108e1bb5ac818619cca420ad9cadf5bc59247f9aeba923461",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "test_summarize_actual_results.py",
+      "sha256": "3a822e407cdcac7e1916c5df069c0c033b8b423550e0e72fa6930885dd87039a",
+      "expected_sha256": "3a822e407cdcac7e1916c5df069c0c033b8b423550e0e72fa6930885dd87039a",
+      "zip_bytes_equal": true,
+      "passed": true
+    }
+  ],
+  "all_archive_leaf_checks_passed": true,
+  "original_v1_review_preserved_sha256": "896aee418cdba3a549302ea87bc7a686bd8d8e0632a4434183cc5613ac84e38b",
+  "summary_source_byte_unchanged": true,
+  "exporter_source_minimal_diff": "--- locked_v1\n\n+++ locked_v2\n\n@@ -20,4 +20,23 @@\n\n     A.need(math.isfinite(error) and error<=2e-6,'Native original UV expectation sanity failed');i=int(p.argmax());r,c=divmod(i,16)\n     return dict(row=r,column=c,flat_index=i,uv=grid[r,c].tolist(),probability=float(p[r,c]),original_fp64_expectation_max_abs=error)\n+\n+\n+def verify_control_reference(uv,peak,reference):\n+    \"\"\"Exact native grid peak and continuous UV are separate admission checks.\"\"\"\n+    import numpy as np\n+    error=float(np.max(abs(np.asarray(uv)-reference['pred_uv'])));A.need(math.isfinite(error) and error<=2e-6,'Original C1 UV reference parity failed')\n+    np.testing.assert_array_equal(reference['center_argmax_uv'],reference['alt_uv_peak'],err_msg='Frozen reference peak aliases disagree')\n+    np.testing.assert_array_equal(peak['uv'],reference['center_argmax_uv'],err_msg='Original C1 native peak differs despite UV parity')\n+    return dict(max_abs_uv=error,native_peak_exact=True)\n+\n+\n+def checked_lineage(records):\n+    \"\"\"Actually hash current source bytes; retain the pinned cache's records.\"\"\"\n+    A.need(isinstance(records,list) and len(records)>0,'Prepared RAW cache lineage missing');seen={}\n+    for r in records:\n+        p=Path(r['path']);A.need(p.is_file() and p.stat().st_size==r['size_bytes'] and A.digest(p)==r['sha256'],'Prepared RAW cache input bytes changed: '+str(p))\n+        if r['path'] in seen:A.need(seen[r['path']]==r,'Conflicting cache lineage record')\n+        seen[r['path']]=r\n+    return list(seen.values())\n \n \n@@ -50,4 +69,9 @@\n\n             cache=next(r for r in study['input_caches'] if Path(r['path']).name==f'{method}_RAW_inputs_masks128.pt');E.remember(ctx.source_records,cache['path'],cache['sha256']);cached=torch.load(cache['path'],map_location='cpu',weights_only=False)\n             A.need(cached['contract_sha256']==A.SCIENCE and cached['source_manifest_sha256']==A.SOURCES,'RAW cache provenance differs');data=cached['data']\n+            W.P.verify_input_lineage(data['input_lineage'])\n+            for original in checked_lineage(data['input_lineage']):\n+                prior=[r for r in ctx.source_records if r['path']==original['path']]\n+                A.need(not prior or prior[0]==original,'Cache/source context lineage conflicts')\n+                if not prior:ctx.source_records.append(original)\n             for seed in A.SEEDS:\n                 old,_,_=E.load_branch(ctx,method,seed,'physical_supervised','center');run=next(r for r in study['records'] if (r['method'],r['seed'])==(method,seed));cp=run['final_model'];E.remember(ctx.source_records,cp['path'],cp['sha256'])\n@@ -71,6 +95,7 @@\n\n                         outputs[role]=(np.asarray(uv),np.asarray(ps))\n                     for i,row in enumerate(rows):\n-                        reference=ref[(method,seed,condition,row['id'])];error=float(np.max(abs(outputs['control'][0][i]-reference['pred_uv'])));A.need(math.isfinite(error) and error<=2e-6,'Original C1 UV reference parity failed')\n+                        reference=ref[(method,seed,condition,row['id'])];control_peak=decode_original_probability(outputs['control'][1][i],outputs['control'][0][i]);control_parity=verify_control_reference(outputs['control'][0][i],control_peak,reference);error=control_parity['max_abs_uv']\n                         r=dict(map_index=len(cases),method=method,seed=seed,condition=condition,rid=row['rid'],sample_id=row['id'],gt_uv=np.asarray(row['uv'][0]).tolist(),control_reference_max_abs_uv=error)\n+                        r['control_native_peak_reference_exact']=control_parity['native_peak_exact']\n                         for role in ('control','candidate'):\n                             uv=outputs[role][0][i];prob=outputs[role][1][i];peak=decode_original_probability(prob,uv);rr=regions[condition][row['id']];py=pyramids[condition][row['id']]\n@@ -101,5 +126,5 @@\n\n             paired_prediction_cases=1152,model_forward_prediction_rows=2304,physical_windows=64,physical_rollouts=4,methods=list(A.METHODS),seeds=list(A.SEEDS),source_records=all_sources,models=models,\n             resource_start=start_resource,resource_end=end_resource,scientific_contract_sha256=A.SCIENCE,training_source_manifest_sha256=A.SOURCES,resource_contract_sha256=A.RESOURCE,actual_study_sha256=a.study_sha256,\n-            no_decode_or_model_change=True,formal30_and8='not_retested_not_passed_by_this_probe',artifacts=[A.record(q) for q in a.out.iterdir() if q.is_file()],elapsed_seconds=time.monotonic()-started,\n+            no_decode_or_model_change=True,all_control_native_peaks_exact=True,cache_input_lineage_rehashed_at_admission_and_completion=True,formal30_and8='not_retested_not_passed_by_this_probe',artifacts=[A.record(q) for q in a.out.iterdir() if q.is_file()],elapsed_seconds=time.monotonic()-started,\n             limitations=['Endpoint mask is exact at its frame, not per-event origin. Endpoint union remains an approximation.','Peak cell overlap is a fractional spatial proxy, not feature provenance.','A reduced wrong-peak count does not by itself establish full-pose or real-world superiority.']))\n     except BaseException:",
+  "closed_findings": [
+    {
+      "id": "R1",
+      "status": "closed_by_exact_native_peak_admission",
+      "evidence": "verify_control_reference checks UV<=2e-6, the two original reference peak aliases exactly equal, and the current native16 peak exactly equal to the SHA-bound original center_argmax_uv. No new tolerance or grid/readout."
+    },
+    {
+      "id": "R2",
+      "status": "closed_by_actual_lineage_bytes_before_forward_and_final_rehash",
+      "evidence": "Each bound cache invokes pinned W.P.verify_input_lineage; checked_lineage independently verifies actual size/SHA and deduplicates without conflicting records; original records join ctx.source_records checked at completion."
+    }
+  ],
+  "independent_CPU_execution": {
+    "tests_run": 6,
+    "failures": 0,
+    "errors": 0,
+    "actual_execution": true,
+    "GPU_used": false,
+    "SSH_used": false,
+    "command": "wsl.exe -d Ubuntu-22.04 --cd '<workspace>/outputs/pose_aux_mask_center_20261109/analysis/lineage_peak_v2' --exec python3 -B -m unittest -v test_export_candidate_peaks.py",
+    "scope": "Synthetic probability and same-size byte mutation fixtures only, no model forward or actual-study score recomputation"
+  },
+  "author_full_CPU_receipt": {
+    "schema": "pose_aux_mask_readonly_analysis_cpu_v2",
+    "status": "passed",
+    "tests_run": 11,
+    "summary_tests": 5,
+    "native_peak_tests": 6,
+    "runtime_seconds": 0.12,
+    "actual_execution": true,
+    "GPU_used": false,
+    "SSH_used": false,
+    "actual_study_or_export_data_used": false,
+    "all_Python_AST": "passed",
+    "v1_preserved": true,
+    "new_real_failure_fixtures": [
+      "same continuous UV but wrong native peak fails exact original-grid reference comparison",
+      "same-size original-input byte mutation fails cache input-lineage SHA comparison"
+    ],
+    "summary_source_unchanged_from_v1": true
+  },
+  "scope_limits": [
+    "0update posthoc diagnosis only; no candidate adoption, long training, or new real scoring.",
+    "The completed study quality29/36+11/12 =40/48 individual checks passed with8 failures and overall failed is parent-reported, not independently recomputed by this source review.",
+    "Root must still perform server actual-data/resource admission and complete1152 C1 native-peak checks; this is not an actual GPU-run pass.",
+    "V1locked source/ZIP/manifest and failed review remain intact; this independent review is outside both locked manifests."
+  ]
+}

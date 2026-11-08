@@ -1,0 +1,15 @@
+# GPU3 runtime adaptation, scientific contract unchanged
+
+This version preserves the entire v1 package and its zip/manifest. The only existing Python source changed is the run entry point; every training, mask, loss, teacher, label, sampling, metric and stage-gate function remains byte-identical. GPU4 remains occupied by the separately authorized new-trajectory event replay; no process is stopped or interrupted.
+
+The scientific contract remains SHA d2860889e582223bf248d7b8e8e6fcc8f80aa71041a371243fdae06010e312ff and retains GPU4 as frozen-source provenance. The additional runtime contract is SHA c1dc975cd625a5b865e184368aacd576d09b07ca82937079f7468c1af37cfacf. It binds physical GPU3 UUID GPU-253ab9b8-a0e5-4f12-0579-261818cf31dd, exact Tesla V100S-PCIE-32GB name, queue parent335161, its Linux start ticks53273268, full argv and server_queue source SHA. The actual resource contract represents start ticks as the canonical decimal string; comparison uses its exact integer value, without changing the contract bytes.
+
+The real runtime guard requires CUDA_VISIBLE_DEVICES to equal the UUID, CUDA device_count1, exact nvidia-smi physical identity and Torch device name, unchanged original parent argv/start ticks/script bytes, and active compute PIDs contained in {parent335161, this worker}. Source/context loading uses the existing E.load_context(base,check_gpu=False) API and then sets ctx.device=cuda:0. No old function is replaced, mocked or monkeypatched; the independent guard runs before and after context loading and at completion. It records actual GPU3 execution separately from original GPU4 provenance. CPU tests use only pure snapshot validation; they do not initialize any GPU.
+
+Before either smoke update, original frozen C1 controls are evaluated on all18 method/seed/illumination cells×64windows on GPU3. Original center/depthUV/log-size/log-shape/z/size and rotation must match the immutable GPU4-exported references within2e-6; original native summary and per-rollout scores must also match. This is zero-update numerical admission, not another candidate or a new training budget. It preserves all model states. Study binds and reuses the successful smoke's same resource-contract and numerical-admission receipt; all six288 tape admissions and RAW/mask provenance checks remain.
+
+The prior15-file v1 bundle was not deployed and performed no server optimizer updates. V2 still permits only two smoke updates followed by1,728 study updates, same initialization and hyperparameters, and no real scoring. Device-only runtime adaptation does not grant a scientific protocol change or claim that the candidate improves.
+
+Run CPU tests with `python -B -m unittest -v test_aux_mask_center test_gpu3_resource_guard`.
+
+Append `--resource-contract N/MASK_AUX_RUNTIME_RESOURCE_V2.json --resource-contract-sha256 c1dc975cd625a5b865e184368aacd576d09b07ca82937079f7468c1af37cfacf` to both v1 smoke/study command lines, with this v2 source_manifest SHA. Keep exact UUID visibility. Output directories must be fresh. This child created no SSH connection, queued task, GPU allocation or training process.

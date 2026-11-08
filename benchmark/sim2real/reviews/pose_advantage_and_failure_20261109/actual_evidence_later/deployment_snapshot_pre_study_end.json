@@ -1,0 +1,89 @@
+{
+  "at_utc": "2026-11-08T17:32:12.674530+00:00",
+  "frozen_core": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "new_real_scoring": false,
+  "long_pose_training_started": false,
+  "physical_completion": {
+    "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/advantage_confirmation/physical_completion.json",
+    "sha256": "a8a3f0c3bc04657d38196e0575072116284da028e8bf3f8af18902afcd4580fd"
+  },
+  "events_job": {
+    "job_id": "172_pose_advantage_events_20261109",
+    "live": {
+      "job_id": "172_pose_advantage_events_20261109",
+      "phase": "pose_new32_paired_event_generation",
+      "started_utc": "2026-11-08T17:05:14.392471+00:00",
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/advantage_preparation_sources_v1/prepare_confirmation.py",
+        "events",
+        "--registration",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/PREPARATION_CONTRACT.json",
+        "--registration-sha256",
+        "8acbe3f76b841e908814b8c1d53c2c6ebabafa8e6dd78a5a69f8729d6e3540ef",
+        "--physical-receipt-sha256",
+        "a8a3f0c3bc04657d38196e0575072116284da028e8bf3f8af18902afcd4580fd"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261109_pose_advantage_queue/events",
+      "status": "running",
+      "pid": 881442,
+      "process_start_ticks": "104733855"
+    }
+  },
+  "fixed_evaluation_job": {
+    "job_id": "174_pose_advantage_fixed_evaluation_20261109",
+    "queue_file": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/gpu4/queue/174_pose_advantage_fixed_evaluation_20261109.json",
+    "queue_sha256": "aa6b6c2147ee4426f4e75f062b74f08e6fd0e73a1e77f0864ee6b5db2bf350d3",
+    "after": [
+      "172_pose_advantage_events_20261109"
+    ]
+  },
+  "aux_smoke": {
+    "job_id": "173_pose_aux_mask_smoke_gpu3_20261109",
+    "exit_code": 0,
+    "completion": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/aux_mask_gpu3_v2_smoke/completion.json",
+    "sha256": "66f8898c61bd080463e4f6ae67d4f5dc5bc760f79f1952541de54e5caff83da2"
+  },
+  "aux_study": {
+    "job_id": "175_pose_aux_mask_study_gpu3_20261109",
+    "live": {
+      "job_id": "175_pose_aux_mask_study_gpu3_20261109",
+      "phase": "pose_aux_visible_mask_center_paired_short_gpu3",
+      "started_utc": "2026-11-08T17:30:39.743718+00:00",
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=60s",
+        "3600s",
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/aux_mask_sources_gpu3_v2/run_aux_mask_center.py",
+        "--contract",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/MASK_AUX_CONTRACT.json",
+        "--contract-sha256",
+        "d2860889e582223bf248d7b8e8e6fcc8f80aa71041a371243fdae06010e312ff",
+        "--source-manifest-sha256",
+        "4819053bf08966a153055b81eab86c0f70f519109afcb104cf71059cf23800c5",
+        "--resource-contract",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/MASK_AUX_RUNTIME_RESOURCE_V2.json",
+        "--resource-contract-sha256",
+        "c1dc975cd625a5b865e184368aacd576d09b07ca82937079f7468c1af37cfacf",
+        "--phase",
+        "study",
+        "--out",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/aux_mask_gpu3_v2_study",
+        "--smoke-receipt",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-pose-advantage-and-failure-v1/aux_mask_gpu3_v2_smoke/completion.json",
+        "--smoke-receipt-sha256",
+        "66f8898c61bd080463e4f6ae67d4f5dc5bc760f79f1952541de54e5caff83da2"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261109_pose_aux_mask_gpu3_queue/study",
+      "status": "running",
+      "pid": 896601,
+      "process_start_ticks": "104886390"
+    }
+  }
+}

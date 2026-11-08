@@ -1,0 +1,101 @@
+{
+  "schema": "pose_aux_mask_peak_export_independent_source_review_v1",
+  "status": "requires_revision_before_candidate_peak_export",
+  "review_mode": "local_readonly_source_and_archive_no_SSH_no_GPU_no_training",
+  "zip": {
+    "path": "C:\\Users\\zhaoyuhan\\Documents\\ChatGPT\\New project\\outputs\\pose_aux_mask_center_20261109\\analysis\\readonly_analysis_and_peak_export_v1.zip",
+    "sha256": "836641f1b243947a4bd03a875b5e0a7bf46cc1148db7e2c151fbc7779e134b83"
+  },
+  "source_manifest_sha256": "3e855194c894e3d0da13acc7100a4dbd26ecd7ffd1bccaffa161e992ae17d0ae",
+  "archive_leaf_checks": [
+    {
+      "file": "CPU_TEST_RESULT.json",
+      "local_sha256": "56260f5e0fb23dc73673df9d33608e12786b90d4a19d067678b80f20719f5cf7",
+      "expected_sha256": "56260f5e0fb23dc73673df9d33608e12786b90d4a19d067678b80f20719f5cf7",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "README.md",
+      "local_sha256": "c30e6c30512b4f8d1a960bb03739986fba28c01ed78d63992c687c88895b504d",
+      "expected_sha256": "c30e6c30512b4f8d1a960bb03739986fba28c01ed78d63992c687c88895b504d",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "export_candidate_peaks.py",
+      "local_sha256": "ce1b2624cadecad4af3d92f41087af0784ee4857d40a878c4f10fb3053cfc2d3",
+      "expected_sha256": "ce1b2624cadecad4af3d92f41087af0784ee4857d40a878c4f10fb3053cfc2d3",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "summarize_actual_results.py",
+      "local_sha256": "e605925344e09662d502b11f8e3e551c1b1fd0e4d0a21c9dad1a24659c2f62d2",
+      "expected_sha256": "e605925344e09662d502b11f8e3e551c1b1fd0e4d0a21c9dad1a24659c2f62d2",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "test_export_candidate_peaks.py",
+      "local_sha256": "6204343e6fd661c063de13c80ff85ac44d7eb307f5ccee2066939bf67280d1e6",
+      "expected_sha256": "6204343e6fd661c063de13c80ff85ac44d7eb307f5ccee2066939bf67280d1e6",
+      "zip_bytes_equal": true,
+      "passed": true
+    },
+    {
+      "file": "test_summarize_actual_results.py",
+      "local_sha256": "3a822e407cdcac7e1916c5df069c0c033b8b423550e0e72fa6930885dd87039a",
+      "expected_sha256": "3a822e407cdcac7e1916c5df069c0c033b8b423550e0e72fa6930885dd87039a",
+      "zip_bytes_equal": true,
+      "passed": true
+    }
+  ],
+  "all_archive_leaf_checks_passed": true,
+  "positive_findings": [
+    "Original model.forward logits softmax and original FP32 maps are retained; no focus/temperature/grid change.",
+    "GT masks and labels only enter posthoc region/error summaries, never the3-channel model forward or crop/readout.",
+    "Full1152 matched cases, both native C1 and candidate maps, six method-seed models, ordered same64 physical IDs across allconditions.",
+    "Candidate bare CenterScale checkpoint file and state digest bind to the completed study; frozen control state loads through pinned E helper.",
+    "GPU3 real resource guard before/after data context and at end; original frozen GPU4 metadata is not rewritten or monkeypatched.",
+    "Original source input/model hashes are checked at end and model states are unchanged;0 optimizer updates."
+  ],
+  "required_revisions": [
+    {
+      "id": "R1",
+      "priority": "blocking_for_requested_baseline_peak_claim",
+      "file": "export_candidate_peaks.py",
+      "problem": "Control UV parity alone does not establish original native peak parity. The current exporter does not compare its control peak with the prior reference center_argmax_uv.",
+      "minimal_action": "In control role, strict compare decoded native16 cell peak UV to the existing SHA-bound original export center_argmax_uv; preserve failures, no tolerance scan."
+    },
+    {
+      "id": "R2",
+      "priority": "provenance_guard",
+      "file": "export_candidate_peaks.py",
+      "problem": "The input cache is hashed against study, but its input_lineage is not reverified. Current H5 source records obtained during region loading are newly computed rather than explicitly checked against the completed study cache lineage.",
+      "minimal_action": "Reuse the already pinned W.P.verify_input_lineage(data[input_lineage]) before anyforward and bind those original records in the final before/after source inventory."
+    }
+  ],
+  "tests": {
+    "author_fixture_receipt_read": {
+      "schema": "pose_aux_mask_readonly_analysis_cpu_v1",
+      "status": "passed",
+      "tests_run": 9,
+      "summary_tests": 5,
+      "native_peak_tests": 4,
+      "runtime_seconds": 0.094,
+      "actual_execution": true,
+      "GPU_used": false,
+      "SSH_used": false,
+      "actual_study_or_export_data_used": false,
+      "all_Python_AST": "passed",
+      "source_notes": "Summary tests are explicit synthetic schema fixtures; peak tests use synthetic probability maps. No model-forward, physical-mask, or actual-score pass is claimed."
+    },
+    "reviewer_executed_tests": false
+  },
+  "scope_limits": [
+    "Did not execute models, inspect server GPU resources, or rerun completed training.",
+    "1728updates and29/36+11/12 qualityfail are parent-reported actual results in this review, not independently recomputed here.",
+    "No source/archive was edited. A corrected exporter must be a separate version; retain this locked v1."
+  ]
+}

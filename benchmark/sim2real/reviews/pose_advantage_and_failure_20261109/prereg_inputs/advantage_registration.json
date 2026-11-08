@@ -1,0 +1,74 @@
+{
+  "schema": "pose_condition_advantage_confirmation_v1",
+  "registered_utc": "2026-11-08T16:51:45.812557+00:00",
+  "frozen_core": "62da4f35ce3c5c96f04268bd1687a27657af9238",
+  "scope": "synthetic matched wood block only; newly sampled physical trajectories; no real generalization claim",
+  "methods": [
+    "eventgenesis",
+    "v2e"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "model_arm": "RAW_C1_physical_supervised",
+  "center_decoder": "original_global_softmax_expectation",
+  "softfocus_disabled": true,
+  "physical_rollouts": 32,
+  "physical_seed": 202611090137,
+  "primary_conditions": [
+    "normal",
+    "half"
+  ],
+  "mandatory_negative_condition": "eighth",
+  "radiance_multipliers": {
+    "normal": 1,
+    "half": 0.5,
+    "eighth": 0.125
+  },
+  "window_indices": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "window_policy": "Original frozen fresh.adapter eligibility; preserve and audit every window before scores, no resampling; expected512/condition",
+  "primary_metric": "full_pose_ADD_S_success_less_than_0.1_CAD_diameter",
+  "secondary_metrics": [
+    "center_px",
+    "depth_mae_m",
+    "depth_bias_m",
+    "log_size_mae",
+    "auc"
+  ],
+  "statistics": {
+    "paired_unit": "physical trajectory; model-seed average within trajectory before bootstrap",
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20261109137,
+    "primary_intervals": "two-sided97.5 percentile each, Bonferroni family two conditions",
+    "required": "each model seed advantage>0 and adjusted CI lower>0 in both declared primary conditions"
+  },
+  "seed_inventory_sha256": "4b666cfc4d6de9855cddde5307cc64c0f417d1c199fba632bf5bb2148099c8a0",
+  "frozen_core_guard_sha256": "b3f9a61bd38454b9f2bf874d71bc4baeb4588d9f0f1db406e02513d4c3d1f768",
+  "old_base_contract_sha256": "d2368c9f246a61efc4382238741f1e7a62cf891aa8d6d653136832ed64ea3b62",
+  "data_and_models_frozen_before_score": true,
+  "no_use_for_training_or_hyperparameters": true,
+  "all_conditions_reported": true,
+  "no_generator_advantage_guarantee": true,
+  "real_scoring": false,
+  "long_training": false,
+  "optimizer_updates": 0
+}

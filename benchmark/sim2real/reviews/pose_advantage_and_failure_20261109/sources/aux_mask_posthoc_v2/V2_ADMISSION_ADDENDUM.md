@@ -1,0 +1,11 @@
+# V2: exact control-peak and original-input lineage admission
+
+The undeployed v1 zip/manifest/sources remain unchanged. Independent review identified two real evidence gaps: a continuous UV match does not imply a native argmax match, and hashing the prepared cache/current physical mask independently does not bind current original inputs back to the cache's pinned lineage. V2 fixes only these export admissions; no model, decoder, threshold, data cohort, training, or quality gate changes.
+
+The frozen original E exporter actually emits both `center_argmax_uv` and `alt_uv_peak`. V2 requires these aliases to match exactly, and the current control's original16-grid argmax UV must equal them exactly. The existing continuous UV tolerance2e-6 is retained separately. A real CPU counterexample uses two probability maps with identical(.5,.5) expectation but different native peaks and proves the mismatched peak is rejected.
+
+After SHA/provenance-checking each prepared RAW cache, V2 calls the original `W.P.verify_input_lineage(data['input_lineage'])`, explicitly hashes those original files, and registers their pinned records in ctx.source_records. Any record conflict is fatal. Subsequent H5 mask access must agree with these cache-pinned records; all consumed original inputs are rehashed again at completion. A temporary-file fixture changes bytes while preserving file length and proves rejection. This adds actual source I/O; it does not regenerate data or alter event inputs.
+
+Actual local CPU result:11/11 tests passed (old9 plus the two new failing-state tests),0.120s. The model/data/server export has not been run by this child. V1_INDEPENDENT_REVIEW.json records the original review findings, not an assertion that v1 was deployed or that v2 has already passed server admission. The frozen training v2 sources/scientific/resource contracts remain exactly the same.
+
+Commands and output schema otherwise match the prior README. Use this directory's new source_manifest SHA for `--analysis-source-manifest-sha256`. Each case adds `control_native_peak_reference_exact`; completion requires all_control_native_peaks_exact and cache_input_lineage_rehashed_at_admission_and_completion. Both controls and candidate original probability maps are preserved without normalization, refitting, peak selection by GT, or any new optimizer update.

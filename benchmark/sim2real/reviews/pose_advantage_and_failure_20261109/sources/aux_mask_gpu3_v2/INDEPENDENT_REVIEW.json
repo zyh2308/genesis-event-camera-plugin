@@ -1,0 +1,17 @@
+{
+  "schema": "pose_aux_mask_center_independent_readonly_review_v1",
+  "status": "no_remaining_blocker_after_cpu_only_seed_fix",
+  "reviewer": "audit_photometry_trial",
+  "reviewer_executed_9_tests": false,
+  "implemented_fix": "auxiliary initialization seeds CPU default_generator inside fork_rng; it never calls cuda.manual_seed_all, and initialized CUDA state is compared before/after",
+  "reviewed_scope": [
+    "original e188 source unchanged",
+    "RAW1529 NPZ labels/order and exact fresh image parity",
+    "RAW3058 original auxiliary layout",
+    "all six288 replay admissions before any update",
+    "GT mask loss-only and shared affine RNG",
+    "size/depth/rotation preserved",
+    "smoke model+auxiliary+Adam readback",
+    "original36 and additional12 boundaries"
+  ]
+}
