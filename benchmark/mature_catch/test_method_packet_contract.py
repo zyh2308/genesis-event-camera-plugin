@@ -21,7 +21,7 @@ def verify(method):
     with tempfile.TemporaryDirectory() as temp:
         camera=Camera();pushed=[];sensor=module.SparseEventSensor.__new__(module.SparseEventSensor)
         sensor.env=SimpleNamespace(update_sensor_pose=lambda:None,robot=object(),background_wall=None)
-        sensor.camera=camera;sensor.root=Path(temp);sensor.K=np.eye(3);sensor.generator_method=method
+        sensor.camera=camera;sensor.root=Path(temp);sensor.K=np.eye(3);sensor.endpoint_hz=100.;sensor.generator_method=method
         sensor.initialization_only=sensor.initialization_probe=sensor.initialization_failed=False
         sensor.tracker=SimpleNamespace(attached_offset=None,push=lambda *args,**kw:pushed.append((args,kw)))
         sensor.chunks=[];sensor.packet_audit=[];sensor.frame_index=0

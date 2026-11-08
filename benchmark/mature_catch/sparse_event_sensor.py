@@ -1,4 +1,4 @@
-"""Actual 100 Hz Genesis HDR endpoints -> frozen CUDA worker -> event tracker."""
+"""Actual configured-cadence Genesis HDR endpoints -> frozen CUDA worker -> event tracker."""
 import json
 import os
 from pathlib import Path
@@ -25,6 +25,7 @@ def link_transforms(entity):
 class SparseEventSensor:
     def __init__(self,env,output,radius):
         self.env=env;self.camera=env.sensor_camera;self.root=Path(output);self.root.mkdir(exist_ok=True)
+        self.endpoint_hz=float(getattr(env,'event_endpoint_hz',100.))
         self.K=array(self.camera.intrinsics).astype(float)
         self.tracker=EventSphereTracker(self.K,self.camera.res,radius)
         self.tracker.gravity=np.asarray(env.Dcmm.model.opt.gravity,dtype=float).copy()
@@ -67,7 +68,7 @@ class SparseEventSensor:
         try:
             ready=decode(pickle.load(self.worker.stdout));assert ready['ready']
             (self.root/'worker_start.json').write_text(json.dumps(dict(pid=self.worker.pid,gpu_uuid=uuid,**ready),indent=2))
-            self.h=h5py.File(self.root/'sparse_hdr_endpoints.h5','w');self.h.attrs['endpoint_rate_hz']=100.
+            self.h=h5py.File(self.root/'sparse_hdr_endpoints.h5','w');self.h.attrs['endpoint_rate_hz']=self.endpoint_hz
             self.h.attrs['source']='actual sparse Genesis float32 scene-linear HDR; no dense reference in generation'
             self.h.attrs['sensor_response']='frozen EventGenesis ideal profile' if self.generator_method=='ours' else 'native V2E SSM39 plus EventEmulator, controlled ideal noise settings; native uint8 LDR grayscale input'
             self.h.attrs['event_generation_method']=self.generator_method
@@ -105,7 +106,7 @@ class SparseEventSensor:
         self.tracker.push(events,available_s=available,packet_time_s=t,camera_to_world=T)
         self.packet_audit.append(dict(time_s=float(t),available_s=available,events=len(events),worker_wall_s=reply['wall_s'],
             transfer_and_worker_wall_s=time.monotonic()-started,endpoint_reads=reply['endpoint_reads'],dense_HDR_reads=0,renderer_calls_in_reconstruction=0,
-            method=self.generator_method,subframes=reply.get('subframes'),native_ldr_capture_s=ldr_capture_s,hdr_capture_s=hdr_capture_s,
+            method=self.generator_method,endpoint_rate_hz=self.endpoint_hz,subframes=reply.get('subframes'),native_ldr_capture_s=ldr_capture_s,hdr_capture_s=hdr_capture_s,
             hdr_used_only_for_audit=self.generator_method=='v2e',worker_input_keys=sorted(worker_packet)))
         data=dict(time_s=np.asarray(t),radiance=packet['radiance'],depth=packet['depth'],segmentation=packet['segmentation'],
                   camera_to_world_cv=T,object_poses=np.stack([poses[k] for k in sorted(poses)]))
@@ -133,7 +134,7 @@ class SparseEventSensor:
             self.worker=None
         if self.h is not None:self.h.close();self.h=None
         if hasattr(self,'log'):self.log.close()
-        (self.root/'capture_schedule.json').write_text(json.dumps(dict(active_endpoint_rate_hz=100,post_grasp_suspension=self.capture_suspension,skipped_post_grasp_queries=self.skipped_post_grasp_queries,initialization_only=self.initialization_only),indent=2))
+        (self.root/'capture_schedule.json').write_text(json.dumps(dict(active_endpoint_rate_hz=self.endpoint_hz,post_grasp_suspension=self.capture_suspension,skipped_post_grasp_queries=self.skipped_post_grasp_queries,initialization_only=self.initialization_only),indent=2))
         events=np.concatenate(self.chunks) if self.chunks else np.empty((0,4))
         np.savez_compressed(self.root/'raw_events.npz',events=events)
         (self.root/'packet_audit.json').write_text(json.dumps(self.packet_audit))

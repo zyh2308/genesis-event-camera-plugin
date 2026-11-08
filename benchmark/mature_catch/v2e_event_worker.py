@@ -10,7 +10,10 @@ def main():
     assert parity['status']=='PASS'
     assert hashlib.sha256(Path(__file__).with_name('streaming_v2e.py').read_bytes()).hexdigest()==parity['adapter_sha256']
     source=Path(os.environ['CATCHIT_V2E_SOURCE']);checkpoint=source/'input/SuperSloMo39.ckpt'
-    generator=StreamingV2E(source,checkpoint)
+    from cadence_config import minimum_v2e_upsampling
+    minimum=minimum_v2e_upsampling(float(os.environ.get('CATCHIT_EVENT_ENDPOINT_HZ','100')))
+    assert minimum==parity['minimum_upsampling'],(minimum,parity)
+    generator=StreamingV2E(source,checkpoint,minimum_upsampling=minimum)
     receipt=generator.receipt()
     assert receipt['checkpoint_sha256']==parity['checkpoint_sha256']
     assert receipt['source_sha256']==parity['source_sha256']

@@ -115,6 +115,7 @@ def main():
         asset_initialization_seed=asset_seed,object_eval=args.object_eval,versions=dict(python=sys.version,numpy=np.__version__,torch=torch.__version__,mujoco=mujoco.__version__))
     manifest['gate_until_s']=args.gate_until
     manifest['gate_after_release_s']=args.gate_after_release
+    manifest['event_endpoint_rate_hz']=float(os.environ.get('CATCHIT_EVENT_ENDPOINT_HZ','100'))
     manifest['horizontal_speed_scale']=args.speed_scale
     manifest['horizontal_speed_m_s']=args.horizontal_speed
     manifest.update(sphere_radius_m=args.sphere_radius,lighting=args.lighting,background_wall=args.background_wall,

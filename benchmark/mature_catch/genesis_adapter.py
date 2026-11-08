@@ -25,6 +25,9 @@ class GenesisEnv(NativeEnv):
     def __init__(self,*args,**kwargs):
         self.gs_ready=False;self.sensor=None;self.sensor_probe=[];self.episode_number=-1;self._gs_step_count=0
         super().__init__(*args,**kwargs)
+        from cadence_config import endpoint_stride
+        self.event_endpoint_hz=float(os.environ.get('CATCHIT_EVENT_ENDPOINT_HZ','100'))
+        self.event_endpoint_stride=endpoint_stride(self.event_endpoint_hz,float(self.Dcmm.model.opt.timestep))
         import genesis as gs
         self.gs=gs
         self.adapter_output=Path(os.environ['CATCHIT_ADAPTER_OUTPUT']);self.adapter_output.mkdir(parents=True,exist_ok=True)
@@ -155,7 +158,7 @@ class GenesisEnv(NativeEnv):
             force[start:start+length]+=gear*ctrl
         self.robot.control_dofs_force(force)
         self.scene.step();self._gs_time+=float(self.Dcmm.model.opt.timestep);self._sync_kinematics();self._gs_step_count+=1
-        if self.sensor is not None and self._gs_step_count%5==0:self.sensor.capture(self._gs_time)
+        if self.sensor is not None and self._gs_step_count%self.event_endpoint_stride==0:self.sensor.capture(self._gs_time)
         elif os.environ.get('CATCHIT_SENSOR_PROBE')=='1' and self._gs_step_count%int(os.environ.get('CATCHIT_PROBE_STRIDE','20'))==0:self.capture_sensor_probe(self._gs_time)
 
     def update_sensor_pose(self):
