@@ -1,0 +1,238 @@
+{
+  "observed_utc": "2026-11-08T15:36:39.815838+00:00",
+  "checks": {
+    "support_cpu": {
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_event_support"
+      ],
+      "exit_code": 0,
+      "stdout": null,
+      "stderr": null
+    },
+    "attention_cpu": {
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_attention_scale"
+      ],
+      "exit_code": 0,
+      "stdout": null,
+      "stderr": null
+    },
+    "support_cpu2": {
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_attention_scale"
+      ],
+      "exit_code": 0,
+      "stdout": null,
+      "stderr": null
+    },
+    "vf_cpu": {
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_attention_sentinel_verifier"
+      ],
+      "exit_code": 0,
+      "stdout": null,
+      "stderr": null
+    },
+    "ja_cpu": {
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_joint_analysis"
+      ],
+      "exit_code": 0,
+      "stdout": null,
+      "stderr": null
+    },
+    "tdtest": {
+      "argv": [
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_decompose_tail"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_fractional_partition_and_sum_rounding_are_explicit (test_decompose_tail.Algebra.test_fractional_partition_and_sum_rounding_are_explicit) ... ok\ntest_tail_pull_and_signed_cancellation (test_decompose_tail.Algebra.test_tail_pull_and_signed_cancellation) ... ok\ntest_zero_mass_and_zero_error_keep_null (test_decompose_tail.Algebra.test_zero_mass_and_zero_error_keep_null) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK\n"
+    }
+  },
+  "queue_done": {
+    "168_pose_support_attention_full_v2_20261108.done.json": {
+      "job_id": "168_pose_support_attention_full_v2_20261108",
+      "phase": "pose_support_attention_scale_frozen_full",
+      "started_utc": "2026-11-08T15:15:38.467860+00:00",
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=60s",
+        "3660s",
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/sources_v2/probe_attention_scale.py",
+        "full",
+        "--contract",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources/contract.json",
+        "--diagnostic-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources",
+        "--baf-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-baf-center-diagnostic-v2/sources",
+        "--support-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/support_sources",
+        "--support-manifest-sha256",
+        "203525b580a0d520e6f15d7ea2e9acdac029d3c78e11d83c8d514840441e592f",
+        "--source-manifest-sha256",
+        "24121b23d94a6ce6a5112cff796deced796b86be6c5b83f17c15884bd31e052f",
+        "--out",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/full_v2",
+        "--baseline-receipt",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/baseline_v2/completion.json"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261108_pose_support_attention_queue/full_v2",
+      "status": "complete",
+      "pid": 778641,
+      "process_start_ticks": "104076269",
+      "exit_code": 0,
+      "finished_utc": "2026-11-08T15:16:23.595984+00:00"
+    },
+    "169_pose_support_attention_sentinel_verify_20261108.done.json": {
+      "job_id": "169_pose_support_attention_sentinel_verify_20261108",
+      "phase": "pose_attention_independent_sentinel_verification",
+      "started_utc": "2026-11-08T15:24:44.203636+00:00",
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=60s",
+        "1260s",
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/verifier_sources/verify_attention_sentinels.py",
+        "--source-manifest-sha256",
+        "2ed9d3da4482798d1f6537e242bd5f58949a0d3ebadd2b3b940391422a1d963d",
+        "--full-completion",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/full_v2/completion.json",
+        "--full-completion-sha256",
+        "16be2e8e12c23b4791bdf312be1268621d56e99ff4893f0bff6e6eb2876e9e6c",
+        "--attention-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/sources_v2",
+        "--diagnostic-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources",
+        "--baf-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-baf-center-diagnostic-v2/sources",
+        "--support-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/support_sources",
+        "--contract",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources/contract.json",
+        "--device",
+        "cuda",
+        "--out",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/independent_sentinels"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261108_pose_support_attention_queue/sentinel_verify",
+      "status": "complete",
+      "pid": 783874,
+      "process_start_ticks": "104130843",
+      "exit_code": 0,
+      "finished_utc": "2026-11-08T15:25:14.412482+00:00"
+    },
+    "166_pose_support_attention_baseline_20261108.done.json": {
+      "job_id": "166_pose_support_attention_baseline_20261108",
+      "phase": "pose_support_attention_scale_frozen_baseline",
+      "started_utc": "2026-11-08T15:03:07.084638+00:00",
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=60s",
+        "3660s",
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/sources/probe_attention_scale.py",
+        "baseline",
+        "--contract",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources/contract.json",
+        "--diagnostic-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources",
+        "--baf-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-baf-center-diagnostic-v2/sources",
+        "--support-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/support_sources",
+        "--support-manifest-sha256",
+        "203525b580a0d520e6f15d7ea2e9acdac029d3c78e11d83c8d514840441e592f",
+        "--source-manifest-sha256",
+        "8bd8d9c982097ed8ab448efcf20b234ebe7e3717ff2c6f4b94e7b85c9feccdd3",
+        "--out",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/baseline"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261108_pose_support_attention_queue/baseline",
+      "status": "failed",
+      "pid": 770753,
+      "process_start_ticks": "104001124",
+      "exit_code": 1,
+      "finished_utc": "2026-11-08T15:03:22.089633+00:00"
+    },
+    "167_pose_support_attention_baseline_v2_20261108.done.json": {
+      "job_id": "167_pose_support_attention_baseline_v2_20261108",
+      "phase": "pose_support_attention_frozen_baseline_v2_device",
+      "started_utc": "2026-11-08T15:14:23.299868+00:00",
+      "argv": [
+        "/usr/bin/timeout",
+        "--signal=TERM",
+        "--kill-after=60s",
+        "3660s",
+        "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+        "-B",
+        "-u",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/sources_v2/probe_attention_scale.py",
+        "baseline",
+        "--contract",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources/contract.json",
+        "--diagnostic-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-factor-diagnostic-v1/sources",
+        "--baf-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-baf-center-diagnostic-v2/sources",
+        "--support-sources",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/support_sources",
+        "--support-manifest-sha256",
+        "203525b580a0d520e6f15d7ea2e9acdac029d3c78e11d83c8d514840441e592f",
+        "--source-manifest-sha256",
+        "24121b23d94a6ce6a5112cff796deced796b86be6c5b83f17c15884bd31e052f",
+        "--out",
+        "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-pose-support-attention-scale-v1/baseline_v2"
+      ],
+      "output_dir": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261103-stage9-direct-v1/recovery_20261108_pose_support_attention_queue/baseline_v2",
+      "status": "complete",
+      "pid": 777675,
+      "process_start_ticks": "104068746",
+      "exit_code": 0,
+      "finished_utc": "2026-11-08T15:14:38.305314+00:00"
+    }
+  },
+  "full_receipt_sha256": "16be2e8e12c23b4791bdf312be1268621d56e99ff4893f0bff6e6eb2876e9e6c",
+  "independent_sentinel_sha256": "770b3040129e571cbf523b8b0e51a4f60503a899a4a85b1c97912f0cf5a659d5"
+}
