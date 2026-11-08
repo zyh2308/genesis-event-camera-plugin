@@ -24,6 +24,7 @@ class GenesisEnv(NativeEnv):
 
     def __init__(self,*args,**kwargs):
         self.gs_ready=False;self.sensor=None;self.sensor_probe=[];self.episode_number=-1;self._gs_step_count=0
+        self.front_glare_lamp=None;self.lighting_schedule=None;self.lighting_traces={};self._last_lighting_trace_key=None
         super().__init__(*args,**kwargs)
         from cadence_config import endpoint_stride
         self.event_endpoint_hz=float(os.environ.get('CATCHIT_EVENT_ENDPOINT_HZ','100'))
@@ -40,6 +41,11 @@ class GenesisEnv(NativeEnv):
         lighting=os.environ.get('CATCHIT_LIGHTING','normal')
         vis=dict(segmentation_level='link')
         if lighting=='backlit':vis.update(ambient_light=(.01,.01,.01),lights=[dict(type='point',pos=(0.,3.8,1.8),color=(1.,1.,1.),intensity=100.)])
+        elif lighting=='front_glare':
+            from light_schedule import front_glare_schedule
+            self.lighting_schedule=front_glare_schedule(os.environ.get('CATCHIT_FRONT_GLARE_PEAK','400'))
+            vis.update(ambient_light=(.1,.1,.1),lights=[dict(type='directional',dir=(-1.,-1.,-1.),color=(1.,1.,1.),intensity=5.),
+                dict(type='point',pos=tuple(self.lighting_schedule['point_position']),color=(1.,1.,1.),intensity=0.)])
         self.scene=gs.Scene(sim_options=gs.options.SimOptions(dt=float(self.Dcmm.model.opt.timestep),substeps=1),vis_options=gs.options.VisOptions(**vis),
             rigid_options=gs.options.RigidOptions(enable_self_collision=True,enable_neutral_collision=True,enable_mujoco_compatibility=True),show_viewer=False)
         # MuJoCo collides each mesh as its convex hull. Avoid Genesis splitting
@@ -52,6 +58,11 @@ class GenesisEnv(NativeEnv):
         camid=int(self.Dcmm.model.camera('top').id);self.sensor_camera_id=camid
         self.sensor_camera=self.scene.add_camera(res=(640,480),pos=(0,0,1.4),lookat=(0,1,1.),fov=float(self.Dcmm.model.cam_fovy[camid]),GUI=False)
         self.scene.build();self.gs_ready=True;self._gs_time=0.;self._gs_released=False
+        if self.lighting_schedule is not None:
+            native=self.scene.visualizer.context._scene;position=np.asarray(self.lighting_schedule['point_position'])
+            lamps=[node for node in native.light_nodes if type(node.light).__name__=='PointLight' and np.linalg.norm(native.get_pose(node)[:3,3]-position)<1e-5]
+            if len(lamps)!=1:raise RuntimeError('Expected one actual native front_glare point lamp at configured position')
+            self.front_glare_lamp=lamps[0]
         assert self.robot.n_qs==self.Dcmm.model.nq and self.robot.n_dofs==self.Dcmm.model.nv
         joints={j.name:j for j in self.robot.joints}
         mapping=[]
@@ -102,7 +113,8 @@ class GenesisEnv(NativeEnv):
         assert mass_delta<1e-5,('Imported mass mismatch',mass_delta)
         self.adapter_metadata=dict(joint_mapping=mapping,geometry_mapping=self.geom_notes,masses=masses,maximum_mass_delta_kg=mass_delta,physics_backend=self.physics_backend,
             controller='original per-step PID and IK, only physics stepping redirected',contacts='Genesis solver mapped to original geometry categories',
-            original_mj_step_calls=0,maximum_kinematic_position_delta_m=0.,lighting=lighting,background_wall_collision=False)
+            original_mj_step_calls=0,maximum_kinematic_position_delta_m=0.,lighting=lighting,background_wall_collision=False,
+            lighting_schedule=self.lighting_schedule,lighting_trace_by_episode=self.lighting_traces)
         def reject_native_step(*args,**kwargs):
             self.adapter_metadata['original_mj_step_calls']+=1
             raise RuntimeError('MuJoCo physics stepping forbidden in Genesis backend')
@@ -111,6 +123,20 @@ class GenesisEnv(NativeEnv):
 
     def _write_adapter_metadata(self):
         (self.adapter_output/'adapter_audit.json').write_text(json.dumps(self.adapter_metadata,indent=2))
+
+    def _update_public_lighting(self):
+        if self.front_glare_lamp is None:return
+        from light_schedule import front_glare_intensity
+        t=float(self._gs_time);peak=self.lighting_schedule['peak_point_intensity_renderer_units']
+        scheduled=front_glare_intensity(t,peak);self.front_glare_lamp.light.intensity=scheduled
+        actual=float(self.front_glare_lamp.light.intensity)
+        if abs(actual-scheduled)>1e-9:raise RuntimeError('Native point lamp intensity readback mismatch')
+        key=(self.episode_number,t)
+        if self.episode_number>=0 and key!=self._last_lighting_trace_key:
+            rows=self.lighting_traces.setdefault(str(self.episode_number),[])
+            rows.append(dict(time_s=t,scheduled_point_intensity=scheduled,actual_point_intensity=actual,time_source='public reset-relative _gs_time'))
+            self._last_lighting_trace_key=key
+            if hasattr(self,'adapter_metadata') and (len(rows)==1 or len(rows)%10==0):self._write_adapter_metadata()
 
     def _sync_kinematics(self):
         self.Dcmm.data.qpos[:]=array(self.robot.get_qpos())
@@ -123,6 +149,7 @@ class GenesisEnv(NativeEnv):
         obs,info=super().reset()
         if self.gs_ready:
             self.episode_number+=1;self.scene.reset();self._gs_time=0.;self._gs_released=False;self._gs_step_count=0
+            self._last_lighting_trace_key=None
             self.robot.set_qpos(self.Dcmm.data.qpos.copy(),zero_velocity=True)
             self.robot.set_dofs_velocity(self.Dcmm.data.qvel.copy())
             self.scene.sim.rigid_solver.set_gravity(self.Dcmm.model.opt.gravity.copy())
@@ -162,6 +189,7 @@ class GenesisEnv(NativeEnv):
         elif os.environ.get('CATCHIT_SENSOR_PROBE')=='1' and self._gs_step_count%int(os.environ.get('CATCHIT_PROBE_STRIDE','20'))==0:self.capture_sensor_probe(self._gs_time)
 
     def update_sensor_pose(self):
+        self._update_public_lighting()
         i=self.sensor_camera_id;T=np.eye(4);T[:3,:3]=self.Dcmm.data.cam_xmat[i].reshape(3,3);T[:3,3]=self.Dcmm.data.cam_xpos[i]
         pitch=float(os.environ.get('CATCHIT_SENSOR_PITCH_DEG','0'))
         assert -15.<=pitch<=15.
@@ -209,6 +237,7 @@ class GenesisEnv(NativeEnv):
         return np.zeros((0,self.img_size[0],self.img_size[1]))
 
     def render_demo(self):
+        self._update_public_lighting()
         return array(self.demo_camera.render(rgb=True)[0]).copy()
 
     def close(self):

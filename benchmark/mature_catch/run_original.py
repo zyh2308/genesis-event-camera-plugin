@@ -24,7 +24,8 @@ def main():
     parser.add_argument('--launch-config',type=Path,help='Task-only fixed launch position/velocity JSON; never exposed to perception')
     parser.add_argument('--backend',choices=['mujoco','genesis'],default='mujoco')
     parser.add_argument('--sphere-radius',type=float)
-    parser.add_argument('--lighting',choices=['normal','backlit'],default='normal')
+    parser.add_argument('--lighting',choices=['normal','backlit','front_glare'],default='normal')
+    parser.add_argument('--front-glare-peak',type=float,help='Native front point lamp peak; otherwise CATCHIT_FRONT_GLARE_PEAK or400, only for front_glare')
     parser.add_argument('--background-wall',action='store_true')
     parser.add_argument('--sensor-probe',action='store_true')
     parser.add_argument('--event-control',action='store_true')
@@ -56,6 +57,14 @@ def main():
                       CATCHIT_RGBD_INITIALIZE='1' if args.rgbd_initialize else '0',CATCHIT_INITIALIZATION_PROBE='1' if args.initialization_probe else '0',
                       CATCHIT_INITIALIZATION_ONLY='1' if args.initialization_only else '0',
                       CATCHIT_STOP_EVENTS_AFTER_GRASP='1' if args.stop_events_after_grasp else '0')
+    if args.lighting=="front_glare" and args.backend!="genesis":parser.error("front_glare requires the Genesis backend")
+    if args.front_glare_peak is not None:
+        if args.lighting!='front_glare':parser.error('--front-glare-peak requires --lighting front_glare')
+        os.environ['CATCHIT_FRONT_GLARE_PEAK']=str(args.front_glare_peak)
+    lighting_schedule=None
+    if args.lighting=='front_glare':
+        from light_schedule import front_glare_schedule
+        lighting_schedule=front_glare_schedule(os.environ.get('CATCHIT_FRONT_GLARE_PEAK','400'))
     if args.sphere_radius is not None:os.environ['CATCHIT_SPHERE_RADIUS']=str(args.sphere_radius)
     if args.backend=='genesis':
         os.environ['CATCHIT_ADAPTER_OUTPUT']=str(args.output/'migration_audit')
@@ -113,6 +122,7 @@ def main():
         timestep=float(env.Dcmm.model.opt.timestep),steps_per_policy=20,env_time=2.5,seeds=seeds,
         success='original evaluator: truncated at env_time > 2.5s; terminated means failure',
         asset_initialization_seed=asset_seed,object_eval=args.object_eval,versions=dict(python=sys.version,numpy=np.__version__,torch=torch.__version__,mujoco=mujoco.__version__))
+    manifest['lighting_schedule']=lighting_schedule
     manifest['gate_until_s']=args.gate_until
     manifest['gate_after_release_s']=args.gate_after_release
     manifest['event_endpoint_rate_hz']=float(os.environ.get('CATCHIT_EVENT_ENDPOINT_HZ','100'))
@@ -135,7 +145,7 @@ def main():
             obs,info=env.reset();initial=dict(position=env.object_pos3d.tolist(),velocity=env.object_vel6d.tolist(),gravity=env.Dcmm.model.opt.gravity.tolist(),release_time_s=float(env.object_static_time))
             if args.event_control:
                 runtime={}
-                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else [])+['event_sphere_tracker_rgbd_base','event_bearing_flight']:
+                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else [])+['event_sphere_tracker_rgbd_base','event_bearing_flight']+(['light_schedule'] if args.lighting=='front_glare' else []):
                     module=sys.modules[name];path=Path(module.__file__).resolve()
                     assert path.parent==Path(__file__).resolve().parent,(name,str(path))
                     runtime[name]=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest())
