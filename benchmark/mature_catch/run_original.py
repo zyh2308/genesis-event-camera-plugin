@@ -136,6 +136,7 @@ def main():
                     revocable_grasp=os.environ.get('CATCHIT_REVOCABLE_GRASP')=='1',
                     reject_partial_contours=os.environ.get('CATCHIT_REJECT_PARTIAL_CONTOURS')=='1',
                     event_flight_fit=os.environ.get('CATCHIT_EVENT_FLIGHT_FIT')=='1',
+                    event_observation_window_ms=float(os.environ.get('CATCHIT_EVENT_OBSERVATION_WINDOW_MS','0')),
                     sensor_pitch_offset_degrees=float(os.environ.get('CATCHIT_SENSOR_PITCH_DEG','0')))
     (args.output/'protocol.json').write_text(json.dumps(manifest,indent=2))
     try:
@@ -145,7 +146,7 @@ def main():
             obs,info=env.reset();initial=dict(position=env.object_pos3d.tolist(),velocity=env.object_vel6d.tolist(),gravity=env.Dcmm.model.opt.gravity.tolist(),release_time_s=float(env.object_static_time))
             if args.event_control:
                 runtime={}
-                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else [])+['event_sphere_tracker_rgbd_base','event_bearing_flight']+(['light_schedule'] if args.lighting=='front_glare' else []):
+                for name in ['genesis_adapter','sparse_event_sensor','event_sphere_tracker','event_sphere_tracker_kalman','event_sphere_tracker_contour_q80_occlusion','rgb_sphere_initialization']+(['rgbd_sphere_initialization'] if args.rgbd_initialize else [])+['event_sphere_tracker_rgbd_base','event_bearing_flight']+(['light_schedule'] if args.lighting=='front_glare' else [])+(['event_observation_windows'] if float(os.environ.get('CATCHIT_EVENT_OBSERVATION_WINDOW_MS','0'))>0 else []):
                     module=sys.modules[name];path=Path(module.__file__).resolve()
                     assert path.parent==Path(__file__).resolve().parent,(name,str(path))
                     runtime[name]=dict(path=str(path),sha256=hashlib.sha256(path.read_bytes()).hexdigest())

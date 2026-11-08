@@ -142,3 +142,8 @@ class SparseEventSensor:
         (self.root/'estimator_states.json').write_text(json.dumps(self.tracker.diagnostics))
         (self.root/'grasp_hypothesis_events.json').write_text(json.dumps(getattr(self.tracker,'hold_events',[])))
         (self.root/'front_end_quality.json').write_text(json.dumps(dict(partial_contour_rejections=getattr(self.tracker,'partial_rejections',0))))
+        (self.root/'event_observation_windows.json').write_text(json.dumps(dict(
+            observation_window_ms=getattr(self.tracker,'observation_window_ms',0.),
+            information_availability='Every child retains its original parent packet availability; controller polls unchanged',
+            camera_pose_source='Approximate SE3 interpolation between available robot camera endpoint poses; no target truth',
+            windows=getattr(self.tracker,'observation_window_audit',[])),indent=2))

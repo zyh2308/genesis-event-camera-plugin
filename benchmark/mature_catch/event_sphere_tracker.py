@@ -10,8 +10,33 @@ class EventSphereTracker(Baseline):
         self.reject_partial=os.environ.get('CATCHIT_REJECT_PARTIAL_CONTOURS')=='1'
         self.use_flight_fit=os.environ.get('CATCHIT_EVENT_FLIGHT_FIT')=='1'
         self.partial_rejections=0;self.flight_solution=None;self.flight_fit_count=-1;self.release_bracket=None
+        self.observation_window_ms=float(os.environ.get('CATCHIT_EVENT_OBSERVATION_WINDOW_MS','0'))
+        self._observation_windows=None
+        self.observation_window_audit=[]
+        if self.observation_window_ms!=0:
+            from event_observation_windows import EventObservationWindows
+            self._observation_windows=EventObservationWindows(self.observation_window_ms)
+            self.observation_window_audit=self._observation_windows.audit
+
+    def push(self,events,available_s,packet_time_s,camera_to_world,parent_packet_id=None):
+        result=super().push(events,available_s,packet_time_s,camera_to_world)
+        if self._observation_windows is not None:
+            packet=self.pending[-1]
+            if parent_packet_id is not None:packet['parent_packet_id']=int(parent_packet_id)
+            self._observation_windows.register_parent(packet)
+        return result
+
+    def observe(self,now_s,hand_pose,hand_joint_positions):
+        if self._observation_windows is None:
+            return super().observe(now_s,hand_pose,hand_joint_positions)
+        previous=self._observation_windows.processing_now_s
+        self._observation_windows.processing_now_s=float(now_s)
+        try:return super().observe(now_s,hand_pose,hand_joint_positions)
+        finally:self._observation_windows.processing_now_s=previous
 
     def _detect(self,packet):
+        if self._observation_windows is not None and not packet.get('_observation_window_child',False):
+            return self._observation_windows.consume(self,packet,self._detect)
         sample=super()._detect(packet)
         if sample is not None and self.reject_partial:
             u,v=sample['uv'];r=sample['radius_px']
