@@ -38,6 +38,22 @@ class EventSphereTracker(MotionFilter):
         self.initialization_label=('one RGB-D frame at time 0' if detection.get('initialization_mode')=='single_frame_RGBD' else 'one RGB frame at time 0')
         self.static_latest_s = float(time_s)
 
+    def _association_prediction(self, time_s):
+        prediction = super()._association_prediction(time_s)
+        if (prediction is None or self.motion_onset_s is not None or
+                not self.motion_suspicion):
+            return prediction
+        last = self.motion_suspicion[-1]
+        dt = float(time_s - last['t'])
+        if not 0. <= dt <= .05:
+            return prediction
+        # A first motion observation can guide candidate association before
+        # confirmation, while the public state remains the initialized static
+        # target. Keep the original distance gate and two-observation rule.
+        center = (self.static_position + last['innovation'] +
+                  self.initial_velocity_prior * dt + .5 * self.gravity * dt * dt)
+        return dict(prediction, position=center)
+
     def _start_motion(self, sample):
         t = sample['t']
         dt = t - self.motion_suspicion[0]['t']

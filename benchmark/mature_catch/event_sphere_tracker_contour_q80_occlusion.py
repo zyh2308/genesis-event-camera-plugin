@@ -67,6 +67,9 @@ class EventSphereTracker:
         return dict(time_s=float(time_s),position=coef[0]+coef[1]*horizon+.5*acc*horizon*horizon,velocity=coef[1]+acc*horizon,latest_s=float(ts[-1]),
                     n=len(recent),fit_error_m=float(np.median(np.linalg.norm(corrected-design@coef,axis=1))))
 
+    def _association_prediction(self,time_s):
+        return self._predict(time_s)
+
     def _detect(self,packet):
         events=packet['events'];t=packet['end_s']
         events=events[(events[:,0]>=t-.012)&(events[:,0]<=t+1e-8)] if len(events) else events
@@ -75,7 +78,7 @@ class EventSphereTracker:
         mask=np.zeros((self.H,self.W),np.uint8);mask[y,x]=1
         mask=cv2.dilate(mask,np.ones((3,3),np.uint8))
         n,labels,stats,_=cv2.connectedComponentsWithStats(mask,8)
-        candidates=[];prediction=self._predict(t)
+        candidates=[];prediction=self._association_prediction(t)
         for label in range(1,n):
             bx,by,bw,bh,area=stats[label]
             if not (4<=bw<=200 and 4<=bh<=200 and .4<=bw/bh<=2.5):continue
