@@ -27,3 +27,5 @@ Alternatives not selected: removing all teacher supervision would also remove no
 ## Safety and isolation
 
 Frozen core62da4f35ce3c5c96f04268bd1687a27657af9238, physical timestamps, noise and occlusion unchanged. Newreal scoring closed; all labels and gradient probes are synthetic physical truth. Use only assigned g1 GPU4 after diagnostics and smoke. Immutable snapshots, exact UUID/source pins and unique roots; retain failures. Do not interrupt reconstruction, Census or fixed MVSEC jobs, and do not modify their sources/results.
+
+Runtime admission addendum before any candidate update: the prior12-fit slow_features study took24m50s including full native validation and replay. Keep the scientific budget at6x288=1728; give smoke1200s and study3600s runtime ceilings to avoid a successful study being cut off during full evaluation. The inherited timeout_seconds1200 is retained only for the pinned diagnostic-admission schema. This changes no data, update, sampling, optimizer or metric.
