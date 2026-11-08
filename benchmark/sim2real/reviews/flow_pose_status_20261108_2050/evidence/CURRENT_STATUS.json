@@ -1,0 +1,296 @@
+{
+  "checked_utc": "2026-11-08T11:50:34.205097+00:00",
+  "pose": {
+    "completed_utc": "2026-11-08T11:29:35.904325+00:00",
+    "gate_passed": false,
+    "passed_checks": 18,
+    "total_checks": 30,
+    "original_confirmation_passed": true,
+    "new_optimizer_updates": 3456,
+    "rows": [
+      {
+        "method": "eventgenesis",
+        "condition": "clean",
+        "C0": {
+          "depth_cm": 9.6628,
+          "success_pct": 26.3889,
+          "center_px": 10.1679
+        },
+        "C1": {
+          "depth_cm": 9.3807,
+          "success_pct": 26.7361,
+          "center_px": 10.7248
+        },
+        "slow": {
+          "depth_cm": 9.8997,
+          "success_pct": 23.4375,
+          "center_px": 10.533
+        }
+      },
+      {
+        "method": "eventgenesis",
+        "condition": "half",
+        "C0": {
+          "depth_cm": 2.9343,
+          "success_pct": 49.4792,
+          "center_px": 9.0607
+        },
+        "C1": {
+          "depth_cm": 3.5939,
+          "success_pct": 37.5,
+          "center_px": 9.993
+        },
+        "slow": {
+          "depth_cm": 3.2876,
+          "success_pct": 44.7917,
+          "center_px": 9.3981
+        }
+      },
+      {
+        "method": "eventgenesis",
+        "condition": "eighth",
+        "C0": {
+          "depth_cm": 11.5429,
+          "success_pct": 8.3333,
+          "center_px": 30.2199
+        },
+        "C1": {
+          "depth_cm": 6.375,
+          "success_pct": 20.3125,
+          "center_px": 29.2777
+        },
+        "slow": {
+          "depth_cm": 8.4078,
+          "success_pct": 10.9375,
+          "center_px": 30.1324
+        }
+      },
+      {
+        "method": "v2e",
+        "condition": "clean",
+        "C0": {
+          "depth_cm": 13.6205,
+          "success_pct": 12.3264,
+          "center_px": 20.3526
+        },
+        "C1": {
+          "depth_cm": 13.7326,
+          "success_pct": 11.3715,
+          "center_px": 20.8198
+        },
+        "slow": {
+          "depth_cm": 13.873,
+          "success_pct": 11.8056,
+          "center_px": 20.7306
+        }
+      },
+      {
+        "method": "v2e",
+        "condition": "half",
+        "C0": {
+          "depth_cm": 3.545,
+          "success_pct": 32.2917,
+          "center_px": 14.6872
+        },
+        "C1": {
+          "depth_cm": 3.6415,
+          "success_pct": 33.3333,
+          "center_px": 15.7818
+        },
+        "slow": {
+          "depth_cm": 3.7314,
+          "success_pct": 33.8542,
+          "center_px": 15.2725
+        }
+      },
+      {
+        "method": "v2e",
+        "condition": "eighth",
+        "C0": {
+          "depth_cm": 6.945,
+          "success_pct": 30.7292,
+          "center_px": 15.2473
+        },
+        "C1": {
+          "depth_cm": 5.8723,
+          "success_pct": 31.25,
+          "center_px": 15.7452
+        },
+        "slow": {
+          "depth_cm": 6.1516,
+          "success_pct": 30.2083,
+          "center_px": 15.5612
+        }
+      }
+    ]
+  },
+  "flow": {
+    "done": null,
+    "arms": [
+      {
+        "arm": "eventgenesis_census",
+        "additional_updates": 200,
+        "optimizer_update": 9110,
+        "last_finite_gradient_tensors": 70
+      },
+      {
+        "arm": "eventgenesis_native_control",
+        "additional_updates": 200,
+        "optimizer_update": 9110,
+        "last_finite_gradient_tensors": 70
+      },
+      {
+        "arm": "v2e_native_control",
+        "additional_updates": 200,
+        "optimizer_update": 9110,
+        "last_finite_gradient_tensors": 70
+      }
+    ]
+  },
+  "mvsec": {
+    "utc": "2026-11-08T11:48:59.073323+00:00",
+    "shards": [
+      {
+        "root": "20261108-mvsec-frozen-matrix-gpu2-v2",
+        "live": {
+          "owner": "sim-to-real research chat",
+          "host": "g1",
+          "gpu_index": 2,
+          "gpu_uuid": "GPU-a02affe0-7598-579e-ca39-f551f35ad6e9",
+          "gpu_model": "Tesla V100S-PCIE-32GB",
+          "run_id": "20261108-mvsec-frozen-matrix-gpu2-v2",
+          "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-matrix-gpu2-v2",
+          "pid": 548295,
+          "process_start_ticks": "101171933",
+          "status": "running",
+          "current_job": {
+            "phase": "seed0_vid2e",
+            "seed": 0,
+            "method": "vid2e",
+            "started_utc": "2026-11-08T10:42:57.742359+00:00",
+            "status": "running",
+            "argv": [
+              "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+              "-B",
+              "-u",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/scripts/stage9_mvsec_bridge_v2.py",
+              "evaluate",
+              "--protocol",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v1/frozen/protocol.json",
+              "--manifest",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v1/frozen/manifest.json",
+              "--authorization",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v2/authorization_gpu2.json",
+              "--method",
+              "vid2e",
+              "--seed",
+              "0",
+              "--model-root",
+              "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet",
+              "--device",
+              "cuda:0",
+              "--out",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-matrix-gpu2-v2/seed0/vid2e"
+            ],
+            "timeout_seconds": 14400,
+            "pid": 662234
+          },
+          "completed": [
+            "seed0_eventgenesis",
+            "seed0_v2e"
+          ],
+          "started_utc": "2026-11-08T07:11:45.192101+00:00",
+          "purpose": "authorized fixed MVSEC runtime shard; no training/tuning or prior partial reuse",
+          "heartbeat_utc": "2026-11-08T11:48:58.147581+00:00"
+        },
+        "completion_status": null,
+        "failure": null,
+        "cells": [
+          {
+            "cell": "seed0/eventgenesis",
+            "windows": 8500
+          },
+          {
+            "cell": "seed0/v2e",
+            "windows": 8500
+          },
+          {
+            "cell": "seed0/vid2e",
+            "windows": 5200
+          }
+        ]
+      },
+      {
+        "root": "20261108-mvsec-frozen-matrix-gpu5-v2",
+        "live": {
+          "owner": "sim-to-real research chat",
+          "host": "g1",
+          "gpu_index": 5,
+          "gpu_uuid": "GPU-06ee62ba-c171-40d4-b4ae-ea63391dc885",
+          "gpu_model": "NVIDIA TITAN RTX",
+          "run_id": "20261108-mvsec-frozen-matrix-gpu5-v2",
+          "output_path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-matrix-gpu5-v2",
+          "pid": 547711,
+          "process_start_ticks": "101168428",
+          "status": "running",
+          "current_job": {
+            "phase": "seed2_vid2e",
+            "seed": 2,
+            "method": "vid2e",
+            "started_utc": "2026-11-08T11:45:20.646193+00:00",
+            "status": "running",
+            "argv": [
+              "/home/zhaoyuhan/miniconda3/envs/Eventbased_WAM_torch28/bin/python",
+              "-B",
+              "-u",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-final-preparation-v1/source_snapshot/scripts/stage9_mvsec_bridge_v2.py",
+              "evaluate",
+              "--protocol",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v1/frozen/protocol.json",
+              "--manifest",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v1/frozen/manifest.json",
+              "--authorization",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-control-v2/authorization_gpu5.json",
+              "--method",
+              "vid2e",
+              "--seed",
+              "2",
+              "--model-root",
+              "/home/zhaoyuhan/Eventbased_WAM/external/sources/downstream/STE-FlowNet",
+              "--device",
+              "cuda:0",
+              "--out",
+              "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261108-mvsec-frozen-matrix-gpu5-v2/seed2/vid2e"
+            ],
+            "timeout_seconds": 14400,
+            "pid": 687923
+          },
+          "completed": [
+            "seed2_eventgenesis",
+            "seed2_v2e"
+          ],
+          "started_utc": "2026-11-08T07:11:10.332645+00:00",
+          "purpose": "authorized fixed MVSEC runtime shard; no training/tuning or prior partial reuse",
+          "heartbeat_utc": "2026-11-08T11:48:54.934417+00:00"
+        },
+        "completion_status": null,
+        "failure": null,
+        "cells": [
+          {
+            "cell": "seed2/eventgenesis",
+            "windows": 8500
+          },
+          {
+            "cell": "seed2/v2e",
+            "windows": 8500
+          },
+          {
+            "cell": "seed2/vid2e",
+            "windows": 100
+          }
+        ]
+      }
+    ]
+  },
+  "new_candidates_real_scoring": false
+}
