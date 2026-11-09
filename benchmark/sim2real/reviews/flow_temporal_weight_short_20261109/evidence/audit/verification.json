@@ -1,0 +1,436 @@
+{
+  "schema": "flow_temporal_weight_independent_verification_v1",
+  "status": "verified",
+  "source_manifest_sha256": "ed140ca2ce789ef94dde23853d1141cca790a502aa0b56da54fd631da430c1bf",
+  "scope": "single_seed_seen_synthetic_development",
+  "input_artifacts": {
+    "completion.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/completion.json",
+      "bytes": 13605695,
+      "sha256": "61609bbec957e6eb90399cb7af74dd552ebad878827d125e5cffee5f59cb3c7a"
+    },
+    "control_replay.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/control_replay.json",
+      "bytes": 214414,
+      "sha256": "31a03cb9a9df278d298eb371450144313a661314a5929e37944fff55b05e3687"
+    },
+    "preregistered_scene_diagnostic.json": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/preregistered_scene_diagnostic.json",
+      "bytes": 60118,
+      "sha256": "5625533ae8652a7255a116d570cd17f0e0a0a3802f5fded603b05ea4ec23ba7d"
+    },
+    "eventgenesis_native_control/training_metrics.jsonl": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/eventgenesis_native_control/training_metrics.jsonl",
+      "bytes": 375965,
+      "sha256": "83072c15833b535bb6a5b1042a01e67823ea8bafa473192705964957354237c6"
+    },
+    "eventgenesis_temporal_weight/training_metrics.jsonl": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/eventgenesis_temporal_weight/training_metrics.jsonl",
+      "bytes": 375917,
+      "sha256": "bd35aee0d702527dd41e038d3d74629380d18771c19b25e1635a5320a5dd7f64"
+    },
+    "v2e_native_control/training_metrics.jsonl": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/v2e_native_control/training_metrics.jsonl",
+      "bytes": 375884,
+      "sha256": "303e1936fbff159a5b799653df1558db5b0c1e3b1e5064926b1f562415f2dfff"
+    },
+    "v2e_temporal_weight/training_metrics.jsonl": {
+      "path": "/home/zhaoyuhan/Eventbased_WAM/runs/sim2real/20261109-flow-temporal-weight-paired-v1/study/v2e_temporal_weight/training_metrics.jsonl",
+      "bytes": 375919,
+      "sha256": "eba38e2bf8b2730fb0844031d8d5097e7a856005c940118f63f89087c5e1bbf0"
+    }
+  },
+  "training": {
+    "replay_sha256": "f1a3ec5dd97e9c5b108d915e2a990aca0bc5c46ed18d463ac4cc745863bb7ab9",
+    "paired_sequence_sha256": {
+      "sample_ids": "69f2fac73f68ec1e16d8d8cd344c9f469539d8f7af6b2baa438c202611a019b9",
+      "label_augmentation_sha256": "d65869445b9f24c99c68fec5f1a53148161874600c80d6afba519bdbb55d214c",
+      "augmentation_seed_sequences": "b40c5a082d95ae6c669157f9f7c5a2a978da09cc72038772a060dfb0b6275904",
+      "weight_sha256": "f0c8d4f073b76aac90c54419df5fb6098977d4a009803f0198ddb07173f9dc6d"
+    },
+    "updates_per_arm": 200,
+    "total_updates": 800,
+    "paired_batch_size": 8,
+    "total_paired_positions": 1600,
+    "static_weight_steps": 0
+  },
+  "validation_windows_per_arm": 528,
+  "support_sha256": "be7e2aaf7f09ad63239f2d43ccfa1efb4ef2d7a3196a696906a3a01ee6fcb206",
+  "all_arm_stratum_results_px_per_30ms": [
+    {
+      "method": "eventgenesis",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "all",
+      "window_count": 528,
+      "rollout_count": 8,
+      "all_valid_EPE": 0.26992406427267085,
+      "common_active_EPE": 0.33257205917525884,
+      "zero_flow_all": 0.4874168109827279,
+      "zero_flow_common_active": 0.6726600928757241
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "camera_motion_static_scene",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.13437618398051424,
+      "common_active_EPE": 0.1683033662572534,
+      "zero_flow_all": 0.16206756006433265,
+      "zero_flow_common_active": 0.18778298713466482
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "independent_rigid_motion_static_camera",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.028913549593805547,
+      "common_active_EPE": 0.4556631393716714,
+      "zero_flow_all": 0.034667725783887215,
+      "zero_flow_common_active": 0.735333308287236
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "camera_and_independent_rigid_motion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.5436466333715366,
+      "common_active_EPE": 0.43398522934060196,
+      "zero_flow_all": 1.0316874946661654,
+      "zero_flow_common_active": 1.0567866405068957
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "combined_motion_with_occlusion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.372759890144827,
+      "common_active_EPE": 0.2723365017315086,
+      "zero_flow_all": 0.7212444634165264,
+      "zero_flow_common_active": 0.7107374355741002
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "all",
+      "window_count": 528,
+      "rollout_count": 8,
+      "all_valid_EPE": 0.28447962440837754,
+      "common_active_EPE": 0.34082458576487457,
+      "zero_flow_all": 0.4874168109827279,
+      "zero_flow_common_active": 0.6726600928757241
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "camera_motion_static_scene",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.1386116217601442,
+      "common_active_EPE": 0.17831498893661113,
+      "zero_flow_all": 0.16206756006433265,
+      "zero_flow_common_active": 0.18778298713466482
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "independent_rigid_motion_static_camera",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.02847588042264392,
+      "common_active_EPE": 0.4689439056553383,
+      "zero_flow_all": 0.034667725783887215,
+      "zero_flow_common_active": 0.735333308287236
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "camera_and_independent_rigid_motion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.5719261091338157,
+      "common_active_EPE": 0.44197322569654895,
+      "zero_flow_all": 1.0316874946661654,
+      "zero_flow_common_active": 1.0567866405068957
+    },
+    {
+      "method": "eventgenesis",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "combined_motion_with_occlusion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.39890488631690646,
+      "common_active_EPE": 0.2740662227709998,
+      "zero_flow_all": 0.7212444634165264,
+      "zero_flow_common_active": 0.7107374355741002
+    },
+    {
+      "method": "v2e",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "all",
+      "window_count": 528,
+      "rollout_count": 8,
+      "all_valid_EPE": 0.2729152594768224,
+      "common_active_EPE": 0.3289731259395509,
+      "zero_flow_all": 0.4874168109827279,
+      "zero_flow_common_active": 0.6726600928757241
+    },
+    {
+      "method": "v2e",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "camera_motion_static_scene",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.1322992703130499,
+      "common_active_EPE": 0.15630956620903508,
+      "zero_flow_all": 0.16206756006433265,
+      "zero_flow_common_active": 0.18778298713466482
+    },
+    {
+      "method": "v2e",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "independent_rigid_motion_static_camera",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.0319449800226594,
+      "common_active_EPE": 0.46440454406747916,
+      "zero_flow_all": 0.034667725783887215,
+      "zero_flow_common_active": 0.735333308287236
+    },
+    {
+      "method": "v2e",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "camera_and_independent_rigid_motion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.5632887047005084,
+      "common_active_EPE": 0.4371853854642952,
+      "zero_flow_all": 1.0316874946661654,
+      "zero_flow_common_active": 1.0567866405068957
+    },
+    {
+      "method": "v2e",
+      "arm": "native_control",
+      "seed": 0,
+      "stratum": "combined_motion_with_occlusion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.3641280828710719,
+      "common_active_EPE": 0.2579930080173943,
+      "zero_flow_all": 0.7212444634165264,
+      "zero_flow_common_active": 0.7107374355741002
+    },
+    {
+      "method": "v2e",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "all",
+      "window_count": 528,
+      "rollout_count": 8,
+      "all_valid_EPE": 0.26392705748895257,
+      "common_active_EPE": 0.3219683218698667,
+      "zero_flow_all": 0.4874168109827279,
+      "zero_flow_common_active": 0.6726600928757241
+    },
+    {
+      "method": "v2e",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "camera_motion_static_scene",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.13058536012505317,
+      "common_active_EPE": 0.1530796136646393,
+      "zero_flow_all": 0.16206756006433265,
+      "zero_flow_common_active": 0.18778298713466482
+    },
+    {
+      "method": "v2e",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "independent_rigid_motion_static_camera",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.041278821096715865,
+      "common_active_EPE": 0.46048485863144606,
+      "zero_flow_all": 0.034667725783887215,
+      "zero_flow_common_active": 0.735333308287236
+    },
+    {
+      "method": "v2e",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "camera_and_independent_rigid_motion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.5452657927146651,
+      "common_active_EPE": 0.42994950076713034,
+      "zero_flow_all": 1.0316874946661654,
+      "zero_flow_common_active": 1.0567866405068957
+    },
+    {
+      "method": "v2e",
+      "arm": "temporal_weight",
+      "seed": 0,
+      "stratum": "combined_motion_with_occlusion",
+      "window_count": 132,
+      "rollout_count": 2,
+      "all_valid_EPE": 0.3385782560193761,
+      "common_active_EPE": 0.24435931441625106,
+      "zero_flow_all": 0.7212444634165264,
+      "zero_flow_common_active": 0.7107374355741002
+    }
+  ],
+  "original_development_quality_gate": {
+    "passed": false,
+    "passed_items": 7,
+    "total_items": 12,
+    "checks": [
+      {
+        "method": "eventgenesis",
+        "region": "all_physical_valid",
+        "control": 0.26992406427267085,
+        "candidate": 0.28447962440837754,
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "region": "common_event_active_valid",
+        "control": 0.33257205917525884,
+        "candidate": 0.34082458576487457,
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "stratum": "camera_motion_static_scene",
+        "control": 0.13437618398051424,
+        "candidate": 0.1386116217601442,
+        "threshold": 0.14109499317953994,
+        "passed": true
+      },
+      {
+        "method": "eventgenesis",
+        "stratum": "independent_rigid_motion_static_camera",
+        "control": 0.028913549593805547,
+        "candidate": 0.02847588042264392,
+        "threshold": 0.030359227073495827,
+        "passed": true
+      },
+      {
+        "method": "eventgenesis",
+        "stratum": "camera_and_independent_rigid_motion",
+        "control": 0.5436466333715366,
+        "candidate": 0.5719261091338157,
+        "threshold": 0.5708289650401135,
+        "passed": false
+      },
+      {
+        "method": "eventgenesis",
+        "stratum": "combined_motion_with_occlusion",
+        "control": 0.372759890144827,
+        "candidate": 0.39890488631690646,
+        "threshold": 0.3913978846520684,
+        "passed": false
+      },
+      {
+        "method": "v2e",
+        "region": "all_physical_valid",
+        "control": 0.2729152594768224,
+        "candidate": 0.26392705748895257,
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "region": "common_event_active_valid",
+        "control": 0.3289731259395509,
+        "candidate": 0.3219683218698667,
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "stratum": "camera_motion_static_scene",
+        "control": 0.1322992703130499,
+        "candidate": 0.13058536012505317,
+        "threshold": 0.13891423382870238,
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "stratum": "independent_rigid_motion_static_camera",
+        "control": 0.0319449800226594,
+        "candidate": 0.041278821096715865,
+        "threshold": 0.03354222902379237,
+        "passed": false
+      },
+      {
+        "method": "v2e",
+        "stratum": "camera_and_independent_rigid_motion",
+        "control": 0.5632887047005084,
+        "candidate": 0.5452657927146651,
+        "threshold": 0.5914531399355338,
+        "passed": true
+      },
+      {
+        "method": "v2e",
+        "stratum": "combined_motion_with_occlusion",
+        "control": 0.3641280828710719,
+        "candidate": 0.3385782560193761,
+        "threshold": 0.3823344870146255,
+        "passed": true
+      }
+    ]
+  },
+  "preregistered_scene": {
+    "stratum": "camera_and_independent_rigid_motion",
+    "region": "common_event_active_valid",
+    "unit": "px_per_30ms",
+    "windows": 132,
+    "paired_rollouts": [
+      {
+        "rollout": "s2_06",
+        "windows": 66,
+        "supported_windows": 66,
+        "eventgenesis_temporal": 0.27540406475578466,
+        "eventgenesis_control": 0.27261637696437824,
+        "v2e_temporal": 0.2488468969369892,
+        "v2e_control": 0.26794122135671405,
+        "EG_candidate_minus_EG_control": 0.0027876877914064235,
+        "EG_candidate_minus_V2E_candidate": 0.02655716781879547
+      },
+      {
+        "rollout": "s2_07",
+        "windows": 66,
+        "supported_windows": 66,
+        "eventgenesis_temporal": 0.6085423866373133,
+        "eventgenesis_control": 0.5953540817168257,
+        "v2e_temporal": 0.6110521045972714,
+        "v2e_control": 0.6064295495718763,
+        "EG_candidate_minus_EG_control": 0.013188304920487615,
+        "EG_candidate_minus_V2E_candidate": -0.0025097179599581354
+      }
+    ],
+    "mean_EG_candidate_minus_EG_control": 0.007987996355947019,
+    "mean_EG_candidate_minus_V2E_candidate": 0.012023724929418667,
+    "EG_improves_vs_own_control_in_both_rollouts": false,
+    "EG_beats_V2E_candidate_in_both_rollouts": false
+  },
+  "real_data_used": false,
+  "scope_note": "Independent arithmetic on saved per-window scores and log fingerprints. No independent pixel-level inference, rehash of weight tensors, or reload of optimizer state."
+}
